@@ -11,7 +11,7 @@
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs" },
     "./gap-chart": { "types": "./dist/gap-chart.d.ts", "import": "./dist/gap-chart.js", "require": "./dist/gap-chart.cjs" }
   },
-  "scripts": { "build": "tsup", "typecheck": "tsc --noEmit" },
+  "scripts": { "build": "tsup && tsup --config tsup.bundle.config.ts", "typecheck": "tsc --noEmit" },
   "publishConfig": { "access": "public" },
   "dependencies": {
     "@michi-vz/core": "workspace:*",

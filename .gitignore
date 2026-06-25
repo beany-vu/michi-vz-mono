@@ -7,3 +7,4 @@ coverage/
 .DS_Store
 .vitepress/cache/
 .vitepress/dist/
+playground/screenshot.png
