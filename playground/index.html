@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@michi-vz/wc — GapChart PoC playground</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; color: #2a1c15; background: #f6f1e7; }
+  h1 { font-size: 22px; } h2 { font-size: 16px; margin: 28px 0 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 32px; }
+  .card { background: #fffdf8; border: 1px solid #e1d6c3; border-radius: 6px; padding: 12px; }
+  /* CONSUMER colour contract: recolour marks purely via CSS (data-label-safe).
+     The canvas renderer must pick these up through the getComputedStyle probe. */
+  #contract .gap-bar { fill: rgb(220, 40, 40); }
+  #contract .gap-marker { fill: rgb(20, 120, 60); }
+  #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
+    background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
+  .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
+</style>
+</head>
+<body>
+<h1>@michi-vz/wc — GapChart PoC</h1>
+<p>Light-DOM native web component over the <code>@michi-vz/core</code> engine. The page self-tests below.</p>
+
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-gap-chart id="svg"></michi-vz-gap-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-gap-chart id="canvas"></michi-vz-gap-chart></div>
+</div>
+<h2>Consumer-CSS colour contract (canvas, <code>skip-color-mapping-dispatch</code>)</h2>
+<div class="card" id="contract"><michi-vz-gap-chart id="contractChart"></michi-vz-gap-chart></div>
+
+<div id="results">running…</div>
+
+<script type="module">
+import "../packages/wc/dist/michi-vz-wc.bundle.js";
+
+const data = [
+  { label: "Alpha One", value1: 12, value2: 34 },
+  { label: "Beta",      value1: 55, value2: 20 },
+  { label: "Gamma",     value1: 30, value2: 31 },
+  { label: "Delta",     value1: 8,  value2: 40 },
+];
+
+const common = { width: 460, height: 280, xAxisDataType: "number", shapeValue1: "circle", shapeValue2: "square" };
+const out = [];
+const log = (ok, msg) => out.push(`${ok ? "✅ PASS" : "❌ FAIL"}  ${msg}`);
+const nextFrame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+const svgEl = document.getElementById("svg");
+const canvasEl = document.getElementById("canvas");
+const contractEl = document.getElementById("contractChart");
+
+// Same title on both so getContext() differs ONLY by renderer (see check #3).
+Object.assign(svgEl, { dataSet: data, chartTitle: "Value gap", renderer: "svg", ...common });
+Object.assign(canvasEl, { dataSet: data, chartTitle: "Value gap", renderer: "canvas", ...common });
+Object.assign(contractEl, {
+  dataSet: data, chartTitle: "Canvas + consumer CSS", renderer: "canvas",
+  skipColorMappingDispatch: true, ...common,
+});
+
+let dataProcessedFired = false;
+svgEl.addEventListener("michi-vz:dataprocessed", () => { dataProcessedFired = true; });
+
+await nextFrame();
+
+try {
+  // 1. SVG marks rendered with sanitized data-label-safe
+  const bars = svgEl.querySelectorAll("rect.gap-bar");
+  log(bars.length === 4, `SVG renders 4 gap bars (got ${bars.length})`);
+  const safe = svgEl.querySelector('rect.gap-bar[data-label-safe="Alpha_One"]');
+  log(!!safe, 'SVG bar carries data-label-safe="Alpha_One"');
+
+  // 2. getContext() shape + stats
+  const ctx = svgEl.getContext();
+  log(ctx && ctx.chartType === "gap-chart" && ctx.stats.count === 4, "getContext() returns gap-chart with 4 series");
+  log(ctx.stats.maxGap.label === "Beta", `largest gap is Beta=35 (got ${ctx.stats.maxGap?.label}=${ctx.stats.maxGap?.value})`);
+  log(typeof ctx.summary === "string" && ctx.summary.includes("Largest gap"), "getContext() includes an NL summary");
+
+  // 3. getContext() identical across SVG and canvas (renderer aside)
+  const a = JSON.stringify({ ...svgEl.getContext(), renderer: 0 });
+  const b = JSON.stringify({ ...canvasEl.getContext(), renderer: 0 });
+  log(a === b, "getContext() identical in SVG vs canvas (renderer aside)");
+
+  // 4. onChartDataProcessed CustomEvent fired
+  log(dataProcessedFired, "michi-vz:dataprocessed CustomEvent fired");
+
+  // 5. a11y mirror present
+  log(svgEl.querySelectorAll(".mv-a11y table tbody tr").length === 4, "a11y table mirror has 4 rows");
+
+  // 6. THE colour contract: canvas pixels must reflect consumer CSS (rgb(220,40,40))
+  const cnv = contractEl.querySelector("canvas");
+  let contractOk = false;
+  if (cnv) {
+    const c = cnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, cnv.width, cnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 205 && px[i] < 235 && px[i + 1] < 70 && px[i + 2] < 70 && px[i + 3] > 0) { contractOk = true; break; }
+    }
+  }
+  log(contractOk, "CANVAS colour contract: consumer CSS rgb(220,40,40) reached canvas pixels");
+
+  // 7. light DOM (no shadow root) — required by the contract
+  log(svgEl.shadowRoot === null, "element renders in LIGHT DOM (no shadow root)");
+} catch (e) {
+  log(false, "exception: " + (e && e.message));
+}
+
+const passed = out.filter((l) => l.startsWith("✅")).length;
+document.getElementById("results").innerHTML =
+  out.map((l) => `<span class="${l.startsWith("✅") ? "pass" : "fail"}">${l}</span>`).join("\n") +
+  `\n\n${passed}/${out.length} checks passed.`;
+</script>
+</body>
+</html>
