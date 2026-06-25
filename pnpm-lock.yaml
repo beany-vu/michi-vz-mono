@@ -29,6 +29,9 @@ importers:
       '@michi-vz/core':
         specifier: workspace:*
         version: link:../core
+      '@michi-vz/wc':
+        specifier: workspace:*
+        version: link:../wc
 
   packages/core:
     dependencies:
@@ -78,11 +81,18 @@ importers:
       '@michi-vz/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.17)
       react:
-        specifier: '>=18'
+        specifier: ^19.1.0
         version: 19.2.7
       react-dom:
-        specifier: '>=18'
+        specifier: ^19.1.0
         version: 19.2.7(react@19.2.7)
 
   packages/svelte:
@@ -99,8 +109,9 @@ importers:
       '@michi-vz/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
       vue:
-        specifier: '>=3'
+        specifier: ^3.5.13
         version: 3.5.39(typescript@5.9.3)
 
   packages/wc:
@@ -591,6 +602,14 @@ packages:
 
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
+
+  '@types/react-dom@19.2.3':
+    resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
+    peerDependencies:
+      '@types/react': ^19.2.0
+
+  '@types/react@19.2.17':
+    resolution: {integrity: sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -1670,6 +1689,14 @@ snapshots:
   '@types/estree@1.0.9': {}
 
   '@types/node@12.20.55': {}
+
+  '@types/react-dom@19.2.3(@types/react@19.2.17)':
+    dependencies:
+      '@types/react': 19.2.17
+
+  '@types/react@19.2.17':
+    dependencies:
+      csstype: 3.2.3
 
   '@types/trusted-types@2.0.7': {}
 

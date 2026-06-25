@@ -8,4 +8,5 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   splitting: true,
+  onSuccess: "node scripts/emit-css.mjs",
 });

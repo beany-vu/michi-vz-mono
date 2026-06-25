@@ -12,6 +12,6 @@
   },
   "scripts": { "build": "tsup", "typecheck": "tsc --noEmit" },
   "publishConfig": { "access": "public" },
-  "dependencies": { "@michi-vz/core": "workspace:*" },
+  "dependencies": { "@michi-vz/core": "workspace:*", "@michi-vz/wc": "workspace:*" },
   "peerDependencies": { "@angular/core": ">=16" }
 }

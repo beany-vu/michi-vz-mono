@@ -13,5 +13,11 @@
   "scripts": { "build": "tsup", "typecheck": "tsc --noEmit" },
   "publishConfig": { "access": "public" },
   "dependencies": { "@michi-vz/core": "workspace:*" },
-  "peerDependencies": { "react": ">=18", "react-dom": ">=18" }
+  "peerDependencies": { "react": ">=18", "react-dom": ">=18" },
+  "devDependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
 }
