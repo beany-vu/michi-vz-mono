@@ -1,0 +1,19 @@
+{
+  "name": "@michi-vz/wc",
+  "version": "0.0.0",
+  "description": "Native web components (Lit, light DOM) for michi-vz charts",
+  "type": "module",
+  "files": ["dist"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs" }
+  },
+  "scripts": { "build": "tsup", "typecheck": "tsc --noEmit" },
+  "publishConfig": { "access": "public" },
+  "dependencies": {
+    "@michi-vz/core": "workspace:*",
+    "lit": "^3.2.1"
+  }
+}
