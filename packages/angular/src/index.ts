@@ -10,6 +10,7 @@ import type {
   AreaChartElement,
   ScatterChartElement,
   VerticalStackBarChartElement,
+  ComparableHorizontalBarChartElement,
 } from "@michi-vz/wc";
 import type {
   GapChartProps,
@@ -17,6 +18,7 @@ import type {
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
+  ComparableBarChartProps,
 } from "@michi-vz/core";
 
 export type {
@@ -25,6 +27,7 @@ export type {
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
+  ComparableBarChartProps,
   ChartContext,
 } from "@michi-vz/core";
 export type {
@@ -33,6 +36,7 @@ export type {
   AreaChartElement,
   ScatterChartElement,
   VerticalStackBarChartElement,
+  ComparableHorizontalBarChartElement,
 } from "@michi-vz/wc";
 
 /** Apply engine props onto a <michi-vz-gap-chart> element (property binding). */
@@ -131,6 +135,27 @@ export function applyVerticalStackBarChartProps(
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.missingDataMarker !== undefined) el.missingDataMarker = props.missingDataMarker;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-comparable-horizontal-bar-chart> element. */
+export function applyComparableHorizontalBarChartProps(
+  el: ComparableHorizontalBarChartElement,
+  props: ComparableBarChartProps
+): void {
+  el.dataSet = props.dataSet;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.valueBasedOpacity !== undefined) el.valueBasedOpacity = props.valueBasedOpacity;
+  if (props.valueComparedOpacity !== undefined) el.valueComparedOpacity = props.valueComparedOpacity;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;

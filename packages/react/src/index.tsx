@@ -7,6 +7,7 @@ import {
   mountAreaChart,
   mountScatterChart,
   mountVerticalStackBarChart,
+  mountComparableHorizontalBarChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -14,6 +15,7 @@ import type {
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
+  ComparableBarChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -24,6 +26,7 @@ export type {
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
+  ComparableBarChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -44,6 +47,10 @@ export interface ScatterChartHandle {
 }
 
 export interface VerticalStackBarChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface ComparableHorizontalBarChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -165,3 +172,29 @@ export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, Ver
     return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
   }
 );
+
+export const ComparableHorizontalBarChart = forwardRef<
+  ComparableHorizontalBarChartHandle,
+  ComparableBarChartProps
+>(function ComparableHorizontalBarChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<ComparableBarChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountComparableHorizontalBarChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+});

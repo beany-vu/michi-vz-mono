@@ -446,6 +446,67 @@ export interface VerticalStackBarChartContext extends BaseChartContext {
   };
 }
 
+// ---- ComparableHorizontalBarChart ----
+
+export interface ComparableBarDataPoint {
+  label: string;
+  color?: string;
+  valueBased: number;
+  valueCompared: number;
+}
+
+export interface ComparableBarChartProps {
+  dataSet: ComparableBarDataPoint[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: [number, number];
+  ticks?: number;
+  tickHtmlWidth?: number;
+  /** Fill opacity of the two sub-bars (historical look: 0.45 / 0.9). */
+  valueBasedOpacity?: number;
+  valueComparedOpacity?: number;
+  filter?: { limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc" };
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (d: ComparableBarDataPoint) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface ComparableBarSeriesContext {
+  label: string;
+  color: string;
+  valueBased: number;
+  valueCompared: number;
+  /** valueCompared - valueBased. */
+  difference: number;
+}
+
+export interface ComparableBarChartContext extends BaseChartContext {
+  chartType: "comparable-horizontal-bar-chart";
+  xAxis: { domain: [number, number] };
+  yAxis: { labels: string[] };
+  series: ComparableBarSeriesContext[];
+  stats: {
+    count: number;
+    totalBased: number;
+    totalCompared: number;
+    largestMover: { label: string; difference: number } | null;
+  };
+}
+
 /** Discriminated union of every chart's context, keyed on `chartType`. Grows as
  * charts are ported (Phase 4+: + RadarChartContext | RangeChartContext | ...). */
 export type ChartContext =
@@ -453,7 +514,8 @@ export type ChartContext =
   | LineChartContext
   | AreaChartContext
   | ScatterChartContext
-  | VerticalStackBarChartContext;
+  | VerticalStackBarChartContext
+  | ComparableBarChartContext;
 
 export interface DataWarning {
   type:

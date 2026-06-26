@@ -6,6 +6,7 @@ import {
   mountAreaChart,
   mountScatterChart,
   mountVerticalStackBarChart,
+  mountComparableHorizontalBarChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -13,6 +14,7 @@ import type {
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
+  ComparableBarChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -22,6 +24,7 @@ export type {
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
+  ComparableBarChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -98,6 +101,24 @@ export function verticalStackBarChart(
   const chart = mountVerticalStackBarChart(node, props);
   return {
     update: (next: VerticalStackBarChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface ComparableHorizontalBarChartAction {
+  update(props: ComparableBarChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<ComparableBarChartProps>["getContext"];
+}
+
+export function comparableHorizontalBarChart(
+  node: HTMLElement,
+  props: ComparableBarChartProps
+): ComparableHorizontalBarChartAction {
+  const chart = mountComparableHorizontalBarChart(node, props);
+  return {
+    update: (next: ComparableBarChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };
