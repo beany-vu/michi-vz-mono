@@ -132,7 +132,9 @@
 <div id="results">running…</div>
 
 <script type="module">
-import "../packages/wc/dist/michi-vz-wc.bundle.js";
+const __RESULTS = document.getElementById("results");
+async function runPlayground() {
+await import("../packages/wc/dist/michi-vz-wc.bundle.js");
 
 const data = [
   { label: "Alpha One", value1: 12, value2: 34 },
@@ -645,6 +647,20 @@ const passed = out.filter((l) => l.startsWith("✅")).length;
 document.getElementById("results").innerHTML =
   out.map((l) => `<span class="${l.startsWith("✅") ? "pass" : "fail"}">${l}</span>`).join("\n") +
   `\n\n${passed}/${out.length} checks passed.`;
+}
+
+if (location.protocol === "file:") {
+  __RESULTS.textContent =
+    "⚠ Open this page over http, not file:// — browsers block ES-module imports on file://.\n" +
+    "Serve the repo root, e.g.  python3 -m http.server 8080  (or an nginx Docker container),\n" +
+    "then open  http://localhost:8080/playground/";
+} else {
+  runPlayground().catch((e) => {
+    __RESULTS.textContent =
+      "Playground failed to load: " + (e && e.message) +
+      "\nIf the wc bundle is missing, build it:  pnpm --filter @michi-vz/wc build";
+  });
+}
 </script>
 </body>
 </html>
