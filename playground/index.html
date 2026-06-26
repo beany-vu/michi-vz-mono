@@ -23,6 +23,8 @@
   #stackContract .bar { fill: rgb(230, 150, 20); }
   /* ComparableBar consumer colour contract: recolour bar fills purely via CSS. */
   #cmpContract .bar { fill: rgb(120, 40, 200); }
+  /* DualBar consumer colour contract: recolour bar fills purely via CSS. */
+  #dualContract .bar { fill: rgb(0, 160, 160); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -78,6 +80,14 @@
 </div>
 <h2>Comparable consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="cmpContract"><michi-vz-comparable-horizontal-bar-chart id="cmpContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — DualHorizontalBar (tornado)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-dual-horizontal-bar-chart id="dualSvg"></michi-vz-dual-horizontal-bar-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-dual-horizontal-bar-chart id="dualCanvas"></michi-vz-dual-horizontal-bar-chart></div>
+</div>
+<h2>Dual consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="dualContract"><michi-vz-dual-horizontal-bar-chart id="dualContractChart"></michi-vz-dual-horizontal-bar-chart></div>
 
 <div id="results">running…</div>
 
@@ -189,6 +199,20 @@ const cmpContractEl = document.getElementById("cmpContractChart");
 Object.assign(cmpSvgEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "svg", ...cmpCommon });
 Object.assign(cmpCanvasEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "canvas", ...cmpCommon });
 Object.assign(cmpContractEl, { dataSet: cmpData, chartTitle: "Comparable canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...cmpCommon });
+
+// ---- DualHorizontalBar (tornado) setup ----
+const dualData = [
+  { label: "Alpha One", value1: 20, value2: 14 },
+  { label: "Beta", value1: 35, value2: 28 },
+  { label: "Gamma", value1: 10, value2: 22 },
+];
+const dualCommon = { width: 460, height: 280 };
+const dualSvgEl = document.getElementById("dualSvg");
+const dualCanvasEl = document.getElementById("dualCanvas");
+const dualContractEl = document.getElementById("dualContractChart");
+Object.assign(dualSvgEl, { dataSet: dualData, chartTitle: "Tornado", renderer: "svg", ...dualCommon });
+Object.assign(dualCanvasEl, { dataSet: dualData, chartTitle: "Tornado", renderer: "canvas", ...dualCommon });
+Object.assign(dualContractEl, { dataSet: dualData, chartTitle: "Dual canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...dualCommon });
 
 await nextFrame();
 
@@ -372,6 +396,35 @@ try {
     }
   }
   log(cmpContractOk, "CMP CANVAS colour contract: consumer CSS rgb(120,40,200) reached canvas pixels");
+
+  // ---- DualHorizontalBar checks ----
+  const dualBars = dualSvgEl.querySelectorAll("rect.bar");
+  log(dualBars.length === 6, `DUAL: SVG renders 6 bars (3 labels x value1+value2) (got ${dualBars.length})`);
+  log(dualSvgEl.querySelectorAll("rect.bar.value1").length === 3 && dualSvgEl.querySelectorAll("rect.bar.value2").length === 3, "DUAL: 3 value1 (right) + 3 value2 (left) bars");
+  const dv1 = dualSvgEl.querySelector("rect.bar.value1");
+  const dv2 = dualSvgEl.querySelector("rect.bar.value2");
+  log(dv1 && dv2 && Number(dv1.getAttribute("x")) >= 229 && Number(dv2.getAttribute("x")) <= 231, "DUAL: value1 right of centre, value2 left of centre");
+
+  const dctx = dualSvgEl.getContext();
+  log(dctx && dctx.chartType === "dual-horizontal-bar-chart" && dctx.stats.count === 3, "DUAL: getContext() returns dual-horizontal-bar-chart with 3 items");
+
+  const da = JSON.stringify({ ...dualSvgEl.getContext(), renderer: 0 });
+  const db = JSON.stringify({ ...dualCanvasEl.getContext(), renderer: 0 });
+  log(da === db, "DUAL: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(dualSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "DUAL: a11y table mirror has 3 rows");
+
+  // THE dual colour contract: canvas pixels must reflect consumer CSS fill rgb(0,160,160)
+  const dcnv = dualContractEl.querySelector("canvas");
+  let dualContractOk = false;
+  if (dcnv) {
+    const c = dcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, dcnv.width, dcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 60 && px[i + 1] > 135 && px[i + 1] < 185 && px[i + 2] > 135 && px[i + 2] < 185 && px[i + 3] > 0) { dualContractOk = true; break; }
+    }
+  }
+  log(dualContractOk, "DUAL CANVAS colour contract: consumer CSS rgb(0,160,160) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }

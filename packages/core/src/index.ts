@@ -8,6 +8,7 @@ export { mountAreaChart } from "./engine/areaChart";
 export { mountScatterChart } from "./engine/scatterChart";
 export { mountVerticalStackBarChart } from "./engine/verticalStackBarChart";
 export { mountComparableHorizontalBarChart } from "./engine/comparableHorizontalBarChart";
+export { mountDualHorizontalBarChart } from "./engine/dualHorizontalBarChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -59,6 +60,10 @@ export { checkStackData } from "./validate/stackWarnings";
 export { processComparableBarData } from "./comparableBar/data";
 export { buildComparableBarColors } from "./comparableBar/colors";
 export { buildComparableBarContext } from "./context/buildComparableBarContext";
+// DualHorizontalBar pure layer
+export { processDualBarData } from "./dualBar/data";
+export { buildDualBarColors } from "./dualBar/colors";
+export { buildDualBarContext } from "./context/buildDualBarContext";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -128,4 +133,8 @@ export type {
   ComparableBarChartProps,
   ComparableBarSeriesContext,
   ComparableBarChartContext,
+  DualBarDataPoint,
+  DualBarChartProps,
+  DualBarSeriesContext,
+  DualBarChartContext,
 } from "./types";

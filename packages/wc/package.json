@@ -14,7 +14,8 @@
     "./area-chart": { "types": "./dist/area-chart.d.ts", "import": "./dist/area-chart.js", "require": "./dist/area-chart.cjs" },
     "./scatter-chart": { "types": "./dist/scatter-chart.d.ts", "import": "./dist/scatter-chart.js", "require": "./dist/scatter-chart.cjs" },
     "./vertical-stack-bar-chart": { "types": "./dist/vertical-stack-bar-chart.d.ts", "import": "./dist/vertical-stack-bar-chart.js", "require": "./dist/vertical-stack-bar-chart.cjs" },
-    "./comparable-horizontal-bar-chart": { "types": "./dist/comparable-horizontal-bar-chart.d.ts", "import": "./dist/comparable-horizontal-bar-chart.js", "require": "./dist/comparable-horizontal-bar-chart.cjs" }
+    "./comparable-horizontal-bar-chart": { "types": "./dist/comparable-horizontal-bar-chart.d.ts", "import": "./dist/comparable-horizontal-bar-chart.js", "require": "./dist/comparable-horizontal-bar-chart.cjs" },
+    "./dual-horizontal-bar-chart": { "types": "./dist/dual-horizontal-bar-chart.d.ts", "import": "./dist/dual-horizontal-bar-chart.js", "require": "./dist/dual-horizontal-bar-chart.cjs" }
   },
   "scripts": { "build": "tsup && tsup --config tsup.bundle.config.ts", "typecheck": "tsc --noEmit" },
   "publishConfig": { "access": "public" },

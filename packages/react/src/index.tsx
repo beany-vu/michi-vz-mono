@@ -8,6 +8,7 @@ import {
   mountScatterChart,
   mountVerticalStackBarChart,
   mountComparableHorizontalBarChart,
+  mountDualHorizontalBarChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -16,6 +17,7 @@ import type {
   ScatterChartProps,
   VerticalStackBarChartProps,
   ComparableBarChartProps,
+  DualBarChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -27,6 +29,7 @@ export type {
   ScatterChartProps,
   VerticalStackBarChartProps,
   ComparableBarChartProps,
+  DualBarChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -51,6 +54,10 @@ export interface VerticalStackBarChartHandle {
 }
 
 export interface ComparableHorizontalBarChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface DualHorizontalBarChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -198,3 +205,28 @@ export const ComparableHorizontalBarChart = forwardRef<
 
   return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
 });
+
+export const DualHorizontalBarChart = forwardRef<DualHorizontalBarChartHandle, DualBarChartProps>(
+  function DualHorizontalBarChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<DualBarChartProps> | null>(null);
+
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountDualHorizontalBarChart(hostRef.current, props);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+      chartRef.current?.update(props);
+    });
+
+    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+    return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+  }
+);

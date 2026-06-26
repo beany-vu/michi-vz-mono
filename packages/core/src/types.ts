@@ -507,6 +507,60 @@ export interface ComparableBarChartContext extends BaseChartContext {
   };
 }
 
+// ---- DualHorizontalBarChart (diverging / tornado) ----
+
+export interface DualBarDataPoint {
+  label: string;
+  color?: string;
+  value1: number;
+  value2: number;
+}
+
+export interface DualBarChartProps {
+  dataSet: DualBarDataPoint[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: [number, number];
+  ticks?: number;
+  tickHtmlWidth?: number;
+  /** value1 (right) / value2 (left) fill opacities. */
+  value1Opacity?: number;
+  value2Opacity?: number;
+  filter?: { limit: number; criteria: "value1" | "value2"; sortingDir: "asc" | "desc" };
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (d: DualBarDataPoint) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface DualBarSeriesContext {
+  label: string;
+  color: string;
+  value1: number;
+  value2: number;
+}
+
+export interface DualBarChartContext extends BaseChartContext {
+  chartType: "dual-horizontal-bar-chart";
+  xAxis: { domain: [number, number] };
+  yAxis: { labels: string[] };
+  series: DualBarSeriesContext[];
+  stats: { count: number; total1: number; total2: number };
+}
+
 /** Discriminated union of every chart's context, keyed on `chartType`. Grows as
  * charts are ported (Phase 4+: + RadarChartContext | RangeChartContext | ...). */
 export type ChartContext =
@@ -515,7 +569,8 @@ export type ChartContext =
   | AreaChartContext
   | ScatterChartContext
   | VerticalStackBarChartContext
-  | ComparableBarChartContext;
+  | ComparableBarChartContext
+  | DualBarChartContext;
 
 export interface DataWarning {
   type:
