@@ -8,6 +8,7 @@ export default defineConfig({
     "src/area-chart.ts",
     "src/scatter-chart.ts",
     "src/vertical-stack-bar-chart.ts",
+    "src/comparable-horizontal-bar-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

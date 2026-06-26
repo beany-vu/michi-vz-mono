@@ -21,6 +21,8 @@
   #scatterContract .scatter-point { fill: rgb(40, 200, 120); }
   /* VerticalStackBar consumer colour contract: recolour bar fills purely via CSS. */
   #stackContract .bar { fill: rgb(230, 150, 20); }
+  /* ComparableBar consumer colour contract: recolour bar fills purely via CSS. */
+  #cmpContract .bar { fill: rgb(120, 40, 200); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -68,6 +70,14 @@
 </div>
 <h2>Stack consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="stackContract"><michi-vz-vertical-stack-bar-chart id="stackContractChart"></michi-vz-vertical-stack-bar-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — ComparableHorizontalBar</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-comparable-horizontal-bar-chart id="cmpSvg"></michi-vz-comparable-horizontal-bar-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-comparable-horizontal-bar-chart id="cmpCanvas"></michi-vz-comparable-horizontal-bar-chart></div>
+</div>
+<h2>Comparable consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="cmpContract"><michi-vz-comparable-horizontal-bar-chart id="cmpContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
 
 <div id="results">running…</div>
 
@@ -165,6 +175,20 @@ const stackContractEl = document.getElementById("stackContractChart");
 Object.assign(stackSvgEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stacked", renderer: "svg", ...stackCommon });
 Object.assign(stackCanvasEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stacked", renderer: "canvas", ...stackCommon });
 Object.assign(stackContractEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stack canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...stackCommon });
+
+// ---- ComparableHorizontalBar setup ----
+const cmpData = [
+  { label: "Alpha One", valueBased: 10, valueCompared: 18 },
+  { label: "Beta", valueBased: 30, valueCompared: 22 },
+  { label: "Gamma", valueBased: 16, valueCompared: 24 },
+];
+const cmpCommon = { width: 460, height: 280 };
+const cmpSvgEl = document.getElementById("cmpSvg");
+const cmpCanvasEl = document.getElementById("cmpCanvas");
+const cmpContractEl = document.getElementById("cmpContractChart");
+Object.assign(cmpSvgEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "svg", ...cmpCommon });
+Object.assign(cmpCanvasEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "canvas", ...cmpCommon });
+Object.assign(cmpContractEl, { dataSet: cmpData, chartTitle: "Comparable canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...cmpCommon });
 
 await nextFrame();
 
@@ -320,6 +344,34 @@ try {
     }
   }
   log(stackContractOk, "STACK CANVAS colour contract: consumer CSS rgb(230,150,20) reached canvas pixels");
+
+  // ---- ComparableHorizontalBar checks ----
+  const cmpBars = cmpSvgEl.querySelectorAll("rect.bar");
+  log(cmpBars.length === 6, `CMP: SVG renders 6 bars (3 labels x based+compared) (got ${cmpBars.length})`);
+  log(cmpSvgEl.querySelectorAll("rect.bar.value-based").length === 3 && cmpSvgEl.querySelectorAll("rect.bar.value-compared").length === 3, "CMP: 3 based + 3 compared sub-bars");
+  log(!!cmpSvgEl.querySelector('rect.bar[data-label-safe="Alpha_One"]'), 'CMP: bar carries data-label-safe="Alpha_One"');
+
+  const cctx = cmpSvgEl.getContext();
+  log(cctx && cctx.chartType === "comparable-horizontal-bar-chart" && cctx.stats.count === 3, "CMP: getContext() returns comparable-horizontal-bar-chart with 3 items");
+  log(typeof cctx.summary === "string" && cctx.summary.includes("Comparable horizontal bar"), "CMP: getContext() includes an NL summary");
+
+  const ca2 = JSON.stringify({ ...cmpSvgEl.getContext(), renderer: 0 });
+  const cb2 = JSON.stringify({ ...cmpCanvasEl.getContext(), renderer: 0 });
+  log(ca2 === cb2, "CMP: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(cmpSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "CMP: a11y table mirror has 3 rows");
+
+  // THE comparable colour contract: canvas pixels must reflect consumer CSS fill rgb(120,40,200)
+  const ccnv = cmpContractEl.querySelector("canvas");
+  let cmpContractOk = false;
+  if (ccnv) {
+    const c = ccnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, ccnv.width, ccnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 95 && px[i] < 145 && px[i + 1] < 80 && px[i + 2] > 175 && px[i + 3] > 0) { cmpContractOk = true; break; }
+    }
+  }
+  log(cmpContractOk, "CMP CANVAS colour contract: consumer CSS rgb(120,40,200) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
