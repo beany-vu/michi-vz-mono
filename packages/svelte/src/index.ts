@@ -1,9 +1,29 @@
-// Svelte wrapper as an action (plain TS — no .svelte compiler needed to build
-// the library). Usage:  <div use:gapChart={props}></div>
-import { mountGapChart } from "@michi-vz/core";
-import type { GapChartProps, ChartInstance } from "@michi-vz/core";
+// Svelte wrappers as actions (plain TS — no .svelte compiler needed to build the
+// library). Usage:  <div use:gapChart={props}></div> / <div use:lineChart={props}></div>
+import {
+  mountGapChart,
+  mountLineChart,
+  mountAreaChart,
+  mountScatterChart,
+  mountVerticalStackBarChart,
+} from "@michi-vz/core";
+import type {
+  GapChartProps,
+  LineChartProps,
+  AreaChartProps,
+  ScatterChartProps,
+  VerticalStackBarChartProps,
+  ChartInstance,
+} from "@michi-vz/core";
 
-export type { GapChartProps, ChartContext } from "@michi-vz/core";
+export type {
+  GapChartProps,
+  LineChartProps,
+  AreaChartProps,
+  ScatterChartProps,
+  VerticalStackBarChartProps,
+  ChartContext,
+} from "@michi-vz/core";
 
 export interface GapChartAction {
   update(props: GapChartProps): void;
@@ -15,6 +35,69 @@ export function gapChart(node: HTMLElement, props: GapChartProps): GapChartActio
   const chart = mountGapChart(node, props);
   return {
     update: (next: GapChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface LineChartAction {
+  update(props: LineChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<LineChartProps>["getContext"];
+}
+
+export function lineChart(node: HTMLElement, props: LineChartProps): LineChartAction {
+  const chart = mountLineChart(node, props);
+  return {
+    update: (next: LineChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface AreaChartAction {
+  update(props: AreaChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<AreaChartProps>["getContext"];
+}
+
+export function areaChart(node: HTMLElement, props: AreaChartProps): AreaChartAction {
+  const chart = mountAreaChart(node, props);
+  return {
+    update: (next: AreaChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface ScatterChartAction {
+  update(props: ScatterChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<ScatterChartProps>["getContext"];
+}
+
+export function scatterChart(node: HTMLElement, props: ScatterChartProps): ScatterChartAction {
+  const chart = mountScatterChart(node, props);
+  return {
+    update: (next: ScatterChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface VerticalStackBarChartAction {
+  update(props: VerticalStackBarChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<VerticalStackBarChartProps>["getContext"];
+}
+
+export function verticalStackBarChart(
+  node: HTMLElement,
+  props: VerticalStackBarChartProps
+): VerticalStackBarChartAction {
+  const chart = mountVerticalStackBarChart(node, props);
+  return {
+    update: (next: VerticalStackBarChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };

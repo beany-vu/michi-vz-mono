@@ -9,7 +9,11 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs" },
-    "./gap-chart": { "types": "./dist/gap-chart.d.ts", "import": "./dist/gap-chart.js", "require": "./dist/gap-chart.cjs" }
+    "./gap-chart": { "types": "./dist/gap-chart.d.ts", "import": "./dist/gap-chart.js", "require": "./dist/gap-chart.cjs" },
+    "./line-chart": { "types": "./dist/line-chart.d.ts", "import": "./dist/line-chart.js", "require": "./dist/line-chart.cjs" },
+    "./area-chart": { "types": "./dist/area-chart.d.ts", "import": "./dist/area-chart.js", "require": "./dist/area-chart.cjs" },
+    "./scatter-chart": { "types": "./dist/scatter-chart.d.ts", "import": "./dist/scatter-chart.js", "require": "./dist/scatter-chart.cjs" },
+    "./vertical-stack-bar-chart": { "types": "./dist/vertical-stack-bar-chart.d.ts", "import": "./dist/vertical-stack-bar-chart.js", "require": "./dist/vertical-stack-bar-chart.cjs" }
   },
   "scripts": { "build": "tsup && tsup --config tsup.bundle.config.ts", "typecheck": "tsc --noEmit" },
   "publishConfig": { "access": "public" },

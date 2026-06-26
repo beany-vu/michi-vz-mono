@@ -85,10 +85,31 @@ export interface GapSeriesContext {
   gap: number;
 }
 
-export interface ChartContext {
-  chartType: "gap-chart";
+/** Chart-agnostic semantic table for the a11y mirror + DOM-scraping/LLM tools.
+ * Every chart's buildContext fills this so the mirror renders without knowing
+ * the chart's series shape. */
+export interface ChartA11yTable {
+  headers: string[];
+  rows: Array<Array<string | number>>;
+}
+
+/** Fields every chart context shares. The a11y mirror and any generic tooling
+ * depend ONLY on this base; per-chart specifics live on the union members below.
+ * `chartType` is `string` here but a literal on each member, so the union
+ * narrows on it (see TS discriminated-union rules). */
+export interface BaseChartContext {
+  chartType: string;
   title?: string;
   renderer: "svg" | "canvas";
+  colorsMapping: Record<string, string>;
+  /** Deterministic, rule-based natural-language summary. No model required;
+   * doubles as accessibility alt text. */
+  summary: string;
+  a11yTable: ChartA11yTable;
+}
+
+export interface GapChartContext extends BaseChartContext {
+  chartType: "gap-chart";
   xAxis: { type: XaxisDataType; domain: [number, number] };
   yAxis: { labels: string[] };
   series: GapSeriesContext[];
@@ -100,18 +121,348 @@ export interface ChartContext {
     totalValue1: number;
     totalValue2: number;
   };
-  colorsMapping: Record<string, string>;
-  /** Deterministic, rule-based natural-language summary. No model required;
-   * doubles as accessibility alt text. */
-  summary: string;
 }
+
+// ---- LineChart ----
+
+export type CurveType = "curveBumpX" | "curveLinear" | "curveMonotoneX";
+
+export interface DataPoint {
+  /** Numeric value, year, or date string — parsed per xAxisDataType. */
+  date: number | string;
+  value: number;
+  label?: string;
+  /** The segment INTO this point is solid (true) or dashed/uncertain (false). */
+  certainty: boolean;
+  code?: string;
+}
+
+export interface LineDataItem {
+  label: string;
+  color?: string;
+  shape?: Shape;
+  curve?: CurveType;
+  series: DataPoint[];
+}
+
+/** Guide line drawn for single-point series (a lone point has no line to read). */
+export interface SinglePointLineConfig {
+  stroke?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+}
+
+export interface LineChartProps {
+  dataSet: LineDataItem[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  yAxisDomain?: [number, number];
+  xAxisDataType?: XaxisDataType;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  /** Default interpolation for every series (per-series `curve` wins). */
+  curve?: CurveType;
+  /** Auto-derive `certainty` from missing periods (dashes the gap segment). */
+  detectGaps?: boolean;
+  /** Expected cadence in axis units; REQUIRED for xAxisDataType "number". */
+  expectedStep?: number;
+  showDataPoints?: boolean;
+  enableMouseLine?: boolean;
+  /** true / config draws a horizontal guide line for single-point series. */
+  singlePointLine?: boolean | SinglePointLineConfig;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  filter?: Filter;
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface LineSeriesContext {
+  label: string;
+  code?: string;
+  color: string;
+  pointCount: number;
+  first: { x: number | string; y: number } | null;
+  last: { x: number | string; y: number } | null;
+  min: number;
+  max: number;
+  mean: number;
+  /** last.y - first.y. */
+  change: number;
+  /** percent change vs first value, or null when first is 0/absent. */
+  changePct: number | null;
+  trend: "up" | "down" | "flat";
+  /** count of uncertain (dashed / gap) segments. */
+  gaps: number;
+}
+
+export interface LineChartContext extends BaseChartContext {
+  chartType: "line-chart";
+  xAxis: { type: XaxisDataType; domain: [number, number] };
+  yAxis: { domain: [number, number] };
+  series: LineSeriesContext[];
+  stats: {
+    seriesCount: number;
+    pointCount: number;
+    largestMover: { label: string; change: number } | null;
+    valueRange: [number, number];
+  };
+}
+
+// ---- AreaChart (stacked) ----
+
+/** One row: an x (`date`) plus one numeric value per stacked key. */
+export interface AreaDataRow {
+  date: number | string;
+  [key: string]: number | string | undefined;
+}
+
+export interface AreaChartProps {
+  series: AreaDataRow[];
+  /** Category keys to stack (bottom-to-top); disabledItems removes from the stack. */
+  keys: string[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  xAxisDataType?: XaxisDataType;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  /** Fix the y-axis to [0,100] regardless of data (display only; data not normalized). */
+  forcePercentageScale?: boolean;
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  curve?: CurveType;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (row: AreaDataRow, key: string, series: AreaDataRow[]) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface AreaSeriesContext {
+  key: string;
+  color: string;
+  /** sum of this key across all rows. */
+  total: number;
+  min: number;
+  max: number;
+  mean: number;
+}
+
+export interface AreaChartContext extends BaseChartContext {
+  chartType: "area-chart";
+  xAxis: { type: XaxisDataType; domain: [number, number] };
+  yAxis: { domain: [number, number] };
+  keys: string[];
+  series: AreaSeriesContext[];
+  stats: {
+    keyCount: number;
+    rowCount: number;
+    grandTotal: number;
+    largestKey: { key: string; total: number } | null;
+  };
+}
+
+// ---- ScatterPlotChart ----
+
+export interface ScatterDataPoint {
+  x: number;
+  y: number;
+  label: string;
+  color?: string;
+  /** Size value (drives the radius via the size scale). Omit for a fixed radius. */
+  d?: number;
+  shape?: Shape;
+  code?: string;
+  date?: string;
+}
+
+export interface ScatterChartProps {
+  dataSet: ScatterDataPoint[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  /** number / date for x (band x deferred). y is always linear. */
+  xAxisDataType?: XaxisDataType;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: [number, number];
+  yAxisDomain?: [number, number];
+  /** [minRadius, maxRadius] px for the size scale (default [4, 20]). */
+  sizeRange?: [number, number];
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  filter?: Filter;
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (d: ScatterDataPoint) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface ScatterChartContext extends BaseChartContext {
+  chartType: "scatter-plot-chart";
+  xAxis: { type: XaxisDataType; domain: [number, number] };
+  yAxis: { domain: [number, number] };
+  pointCount: number;
+  stats: {
+    xMean: number;
+    yMean: number;
+    /** Pearson correlation of x,y across points, or null when undefined. */
+    correlation: number | null;
+  };
+}
+
+// ---- VerticalStackBarChart ----
+
+export interface VerticalStackBarDataPoint {
+  date: string | null;
+  /** Numeric segment values keyed by name (string|number); "code" is reserved
+   * and excluded from stack keys. */
+  [key: string]: string | number | null | undefined;
+}
+
+export interface VerticalStackBarDataSet {
+  seriesKey: string;
+  seriesKeyAbbreviation: string;
+  series: VerticalStackBarDataPoint[];
+  label?: string;
+}
+
+/** One stacked segment rect (geometry + provenance). */
+export interface StackRectData {
+  key: string;
+  height: number;
+  width: number;
+  y: number;
+  x: number;
+  data: VerticalStackBarDataPoint;
+  fill: string;
+  seriesKey: string;
+  seriesKeyAbbreviation: string;
+  value: number | null;
+  date: string | null;
+  code?: string;
+  /** true only for missing-data marker stubs (the hasOwnProperty guard path). */
+  isMissing?: boolean;
+}
+
+export interface StackLegendItem {
+  label: string;
+  color: string;
+  order: number;
+  disabled?: boolean;
+  dataLabelSafe?: string;
+}
+
+export interface VerticalStackBarChartProps {
+  dataSet: VerticalStackBarDataSet[];
+  /** Explicit stack order; present keys first (in this order), natural keys appended. */
+  keys?: string[];
+  keysOrder?: "topToBottom" | "bottomToTop";
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: string[];
+  yAxisDomain?: [number, number];
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  minBarWidth?: number;
+  minBarHeight?: number;
+  minBarHeightZero?: number;
+  /** Opt-in thin stub on the zero line for explicitly-missing (null/NaN) owned keys. */
+  missingDataMarker?: { height: number };
+  filter?: { limit: number; sortingDir: "asc" | "desc"; date?: string };
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (rect: StackRectData) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onLegendDataChange?: (legendData: StackLegendItem[]) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface StackSeriesContext {
+  key: string;
+  color: string;
+  total: number;
+  byDate: Array<{ date: string; value: number | null; isMissing: boolean }>;
+}
+
+export interface VerticalStackBarChartContext extends BaseChartContext {
+  chartType: "vertical-stack-bar-chart";
+  xAxis: { type: "band"; domain: string[] };
+  yAxis: { domain: [number, number] };
+  keys: string[];
+  visibleItems: string[];
+  series: StackSeriesContext[];
+  legend: StackLegendItem[];
+  stats: {
+    seriesCount: number;
+    dateCount: number;
+    grandTotal: number;
+    perDateTotals: Array<{ date: string; total: number }>;
+    largestSegment: { key: string; date: string; value: number } | null;
+  };
+}
+
+/** Discriminated union of every chart's context, keyed on `chartType`. Grows as
+ * charts are ported (Phase 4+: + RadarChartContext | RangeChartContext | ...). */
+export type ChartContext =
+  | GapChartContext
+  | LineChartContext
+  | AreaChartContext
+  | ScatterChartContext
+  | VerticalStackBarChartContext;
 
 export interface DataWarning {
   type:
     | "non-finite-value"
     | "duplicate-label"
     | "difference-mismatch"
-    | "empty-dataset";
+    | "empty-dataset"
+    | "non-monotonic-date"
+    | "duplicate-date";
   message: string;
   label?: string;
 }

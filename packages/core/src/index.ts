@@ -3,6 +3,10 @@
 
 // ---- Engine(s) ----
 export { mountGapChart } from "./engine/gapChart";
+export { mountLineChart } from "./engine/lineChart";
+export { mountAreaChart } from "./engine/areaChart";
+export { mountScatterChart } from "./engine/scatterChart";
+export { mountVerticalStackBarChart } from "./engine/verticalStackBarChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -23,6 +27,55 @@ export { processGapChartData } from "./gapChart/data";
 export { buildGapColors } from "./gapChart/colors";
 export { buildGapContext } from "./context/buildContext";
 export { checkGapData } from "./validate/dataWarnings";
+// LineChart pure layer (reused by wrappers, insights, tests)
+export { processLineChartData } from "./lineChart/data";
+export { buildLineColors } from "./lineChart/colors";
+export { buildLineContext } from "./context/buildLineContext";
+export { checkLineData } from "./validate/lineWarnings";
+export { applyGapDetection, parseAxisUnit } from "./lineChart/detectGaps";
+export { lttb } from "./lineChart/lttb";
+export { getRuns, makeLineGenerator } from "./lineChart/geometry";
+export { DEFAULT_CURVE, resolveCurveFactory } from "./lineChart/curve";
+// AreaChart pure layer
+export { processAreaChartData } from "./areaChart/data";
+export { buildAreaColors } from "./areaChart/colors";
+export { makeAreaGenerator } from "./areaChart/geometry";
+export { buildAreaContext } from "./context/buildAreaContext";
+export { checkAreaData } from "./validate/areaWarnings";
+// ScatterPlot pure layer
+export { processScatterData } from "./scatterChart/data";
+export { buildScatterColors } from "./scatterChart/colors";
+export { buildScatterContext } from "./context/buildScatterContext";
+export { checkScatterData } from "./validate/scatterWarnings";
+// VerticalStackBar pure layer (incl. the hasOwnProperty marker guard in prepareStackedData)
+export { extractDataKeys, resolveEffectiveKeys, collectDates, computeYDomain } from "./verticalStackBarChart/data";
+export { prepareStackedData } from "./verticalStackBarChart/stack";
+export { buildStackColors } from "./verticalStackBarChart/colors";
+export { buildStackRenderModel } from "./verticalStackBarChart/renderModel";
+export { buildStackContext } from "./context/buildStackContext";
+export { checkStackData } from "./validate/stackWarnings";
+
+// ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
+export {
+  renderTitle,
+  renderXAxisLinear,
+  renderXAxisBand,
+  renderYAxisBand,
+  renderYAxisLinear,
+  renderLoadingIndicator,
+  toggleLoadingIndicator,
+  renderOverlay,
+} from "./render/svg";
+export type {
+  TitleOptions,
+  XAxisLinearOptions,
+  XAxisBandOptions,
+  LinearOrTimeScale,
+  YAxisBandOptions,
+  YAxisLinearOptions,
+  LoadingIndicatorOptions,
+  OverlayOptions,
+} from "./render/svg";
 
 // ---- Canvas primitives (reused by other charts / insights) ----
 export { setupCanvas } from "./canvas/setupCanvas";
@@ -39,7 +92,31 @@ export type {
   GapDataItem,
   GapChartProps,
   GapSeriesContext,
+  ChartA11yTable,
+  BaseChartContext,
+  GapChartContext,
   ChartContext,
   DataWarning,
   ChartInstance,
+  CurveType,
+  DataPoint,
+  LineDataItem,
+  SinglePointLineConfig,
+  LineChartProps,
+  LineSeriesContext,
+  LineChartContext,
+  AreaDataRow,
+  AreaChartProps,
+  AreaSeriesContext,
+  AreaChartContext,
+  ScatterDataPoint,
+  ScatterChartProps,
+  ScatterChartContext,
+  VerticalStackBarDataPoint,
+  VerticalStackBarDataSet,
+  StackRectData,
+  StackLegendItem,
+  StackSeriesContext,
+  VerticalStackBarChartProps,
+  VerticalStackBarChartContext,
 } from "./types";

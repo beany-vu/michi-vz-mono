@@ -3,7 +3,7 @@
 // as SVG or canvas — the bridge for LLM tool-use / RAG / agents and the source
 // for the a11y mirror. `summary` is a deterministic, model-free NL string that
 // doubles as alt text.
-import type { ChartContext, GapDataItem, GapSeriesContext, XaxisDataType } from "../types";
+import type { GapChartContext, GapDataItem, GapSeriesContext, XaxisDataType } from "../types";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -16,7 +16,7 @@ export interface BuildContextInput {
   colorsMapping: Record<string, string>;
 }
 
-export function buildGapContext(input: BuildContextInput): ChartContext {
+export function buildGapContext(input: BuildContextInput): GapChartContext {
   const series: GapSeriesContext[] = input.processedDataSet.map((d) => {
     const difference = d.difference ?? d.value1 - d.value2;
     return {
@@ -30,8 +30,8 @@ export function buildGapContext(input: BuildContextInput): ChartContext {
   });
 
   const gaps = series.map((s) => s.gap);
-  let maxGap: ChartContext["stats"]["maxGap"] = null;
-  let minGap: ChartContext["stats"]["minGap"] = null;
+  let maxGap: GapChartContext["stats"]["maxGap"] = null;
+  let minGap: GapChartContext["stats"]["minGap"] = null;
   if (series.length > 0) {
     let hi = series[0];
     let lo = series[0];
@@ -64,5 +64,9 @@ export function buildGapContext(input: BuildContextInput): ChartContext {
     stats: { count: series.length, maxGap, minGap, meanGap, totalValue1, totalValue2 },
     colorsMapping: input.colorsMapping,
     summary,
+    a11yTable: {
+      headers: ["Label", "Value 1", "Value 2", "Difference", "Gap"],
+      rows: series.map((s) => [s.label, s.value1, s.value2, s.difference, s.gap]),
+    },
   };
 }
