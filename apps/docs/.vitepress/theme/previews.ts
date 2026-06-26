@@ -66,9 +66,12 @@ export const previews: Record<string, Preview> = {
           { date: 2018, value: 12, certainty: true }, { date: 2019, value: 17, certainty: true },
           { date: 2020, value: 21, certainty: true }, { date: 2021, value: 30, certainty: true },
           { date: 2022, value: 43, certainty: true }] },
+        // One series mixes solid + dashed on a single line: the segments INTO the
+        // certainty:false points (2020, 2021) render dashed, so the blue line reads
+        // solid -> dashed gap -> solid (shows off detectGaps / certainty).
         { label: "Wind", color: BLUE, series: [
           { date: 2018, value: 18, certainty: true }, { date: 2019, value: 22, certainty: true },
-          { date: 2020, value: 27, certainty: true }, { date: 2021, value: 33, certainty: true },
+          { date: 2020, value: 27, certainty: false }, { date: 2021, value: 33, certainty: false },
           { date: 2022, value: 39, certainty: true }] },
         { label: "Hydro", color: GREEN, series: [
           { date: 2018, value: 9, certainty: true }, { date: 2019, value: 11, certainty: true },

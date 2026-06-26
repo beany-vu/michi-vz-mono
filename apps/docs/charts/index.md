@@ -8,7 +8,7 @@ Eleven framework-agnostic charts. Each page has a live example, usage across eve
 - [**Line Chart**](/charts/line) - _Trends_ · Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
 - [**Area Chart**](/charts/area) - _Composition_ · Part-to-whole over time: how each component’s share of a stacked total shifts.
 - [**Scatter Plot**](/charts/scatter) - _Correlation_ · Relationship between two numeric variables; bubble size encodes a third.
-- [**Range Chart**](/charts/range) - _Uncertainty_ · Min-max bands per series - forecasts, confidence intervals, or observed ranges over time.
+- [**Range Chart**](/charts/range) - _Trends_ · Min-max bands per series - forecasts, confidence intervals, or observed ranges over time.
 - [**Ribbon Chart**](/charts/ribbon) - _Composition_ · Stacked columns per period, linked by connector ribbons that trace each category across time.
 - [**Radar Chart**](/charts/radar) - _Comparison_ · Compare several entities across a shared set of axes at a glance (a polygon per entity).
 - [**Vertical Stack Bar**](/charts/vertical-stack-bar) - _Composition_ · Stacked vertical bars per category, with an explicit missing-data marker guard for sparse datasets.

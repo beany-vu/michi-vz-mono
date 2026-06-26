@@ -11,6 +11,12 @@ Trends over time across one or many series - with optional gap detection, an opt
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Gap detection
+
+A missing period renders as a **dashed** segment - set it per point with `certainty: false`, or let `detectGaps` derive it. Here one series skips a reporting period:
+
+<ChartDemo chart="line-chart" :index="1" />
+
 ## Usage
 
 ::: code-group

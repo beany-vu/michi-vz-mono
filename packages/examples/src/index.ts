@@ -293,7 +293,7 @@ const line: Example<LineChartProps>[] = [
   {
     "id": "line-gaps",
     "title": "Solar generation, TWh (with a reporting gap)",
-    "description": "Brazil reports 2014 then skips to 2020; detectGaps auto-dashes the missing 2014-2020 segment.",
+    "description": "Brazil skips its 2021-2022 reporting; detectGaps auto-dashes the unreported span while Spain stays solid.",
     "element": "michi-vz-line-chart",
     "props": {
       "title": "Solar generation, TWh (with a reporting gap)",
@@ -305,62 +305,24 @@ const line: Example<LineChartProps>[] = [
           "label": "Spain",
           "color": "#e4572e",
           "series": [
-            {
-              "date": 2014,
-              "value": 13.7,
-              "certainty": true
-            },
-            {
-              "date": 2016,
-              "value": 13.9,
-              "certainty": true
-            },
-            {
-              "date": 2018,
-              "value": 14.2,
-              "certainty": true
-            },
-            {
-              "date": 2020,
-              "value": 15.1,
-              "certainty": true
-            },
-            {
-              "date": 2022,
-              "value": 27.9,
-              "certainty": true
-            },
-            {
-              "date": 2024,
-              "value": 44.6,
-              "certainty": true
-            }
+            { "date": 2018, "value": 14, "certainty": true },
+            { "date": 2019, "value": 16, "certainty": true },
+            { "date": 2020, "value": 18, "certainty": true },
+            { "date": 2021, "value": 21, "certainty": true },
+            { "date": 2022, "value": 28, "certainty": true },
+            { "date": 2023, "value": 36, "certainty": true },
+            { "date": 2024, "value": 45, "certainty": true }
           ]
         },
         {
           "label": "Brazil",
           "color": "#1f9e57",
           "series": [
-            {
-              "date": 2014,
-              "value": 0.1,
-              "certainty": true
-            },
-            {
-              "date": 2020,
-              "value": 10.8,
-              "certainty": true
-            },
-            {
-              "date": 2022,
-              "value": 30.1,
-              "certainty": true
-            },
-            {
-              "date": 2024,
-              "value": 58.4,
-              "certainty": true
-            }
+            { "date": 2018, "value": 5, "certainty": true },
+            { "date": 2019, "value": 8, "certainty": true },
+            { "date": 2020, "value": 11, "certainty": true },
+            { "date": 2023, "value": 30, "certainty": true },
+            { "date": 2024, "value": 42, "certainty": true }
           ]
         }
       ]
