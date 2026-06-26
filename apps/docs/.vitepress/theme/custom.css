@@ -1,0 +1,38 @@
+/* Geneva colour over the VitePress default theme: bold red + gold (the flag),
+   Spectral serif for display, calm warm surfaces. "Nordic structure, Geneva color." */
+:root {
+  --vp-c-brand-1: #931f1a; /* links / accents — darker for contrast */
+  --vp-c-brand-2: #b23a2e; /* Geneva brick */
+  --vp-c-brand-3: #b23a2e;
+  --vp-c-brand-soft: rgba(178, 58, 46, 0.14);
+  --vp-c-brand-softer: rgba(178, 58, 46, 0.08);
+
+  --vp-font-family-base: "Hanken Grotesk", system-ui, -apple-system, sans-serif;
+  --vp-font-family-mono: "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Home hero: Geneva red → gold gradient on the name */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #b23a2e 30%, #cda14a);
+  --vp-home-hero-image-background-image: linear-gradient(
+    120deg,
+    rgba(178, 58, 46, 0.5),
+    rgba(231, 177, 67, 0.5)
+  );
+  --vp-home-hero-image-filter: blur(56px);
+
+  --vp-button-brand-bg: #b23a2e;
+  --vp-button-brand-hover-bg: #931f1a;
+  --vp-button-brand-active-bg: #931f1a;
+  --vp-button-brand-border: #b23a2e;
+  --vp-button-brand-hover-border: #931f1a;
+}
+
+/* Serif display for headings + hero (editorial, restrained). */
+.VPHero .name,
+.VPHero .text,
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3 {
+  font-family: "Spectral", Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
