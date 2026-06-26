@@ -31,5 +31,15 @@
   },
   "devDependencies": {
     "vue": "^3.5.13"
-  }
+  },
+  "license": "MIT",
+  "author": "Beany Vu",
+  "keywords": [
+    "charts",
+    "vue",
+    "dataviz",
+    "svg",
+    "canvas"
+  ],
+  "sideEffects": false
 }

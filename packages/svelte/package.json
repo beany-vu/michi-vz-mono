@@ -28,5 +28,15 @@
   },
   "peerDependencies": {
     "svelte": ">=4"
-  }
+  },
+  "license": "MIT",
+  "author": "Beany Vu",
+  "keywords": [
+    "charts",
+    "svelte",
+    "dataviz",
+    "svg",
+    "canvas"
+  ],
+  "sideEffects": false
 }

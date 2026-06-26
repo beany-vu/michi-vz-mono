@@ -29,5 +29,13 @@
   },
   "peerDependencies": {
     "@angular/core": ">=16"
-  }
+  },
+  "license": "MIT",
+  "author": "Beany Vu",
+  "keywords": [
+    "charts",
+    "angular",
+    "dataviz",
+    "web-components"
+  ]
 }
