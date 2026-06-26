@@ -6,29 +6,12 @@ Every chart renders in **SVG or canvas** and emits an **LLM-ready `ChartContext`
 
 ## Install
 
-::: code-group
+Pick the package for your stack - full details, peer dependencies, and the CDN option are in **[Installation](/guide/installation)**:
 
-```bash [React]
+```bash
 npm i @michi-vz/react
+# or @michi-vz/vue  ·  @michi-vz/svelte  ·  @michi-vz/angular  ·  @michi-vz/wc  ·  @michi-vz/core
 ```
-
-```bash [Vue]
-npm i @michi-vz/vue
-```
-
-```bash [Svelte]
-npm i @michi-vz/svelte
-```
-
-```bash [Web component]
-npm i @michi-vz/wc
-```
-
-```bash [Vanilla JS]
-npm i @michi-vz/core
-```
-
-:::
 
 ## Render a chart
 

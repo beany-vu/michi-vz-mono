@@ -3,7 +3,7 @@ title: Range Chart
 ---
 # Range Chart
 
-<span class="vp-badge tip">Uncertainty</span>
+<span class="vp-badge tip">Trends</span>
 
 Min-max bands per series - forecasts, confidence intervals, or observed ranges over time.
 

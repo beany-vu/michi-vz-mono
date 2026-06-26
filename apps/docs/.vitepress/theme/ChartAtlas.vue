@@ -7,10 +7,10 @@ import CatalogCard from "./CatalogCard.vue";
 // so the home never drifts from the chart pages. Order + roman numerals match
 // the chart catalog order (charts/index.md).
 const CARDS = [
-  { examplesKey: "line-chart", slug: "line", name: "Line", family: "Trends", roman: "I", blurb: "Trends over time across one or many series, with optional gap detection.", tag: "<michi-vz-line-chart> · SVG/canvas" },
+  { examplesKey: "line-chart", slug: "line", name: "Line", family: "Trends", roman: "I", blurb: "Trends over time across one or many series. The dashed run is a gap in the data (detectGaps).", tag: "<michi-vz-line-chart> · SVG/canvas" },
   { examplesKey: "area-chart", slug: "area", name: "Area", family: "Composition", roman: "II", blurb: "Part to whole over time: how each component's share of a stacked total shifts.", tag: "<michi-vz-area-chart> · SVG/canvas" },
   { examplesKey: "scatter-chart", slug: "scatter", name: "Scatter", family: "Correlation", roman: "III", blurb: "The relationship between two numeric variables; bubble size encodes a third.", tag: "<michi-vz-scatter-chart> · SVG/canvas" },
-  { examplesKey: "range-chart", slug: "range", name: "Range", family: "Uncertainty", roman: "IV", blurb: "Min to max bands per series: forecasts, confidence intervals, or observed ranges.", tag: "<michi-vz-range-chart> · SVG/canvas" },
+  { examplesKey: "range-chart", slug: "range", name: "Range", family: "Trends", roman: "IV", blurb: "Min to max bands per series: forecasts, confidence intervals, or observed ranges.", tag: "<michi-vz-range-chart> · SVG/canvas" },
   { examplesKey: "ribbon-chart", slug: "ribbon", name: "Ribbon", family: "Composition", roman: "V", blurb: "Stacked columns per period, linked by ribbons that trace each category over time.", tag: "<michi-vz-ribbon-chart> · SVG/canvas" },
   { examplesKey: "radar-chart", slug: "radar", name: "Radar", family: "Comparison", roman: "VI", blurb: "Compare several entities across a shared set of axes at a glance.", tag: "<michi-vz-radar-chart> · SVG/canvas" },
   { examplesKey: "vertical-stack-bar-chart", slug: "vertical-stack-bar", name: "Vertical Stack Bar", family: "Composition", roman: "VII", blurb: "Stacked vertical bars per category, with an explicit missing-data guard.", tag: "<michi-vz-vertical-stack-bar-chart> · SVG/canvas" },
@@ -20,7 +20,7 @@ const CARDS = [
   { examplesKey: "gap-chart", slug: "gap", name: "Gap", family: "Comparison", roman: "XI", blurb: "Two values per label joined by a gap bar that emphasises the difference.", tag: "<michi-vz-gap-chart> · SVG/canvas" },
 ];
 
-const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation", "Uncertainty"];
+const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation"];
 const active = ref("All");
 const visible = (family: string) => active.value === "All" || active.value === family;
 </script>

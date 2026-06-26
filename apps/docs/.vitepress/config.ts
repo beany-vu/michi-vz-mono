@@ -5,7 +5,7 @@ const charts: Array<[string, string, string]> = [
   ["line", "Line Chart", "Trends"],
   ["area", "Area Chart", "Composition"],
   ["scatter", "Scatter Plot", "Correlation"],
-  ["range", "Range Chart", "Uncertainty"],
+  ["range", "Range Chart", "Trends"],
   ["ribbon", "Ribbon Chart", "Composition"],
   ["radar", "Radar Chart", "Comparison"],
   ["vertical-stack-bar", "Vertical Stack Bar", "Composition"],
@@ -34,7 +34,7 @@ export default defineConfig({
     nav: [
       { text: "Charts", link: "/charts/" },
       { text: "API", link: "/api/line" },
-      { text: "Guide", link: "/guide/getting-started" },
+      { text: "Guide", link: "/guide/installation" },
       {
         // TanStack-style version switcher (single version for now).
         text: "v1.0.0",
@@ -61,6 +61,7 @@ export default defineConfig({
       const guideGroup = {
         text: "Guide",
         items: [
+          { text: "Installation", link: "/guide/installation" },
           { text: "Getting started", link: "/guide/getting-started" },
           { text: "LLM context", link: "/guide/llm-context" },
         ],
