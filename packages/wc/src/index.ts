@@ -8,6 +8,7 @@ import "./scatter-chart";
 import "./vertical-stack-bar-chart";
 import "./comparable-horizontal-bar-chart";
 import "./dual-horizontal-bar-chart";
+import "./bar-bell-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -16,3 +17,4 @@ export { ScatterChartElement } from "./scatter-chart";
 export { VerticalStackBarChartElement } from "./vertical-stack-bar-chart";
 export { ComparableHorizontalBarChartElement } from "./comparable-horizontal-bar-chart";
 export { DualHorizontalBarChartElement } from "./dual-horizontal-bar-chart";
+export { BarBellChartElement } from "./bar-bell-chart";

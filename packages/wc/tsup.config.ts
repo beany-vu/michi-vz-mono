@@ -10,6 +10,7 @@ export default defineConfig({
     "src/vertical-stack-bar-chart.ts",
     "src/comparable-horizontal-bar-chart.ts",
     "src/dual-horizontal-bar-chart.ts",
+    "src/bar-bell-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,
