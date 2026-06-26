@@ -561,6 +561,55 @@ export interface DualBarChartContext extends BaseChartContext {
   stats: { count: number; total1: number; total2: number };
 }
 
+// ---- BarBellChart (cumulative horizontal bar + end-cap circles) ----
+
+export interface BarBellDataRow {
+  date: string | number;
+  [key: string]: number | string | undefined;
+}
+
+export interface BarBellChartProps {
+  dataSet: BarBellDataRow[];
+  keys: string[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  ticks?: number;
+  tickHtmlWidth?: number;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (row: BarBellDataRow, key: string, value: number) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface BarBellSeriesContext {
+  key: string;
+  color: string;
+  total: number;
+}
+
+export interface BarBellChartContext extends BaseChartContext {
+  chartType: "bar-bell-chart";
+  xAxis: { domain: [number, number] };
+  yAxis: { labels: string[] };
+  keys: string[];
+  series: BarBellSeriesContext[];
+  stats: { keyCount: number; rowCount: number; grandTotal: number };
+}
+
 /** Discriminated union of every chart's context, keyed on `chartType`. Grows as
  * charts are ported (Phase 4+: + RadarChartContext | RangeChartContext | ...). */
 export type ChartContext =
@@ -570,7 +619,8 @@ export type ChartContext =
   | ScatterChartContext
   | VerticalStackBarChartContext
   | ComparableBarChartContext
-  | DualBarChartContext;
+  | DualBarChartContext
+  | BarBellChartContext;
 
 export interface DataWarning {
   type:

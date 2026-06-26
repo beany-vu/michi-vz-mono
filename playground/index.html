@@ -25,6 +25,8 @@
   #cmpContract .bar { fill: rgb(120, 40, 200); }
   /* DualBar consumer colour contract: recolour bar fills purely via CSS. */
   #dualContract .bar { fill: rgb(0, 160, 160); }
+  /* BarBell consumer colour contract: recolour bar fills purely via CSS. */
+  #bellContract .bar { fill: rgb(210, 90, 40); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -88,6 +90,14 @@
 </div>
 <h2>Dual consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="dualContract"><michi-vz-dual-horizontal-bar-chart id="dualContractChart"></michi-vz-dual-horizontal-bar-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — BarBell (cumulative + end-caps)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-bar-bell-chart id="bellSvg"></michi-vz-bar-bell-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-bar-bell-chart id="bellCanvas"></michi-vz-bar-bell-chart></div>
+</div>
+<h2>BarBell consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="bellContract"><michi-vz-bar-bell-chart id="bellContractChart"></michi-vz-bar-bell-chart></div>
 
 <div id="results">running…</div>
 
@@ -213,6 +223,21 @@ const dualContractEl = document.getElementById("dualContractChart");
 Object.assign(dualSvgEl, { dataSet: dualData, chartTitle: "Tornado", renderer: "svg", ...dualCommon });
 Object.assign(dualCanvasEl, { dataSet: dualData, chartTitle: "Tornado", renderer: "canvas", ...dualCommon });
 Object.assign(dualContractEl, { dataSet: dualData, chartTitle: "Dual canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...dualCommon });
+
+// ---- BarBell setup ----
+const bellData = [
+  { date: "2001", Fruit: 10, Veg: 6 },
+  { date: "2002", Fruit: 14, Veg: 9 },
+  { date: "2003", Fruit: 8, Veg: 13 },
+];
+const bellKeys = ["Fruit", "Veg"];
+const bellCommon = { width: 460, height: 280 };
+const bellSvgEl = document.getElementById("bellSvg");
+const bellCanvasEl = document.getElementById("bellCanvas");
+const bellContractEl = document.getElementById("bellContractChart");
+Object.assign(bellSvgEl, { dataSet: bellData, keys: bellKeys, chartTitle: "Cumulative", renderer: "svg", ...bellCommon });
+Object.assign(bellCanvasEl, { dataSet: bellData, keys: bellKeys, chartTitle: "Cumulative", renderer: "canvas", ...bellCommon });
+Object.assign(bellContractEl, { dataSet: bellData, keys: bellKeys, chartTitle: "BarBell canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...bellCommon });
 
 await nextFrame();
 
@@ -425,6 +450,33 @@ try {
     }
   }
   log(dualContractOk, "DUAL CANVAS colour contract: consumer CSS rgb(0,160,160) reached canvas pixels");
+
+  // ---- BarBell checks ----
+  const bellCaps = bellSvgEl.querySelectorAll(".bar-bell-cap");
+  log(bellCaps.length === 6, `BELL: SVG renders 6 end-cap circles (3 rows x 2 keys) (got ${bellCaps.length})`);
+  log(!!bellSvgEl.querySelector('.bar-bell-cap[data-label-safe="Fruit"]'), 'BELL: cap carries data-label-safe="Fruit"');
+
+  const bctx = bellSvgEl.getContext();
+  log(bctx && bctx.chartType === "bar-bell-chart" && bctx.keys.length === 2, "BELL: getContext() returns bar-bell-chart with 2 keys");
+  log(typeof bctx.summary === "string" && bctx.summary.includes("Bar-bell chart"), "BELL: getContext() includes an NL summary");
+
+  const ba = JSON.stringify({ ...bellSvgEl.getContext(), renderer: 0 });
+  const bb = JSON.stringify({ ...bellCanvasEl.getContext(), renderer: 0 });
+  log(ba === bb, "BELL: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(bellSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "BELL: a11y table mirror has 3 rows");
+
+  // THE bar-bell colour contract: canvas pixels must reflect consumer CSS fill rgb(210,90,40)
+  const bcnv = bellContractEl.querySelector("canvas");
+  let bellContractOk = false;
+  if (bcnv) {
+    const c = bcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, bcnv.width, bcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 185 && px[i] < 235 && px[i + 1] > 65 && px[i + 1] < 115 && px[i + 2] < 70 && px[i + 3] > 0) { bellContractOk = true; break; }
+    }
+  }
+  log(bellContractOk, "BELL CANVAS colour contract: consumer CSS rgb(210,90,40) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
