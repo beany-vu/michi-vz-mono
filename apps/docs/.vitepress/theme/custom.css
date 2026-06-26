@@ -392,9 +392,9 @@
 }
 .mv-card-foot {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   padding: 10px 14px 14px;
   margin-top: auto;
 }
