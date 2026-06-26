@@ -13,6 +13,7 @@ export default defineConfig({
     "src/bar-bell-chart.ts",
     "src/range-chart.ts",
     "src/ribbon-chart.ts",
+    "src/radar-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,
