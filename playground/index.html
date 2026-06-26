@@ -31,6 +31,8 @@
   #rangeContract .area { fill: rgb(70, 50, 200); }
   /* Ribbon consumer colour contract: recolour column fills purely via CSS. */
   #ribbonContract .bar { fill: rgb(200, 30, 90); }
+  /* Radar consumer colour contract: recolour polygon fills purely via CSS. */
+  #radarContract .radar-area { fill: rgb(20, 170, 90); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -118,6 +120,14 @@
 </div>
 <h2>Ribbon consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="ribbonContract"><michi-vz-ribbon-chart id="ribbonContractChart"></michi-vz-ribbon-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — RadarChart (polar)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-radar-chart id="radarSvg"></michi-vz-radar-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-radar-chart id="radarCanvas"></michi-vz-radar-chart></div>
+</div>
+<h2>Radar consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="radarContract"><michi-vz-radar-chart id="radarContractChart"></michi-vz-radar-chart></div>
 
 <div id="results">running…</div>
 
@@ -292,6 +302,20 @@ const ribbonContractEl = document.getElementById("ribbonContractChart");
 Object.assign(ribbonSvgEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Stream", renderer: "svg", ...ribbonCommon });
 Object.assign(ribbonCanvasEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Stream", renderer: "canvas", ...ribbonCommon });
 Object.assign(ribbonContractEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Ribbon canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...ribbonCommon });
+
+// ---- RadarChart setup ----
+const radarAxes = ["Speed", "Power", "Range", "Agility", "Cost"];
+const radarSeries = [
+  { label: "Model A", color: "#1f77b4", values: [8, 6, 7, 9, 5] },
+  { label: "Model B", color: "#ff7f0e", values: [5, 9, 6, 4, 8] },
+];
+const radarCommon = { width: 360, height: 320 };
+const radarSvgEl = document.getElementById("radarSvg");
+const radarCanvasEl = document.getElementById("radarCanvas");
+const radarContractEl = document.getElementById("radarContractChart");
+Object.assign(radarSvgEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar", renderer: "svg", ...radarCommon });
+Object.assign(radarCanvasEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar", renderer: "canvas", ...radarCommon });
+Object.assign(radarContractEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...radarCommon });
 
 await nextFrame();
 
@@ -585,6 +609,34 @@ try {
     }
   }
   log(ribbonContractOk, "RIBBON CANVAS colour contract: consumer CSS rgb(200,30,90) reached canvas pixels");
+
+  // ---- RadarChart checks ----
+  const radarPolys = radarSvgEl.querySelectorAll("polygon.radar-area");
+  log(radarPolys.length === 2, `RADAR: SVG renders 2 series polygons (got ${radarPolys.length})`);
+  log(radarPolys[0] && radarPolys[0].getAttribute("points").trim().split(" ").length === 5, "RADAR: polygon has 5 vertices (5 axes)");
+  log(!!radarSvgEl.querySelector('polygon.radar-area[data-label-safe="Model_A"]'), 'RADAR: polygon carries data-label-safe="Model_A"');
+  log(radarSvgEl.querySelectorAll(".mv-radar-grid line").length === 5, "RADAR: polar grid has 5 spokes");
+
+  const rdctx = radarSvgEl.getContext();
+  log(rdctx && rdctx.chartType === "radar-chart" && rdctx.axes.length === 5, "RADAR: getContext() returns radar-chart with 5 axes");
+
+  const rda = JSON.stringify({ ...radarSvgEl.getContext(), renderer: 0 });
+  const rdb = JSON.stringify({ ...radarCanvasEl.getContext(), renderer: 0 });
+  log(rda === rdb, "RADAR: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(radarSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2, "RADAR: a11y table mirror has 2 rows");
+
+  // THE radar colour contract: canvas pixels must reflect consumer CSS fill rgb(20,170,90)
+  const rdcnv = radarContractEl.querySelector("canvas");
+  let radarContractOk = false;
+  if (rdcnv) {
+    const c = rdcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, rdcnv.width, rdcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 70 && px[i + 1] > 145 && px[i + 2] > 65 && px[i + 2] < 115 && px[i + 3] > 0) { radarContractOk = true; break; }
+    }
+  }
+  log(radarContractOk, "RADAR CANVAS colour contract: consumer CSS rgb(20,170,90) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }

@@ -726,8 +726,62 @@ export interface RibbonChartContext extends BaseChartContext {
   stats: { keyCount: number; dateCount: number; grandTotal: number };
 }
 
-/** Discriminated union of every chart's context, keyed on `chartType`. Grows as
- * charts are ported (Phase 4+: + RadarChartContext | ...). */
+// ---- RadarChart (polar) ----
+
+export interface RadarDataItem {
+  label: string;
+  color?: string;
+  /** one value per axis, aligned to `axes` by index. */
+  values: number[];
+}
+
+export interface RadarChartProps {
+  series: RadarDataItem[];
+  /** spoke labels (the radial axes). */
+  axes: string[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  maxValue?: number;
+  /** number of concentric grid rings (default 4). */
+  rings?: number;
+  /** polygon fill opacity (default 0.2). */
+  fillOpacity?: number;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (item: RadarDataItem) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface RadarSeriesContext {
+  label: string;
+  color: string;
+  /** axis label -> value. */
+  byAxis: Array<{ axis: string; value: number }>;
+  total: number;
+  /** axis with the largest value. */
+  peakAxis: string | null;
+}
+
+export interface RadarChartContext extends BaseChartContext {
+  chartType: "radar-chart";
+  axes: string[];
+  maxValue: number;
+  series: RadarSeriesContext[];
+  stats: { seriesCount: number; axisCount: number };
+}
+
+/** Discriminated union of every chart's context, keyed on `chartType`. */
 export type ChartContext =
   | GapChartContext
   | LineChartContext
@@ -738,7 +792,8 @@ export type ChartContext =
   | DualBarChartContext
   | BarBellChartContext
   | RangeChartContext
-  | RibbonChartContext;
+  | RibbonChartContext
+  | RadarChartContext;
 
 export interface DataWarning {
   type:

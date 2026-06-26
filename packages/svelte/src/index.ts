@@ -11,6 +11,7 @@ import {
   mountBarBellChart,
   mountRangeChart,
   mountRibbonChart,
+  mountRadarChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -23,6 +24,7 @@ import type {
   BarBellChartProps,
   RangeChartProps,
   RibbonChartProps,
+  RadarChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -37,6 +39,7 @@ export type {
   BarBellChartProps,
   RangeChartProps,
   RibbonChartProps,
+  RadarChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -194,6 +197,21 @@ export function ribbonChart(node: HTMLElement, props: RibbonChartProps): RibbonC
   const chart = mountRibbonChart(node, props);
   return {
     update: (next: RibbonChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface RadarChartAction {
+  update(props: RadarChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<RadarChartProps>["getContext"];
+}
+
+export function radarChart(node: HTMLElement, props: RadarChartProps): RadarChartAction {
+  const chart = mountRadarChart(node, props);
+  return {
+    update: (next: RadarChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };
