@@ -10,6 +10,7 @@ export { mountVerticalStackBarChart } from "./engine/verticalStackBarChart";
 export { mountComparableHorizontalBarChart } from "./engine/comparableHorizontalBarChart";
 export { mountDualHorizontalBarChart } from "./engine/dualHorizontalBarChart";
 export { mountBarBellChart } from "./engine/barBellChart";
+export { mountRangeChart } from "./engine/rangeChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -69,6 +70,10 @@ export { buildDualBarContext } from "./context/buildDualBarContext";
 export { processBarBellData } from "./barBell/data";
 export { buildBarBellColors } from "./barBell/colors";
 export { buildBarBellContext } from "./context/buildBarBellContext";
+// RangeChart pure layer
+export { processRangeData } from "./rangeChart/data";
+export { buildRangeColors } from "./rangeChart/colors";
+export { buildRangeContext } from "./context/buildRangeContext";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -146,4 +151,9 @@ export type {
   BarBellChartProps,
   BarBellSeriesContext,
   BarBellChartContext,
+  RangeDataPoint,
+  RangeDataItem,
+  RangeChartProps,
+  RangeSeriesContext,
+  RangeChartContext,
 } from "./types";

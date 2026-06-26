@@ -10,6 +10,7 @@ import {
   mountComparableHorizontalBarChart,
   mountDualHorizontalBarChart,
   mountBarBellChart,
+  mountRangeChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -20,6 +21,7 @@ import type {
   ComparableBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
+  RangeChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -33,6 +35,7 @@ export type {
   ComparableBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
+  RangeChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -65,6 +68,10 @@ export interface DualHorizontalBarChartHandle {
 }
 
 export interface BarBellChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface RangeChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -262,3 +269,26 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartProps>(
     return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
   }
 );
+
+export const RangeChart = forwardRef<RangeChartHandle, RangeChartProps>(function RangeChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<RangeChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountRangeChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
+});

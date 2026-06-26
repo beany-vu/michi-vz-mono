@@ -13,6 +13,7 @@ import type {
   ComparableHorizontalBarChartElement,
   DualHorizontalBarChartElement,
   BarBellChartElement,
+  RangeChartElement,
 } from "@michi-vz/wc";
 import type {
   GapChartProps,
@@ -23,6 +24,7 @@ import type {
   ComparableBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
+  RangeChartProps,
 } from "@michi-vz/core";
 
 export type {
@@ -34,6 +36,7 @@ export type {
   ComparableBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
+  RangeChartProps,
   ChartContext,
 } from "@michi-vz/core";
 export type {
@@ -45,6 +48,7 @@ export type {
   ComparableHorizontalBarChartElement,
   DualHorizontalBarChartElement,
   BarBellChartElement,
+  RangeChartElement,
 } from "@michi-vz/wc";
 
 /** Apply engine props onto a <michi-vz-gap-chart> element (property binding). */
@@ -185,6 +189,25 @@ export function applyDualHorizontalBarChartProps(
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.value1Opacity !== undefined) el.value1Opacity = props.value1Opacity;
   if (props.value2Opacity !== undefined) el.value2Opacity = props.value2Opacity;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-range-chart> element. */
+export function applyRangeChartProps(el: RangeChartElement, props: RangeChartProps): void {
+  el.dataSet = props.dataSet;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.xAxisDataType !== undefined) el.xAxisDataType = props.xAxisDataType;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.curve !== undefined) el.curve = props.curve;
+  if (props.fillOpacity !== undefined) el.fillOpacity = props.fillOpacity;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;

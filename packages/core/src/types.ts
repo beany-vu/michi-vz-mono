@@ -610,8 +610,74 @@ export interface BarBellChartContext extends BaseChartContext {
   stats: { keyCount: number; rowCount: number; grandTotal: number };
 }
 
+// ---- RangeChart (per-series valueMin..valueMax bands over time) ----
+
+export interface RangeDataPoint {
+  date: number | string;
+  valueMin: number;
+  valueMax: number;
+  valueMedium?: number;
+  certainty?: boolean;
+  label?: string;
+  code?: string;
+}
+
+export interface RangeDataItem {
+  label: string;
+  color?: string;
+  series: RangeDataPoint[];
+}
+
+export interface RangeChartProps {
+  dataSet: RangeDataItem[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  xAxisDataType?: XaxisDataType;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  curve?: CurveType;
+  /** band fill opacity (default 0.8). */
+  fillOpacity?: number;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (d: RangeDataPoint, item: RangeDataItem) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface RangeSeriesContext {
+  label: string;
+  color: string;
+  pointCount: number;
+  minValue: number;
+  maxValue: number;
+  /** mean band width (valueMax - valueMin) across points. */
+  meanRange: number;
+}
+
+export interface RangeChartContext extends BaseChartContext {
+  chartType: "range-chart";
+  xAxis: { type: XaxisDataType; domain: [number, number] };
+  yAxis: { domain: [number, number] };
+  series: RangeSeriesContext[];
+  stats: { seriesCount: number; pointCount: number; valueRange: [number, number] };
+}
+
 /** Discriminated union of every chart's context, keyed on `chartType`. Grows as
- * charts are ported (Phase 4+: + RadarChartContext | RangeChartContext | ...). */
+ * charts are ported (Phase 4+: + RadarChartContext | RibbonChartContext | ...). */
 export type ChartContext =
   | GapChartContext
   | LineChartContext
@@ -620,7 +686,8 @@ export type ChartContext =
   | VerticalStackBarChartContext
   | ComparableBarChartContext
   | DualBarChartContext
-  | BarBellChartContext;
+  | BarBellChartContext
+  | RangeChartContext;
 
 export interface DataWarning {
   type:

@@ -27,6 +27,8 @@
   #dualContract .bar { fill: rgb(0, 160, 160); }
   /* BarBell consumer colour contract: recolour bar fills purely via CSS. */
   #bellContract .bar { fill: rgb(210, 90, 40); }
+  /* Range consumer colour contract: recolour band fills purely via CSS. */
+  #rangeContract .area { fill: rgb(70, 50, 200); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -98,6 +100,14 @@
 </div>
 <h2>BarBell consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="bellContract"><michi-vz-bar-bell-chart id="bellContractChart"></michi-vz-bar-bell-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — RangeChart (min/max bands)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-range-chart id="rangeSvg"></michi-vz-range-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-range-chart id="rangeCanvas"></michi-vz-range-chart></div>
+</div>
+<h2>Range consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="rangeContract"><michi-vz-range-chart id="rangeContractChart"></michi-vz-range-chart></div>
 
 <div id="results">running…</div>
 
@@ -238,6 +248,25 @@ const bellContractEl = document.getElementById("bellContractChart");
 Object.assign(bellSvgEl, { dataSet: bellData, keys: bellKeys, chartTitle: "Cumulative", renderer: "svg", ...bellCommon });
 Object.assign(bellCanvasEl, { dataSet: bellData, keys: bellKeys, chartTitle: "Cumulative", renderer: "canvas", ...bellCommon });
 Object.assign(bellContractEl, { dataSet: bellData, keys: bellKeys, chartTitle: "BarBell canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...bellCommon });
+
+// ---- RangeChart setup ----
+const rangeData = [
+  { label: "Region A", color: "#1f77b4", series: [
+    { date: 2016, valueMin: 5, valueMax: 12, certainty: true },
+    { date: 2017, valueMin: 8, valueMax: 16, certainty: true },
+    { date: 2018, valueMin: 6, valueMax: 14, certainty: true }] },
+  { label: "Region B", color: "#ff7f0e", series: [
+    { date: 2016, valueMin: 2, valueMax: 6, certainty: true },
+    { date: 2017, valueMin: 3, valueMax: 7, certainty: true },
+    { date: 2018, valueMin: 4, valueMax: 9, certainty: true }] },
+];
+const rangeCommon = { width: 460, height: 280, xAxisDataType: "date_annual" };
+const rangeSvgEl = document.getElementById("rangeSvg");
+const rangeCanvasEl = document.getElementById("rangeCanvas");
+const rangeContractEl = document.getElementById("rangeContractChart");
+Object.assign(rangeSvgEl, { dataSet: rangeData, chartTitle: "Bands", renderer: "svg", ...rangeCommon });
+Object.assign(rangeCanvasEl, { dataSet: rangeData, chartTitle: "Bands", renderer: "canvas", ...rangeCommon });
+Object.assign(rangeContractEl, { dataSet: rangeData, chartTitle: "Range canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...rangeCommon });
 
 await nextFrame();
 
@@ -477,6 +506,33 @@ try {
     }
   }
   log(bellContractOk, "BELL CANVAS colour contract: consumer CSS rgb(210,90,40) reached canvas pixels");
+
+  // ---- RangeChart checks ----
+  const rangeAreas = rangeSvgEl.querySelectorAll("path.area");
+  log(rangeAreas.length === 2, `RANGE: SVG renders 2 band areas (got ${rangeAreas.length})`);
+  log(!!rangeSvgEl.querySelector('path.area[data-label-safe="Region_A"]'), 'RANGE: band carries data-label-safe="Region_A"');
+
+  const rctx = rangeSvgEl.getContext();
+  log(rctx && rctx.chartType === "range-chart" && rctx.series.length === 2, "RANGE: getContext() returns range-chart with 2 bands");
+  log(typeof rctx.summary === "string" && rctx.summary.includes("Range chart"), "RANGE: getContext() includes an NL summary");
+
+  const ra = JSON.stringify({ ...rangeSvgEl.getContext(), renderer: 0 });
+  const rb = JSON.stringify({ ...rangeCanvasEl.getContext(), renderer: 0 });
+  log(ra === rb, "RANGE: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(rangeSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2, "RANGE: a11y table mirror has 2 rows");
+
+  // THE range colour contract: canvas pixels must reflect consumer CSS fill rgb(70,50,200)
+  const rcnv = rangeContractEl.querySelector("canvas");
+  let rangeContractOk = false;
+  if (rcnv) {
+    const c = rcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, rcnv.width, rcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 110 && px[i + 1] < 90 && px[i + 2] > 175 && px[i + 3] > 0) { rangeContractOk = true; break; }
+    }
+  }
+  log(rangeContractOk, "RANGE CANVAS colour contract: consumer CSS rgb(70,50,200) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
