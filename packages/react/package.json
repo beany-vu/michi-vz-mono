@@ -1,19 +1,35 @@
 {
   "name": "@michi-vz/react",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "React wrapper for michi-vz charts",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "scripts": { "build": "tsup", "typecheck": "tsc --noEmit" },
-  "publishConfig": { "access": "public" },
-  "dependencies": { "@michi-vz/core": "workspace:*" },
-  "peerDependencies": { "react": ">=18", "react-dom": ">=18" },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@michi-vz/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
   "devDependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
