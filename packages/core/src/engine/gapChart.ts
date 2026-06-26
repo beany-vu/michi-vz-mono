@@ -10,7 +10,7 @@ import { processGapChartData } from "../gapChart/data";
 import { buildGapColors } from "../gapChart/colors";
 import { createGapScales } from "../gapChart/scales";
 import { buildGapRenderModel } from "../gapChart/renderModel";
-import { renderXAxis, renderYAxis } from "../gapChart/axes";
+import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
 import { renderGapSvg } from "../gapChart/renderSvg";
 import { drawGapCanvas } from "../gapChart/renderCanvas";
 import { buildGapContext } from "../context/buildContext";
@@ -184,17 +184,8 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
 
     // ----- SVG layer (axes + title always; marks only in svg mode) -----
     clear(svg);
-    if (props.title) {
-      const t = svgEl("text", {
-        class: "title",
-        x: r.width / 2,
-        y: r.margin.top / 2,
-        "text-anchor": "middle",
-      });
-      t.textContent = props.title;
-      svg.appendChild(t);
-    }
-    renderXAxis(svg, scales.xScale, {
+    renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
+    renderXAxisLinear(svg, scales.xScale, {
       width: r.width,
       height: r.height,
       margin: r.margin,
@@ -204,7 +195,7 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
       tickValues: props.tickValues,
       enableExplicitTickValues: true,
     });
-    renderYAxis(svg, scales.yScale, {
+    renderYAxisBand(svg, scales.yScale, {
       width: r.width,
       margin: r.margin,
       format: (label) => yFormat(label),

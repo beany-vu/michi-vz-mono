@@ -1,12 +1,49 @@
 // React wrapper over the @michi-vz/core engine. SSR-safe: renders a sized
 // placeholder on the server and mounts the engine on the client in an effect.
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { mountGapChart } from "@michi-vz/core";
-import type { GapChartProps, ChartInstance, ChartContext } from "@michi-vz/core";
+import {
+  mountGapChart,
+  mountLineChart,
+  mountAreaChart,
+  mountScatterChart,
+  mountVerticalStackBarChart,
+} from "@michi-vz/core";
+import type {
+  GapChartProps,
+  LineChartProps,
+  AreaChartProps,
+  ScatterChartProps,
+  VerticalStackBarChartProps,
+  ChartInstance,
+  ChartContext,
+} from "@michi-vz/core";
 
-export type { GapChartProps, ChartContext } from "@michi-vz/core";
+export type {
+  GapChartProps,
+  LineChartProps,
+  AreaChartProps,
+  ScatterChartProps,
+  VerticalStackBarChartProps,
+  ChartContext,
+} from "@michi-vz/core";
 
 export interface GapChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface LineChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface AreaChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface ScatterChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface VerticalStackBarChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -34,3 +71,97 @@ export const GapChart = forwardRef<GapChartHandle, GapChartProps>(function GapCh
 
   return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
 });
+
+export const LineChart = forwardRef<LineChartHandle, LineChartProps>(function LineChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<LineChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountLineChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
+});
+
+export const AreaChart = forwardRef<AreaChartHandle, AreaChartProps>(function AreaChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<AreaChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountAreaChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+});
+
+export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartProps>(function ScatterChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<ScatterChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountScatterChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+});
+
+export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, VerticalStackBarChartProps>(
+  function VerticalStackBarChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<VerticalStackBarChartProps> | null>(null);
+
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountVerticalStackBarChart(hostRef.current, props);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+      chartRef.current?.update(props);
+    });
+
+    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+    return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+  }
+);

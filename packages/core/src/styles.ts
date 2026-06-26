@@ -33,6 +33,16 @@ export const CORE_CSS = `
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+.michi-vz .mv-loading {
+  position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px;
+  background-color: var(--michi-vz-loading, #ffc0cb);
+  display: flex; justify-content: center; align-items: center;
+  animation: mv-fade-in-out 0.9s linear infinite;
+  cursor: wait; pointer-events: none;
+}
+@keyframes mv-fade-in-out {
+  0% { opacity: 0; } 50% { opacity: 0.2; } 100% { opacity: 0; }
+}
 `;
 
 let injected = false;

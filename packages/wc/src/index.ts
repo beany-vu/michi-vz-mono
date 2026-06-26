@@ -2,5 +2,13 @@
 // (via the engine) auto-injects core.css. For tree-shakeable apps, import the
 // per-element sub-path instead (e.g. "@michi-vz/wc/gap-chart").
 import "./gap-chart";
+import "./line-chart";
+import "./area-chart";
+import "./scatter-chart";
+import "./vertical-stack-bar-chart";
 
 export { GapChartElement } from "./gap-chart";
+export { LineChartElement } from "./line-chart";
+export { AreaChartElement } from "./area-chart";
+export { ScatterChartElement } from "./scatter-chart";
+export { VerticalStackBarChartElement } from "./vertical-stack-bar-chart";

@@ -13,6 +13,14 @@
      The canvas renderer must pick these up through the getComputedStyle probe. */
   #contract .gap-bar { fill: rgb(220, 40, 40); }
   #contract .gap-marker { fill: rgb(20, 120, 60); }
+  /* LineChart consumer colour contract: recolour line strokes purely via CSS. */
+  #lineContract .line { stroke: rgb(20, 120, 200); }
+  /* AreaChart consumer colour contract: recolour area fills purely via CSS. */
+  #areaContract .area { fill: rgb(180, 60, 160); }
+  /* ScatterPlot consumer colour contract: recolour point fills purely via CSS. */
+  #scatterContract .scatter-point { fill: rgb(40, 200, 120); }
+  /* VerticalStackBar consumer colour contract: recolour bar fills purely via CSS. */
+  #stackContract .bar { fill: rgb(230, 150, 20); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -28,6 +36,38 @@
 </div>
 <h2>Consumer-CSS colour contract (canvas, <code>skip-color-mapping-dispatch</code>)</h2>
 <div class="card" id="contract"><michi-vz-gap-chart id="contractChart"></michi-vz-gap-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — LineChart</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-line-chart id="lineSvg"></michi-vz-line-chart></div>
+  <div class="card"><h2>Canvas renderer (LTTB)</h2><michi-vz-line-chart id="lineCanvas"></michi-vz-line-chart></div>
+</div>
+<h2>Line consumer-CSS stroke contract (canvas)</h2>
+<div class="card" id="lineContract"><michi-vz-line-chart id="lineContractChart"></michi-vz-line-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — AreaChart (stacked)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-area-chart id="areaSvg"></michi-vz-area-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-area-chart id="areaCanvas"></michi-vz-area-chart></div>
+</div>
+<h2>Area consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="areaContract"><michi-vz-area-chart id="areaContractChart"></michi-vz-area-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — ScatterPlot</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-scatter-chart id="scatterSvg"></michi-vz-scatter-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-scatter-chart id="scatterCanvas"></michi-vz-scatter-chart></div>
+</div>
+<h2>Scatter consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="scatterContract"><michi-vz-scatter-chart id="scatterContractChart"></michi-vz-scatter-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — VerticalStackBar (stacked, hasOwnProperty guard)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-vertical-stack-bar-chart id="stackSvg"></michi-vz-vertical-stack-bar-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-vertical-stack-bar-chart id="stackCanvas"></michi-vz-vertical-stack-bar-chart></div>
+</div>
+<h2>Stack consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="stackContract"><michi-vz-vertical-stack-bar-chart id="stackContractChart"></michi-vz-vertical-stack-bar-chart></div>
 
 <div id="results">running…</div>
 
@@ -60,6 +100,71 @@ Object.assign(contractEl, {
 
 let dataProcessedFired = false;
 svgEl.addEventListener("michi-vz:dataprocessed", () => { dataProcessedFired = true; });
+
+// ---- LineChart setup ----
+const lineData = [
+  { label: "North", color: "#1f77b4", series: [
+    { date: 2016, value: 10, certainty: true }, { date: 2017, value: 22, certainty: true },
+    { date: 2018, value: 18, certainty: true }, { date: 2019, value: 30, certainty: true }] },
+  { label: "South Region", color: "#ff7f0e", series: [
+    { date: 2016, value: 5, certainty: true }, { date: 2017, value: 9, certainty: true },
+    { date: 2024, value: 26, certainty: true }] }, // 2019->2024 gap -> dashed run
+];
+const lineCommon = { width: 460, height: 280, xAxisDataType: "date_annual", detectGaps: true, showDataPoints: true };
+const lineSvgEl = document.getElementById("lineSvg");
+const lineCanvasEl = document.getElementById("lineCanvas");
+const lineContractEl = document.getElementById("lineContractChart");
+Object.assign(lineSvgEl, { dataSet: lineData, chartTitle: "Trend", renderer: "svg", ...lineCommon });
+Object.assign(lineCanvasEl, { dataSet: lineData, chartTitle: "Trend", renderer: "canvas", ...lineCommon });
+Object.assign(lineContractEl, { dataSet: lineData, chartTitle: "Line canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...lineCommon });
+
+// ---- AreaChart setup (stacked) ----
+const areaSeries = [
+  { date: 2018, Fruit: 10, Veg: 6, Dairy: 4 },
+  { date: 2019, Fruit: 14, Veg: 8, Dairy: 5 },
+  { date: 2020, Fruit: 9, Veg: 12, Dairy: 7 },
+  { date: 2021, Fruit: 16, Veg: 10, Dairy: 9 },
+];
+const areaKeys = ["Fruit", "Veg", "Dairy"];
+const areaCommon = { width: 460, height: 280, xAxisDataType: "number" };
+const areaSvgEl = document.getElementById("areaSvg");
+const areaCanvasEl = document.getElementById("areaCanvas");
+const areaContractEl = document.getElementById("areaContractChart");
+Object.assign(areaSvgEl, { series: areaSeries, keys: areaKeys, chartTitle: "Stack", renderer: "svg", ...areaCommon });
+Object.assign(areaCanvasEl, { series: areaSeries, keys: areaKeys, chartTitle: "Stack", renderer: "canvas", ...areaCommon });
+Object.assign(areaContractEl, { series: areaSeries, keys: areaKeys, chartTitle: "Area canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...areaCommon });
+
+// ---- ScatterPlot setup ----
+const scatterData = [
+  { label: "Alpha One", x: 1, y: 3, d: 6 },
+  { label: "Beta", x: 3, y: 7, d: 12 },
+  { label: "Gamma", x: 5, y: 6, d: 4 },
+  { label: "Delta", x: 7, y: 12, d: 9 },
+  { label: "Epsilon", x: 9, y: 15, d: 7 },
+];
+const scatterCommon = { width: 460, height: 280, xAxisDataType: "number" };
+const scatterSvgEl = document.getElementById("scatterSvg");
+const scatterCanvasEl = document.getElementById("scatterCanvas");
+const scatterContractEl = document.getElementById("scatterContractChart");
+Object.assign(scatterSvgEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "svg", ...scatterCommon });
+Object.assign(scatterCanvasEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "canvas", ...scatterCommon });
+Object.assign(scatterContractEl, { dataSet: scatterData, chartTitle: "Scatter canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...scatterCommon });
+
+// ---- VerticalStackBar setup (each DataSet owns ONLY its key -> guard territory) ----
+const stackData = [
+  { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: [
+    { date: "2001", Africa: "10" }, { date: "2002", Africa: "14" }, { date: "2003", Africa: "9" }] },
+  { seriesKey: "Non-LDC", seriesKeyAbbreviation: "NL", series: [
+    { date: "2001", "Non-LDC": "20" }, { date: "2002", "Non-LDC": "16" }, { date: "2003", "Non-LDC": "22" }] },
+];
+const stackKeys = ["Africa", "Non-LDC"];
+const stackCommon = { width: 460, height: 300, missingDataMarker: { height: 2 } };
+const stackSvgEl = document.getElementById("stackSvg");
+const stackCanvasEl = document.getElementById("stackCanvas");
+const stackContractEl = document.getElementById("stackContractChart");
+Object.assign(stackSvgEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stacked", renderer: "svg", ...stackCommon });
+Object.assign(stackCanvasEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stacked", renderer: "canvas", ...stackCommon });
+Object.assign(stackContractEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stack canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...stackCommon });
 
 await nextFrame();
 
@@ -101,6 +206,120 @@ try {
 
   // 7. light DOM (no shadow root) — required by the contract
   log(svgEl.shadowRoot === null, "element renders in LIGHT DOM (no shadow root)");
+
+  // ---- LineChart checks ----
+  const lines = lineSvgEl.querySelectorAll("path.line");
+  log(lines.length >= 2, `LINE: SVG renders line paths (got ${lines.length})`);
+  log(!!lineSvgEl.querySelector('path.line[data-label-safe="South_Region"]'), 'LINE: path carries data-label-safe="South_Region"');
+
+  const dashed = lineSvgEl.querySelectorAll('path.line[stroke-dasharray="4,4"]');
+  log(dashed.length >= 1, `LINE: detectGaps produces a dashed run (got ${dashed.length})`);
+
+  const lctx = lineSvgEl.getContext();
+  log(lctx && lctx.chartType === "line-chart" && lctx.series.length === 2, "LINE: getContext() returns line-chart with 2 series");
+  log(typeof lctx.summary === "string" && lctx.summary.includes("Line chart"), "LINE: getContext() includes an NL summary");
+
+  const la = JSON.stringify({ ...lineSvgEl.getContext(), renderer: 0 });
+  const lb = JSON.stringify({ ...lineCanvasEl.getContext(), renderer: 0 });
+  log(la === lb, "LINE: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(lineSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2, "LINE: a11y table mirror has 2 rows");
+
+  // THE line colour contract: canvas pixels must reflect consumer CSS stroke rgb(20,120,200)
+  const lcnv = lineContractEl.querySelector("canvas");
+  let lineContractOk = false;
+  if (lcnv) {
+    const c = lcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, lcnv.width, lcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 70 && px[i + 1] > 95 && px[i + 1] < 145 && px[i + 2] > 175 && px[i + 2] < 225 && px[i + 3] > 0) { lineContractOk = true; break; }
+    }
+  }
+  log(lineContractOk, "LINE CANVAS colour contract: consumer CSS rgb(20,120,200) reached canvas pixels");
+
+  // ---- AreaChart checks ----
+  const areas = areaSvgEl.querySelectorAll("path.area");
+  log(areas.length === 3, `AREA: SVG renders 3 stacked area paths (got ${areas.length})`);
+  log(!!areaSvgEl.querySelector('path.area[data-label-safe="Fruit"]'), 'AREA: path carries data-label-safe="Fruit"');
+
+  const actx = areaSvgEl.getContext();
+  log(actx && actx.chartType === "area-chart" && actx.keys.length === 3, "AREA: getContext() returns area-chart with 3 keys");
+  log(typeof actx.summary === "string" && actx.summary.includes("area chart"), "AREA: getContext() includes an NL summary");
+
+  const aa = JSON.stringify({ ...areaSvgEl.getContext(), renderer: 0 });
+  const ab = JSON.stringify({ ...areaCanvasEl.getContext(), renderer: 0 });
+  log(aa === ab, "AREA: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(areaSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "AREA: a11y table mirror has 3 rows");
+
+  // THE area colour contract: canvas pixels must reflect consumer CSS fill rgb(180,60,160)
+  const acnv = areaContractEl.querySelector("canvas");
+  let areaContractOk = false;
+  if (acnv) {
+    const c = acnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, acnv.width, acnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 155 && px[i] < 205 && px[i + 1] > 35 && px[i + 1] < 85 && px[i + 2] > 135 && px[i + 2] < 185 && px[i + 3] > 0) { areaContractOk = true; break; }
+    }
+  }
+  log(areaContractOk, "AREA CANVAS colour contract: consumer CSS rgb(180,60,160) reached canvas pixels");
+
+  // ---- ScatterPlot checks ----
+  const marks = scatterSvgEl.querySelectorAll(".scatter-point");
+  log(marks.length === 5, `SCATTER: SVG renders 5 point marks (got ${marks.length})`);
+  log(!!scatterSvgEl.querySelector('.scatter-point[data-label-safe="Alpha_One"]'), 'SCATTER: mark carries data-label-safe="Alpha_One"');
+
+  const sctx = scatterSvgEl.getContext();
+  log(sctx && sctx.chartType === "scatter-plot-chart" && sctx.pointCount === 5, "SCATTER: getContext() returns scatter-plot-chart with 5 points");
+  log(typeof sctx.stats.correlation === "number", `SCATTER: getContext() includes a correlation (r=${sctx.stats.correlation})`);
+
+  const sa = JSON.stringify({ ...scatterSvgEl.getContext(), renderer: 0 });
+  const sb = JSON.stringify({ ...scatterCanvasEl.getContext(), renderer: 0 });
+  log(sa === sb, "SCATTER: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(scatterSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 5, "SCATTER: a11y table mirror has 5 rows");
+
+  // THE scatter colour contract: canvas pixels must reflect consumer CSS fill rgb(40,200,120)
+  const scnv = scatterContractEl.querySelector("canvas");
+  let scatterContractOk = false;
+  if (scnv) {
+    const c = scnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, scnv.width, scnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 90 && px[i + 1] > 175 && px[i + 2] > 95 && px[i + 2] < 145 && px[i + 3] > 0) { scatterContractOk = true; break; }
+    }
+  }
+  log(scatterContractOk, "SCATTER CANVAS colour contract: consumer CSS rgb(40,200,120) reached canvas pixels");
+
+  // ---- VerticalStackBar checks (incl. the hasOwnProperty guard) ----
+  const stackBars = stackSvgEl.querySelectorAll("rect.bar");
+  // 2 datasets x 3 dates x 1 owned segment = 6. The guard suppresses cross-DataSet
+  // stubs; WITHOUT it (with missingDataMarker on) there'd be 12.
+  log(stackBars.length === 6, `STACK: SVG renders 6 bars, no phantom stubs from the guard (got ${stackBars.length})`);
+  log(!!stackSvgEl.querySelector('rect.bar[data-label-safe="Non_LDC"]'), 'STACK: bar carries data-label-safe="Non_LDC"');
+  log(![...stackBars].some((b) => b.getAttribute("data-label-safe") === "Non_LDC" && b.getAttribute("data-label") === "Africa"), "STACK: no Africa-row stub painted in Non-LDC slot");
+
+  const vctx = stackSvgEl.getContext();
+  log(vctx && vctx.chartType === "vertical-stack-bar-chart" && vctx.keys.length === 2, "STACK: getContext() returns vertical-stack-bar-chart with 2 keys");
+  log(typeof vctx.summary === "string" && vctx.summary.includes("Stacked bar chart"), "STACK: getContext() includes an NL summary");
+
+  const va = JSON.stringify({ ...stackSvgEl.getContext(), renderer: 0 });
+  const vb = JSON.stringify({ ...stackCanvasEl.getContext(), renderer: 0 });
+  log(va === vb, "STACK: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(stackSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "STACK: a11y table mirror has 3 rows (dates)");
+
+  // THE stack colour contract: canvas pixels must reflect consumer CSS fill rgb(230,150,20)
+  const vcnv = stackContractEl.querySelector("canvas");
+  let stackContractOk = false;
+  if (vcnv) {
+    const c = vcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, vcnv.width, vcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 205 && px[i + 1] > 125 && px[i + 1] < 175 && px[i + 2] < 60 && px[i + 3] > 0) { stackContractOk = true; break; }
+    }
+  }
+  log(stackContractOk, "STACK CANVAS colour contract: consumer CSS rgb(230,150,20) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
