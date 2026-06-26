@@ -1,0 +1,19 @@
+# Netlify build config for the @michi-vz docs site.
+# Netlify reads this automatically — no need to set the build command / publish
+# directory in the UI. pnpm is auto-detected from pnpm-lock.yaml.
+#
+# NOTE: the docs site (apps/docs, VitePress) doesn't exist yet — the first
+# successful deploy happens once that package is added. Connect the repo now to
+# watch builds; until apps/docs exists this build will fail (expected).
+[build]
+  command = "pnpm install --frozen-lockfile && pnpm --filter docs build"
+  publish = "apps/docs/.vitepress/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Allow example JSON to be fetched cross-origin later (CodePen, embeds).
+[[headers]]
+  for = "/examples/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"

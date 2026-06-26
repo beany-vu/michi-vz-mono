@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>michi-vz — design preview (Nordic structure, Geneva color)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  /* Geneva — bold, kept vivid (the identity) */
+  --brick:#b23a2e; --brick-deep:#931f1a; --gold:#cda14a; --gold-bright:#e7b143; --clay:#d2925d;
+  /* Surface — warm paper, lots of it (Nordic calm) */
+  --paper:#f7f3ea; --paper-2:#efe7d8; --card:#fffefb; --ink:#2a1c15; --ink-2:#5b4a3f; --ink-3:#8a7868;
+  --line:#e6dccb; --line-2:#d8ccb6;
+  --serif:'Spectral',Georgia,serif; --sans:'Hanken Grotesk',system-ui,sans-serif; --mono:'Spline Sans Mono',ui-monospace,monospace;
+  --maxw:1140px; --radius:4px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px}
+.serif{font-family:var(--serif)} .mono{font-family:var(--mono)}
+a{color:inherit;text-decoration:none}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.26em;text-transform:uppercase}
+
+/* ── Nav (clean, minimal) ── */
+.nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:saturate(1.2) blur(10px);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{height:34px;width:auto;filter:drop-shadow(0 2px 4px rgba(80,30,20,.18))}
+.brand .name{font-family:var(--serif);font-weight:700;font-size:21px}
+.brand .name b{color:var(--brick-deep)}
+.nav-links{display:flex;align-items:center;gap:30px}
+.nav-links a{font-size:14.5px;font-weight:500;color:var(--ink-2)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links .cta{font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:#fff;background:var(--brick);padding:9px 16px;border-radius:var(--radius)}
+.nav-links .cta:hover{background:var(--brick-deep)}
+.ver{font-family:var(--mono);font-size:12px;color:var(--ink-2);border:1px solid var(--line-2);border-radius:100px;padding:5px 11px;display:inline-flex;gap:7px;align-items:center}
+.ver:hover{border-color:var(--brick);color:var(--brick-deep)}
+
+/* ── Hero (bold Geneva red, Nordic whitespace) ── */
+.hero{position:relative;background:var(--brick);color:#fff;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.045) 0 1px,transparent 1px 26px);pointer-events:none}
+.hero::after{content:"";position:absolute;top:-20%;right:-5%;width:55%;height:140%;background:radial-gradient(closest-side,rgba(231,177,67,.22),transparent 72%);pointer-events:none}
+.hero-inner{position:relative;display:grid;grid-template-columns:1.6fr 1fr;gap:48px;align-items:center;padding:92px 0 100px}
+.hero .eyebrow{color:var(--gold-bright)}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(60px,9vw,116px);line-height:.94;letter-spacing:-.035em;margin:20px 0 0}
+.hero .lede{max-width:54ch;color:rgba(255,255,255,.92);font-size:18px;margin:24px 0 0}
+.hero-cta{display:flex;gap:14px;margin:34px 0 0}
+.btn{font-family:var(--sans);font-weight:600;font-size:15px;padding:13px 22px;border-radius:var(--radius);display:inline-flex;align-items:center;gap:10px;transition:transform .16s,background .16s}
+.btn-solid{background:#fff;color:var(--brick-deep)} .btn-solid:hover{transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)} .btn-ghost:hover{background:rgba(255,255,255,.1)}
+.hero-meta{display:grid;grid-template-columns:repeat(4,auto);gap:42px;margin:40px 0 0;padding:22px 0 0;border-top:1px solid rgba(255,255,255,.2)}
+.hero-meta .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-bright)}
+.hero-meta .v{font-family:var(--serif);font-weight:600;font-size:22px;margin-top:4px}
+.hero-shield{justify-self:center}
+.hero-shield img{max-width:280px;width:100%;filter:drop-shadow(0 18px 34px rgba(60,12,8,.42))}
+
+/* ── Section head (✦ + hairline + roman) ── */
+.block{padding:84px 0}
+.section-head{display:flex;align-items:center;gap:18px}
+.section-head .mk{color:var(--gold);font-size:18px}
+.section-head h2{font-family:var(--serif);font-weight:700;font-size:clamp(26px,3.2vw,32px);margin:0;white-space:nowrap}
+.section-head .rule{flex:1;height:1px;background:var(--line-2)}
+.section-head .roman{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.block-intro{max-width:60ch;color:var(--ink-2);font-size:16.5px;margin:22px 0 44px}
+
+/* ── Catalog grid + Geneva-flag cards (flat, hairline, calm hover) ── */
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.cat-card{display:grid;grid-template-columns:132px 1fr;border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden;background:var(--card);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.cat-card:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 18px 40px -26px rgba(75,30,20,.4)}
+.cat-left{position:relative;background:var(--brick);color:#fff;padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between;min-height:190px}
+.cat-left::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.06) 0 1px,transparent 1px 15px)}
+.cat-left>*{position:relative}
+.crest{width:26px;height:40px;color:var(--gold-bright)}
+.cat-left .roman{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--gold-bright)}
+.cat-left h3{font-family:var(--serif);font-size:20px;font-weight:700;line-height:1.1;margin:6px 0 8px}
+.cat-fam{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+.cat-right{display:flex;flex-direction:column}
+.cat-preview{padding:14px 14px 4px;display:flex;justify-content:center;align-items:center;min-height:150px}
+.cat-right-foot{padding:6px 18px 18px;margin-top:auto}
+.cat-right-foot p{color:var(--ink-2);font-size:13.5px;line-height:1.5;margin:0 0 12px}
+.cat-go{font-family:var(--mono);font-size:12px;color:var(--brick-deep);display:inline-flex;gap:7px;align-items:center}
+.cat-card:hover .cat-go .arw{transform:translateX(4px)}
+.arw{transition:transform .2s}
+
+/* ── Palette strip ── */
+.pal{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+.sw{display:flex;align-items:center;gap:10px}
+.sw .chip{width:30px;height:30px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sw .nm{font-family:var(--serif);font-weight:600;font-size:14px}
+.sw .hx{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+
+.note{background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--radius);padding:18px 22px;margin:0 0 40px}
+.note .lab{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+@media(max-width:920px){.hero-inner{grid-template-columns:1fr}.hero-shield{display:none}.cat-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="wrap nav-inner">
+  <a class="brand" href="#"><img src="assets/michi-shield.png" alt="michi-vz crest"/><span class="name">michi<b>-vz</b></span></a>
+  <div class="nav-links">
+    <a href="#">Charts</a><a href="#">Examples</a><a href="#">Guide</a><a href="#">GitHub</a>
+    <a class="ver" href="#">v1.0.0 <span style="opacity:.6">▾</span></a>
+    <a class="cta" href="#">npm ↗</a>
+  </div>
+</div></nav>
+
+<header class="hero"><div class="wrap hero-inner">
+  <div>
+    <div class="eyebrow">✦ Michi-vz · Geneva · framework-agnostic charts</div>
+    <h1 class="serif">michi-vz</h1>
+    <p class="lede">Eleven framework-agnostic chart components — a plain-TS engine, native web
+      components, and React / Vue / Svelte / Angular wrappers. SVG &amp; canvas, light-DOM theming,
+      and an LLM-ready <span class="mono" style="opacity:.9">ChartContext</span> on every chart.</p>
+    <div class="hero-cta">
+      <a class="btn btn-solid" href="#">Browse the charts →</a>
+      <a class="btn btn-ghost" href="#">View on GitHub →</a>
+    </div>
+    <div class="hero-meta">
+      <div><div class="k">Charts</div><div class="v">11</div></div>
+      <div><div class="k">Frameworks</div><div class="v">5</div></div>
+      <div><div class="k">Renderers</div><div class="v">SVG + Canvas</div></div>
+      <div><div class="k">Context</div><div class="v">LLM-ready</div></div>
+    </div>
+  </div>
+  <div class="hero-shield"><img src="assets/michi-shield.png" alt="michi-vz Geneva crest"/></div>
+</div></header>
+
+<main class="wrap">
+  <section class="block">
+    <div class="section-head"><span class="mk">✦</span><h2 class="serif">Chart catalog</h2><span class="rule"></span><span class="roman">§ I</span></div>
+    <p class="block-intro">Every chart opens with a short “when to reach for it” note, a live example on
+      realistic data, and a complete props table. Hover any preview to feel the interaction model.</p>
+
+    <div class="cat-grid">
+      <a class="cat-card" href="#">
+        <div class="cat-left">
+          <svg class="crest" viewBox="0 0 26 40" fill="none"><circle cx="13" cy="8" r="6" stroke="currentColor" stroke-width="2.5"/><rect x="11.5" y="13" width="3" height="23" fill="currentColor"/><rect x="14.5" y="28" width="6" height="2.6" fill="currentColor"/><rect x="14.5" y="32.5" width="4.5" height="2.6" fill="currentColor"/></svg>
+          <div><div class="roman">I</div><h3 class="serif">Line Chart</h3><div class="cat-fam">Trends</div></div>
+        </div>
+        <div class="cat-right">
+          <div class="cat-preview"><michi-vz-line-chart id="pv-line"></michi-vz-line-chart></div>
+          <div class="cat-right-foot"><p>Trends over time across one or many series, with an opt-in canvas renderer and gap detection.</p><span class="cat-go">Open spec <span class="arw">→</span></span></div>
+        </div>
+      </a>
+
+      <a class="cat-card" href="#">
+        <div class="cat-left">
+          <svg class="crest" viewBox="0 0 26 40" fill="none"><circle cx="13" cy="8" r="6" stroke="currentColor" stroke-width="2.5"/><rect x="11.5" y="13" width="3" height="23" fill="currentColor"/><rect x="14.5" y="28" width="6" height="2.6" fill="currentColor"/><rect x="14.5" y="32.5" width="4.5" height="2.6" fill="currentColor"/></svg>
+          <div><div class="roman">II</div><h3 class="serif">Area Chart</h3><div class="cat-fam">Composition</div></div>
+        </div>
+        <div class="cat-right">
+          <div class="cat-preview"><michi-vz-area-chart id="pv-area"></michi-vz-area-chart></div>
+          <div class="cat-right-foot"><p>Part-to-whole trends: how each component’s share of a total shifts over time.</p><span class="cat-go">Open spec <span class="arw">→</span></span></div>
+        </div>
+      </a>
+
+      <a class="cat-card" href="#">
+        <div class="cat-left">
+          <svg class="crest" viewBox="0 0 26 40" fill="none"><circle cx="13" cy="8" r="6" stroke="currentColor" stroke-width="2.5"/><rect x="11.5" y="13" width="3" height="23" fill="currentColor"/><rect x="14.5" y="28" width="6" height="2.6" fill="currentColor"/><rect x="14.5" y="32.5" width="4.5" height="2.6" fill="currentColor"/></svg>
+          <div><div class="roman">III</div><h3 class="serif">Radar Chart</h3><div class="cat-fam">Comparison</div></div>
+        </div>
+        <div class="cat-right">
+          <div class="cat-preview"><michi-vz-radar-chart id="pv-radar"></michi-vz-radar-chart></div>
+          <div class="cat-right-foot"><p>Compare several entities across a shared set of axes at a glance.</p><span class="cat-go">Open spec <span class="arw">→</span></span></div>
+        </div>
+      </a>
+
+      <a class="cat-card" href="#">
+        <div class="cat-left">
+          <svg class="crest" viewBox="0 0 26 40" fill="none"><circle cx="13" cy="8" r="6" stroke="currentColor" stroke-width="2.5"/><rect x="11.5" y="13" width="3" height="23" fill="currentColor"/><rect x="14.5" y="28" width="6" height="2.6" fill="currentColor"/><rect x="14.5" y="32.5" width="4.5" height="2.6" fill="currentColor"/></svg>
+          <div><div class="roman">IV</div><h3 class="serif">Range Chart</h3><div class="cat-fam">Uncertainty</div></div>
+        </div>
+        <div class="cat-right">
+          <div class="cat-preview"><michi-vz-range-chart id="pv-range"></michi-vz-range-chart></div>
+          <div class="cat-right-foot"><p>Min–max bands per series — forecasts, confidence intervals, observed ranges.</p><span class="cat-go">Open spec <span class="arw">→</span></span></div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="block" style="padding-top:0">
+    <div class="section-head"><span class="mk">✦</span><h2 class="serif">Geneva palette</h2><span class="rule"></span><span class="roman">§ II</span></div>
+    <p class="block-intro">Red &amp; gold from the Geneva flag, with a warm, muted categorical set — one
+      colour story shared across every chart.</p>
+    <div class="pal">
+      <div class="sw"><span class="chip" style="background:#b23a2e"></span><span><span class="nm">Brick</span><br><span class="hx">#b23a2e</span></span></div>
+      <div class="sw"><span class="chip" style="background:#d6a23f"></span><span><span class="nm">Ochre</span><br><span class="hx">#d6a23f</span></span></div>
+      <div class="sw"><span class="chip" style="background:#4f8a8c"></span><span><span class="nm">Teal</span><br><span class="hx">#4f8a8c</span></span></div>
+      <div class="sw"><span class="chip" style="background:#d2925d"></span><span><span class="nm">Clay</span><br><span class="hx">#d2925d</span></span></div>
+      <div class="sw"><span class="chip" style="background:#a05575"></span><span><span class="nm">Plum</span><br><span class="hx">#a05575</span></span></div>
+      <div class="sw"><span class="chip" style="background:#6f9258"></span><span><span class="nm">Olive</span><br><span class="hx">#6f9258</span></span></div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import "../packages/wc/dist/michi-vz-wc.bundle.js";
+const PALETTE = ["#b23a2e","#d6a23f","#4f8a8c","#d2925d","#a05575","#6f9258"];
+const S = { width: 290, height: 140, colors: PALETTE };
+
+const line = document.getElementById("pv-line");
+Object.assign(line, { ...S, xAxisDataType: "date_annual", margin: { top: 12, right: 16, bottom: 24, left: 28 }, dataSet: [
+  { label: "Europe", series: [{date:2016,value:32,certainty:true},{date:2017,value:41,certainty:true},{date:2018,value:38,certainty:true},{date:2019,value:52,certainty:true}] },
+  { label: "Asia", series: [{date:2016,value:20,certainty:true},{date:2017,value:28,certainty:true},{date:2018,value:40,certainty:true},{date:2019,value:46,certainty:true}] },
+]});
+
+const area = document.getElementById("pv-area");
+Object.assign(area, { ...S, xAxisDataType: "number", margin: { top: 12, right: 16, bottom: 24, left: 28 }, keys: ["Fruit","Veg","Dairy"], series: [
+  {date:2018,Fruit:10,Veg:6,Dairy:4},{date:2019,Fruit:14,Veg:8,Dairy:5},{date:2020,Fruit:9,Veg:12,Dairy:7},{date:2021,Fruit:16,Veg:10,Dairy:9},
+]});
+
+const radar = document.getElementById("pv-radar");
+Object.assign(radar, { width: 200, height: 150, colors: PALETTE, margin: { top: 22, right: 44, bottom: 22, left: 44 }, rings: 3, axes: ["Speed","Power","Range","Agility","Cost"], series: [
+  { label: "A", values: [8,6,7,9,5] }, { label: "B", values: [5,9,6,4,8] },
+]});
+
+const range = document.getElementById("pv-range");
+Object.assign(range, { ...S, xAxisDataType: "date_annual", margin: { top: 12, right: 16, bottom: 24, left: 28 }, dataSet: [
+  { label: "A", series: [{date:2016,valueMin:5,valueMax:12,certainty:true},{date:2017,valueMin:8,valueMax:16,certainty:true},{date:2018,valueMin:6,valueMax:14,certainty:true}] },
+]});
+</script>
+</body>
+</html>

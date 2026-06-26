@@ -92,5 +92,12 @@
     "dataviz",
     "svg",
     "canvas"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beany-vu/michi-vz-mono.git",
+    "directory": "packages/wc"
+  },
+  "homepage": "https://github.com/beany-vu/michi-vz-mono#readme",
+  "bugs": "https://github.com/beany-vu/michi-vz-mono/issues"
 }

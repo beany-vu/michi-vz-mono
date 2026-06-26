@@ -4,7 +4,9 @@
   "description": "Canonical example configs for michi-vz charts — single source for VitePress, Storybook, and sandbox links",
   "type": "module",
   "private": true,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,5 +23,12 @@
   },
   "dependencies": {
     "@michi-vz/core": "workspace:*"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beany-vu/michi-vz-mono.git",
+    "directory": "packages/examples"
+  },
+  "homepage": "https://github.com/beany-vu/michi-vz-mono#readme",
+  "bugs": "https://github.com/beany-vu/michi-vz-mono/issues"
 }
