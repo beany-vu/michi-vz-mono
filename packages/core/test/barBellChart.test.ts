@@ -38,6 +38,31 @@ describe("mountBarBellChart (jsdom)", () => {
     host.remove();
   });
 
+  it("paints every end-cap circle after every bar (caps on top of bars)", () => {
+    const { host, chart } = mount();
+    const content = host.querySelector(".bar-bell-content")!;
+    const kids = Array.from(content.children);
+    const barIdx = kids.map((k, i) => (k.classList.contains("bar") ? i : -1)).filter((i) => i >= 0);
+    const capIdx = kids.map((k, i) => (k.classList.contains("bar-bell-cap") ? i : -1)).filter((i) => i >= 0);
+    expect(barIdx.length).toBe(6);
+    expect(capIdx.length).toBe(6);
+    // the last bar is earlier in the paint order than the first cap
+    expect(Math.max(...barIdx)).toBeLessThan(Math.min(...capIdx));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("shows the tooltip when hovering the bar, not only the cap", () => {
+    const { host, chart } = mount();
+    const bar = host.querySelector<SVGRectElement>(".bar-bell-content rect.bar")!;
+    const tooltip = host.querySelector<HTMLElement>(".tooltip")!;
+    expect(tooltip.style.visibility).toBe("hidden");
+    bar.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    expect(tooltip.style.visibility).toBe("visible");
+    chart.destroy();
+    host.remove();
+  });
+
   it("removes a disabled key from the rendered caps", () => {
     const { host, chart } = mount({ disabledItems: ["Veg"] });
     expect(host.querySelectorAll(".bar-bell-cap").length).toBe(3); // 3 rows x 1 key
