@@ -105,7 +105,13 @@ export function mountBarBellChart(
     const y = ev.clientY - svgRect.top;
     let hit: BarBellSegment | null = null;
     for (const seg of model.segments) {
-      if (Math.hypot(x - seg.cx, y - seg.cy) <= model.capRadius + 1) {
+      const inCap = Math.hypot(x - seg.cx, y - seg.cy) <= model.capRadius + 1;
+      const inBar =
+        seg.width > 0 &&
+        x >= seg.x &&
+        x <= seg.x + seg.width &&
+        Math.abs(y - seg.cy) <= model.barHeight / 2 + 1;
+      if (inCap || inBar) {
         hit = seg;
         break;
       }

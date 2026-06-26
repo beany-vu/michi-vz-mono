@@ -29,15 +29,19 @@ export function drawBarBellCanvas(
     "fill"
   );
 
+  // Pass 1: bars. Pass 2: end-cap circles on top (segments are adjacent, so a
+  // later bar would otherwise cover the previous segment's cap).
   for (const seg of model.segments) {
-    const color = fillColors.get(seg.key) || seg.color;
+    if (seg.width <= 0) continue;
     ctx.globalAlpha = seg.dimmed ? 0.15 : 1;
-    ctx.fillStyle = color;
-    if (seg.width > 0) {
-      ctx.beginPath();
-      ctx.rect(seg.x, seg.cy - model.barHeight / 2, seg.width, model.barHeight);
-      ctx.fill();
-    }
+    ctx.fillStyle = fillColors.get(seg.key) || seg.color;
+    ctx.beginPath();
+    ctx.rect(seg.x, seg.cy - model.barHeight / 2, seg.width, model.barHeight);
+    ctx.fill();
+  }
+  for (const seg of model.segments) {
+    ctx.globalAlpha = seg.dimmed ? 0.15 : 1;
+    ctx.fillStyle = fillColors.get(seg.key) || seg.color;
     ctx.beginPath();
     ctx.arc(seg.cx, seg.cy, model.capRadius, 0, Math.PI * 2);
     ctx.fill();
