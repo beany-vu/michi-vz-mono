@@ -354,6 +354,13 @@
 .mv-card-stage > * {
   width: 100%;
 }
+/* Minimal left + bottom "axes": a subtle L-frame around the sparkline (the
+   charts themselves draw no axis spine — only gridlines/labels, which are
+   hidden above). Radar opts out via data-frame="false" (it has its own rings). */
+.mv-card-preview[data-frame="true"] .mv-card-stage {
+  border-left: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
 /* Card previews read as clean sparkline thumbnails: drop axis labels, ticks,
    gridlines, and titles (the card already names the chart). Keeps the data
    marks and the radar rings. Charts are light DOM, so this reaches them. */
@@ -403,9 +410,9 @@
   font-size: 10.5px;
   letter-spacing: 0.02em;
   color: var(--mv-ink-3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .mv-card-go {
   font-family: var(--mv-mono);
