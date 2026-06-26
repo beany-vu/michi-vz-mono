@@ -26,5 +26,12 @@
   "dependencies": {
     "@michi-vz/core": "workspace:*"
   },
-  "private": true
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beany-vu/michi-vz-mono.git",
+    "directory": "packages/insights"
+  },
+  "homepage": "https://github.com/beany-vu/michi-vz-mono#readme",
+  "bugs": "https://github.com/beany-vu/michi-vz-mono/issues"
 }
