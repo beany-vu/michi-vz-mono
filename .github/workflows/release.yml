@@ -2,9 +2,12 @@ name: Release
 
 # Publishes @michi-vz/* to npm via Changesets. Requires the repo secret NPM_TOKEN
 # (a granular/automation token with publish rights to the @michi-vz scope).
+#
+# MANUAL ONLY (workflow_dispatch): publishing is a deliberate action — trigger it
+# from the Actions tab ("Run workflow") when you're ready. It will NOT run on push,
+# so adding NPM_TOKEN never auto-publishes.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
