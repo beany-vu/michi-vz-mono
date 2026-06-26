@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, shallowRef } from "vue";
-import { examples } from "@michi-vz/examples";
+import { previews } from "./previews";
 
 const props = defineProps<{
   examplesKey: string;
@@ -12,41 +12,43 @@ const props = defineProps<{
   tag: string;
 }>();
 
+// Radar has its own circular rings, so it opts out of the L-axis frame.
+const showFrame = props.examplesKey !== "radar-chart";
+
 const stage = ref<HTMLDivElement>();
-const node = shallowRef<any>(null);
+const chart = shallowRef<{ update: (p: any) => void; destroy: () => void } | null>(null);
 const mounted = ref(false);
 let ro: ResizeObserver | null = null;
 let io: IntersectionObserver | null = null;
 let raf = 0;
 const PREVIEW_H = 124;
+// Tiny thumbnail margin: axis labels are hidden, so marks fill the frame. This
+// is the whole reason the card mounts the engine (the <michi-vz-*> elements
+// expose no `margin`, so a wc thumbnail can't escape the large default margins).
+const THUMB_MARGIN = { top: 6, right: 6, bottom: 8, left: 10 };
 
-// Mount the real web component once, sized to fit the compact preview pane.
-async function mountChart() {
+// Mount the real chart engine once, sized to the compact preview pane.
+function mountChart() {
   if (mounted.value || !stage.value) return;
   mounted.value = true;
-  await import("@michi-vz/wc");
-  const ex = (examples as any)[props.examplesKey]?.[0];
+  const ex = previews[props.examplesKey];
   if (!ex || !stage.value) return;
 
-  const el: any = document.createElement(ex.element);
-  // We own width/height for the thumbnail; drop title/size from the example.
-  const { title: _t, width: _w, height: _h, margin, ...rest } = ex.props;
-  Object.assign(el, rest);
-  el.height = PREVIEW_H;
-  if (margin) el.margin = margin;
-  el.width = Math.max(160, stage.value.clientWidth);
-  el.style.display = "block";
-  el.setAttribute("aria-hidden", "true"); // the card link supplies the name
-  stage.value.appendChild(el);
-  node.value = el;
+  const height = stage.value.clientHeight || PREVIEW_H;
+  const sized = (w: number) => ({
+    ...ex.props,
+    width: Math.max(160, w),
+    height,
+    margin: THUMB_MARGIN,
+  });
+
+  stage.value.setAttribute("aria-hidden", "true"); // the card link supplies the name
+  chart.value = ex.mount(stage.value, sized(stage.value.clientWidth));
 
   ro = new ResizeObserver((entries) => {
     const w = Math.max(160, Math.floor(entries[0].contentRect.width));
-    if (w === el.width) return;
     cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      el.width = w;
-    });
+    raf = requestAnimationFrame(() => chart.value?.update(sized(w)));
   });
   ro.observe(stage.value);
 }
@@ -74,6 +76,7 @@ onBeforeUnmount(() => {
   ro?.disconnect();
   io?.disconnect();
   cancelAnimationFrame(raf);
+  chart.value?.destroy();
 });
 </script>
 
@@ -99,7 +102,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="mv-card-body">
-      <div class="mv-card-preview">
+      <div class="mv-card-preview" :data-frame="showFrame">
         <div class="mv-card-stage" ref="stage"></div>
         <div class="mv-card-skeleton" v-if="!mounted"></div>
       </div>

@@ -9,6 +9,7 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
+    "@michi-vz/core": "workspace:*",
     "@michi-vz/wc": "workspace:*",
     "@michi-vz/examples": "workspace:*"
   },
