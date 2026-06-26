@@ -2,11 +2,12 @@
 # Netlify reads this automatically — no need to set the build command / publish
 # directory in the UI. pnpm is auto-detected from pnpm-lock.yaml.
 #
-# NOTE: the docs site (apps/docs, VitePress) doesn't exist yet — the first
-# successful deploy happens once that package is added. Connect the repo now to
-# watch builds; until apps/docs exists this build will fail (expected).
+# `--filter "docs..."` builds the docs package AND its workspace dependencies
+# (@michi-vz/examples, @michi-vz/wc, @michi-vz/core) in topological order, so
+# their dist/ entries exist before VitePress resolves them. Plain
+# `--filter docs` would build docs alone and fail to resolve @michi-vz/examples.
 [build]
-  command = "pnpm install --frozen-lockfile && pnpm --filter docs build"
+  command = "pnpm install --frozen-lockfile && pnpm --filter \"docs...\" build"
   publish = "apps/docs/.vitepress/dist"
 
 [build.environment]
