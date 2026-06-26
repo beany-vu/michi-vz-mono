@@ -9,3 +9,13 @@ coverage/
 .vitepress/cache/
 .vitepress/dist/
 playground/screenshot.png
+
+# AI assistant artifacts - keep ALL of these out of git (user preference)
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md
+.windsurfrules
