@@ -58,7 +58,7 @@ applyGapChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountGapChart } from "@michi-vz/core";
 
 const chart = mountGapChart(el, props);

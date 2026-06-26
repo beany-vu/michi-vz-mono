@@ -58,7 +58,7 @@ applyLineChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountLineChart } from "@michi-vz/core";
 
 const chart = mountLineChart(el, props);

@@ -58,7 +58,7 @@ applyRadarChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountRadarChart } from "@michi-vz/core";
 
 const chart = mountRadarChart(el, props);

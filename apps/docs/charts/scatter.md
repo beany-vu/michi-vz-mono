@@ -58,7 +58,7 @@ applyScatterChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountScatterChart } from "@michi-vz/core";
 
 const chart = mountScatterChart(el, props);

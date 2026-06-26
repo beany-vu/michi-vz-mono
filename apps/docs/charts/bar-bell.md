@@ -58,7 +58,7 @@ applyBarBellChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountBarBellChart } from "@michi-vz/core";
 
 const chart = mountBarBellChart(el, props);
