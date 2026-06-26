@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/examples",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Canonical example configs for michi-vz charts — single source for VitePress, Storybook, and sandbox links",
   "type": "module",
   "private": true,

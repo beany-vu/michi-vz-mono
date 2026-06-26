@@ -1,7 +1,7 @@
 {
   "name": "@michi-vz/svelte",
-  "version": "1.0.0",
-  "description": "Svelte wrapper for michi-vz charts",
+  "version": "1.1.0",
+  "description": "Svelte wrapper for michi-vz charts. The multi-framework fork of the original React-only michi-vz (github.com/beany-vu/michi-vz).",
   "type": "module",
   "files": [
     "dist"
@@ -44,6 +44,6 @@
     "url": "git+https://github.com/beany-vu/michi-vz-mono.git",
     "directory": "packages/svelte"
   },
-  "homepage": "https://github.com/beany-vu/michi-vz-mono#readme",
+  "homepage": "https://michi-vz.netlify.app/",
   "bugs": "https://github.com/beany-vu/michi-vz-mono/issues"
 }
