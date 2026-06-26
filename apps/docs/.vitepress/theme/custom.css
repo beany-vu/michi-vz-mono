@@ -354,6 +354,16 @@
 .mv-card-stage > * {
   width: 100%;
 }
+/* Card previews read as clean sparkline thumbnails: drop axis labels, ticks,
+   gridlines, and titles (the card already names the chart). Keeps the data
+   marks and the radar rings. Charts are light DOM, so this reaches them. */
+.mv-card-preview .mv-x-axis,
+.mv-card-preview .mv-y-axis,
+.mv-card-preview .mv-axis-label,
+.mv-card-preview .mv-grid,
+.mv-card-preview .title {
+  display: none;
+}
 .mv-card-skeleton {
   position: absolute;
   inset: 12px 14px 2px;
