@@ -1,8 +1,12 @@
-/* Geneva colour over the VitePress default theme: bold red + gold (the flag),
-   Spectral serif for display, calm warm surfaces. "Nordic structure, Geneva color." */
+/* ==========================================================================
+   michi-vz docs theme: a red and gold "heraldic atlas" over VitePress.
+   Bold brand color, calm structure, works in light AND dark mode.
+   ========================================================================== */
+
 :root {
-  --vp-c-brand-1: #931f1a; /* links / accents — darker for contrast */
-  --vp-c-brand-2: #b23a2e; /* Geneva brick */
+  /* VitePress brand hooks (links, buttons, search) */
+  --vp-c-brand-1: #931f1a; /* crest red, darker for contrast */
+  --vp-c-brand-2: #b23a2e; /* brick */
   --vp-c-brand-3: #b23a2e;
   --vp-c-brand-soft: rgba(178, 58, 46, 0.14);
   --vp-c-brand-softer: rgba(178, 58, 46, 0.08);
@@ -10,14 +14,10 @@
   --vp-font-family-base: "Hanken Grotesk", system-ui, -apple-system, sans-serif;
   --vp-font-family-mono: "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  /* Home hero: Geneva red → gold gradient on the name */
+  /* Home hero: brick to gold gradient on the name */
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: linear-gradient(120deg, #b23a2e 30%, #cda14a);
-  --vp-home-hero-image-background-image: linear-gradient(
-    120deg,
-    rgba(178, 58, 46, 0.5),
-    rgba(231, 177, 67, 0.5)
-  );
+  --vp-home-hero-image-background-image: linear-gradient(120deg, rgba(178, 58, 46, 0.5), rgba(231, 177, 67, 0.5));
   --vp-home-hero-image-filter: blur(56px);
 
   --vp-button-brand-bg: #b23a2e;
@@ -25,6 +25,34 @@
   --vp-button-brand-active-bg: #931f1a;
   --vp-button-brand-border: #b23a2e;
   --vp-button-brand-hover-border: #931f1a;
+
+  /* Heraldic atlas tokens (constant accents, themeable surfaces) */
+  --mv-brick: #b23a2e;
+  --mv-crest-red: #931f1a;
+  --mv-brick-ink: #6d1612;
+  --mv-gold: #cda14a;
+  --mv-gold-bright: #e7b143;
+  --mv-card: #fffdf8;
+  --mv-paper: #f6f1e7;
+  --mv-ink: #2a1c15;
+  --mv-ink-2: #5b4a3f;
+  --mv-ink-3: #8a7868;
+  --mv-line: #e1d6c3;
+  --mv-serif: "Spectral", Georgia, "Times New Roman", serif;
+  --mv-mono: "Spline Sans Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --mv-card-shadow: 0 1px 0 rgba(75, 45, 30, 0.04), 0 14px 36px -22px rgba(75, 30, 20, 0.28);
+}
+
+/* Dark mode: keep the red zones and gold accents constant (the brand), swap
+   only the paper surfaces to VitePress dark tokens so nothing glares. */
+.dark {
+  --mv-card: var(--vp-c-bg-soft);
+  --mv-paper: var(--vp-c-bg);
+  --mv-ink: var(--vp-c-text-1);
+  --mv-ink-2: var(--vp-c-text-2);
+  --mv-ink-3: var(--vp-c-text-2);
+  --mv-line: var(--vp-c-divider);
+  --mv-card-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 16px 38px -22px rgba(0, 0, 0, 0.6);
 }
 
 /* Serif display for headings + hero (editorial, restrained). */
@@ -35,4 +63,376 @@
 .vp-doc h3 {
   font-family: "Spectral", Georgia, "Times New Roman", serif;
   letter-spacing: -0.01em;
+}
+.VPHero .text {
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.18;
+}
+
+/* ---------- Hero extras (eyebrow + meta chips, injected by Layout.vue) ---------- */
+.mv-eyebrow {
+  font-family: var(--mv-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mv-crest-red);
+  margin-bottom: 14px;
+}
+.dark .mv-eyebrow {
+  color: var(--mv-gold-bright);
+}
+.mv-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 26px;
+}
+.mv-meta-chip {
+  font-family: var(--mv-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--mv-ink-2);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--mv-line);
+  padding: 4px 11px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* ---------- Atlas section ---------- */
+.mv-atlas {
+  max-width: 1152px;
+  margin: 8px auto 0;
+  padding: 8px 24px 72px;
+}
+@media (max-width: 640px) {
+  .mv-atlas {
+    padding: 8px 24px 56px;
+  }
+}
+
+.mv-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--mv-line);
+}
+.mv-section-head .mv-mark {
+  font-size: 17px;
+  color: var(--mv-gold);
+  transform: translateY(1px);
+  flex: none;
+}
+.mv-section-head h2 {
+  font-family: var(--mv-serif);
+  font-weight: 700;
+  font-size: clamp(24px, 3vw, 32px);
+  white-space: nowrap;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  letter-spacing: -0.01em;
+}
+.mv-section-head .mv-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--mv-line);
+  align-self: center;
+  margin-left: 4px;
+}
+.mv-section-head .mv-section-roman {
+  font-family: var(--mv-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--mv-ink-3);
+  align-self: center;
+}
+.mv-lede {
+  color: var(--mv-ink-2);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 66ch;
+  margin: 14px 0 18px;
+}
+
+/* ---------- Filter chips ---------- */
+.mv-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.mv-chip {
+  font-family: var(--mv-mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--mv-line);
+  background: var(--vp-c-bg-soft);
+  color: var(--mv-ink-2);
+  cursor: pointer;
+  transition: color 0.16s, border-color 0.16s, background 0.16s;
+}
+.mv-chip:hover {
+  border-color: var(--mv-brick);
+  color: var(--mv-brick);
+}
+.dark .mv-chip:hover {
+  color: var(--mv-gold-bright);
+  border-color: var(--mv-gold);
+}
+.mv-chip.on {
+  background: var(--mv-brick);
+  border-color: var(--mv-brick);
+  color: #fff;
+}
+
+/* ---------- Catalog grid ---------- */
+.mv-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+@media (max-width: 940px) {
+  .mv-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 620px) {
+  .mv-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The flag card: red crest zone + live preview zone */
+.mv-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  background: var(--mv-card);
+  border: 1.5px solid var(--mv-line);
+  border-radius: 4px;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: var(--mv-card-shadow);
+  color: var(--mv-ink);
+  text-decoration: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+/* breathing gold gradient border ring */
+.mv-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(90deg, var(--mv-brick) 0%, #f0c040 33%, var(--mv-brick) 66%, #f0c040 100%);
+  background-size: 300% 100%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 4;
+}
+.mv-card:hover,
+.mv-card:focus-within {
+  animation: mv-card-breathe 2.4s ease-in-out infinite;
+}
+.mv-card:hover::before,
+.mv-card:focus-within::before {
+  opacity: 1;
+  animation: mv-border-sweep 2.4s ease-in-out infinite;
+}
+.mv-card:focus-visible {
+  outline: 2px solid var(--mv-brick);
+  outline-offset: 2px;
+}
+@keyframes mv-card-breathe {
+  0%, 100% {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(178, 58, 46, 0.3), 0 0 0 0 rgba(240, 192, 64, 0);
+  }
+  50% {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(178, 58, 46, 0.46), 0 0 0 4px rgba(240, 192, 64, 0.2);
+  }
+}
+@keyframes mv-border-sweep {
+  0%, 100% {
+    background-position: 0% 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
+}
+
+/* left red crest zone */
+.mv-card-crest {
+  position: relative;
+  background: var(--mv-brick);
+  color: #fff;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 192px;
+  overflow: hidden;
+}
+.mv-card-crest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 16px);
+  pointer-events: none;
+}
+.mv-crest-mark {
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 40px;
+  color: var(--mv-gold-bright);
+  transition: color 0.35s ease, filter 0.35s ease;
+}
+.mv-card:hover .mv-crest-mark {
+  color: #f8d24b;
+  filter: drop-shadow(0 0 7px rgba(248, 210, 75, 0.65));
+}
+.mv-card-crest-foot {
+  position: relative;
+  z-index: 1;
+}
+.mv-roman {
+  font-family: var(--mv-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--mv-gold-bright);
+}
+.mv-card-name {
+  font-family: var(--mv-serif);
+  font-weight: 700;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1.12;
+  margin: 6px 0 7px;
+}
+.mv-card-family {
+  font-family: var(--mv-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* right preview + copy zone */
+.mv-card-body {
+  display: flex;
+  flex-direction: column;
+  background: var(--mv-card);
+  transition: background 0.55s ease;
+  min-width: 0;
+}
+.mv-card:hover .mv-card-body {
+  background: linear-gradient(160deg, #fcefc4 0%, #f6e1a0 100%);
+}
+.dark .mv-card:hover .mv-card-body {
+  background: rgba(231, 177, 67, 0.12);
+}
+.mv-card-preview {
+  position: relative;
+  padding: 12px 14px 2px;
+  height: 124px;
+}
+.mv-card-stage {
+  height: 100%;
+  min-width: 0;
+}
+.mv-card-stage > * {
+  width: 100%;
+}
+.mv-card-skeleton {
+  position: absolute;
+  inset: 12px 14px 2px;
+  border-radius: 3px;
+  background: linear-gradient(100deg, var(--vp-c-bg-soft) 30%, var(--mv-line) 50%, var(--vp-c-bg-soft) 70%);
+  background-size: 200% 100%;
+  animation: mv-shimmer 1.3s linear infinite;
+}
+@keyframes mv-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.mv-card-desc {
+  color: var(--mv-ink-2);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 8px 14px 0;
+  transition: color 0.35s ease;
+}
+.mv-card:hover .mv-card-desc {
+  color: var(--mv-brick-ink);
+}
+.dark .mv-card:hover .mv-card-desc {
+  color: var(--mv-ink);
+}
+.mv-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px 14px;
+  margin-top: auto;
+}
+.mv-card-tag {
+  font-family: var(--mv-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--mv-ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mv-card-go {
+  font-family: var(--mv-mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--mv-crest-red);
+  flex: none;
+}
+.dark .mv-card-go {
+  color: var(--mv-gold-bright);
+}
+.mv-arw {
+  display: inline-block;
+  transition: transform 0.18s;
+}
+.mv-card:hover .mv-arw {
+  transform: translateX(4px);
+}
+
+/* Reduced motion: keep the affordance, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .mv-card:hover,
+  .mv-card:focus-within,
+  .mv-card:hover::before,
+  .mv-card:focus-within::before {
+    animation: none;
+  }
+  .mv-card:hover,
+  .mv-card:focus-within {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px rgba(178, 58, 46, 0.4);
+  }
+  .mv-card:hover::before,
+  .mv-card:focus-within::before {
+    opacity: 1;
+  }
+  .mv-card-skeleton {
+    animation: none;
+  }
 }

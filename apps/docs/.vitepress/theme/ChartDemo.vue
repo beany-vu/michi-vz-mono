@@ -18,7 +18,7 @@ onMounted(async () => {
   title.value = ex.title;
 
   const node: any = document.createElement(ex.element);
-  // We own width/height for responsiveness — drop any from the example.
+  // We own width/height for responsiveness - drop any from the example.
   const { title: t, width: _w, height: _h, margin, ...rest } = ex.props;
   if (t) node.chartTitle = t;
   Object.assign(node, rest);

@@ -9,7 +9,7 @@ Relationship between two numeric variables; bubble size encodes a third. Pearson
 
 <ChartDemo chart="scatter-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { ScatterChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyScatterChartProps } from "@michi-vz/angular";
 

@@ -1,7 +1,7 @@
 # LLM context
 
 Every chart derives a renderer-agnostic **`ChartContext`** from its data model (never the DOM), so it
-is **identical in SVG and canvas mode** — even in canvas, where there are no per-mark nodes for a model
+is **identical in SVG and canvas mode** - even in canvas, where there are no per-mark nodes for a model
 to scrape.
 
 ```ts
@@ -12,9 +12,9 @@ el.getContext();
 
 It exposes three things from one source:
 
-1. **Structured JSON** — chart type, axes/domains, per-series stats (min/max/first/last, change,
+1. **Structured JSON** - chart type, axes/domains, per-series stats (min/max/first/last, change,
    trend, correlation, gaps, totals…). Ready for LLM tool-use, RAG, or agents.
-2. **A deterministic natural-language `summary`** — rule-based, no model required; also serves as
+2. **A deterministic natural-language `summary`** - rule-based, no model required; also serves as
    alt text.
 3. **A chart-agnostic `a11yTable`** (`headers` + `rows`) that drives a visually-hidden DOM table next
    to the chart, so screen readers and DOM-scraping tools get real content even in canvas mode.

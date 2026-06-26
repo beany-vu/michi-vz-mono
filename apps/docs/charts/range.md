@@ -5,11 +5,11 @@ title: Range Chart
 
 <span class="vp-badge tip">Uncertainty</span>
 
-Min–max bands per series — forecasts, confidence intervals, or observed ranges over time.
+Min-max bands per series - forecasts, confidence intervals, or observed ranges over time.
 
 <ChartDemo chart="range-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { RangeChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyRangeChartProps } from "@michi-vz/angular";
 

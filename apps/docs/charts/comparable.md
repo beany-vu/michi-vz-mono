@@ -5,11 +5,11 @@ title: Comparable Horizontal Bar
 
 <span class="vp-badge tip">Comparison</span>
 
-Two overlaid horizontal sub-bars per label — a “based” vs “compared” value.
+Two overlaid horizontal sub-bars per label - a “based” vs “compared” value.
 
 <ChartDemo chart="comparable-horizontal-bar-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { ComparableHorizontalBarChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyComparableHorizontalBarChartProps } from "@michi-vz/angular";
 

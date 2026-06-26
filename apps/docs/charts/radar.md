@@ -9,7 +9,7 @@ Compare several entities across a shared set of axes at a glance (a polygon per 
 
 <ChartDemo chart="radar-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { RadarChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyRadarChartProps } from "@michi-vz/angular";
 

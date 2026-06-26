@@ -12,7 +12,7 @@ chart renders as SVG or canvas.
 
 GapChart · LineChart · AreaChart · ScatterPlot · VerticalStackBar ·
 ComparableHorizontalBar · DualHorizontalBar (tornado) · BarBell · Range · Ribbon ·
-Radar — each available across all five outputs (core engine, web component, and
+Radar - each available across all five outputs (core engine, web component, and
 React/Vue/Svelte/Angular wrappers), in both SVG and canvas renderers.
 
 ## Install
@@ -58,7 +58,7 @@ chart.destroy();
 
 ## Hard rules (light DOM, colour contract)
 
-Charts render into **light DOM only** — the canvas renderer resolves mark colours
+Charts render into **light DOM only** - the canvas renderer resolves mark colours
 by reading consumer CSS via `getComputedStyle` on probe elements, so consumer
 rules like `.line[data-label-safe="North"] { stroke: … }` reach canvas pixels.
 Every mark carries `data-label` + `data-label-safe` (sanitized via the single

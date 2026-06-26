@@ -69,7 +69,7 @@ chart.destroy();
 
 ## The colour contract (light DOM)
 
-Charts render into **light DOM** so consumer CSS reaches every mark — including canvas pixels,
+Charts render into **light DOM** so consumer CSS reaches every mark - including canvas pixels,
 via a `getComputedStyle` probe. Colour marks by their sanitized label:
 
 ```css
@@ -77,5 +77,5 @@ via a `getComputedStyle` probe. Colour marks by their sanitized label:
 .bar[data-label-safe="Africa"] { fill: #cda14a; }
 ```
 
-`@michi-vz/core/styles.css` only handles layout/tooltip — it never sets `fill`/`stroke`, because
+`@michi-vz/core/styles.css` only handles layout/tooltip - it never sets `fill`/`stroke`, because
 colour is your contract.
