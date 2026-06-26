@@ -18,7 +18,7 @@ const charts: Array<[string, string, string]> = [
 export default defineConfig({
   title: "michi-vz",
   description:
-    "Framework-agnostic charts — a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.",
+    "Framework-agnostic charts - a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.",
   lang: "en-US",
   cleanUrls: true,
   head: [
@@ -65,12 +65,12 @@ export default defineConfig({
     },
     socialLinks: [{ icon: "github", link: "https://github.com/beany-vu/michi-vz-mono" }],
     footer: {
-      message: "MIT licensed. Red & gold from the Geneva flag.",
+      message: "Free and open source. MIT licensed.",
       copyright: "© 2026 Beany Vu",
     },
     search: { provider: "local" },
   },
-  // The charts are native custom elements — tell Vue not to treat them as components.
+  // The charts are native custom elements - tell Vue not to treat them as components.
   vue: {
     template: {
       compilerOptions: {

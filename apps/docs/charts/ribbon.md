@@ -9,7 +9,7 @@ Stacked columns per period, linked by connector ribbons that trace each category
 
 <ChartDemo chart="ribbon-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { RibbonChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyRibbonChartProps } from "@michi-vz/angular";
 

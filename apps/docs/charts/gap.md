@@ -5,11 +5,11 @@ title: Gap Chart
 
 <span class="vp-badge tip">Comparison</span>
 
-Two values per label joined by a gap bar — emphasises the difference between them.
+Two values per label joined by a gap bar - emphasises the difference between them.
 
 <ChartDemo chart="gap-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { GapChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyGapChartProps } from "@michi-vz/angular";
 

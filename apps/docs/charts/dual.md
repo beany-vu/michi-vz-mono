@@ -5,11 +5,11 @@ title: Dual Horizontal Bar (Tornado)
 
 <span class="vp-badge tip">Comparison</span>
 
-Diverging bars from a centre line — value1 right, value2 left (population pyramids, tornado charts).
+Diverging bars from a centre line - value1 right, value2 left (population pyramids, tornado charts).
 
 <ChartDemo chart="dual-horizontal-bar-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { DualHorizontalBarChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyDualHorizontalBarChartProps } from "@michi-vz/angular";
 

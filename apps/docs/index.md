@@ -2,28 +2,31 @@
 layout: home
 hero:
   name: michi-vz
-  text: Framework-agnostic charts
-  tagline: Eleven charts — a plain-TS engine, native web components, and React / Vue / Svelte / Angular wrappers. SVG & canvas, light-DOM theming, and an LLM-ready ChartContext on every chart.
+  text: Eleven charts. Every framework. One typed API.
+  tagline: Drop them in as web components, or import per-chart into React, Vue, Svelte, Angular, or plain TypeScript. Themed in your own CSS, and able to describe themselves in plain language.
   image:
     src: /michi-shield.png
-    alt: michi-vz Geneva crest
+    alt: michi-vz crest
   actions:
     - theme: brand
-      text: Browse the charts →
-      link: /charts/
+      text: Browse the catalog
+      link: "#chart-atlas"
     - theme: alt
       text: Get started
       link: /guide/getting-started
     - theme: alt
+      text: getContext() API
+      link: /guide/llm-context
+    - theme: alt
       text: GitHub
       link: https://github.com/beany-vu/michi-vz-mono
 features:
-  - title: 11 charts · 5 outputs
-    details: Line, Area, Scatter, VerticalStackBar, Comparable, Dual, BarBell, Range, Ribbon, Radar, Gap — each as a core engine, a web component, and React/Vue/Svelte/Angular wrappers.
-  - title: SVG & Canvas
-    details: Every chart renders identically in SVG or an opt-in canvas mode, with consumer CSS reaching canvas pixels via the light-DOM colour contract.
-  - title: LLM-ready ChartContext
-    details: getContext() returns a renderer-agnostic semantic snapshot — structured data + stats + a deterministic NL summary — identical in SVG and canvas.
-  - title: Made in Geneva
-    details: Red & gold from the Geneva flag, named after Michi the cat. MIT licensed, framework-agnostic, tree-shakeable.
+  - title: One core, five ways to ship
+    details: "@michi-vz/core is plain TypeScript. Use the framework-free web component anywhere, or import the same engine through thin React, Vue, Svelte, and Angular wrappers. Identical props, identical behaviour, one mental model and zero lock-in."
+  - title: "Built for real data: SVG or canvas"
+    details: Flip one prop to render to canvas for large datasets, with LTTB decimation keeping tens of thousands of points smooth. The output stays pixel-identical to SVG and a test pins it, so you prototype in SVG and ship dense dashboards in canvas.
+  - title: Charts that explain themselves
+    details: "getContext() returns a renderer-agnostic snapshot: structured data, computed stats, a deterministic plain-language summary, and an accessibility table, identical in SVG and canvas. Drop it into an LLM prompt, a report, or a screen reader without re-deriving anything."
+  - title: On brand down to the last pixel
+    details: Light-DOM CSS theming means your palette reaches every mark, even canvas pixels, through one colour contract. No shadow DOM and no theme objects to thread, so nothing off-brand sneaks into a screenshot. The gallery below is just CSS.
 ---

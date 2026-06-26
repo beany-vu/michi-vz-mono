@@ -3,7 +3,7 @@
 React wrappers for michi-vz charts.
 
 Part of the [**@michi-vz**](https://www.npmjs.com/org/michi-vz) framework-agnostic
-data-visualization library — a plain-TS engine, native web components, and thin
+data-visualization library - a plain-TS engine, native web components, and thin
 React/Vue/Svelte/Angular wrappers. Every chart emits an LLM-ready `ChartContext`.
 
 ```bash

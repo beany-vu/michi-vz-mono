@@ -5,11 +5,11 @@ title: Line Chart
 
 <span class="vp-badge tip">Trends</span>
 
-Trends over time across one or many series — with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
+Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
 
 <ChartDemo chart="line-chart" />
 
-> The chart above is the **same engine** in every framework — only the integration code below differs.
+> The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage
 
@@ -40,7 +40,7 @@ import { LineChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts — register the elements once
+// main.ts - register the elements once
 import "@michi-vz/angular";
 import { applyLineChartProps } from "@michi-vz/angular";
 
