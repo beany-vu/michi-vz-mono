@@ -1,19 +1,33 @@
 {
   "name": "@michi-vz/core",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Framework-agnostic chart rendering engine + LLM-ready ChartContext",
   "type": "module",
-  "sideEffects": ["**/*.css"],
-  "files": ["dist"],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "require": "./dist/index.cjs" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
     "./styles.css": "./dist/styles/core.css"
   },
-  "scripts": { "build": "tsup", "typecheck": "tsc --noEmit", "test": "vitest run" },
-  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
