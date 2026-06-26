@@ -16,7 +16,8 @@
     "./vertical-stack-bar-chart": { "types": "./dist/vertical-stack-bar-chart.d.ts", "import": "./dist/vertical-stack-bar-chart.js", "require": "./dist/vertical-stack-bar-chart.cjs" },
     "./comparable-horizontal-bar-chart": { "types": "./dist/comparable-horizontal-bar-chart.d.ts", "import": "./dist/comparable-horizontal-bar-chart.js", "require": "./dist/comparable-horizontal-bar-chart.cjs" },
     "./dual-horizontal-bar-chart": { "types": "./dist/dual-horizontal-bar-chart.d.ts", "import": "./dist/dual-horizontal-bar-chart.js", "require": "./dist/dual-horizontal-bar-chart.cjs" },
-    "./bar-bell-chart": { "types": "./dist/bar-bell-chart.d.ts", "import": "./dist/bar-bell-chart.js", "require": "./dist/bar-bell-chart.cjs" }
+    "./bar-bell-chart": { "types": "./dist/bar-bell-chart.d.ts", "import": "./dist/bar-bell-chart.js", "require": "./dist/bar-bell-chart.cjs" },
+    "./range-chart": { "types": "./dist/range-chart.d.ts", "import": "./dist/range-chart.js", "require": "./dist/range-chart.cjs" }
   },
   "scripts": { "build": "tsup && tsup --config tsup.bundle.config.ts", "typecheck": "tsc --noEmit" },
   "publishConfig": { "access": "public" },

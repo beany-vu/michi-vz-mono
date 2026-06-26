@@ -9,6 +9,7 @@ import "./vertical-stack-bar-chart";
 import "./comparable-horizontal-bar-chart";
 import "./dual-horizontal-bar-chart";
 import "./bar-bell-chart";
+import "./range-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -18,3 +19,4 @@ export { VerticalStackBarChartElement } from "./vertical-stack-bar-chart";
 export { ComparableHorizontalBarChartElement } from "./comparable-horizontal-bar-chart";
 export { DualHorizontalBarChartElement } from "./dual-horizontal-bar-chart";
 export { BarBellChartElement } from "./bar-bell-chart";
+export { RangeChartElement } from "./range-chart";

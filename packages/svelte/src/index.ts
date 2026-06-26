@@ -9,6 +9,7 @@ import {
   mountComparableHorizontalBarChart,
   mountDualHorizontalBarChart,
   mountBarBellChart,
+  mountRangeChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -19,6 +20,7 @@ import type {
   ComparableBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
+  RangeChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -31,6 +33,7 @@ export type {
   ComparableBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
+  RangeChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -158,6 +161,21 @@ export function barBellChart(node: HTMLElement, props: BarBellChartProps): BarBe
   const chart = mountBarBellChart(node, props);
   return {
     update: (next: BarBellChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface RangeChartAction {
+  update(props: RangeChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<RangeChartProps>["getContext"];
+}
+
+export function rangeChart(node: HTMLElement, props: RangeChartProps): RangeChartAction {
+  const chart = mountRangeChart(node, props);
+  return {
+    update: (next: RangeChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };
