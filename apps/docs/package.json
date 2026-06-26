@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev",
-    "build": "vitepress build",
+    "extract-props": "node scripts/extract-props.mjs",
+    "test": "node --test scripts/*.test.mjs",
+    "dev": "node scripts/extract-props.mjs && vitepress dev",
+    "build": "node scripts/extract-props.mjs && vitepress build",
     "preview": "vitepress preview"
   },
   "dependencies": {
@@ -14,6 +16,7 @@
     "@michi-vz/examples": "workspace:*"
   },
   "devDependencies": {
+    "ts-morph": "^21.0.0",
     "vitepress": "^1.6.3",
     "vue": "^3.5.13"
   }

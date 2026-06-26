@@ -58,7 +58,7 @@ applyAreaChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountAreaChart } from "@michi-vz/core";
 
 const chart = mountAreaChart(el, props);

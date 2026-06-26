@@ -58,7 +58,7 @@ applyRibbonChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountRibbonChart } from "@michi-vz/core";
 
 const chart = mountRibbonChart(el, props);

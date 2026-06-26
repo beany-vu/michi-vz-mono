@@ -24,7 +24,7 @@ npm i @michi-vz/svelte
 npm i @michi-vz/wc
 ```
 
-```bash [Engine]
+```bash [Vanilla JS]
 npm i @michi-vz/core
 ```
 

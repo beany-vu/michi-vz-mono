@@ -1,0 +1,2547 @@
+{
+  "generatedFrom": "packages/core/src/types.ts",
+  "shared": [
+    {
+      "name": "width",
+      "type": "number",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "height",
+      "type": "number",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "margin",
+      "type": "Margin",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "colors",
+      "type": "string[]",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "colorsMapping",
+      "type": "Record<string, string>",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "renderer",
+      "type": "\"svg\" | \"canvas\"",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "highlightItems",
+      "type": "string[]",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "disabledItems",
+      "type": "string[]",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "skipColorMappingDispatch",
+      "type": "boolean",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "enableTransitions",
+      "type": "boolean",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "onColorMappingGenerated",
+      "type": "(mapping: Record<string, string>) => void",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "onChartDataProcessed",
+      "type": "(context: ChartContext) => void",
+      "optional": true,
+      "description": ""
+    },
+    {
+      "name": "onDataWarning",
+      "type": "(warnings: DataWarning[]) => void",
+      "optional": true,
+      "description": ""
+    }
+  ],
+  "charts": {
+    "line-chart": {
+      "element": "michi-vz-line-chart",
+      "propsType": "LineChartProps",
+      "context": "LineChartContext",
+      "mount": "mountLineChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "LineDataItem[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "1000",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "500",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisDataType",
+          "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
+          "optional": true,
+          "description": "",
+          "default": "\"number\"",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickValues",
+          "type": "Array<number | Date>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "curve",
+          "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
+          "optional": true,
+          "description": "Default interpolation for every series (per-series `curve` wins).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "detectGaps",
+          "type": "boolean",
+          "optional": true,
+          "description": "Auto-derive `certainty` from missing periods (dashes the gap segment).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "expectedStep",
+          "type": "number",
+          "optional": true,
+          "description": "Expected cadence in axis units; REQUIRED for xAxisDataType \"number\".",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showDataPoints",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "enableMouseLine",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "singlePointLine",
+          "type": "boolean | SinglePointLineConfig",
+          "optional": true,
+          "description": "true / config draws a horizontal guide line for single-point series.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "filter",
+          "type": "Filter",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "area-chart": {
+      "element": "michi-vz-area-chart",
+      "propsType": "AreaChartProps",
+      "context": "AreaChartContext",
+      "mount": "mountAreaChart",
+      "props": [
+        {
+          "name": "series",
+          "type": "AreaDataRow[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "keys",
+          "type": "string[]",
+          "optional": false,
+          "description": "Category keys to stack (bottom-to-top); disabledItems removes from the stack.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "xAxisDataType",
+          "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
+          "optional": true,
+          "description": "",
+          "default": "\"number\"",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "forcePercentageScale",
+          "type": "boolean",
+          "optional": true,
+          "description": "Fix the y-axis to [0,100] regardless of data (display only; data not normalized).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickValues",
+          "type": "Array<number | Date>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "curve",
+          "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(row: AreaDataRow, key: string, series: AreaDataRow[]) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "scatter-chart": {
+      "element": "michi-vz-scatter-chart",
+      "propsType": "ScatterChartProps",
+      "context": "ScatterChartContext",
+      "mount": "mountScatterChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "ScatterDataPoint[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "xAxisDataType",
+          "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
+          "optional": true,
+          "description": "number / date for x (band x deferred). y is always linear.",
+          "default": "\"number\"",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "sizeRange",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "[minRadius, maxRadius] px for the size scale (default [4, 20]).",
+          "default": "[4, 20]",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickValues",
+          "type": "Array<number | Date>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "filter",
+          "type": "Filter",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: ScatterDataPoint) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "range-chart": {
+      "element": "michi-vz-range-chart",
+      "propsType": "RangeChartProps",
+      "context": "RangeChartContext",
+      "mount": "mountRangeChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "RangeDataItem[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "1000",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "500",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "xAxisDataType",
+          "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
+          "optional": true,
+          "description": "",
+          "default": "\"number\"",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickValues",
+          "type": "Array<number | Date>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "curve",
+          "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "fillOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "band fill opacity (default 0.8).",
+          "default": "0.8",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: RangeDataPoint, item: RangeDataItem) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "ribbon-chart": {
+      "element": "michi-vz-ribbon-chart",
+      "propsType": "RibbonChartProps",
+      "context": "RibbonChartContext",
+      "mount": "mountRibbonChart",
+      "props": [
+        {
+          "name": "series",
+          "type": "RibbonDataRow[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "keys",
+          "type": "string[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 60, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "columnWidth",
+          "type": "number",
+          "optional": true,
+          "description": "column width in px (default 30).",
+          "default": "30",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(row: RibbonDataRow, key: string, value: number) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "radar-chart": {
+      "element": "michi-vz-radar-chart",
+      "propsType": "RadarChartProps",
+      "context": "RadarChartContext",
+      "mount": "mountRadarChart",
+      "props": [
+        {
+          "name": "series",
+          "type": "RadarDataItem[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "axes",
+          "type": "string[]",
+          "optional": false,
+          "description": "spoke labels (the radial axes).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "600",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "600",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 60, right: 80, bottom: 60, left: 80 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "maxValue",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "rings",
+          "type": "number",
+          "optional": true,
+          "description": "number of concentric grid rings (default 4).",
+          "default": "4",
+          "common": false
+        },
+        {
+          "name": "fillOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "polygon fill opacity (default 0.2).",
+          "default": "0.2",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(item: RadarDataItem) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "vertical-stack-bar-chart": {
+      "element": "michi-vz-vertical-stack-bar-chart",
+      "propsType": "VerticalStackBarChartProps",
+      "context": "VerticalStackBarChartContext",
+      "mount": "mountVerticalStackBarChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "VerticalStackBarDataSet[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "keys",
+          "type": "string[]",
+          "optional": true,
+          "description": "Explicit stack order; present keys first (in this order), natural keys appended.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "keysOrder",
+          "type": "\"topToBottom\" | \"bottomToTop\"",
+          "optional": true,
+          "description": "",
+          "default": "\"topToBottom\"",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 100, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisDomain",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "minBarWidth",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "minBarHeight",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "15",
+          "common": false
+        },
+        {
+          "name": "minBarHeightZero",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "0",
+          "common": false
+        },
+        {
+          "name": "missingDataMarker",
+          "type": "{ height: number }",
+          "optional": true,
+          "description": "Opt-in thin stub on the zero line for explicitly-missing (null/NaN) owned keys.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "filter",
+          "type": "{ limit: number; sortingDir: \"asc\" | \"desc\"; date?: string }",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(rect: StackRectData) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onLegendDataChange",
+          "type": "(legendData: StackLegendItem[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "comparable-horizontal-bar-chart": {
+      "element": "michi-vz-comparable-horizontal-bar-chart",
+      "propsType": "ComparableBarChartProps",
+      "context": "ComparableBarChartContext",
+      "mount": "mountComparableHorizontalBarChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "ComparableBarDataPoint[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 120 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickHtmlWidth",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "100",
+          "common": false
+        },
+        {
+          "name": "valueBasedOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "Fill opacity of the two sub-bars (historical look: 0.45 / 0.9).",
+          "default": "0.45",
+          "common": false
+        },
+        {
+          "name": "valueComparedOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "0.9",
+          "common": false
+        },
+        {
+          "name": "filter",
+          "type": "{ limit: number; criteria: \"valueBased\" | \"valueCompared\"; sortingDir: \"asc\" | \"desc\" }",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: ComparableBarDataPoint) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "dual-horizontal-bar-chart": {
+      "element": "michi-vz-dual-horizontal-bar-chart",
+      "propsType": "DualBarChartProps",
+      "context": "DualBarChartContext",
+      "mount": "mountDualHorizontalBarChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "DualBarDataPoint[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 120 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tickHtmlWidth",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "100",
+          "common": false
+        },
+        {
+          "name": "value1Opacity",
+          "type": "number",
+          "optional": true,
+          "description": "value1 (right) / value2 (left) fill opacities.",
+          "default": "0.9",
+          "common": false
+        },
+        {
+          "name": "value2Opacity",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "0.55",
+          "common": false
+        },
+        {
+          "name": "filter",
+          "type": "{ limit: number; criteria: \"value1\" | \"value2\"; sortingDir: \"asc\" | \"desc\" }",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: DualBarDataPoint) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "bar-bell-chart": {
+      "element": "michi-vz-bar-bell-chart",
+      "propsType": "BarBellChartProps",
+      "context": "BarBellChartContext",
+      "mount": "mountBarBellChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "BarBellDataRow[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "keys",
+          "type": "string[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 100 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickHtmlWidth",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "80",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(row: BarBellDataRow, key: string, value: number) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "gap-chart": {
+      "element": "michi-vz-gap-chart",
+      "propsType": "GapChartProps",
+      "context": "GapChartContext",
+      "mount": "mountGapChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "GapDataItem[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "1000",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "500",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 150, bottom: 100, left: 150 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorMode",
+          "type": "\"label\" | \"shape\"",
+          "optional": true,
+          "description": "",
+          "default": "\"label\"",
+          "common": false
+        },
+        {
+          "name": "shapeColorsMapping",
+          "type": "ShapeMapping",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "shapesLabelsMapping",
+          "type": "ShapeMapping",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "filter",
+          "type": "Filter",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "shapeValue1",
+          "type": "\"circle\" | \"square\" | \"triangle\"",
+          "optional": true,
+          "description": "",
+          "default": "\"circle\"",
+          "common": false
+        },
+        {
+          "name": "shapeValue2",
+          "type": "\"circle\" | \"square\" | \"triangle\"",
+          "optional": true,
+          "description": "",
+          "default": "\"circle\"",
+          "common": false
+        },
+        {
+          "name": "xAxisDataType",
+          "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
+          "optional": true,
+          "description": "",
+          "default": "\"number\"",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickValues",
+          "type": "Array<number | Date>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tickHtmlWidth",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "100",
+          "common": false
+        },
+        {
+          "name": "squareRadius",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "2",
+          "common": false
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to \"transparent\" and the chart does not emit onColorMappingGenerated. Mark colours then come from consumer CSS via the data-label-safe color contract.",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "showLegend",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "legendAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: GapDataItem) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(item: GapDataItem | null) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    }
+  }
+}

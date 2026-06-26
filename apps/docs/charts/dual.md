@@ -58,7 +58,7 @@ applyDualHorizontalBarChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountDualHorizontalBarChart } from "@michi-vz/core";
 
 const chart = mountDualHorizontalBarChart(el, props);

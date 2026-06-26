@@ -58,7 +58,7 @@ applyVerticalStackBarChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountVerticalStackBarChart } from "@michi-vz/core";
 
 const chart = mountVerticalStackBarChart(el, props);

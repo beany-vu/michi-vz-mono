@@ -2,6 +2,7 @@ import DefaultTheme from "vitepress/theme";
 import type { Theme } from "vitepress";
 import Layout from "./Layout.vue";
 import ChartDemo from "./ChartDemo.vue";
+import PropsTable from "./PropsTable.vue";
 import "./custom.css";
 
 // `Layout` wraps the default theme to inject the home eyebrow, hero meta chips,
@@ -14,5 +15,6 @@ export default {
   Layout,
   enhanceApp({ app }) {
     app.component("ChartDemo", ChartDemo);
+    app.component("PropsTable", PropsTable);
   },
 } satisfies Theme;

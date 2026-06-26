@@ -58,7 +58,7 @@ applyRangeChartProps(this.c.nativeElement, props);
 </script>
 ```
 
-```ts [Engine]
+```ts [Vanilla JS]
 import { mountRangeChart } from "@michi-vz/core";
 
 const chart = mountRangeChart(el, props);

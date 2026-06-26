@@ -33,6 +33,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: "Charts", link: "/charts/" },
+      { text: "API", link: "/api/line" },
       { text: "Guide", link: "/guide/getting-started" },
       {
         // TanStack-style version switcher (single version for now).
@@ -43,26 +44,33 @@ export default defineConfig({
         ],
       },
     ],
-    sidebar: {
-      "/charts/": [
-        {
-          text: "Charts",
-          items: [
-            { text: "Overview", link: "/charts/" },
-            ...charts.map(([slug, name]) => ({ text: name, link: `/charts/${slug}` })),
-          ],
-        },
-      ],
-      "/guide/": [
-        {
-          text: "Guide",
-          items: [
-            { text: "Getting started", link: "/guide/getting-started" },
-            { text: "LLM context", link: "/guide/llm-context" },
-          ],
-        },
-      ],
-    },
+    sidebar: (() => {
+      // Charts (demos) + Chart API are shown together (MUI-style) on both
+      // /charts/ and /api/, so you can hop between a chart and its API.
+      const chartsGroup = {
+        text: "Charts",
+        items: [
+          { text: "Overview", link: "/charts/" },
+          ...charts.map(([slug, name]) => ({ text: name, link: `/charts/${slug}` })),
+        ],
+      };
+      const apiGroup = {
+        text: "Chart API",
+        items: charts.map(([slug, name]) => ({ text: name, link: `/api/${slug}` })),
+      };
+      const guideGroup = {
+        text: "Guide",
+        items: [
+          { text: "Getting started", link: "/guide/getting-started" },
+          { text: "LLM context", link: "/guide/llm-context" },
+        ],
+      };
+      return {
+        "/charts/": [chartsGroup, apiGroup],
+        "/api/": [chartsGroup, apiGroup],
+        "/guide/": [guideGroup],
+      };
+    })(),
     socialLinks: [{ icon: "github", link: "https://github.com/beany-vu/michi-vz-mono" }],
     footer: {
       message: "Free and open source. MIT licensed.",
