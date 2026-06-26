@@ -10,6 +10,7 @@ import {
   mountDualHorizontalBarChart,
   mountBarBellChart,
   mountRangeChart,
+  mountRibbonChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -21,6 +22,7 @@ import type {
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
+  RibbonChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -34,6 +36,7 @@ export type {
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
+  RibbonChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -176,6 +179,21 @@ export function rangeChart(node: HTMLElement, props: RangeChartProps): RangeChar
   const chart = mountRangeChart(node, props);
   return {
     update: (next: RangeChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface RibbonChartAction {
+  update(props: RibbonChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<RibbonChartProps>["getContext"];
+}
+
+export function ribbonChart(node: HTMLElement, props: RibbonChartProps): RibbonChartAction {
+  const chart = mountRibbonChart(node, props);
+  return {
+    update: (next: RibbonChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };

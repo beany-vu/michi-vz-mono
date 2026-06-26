@@ -11,6 +11,7 @@ import {
   mountDualHorizontalBarChart,
   mountBarBellChart,
   mountRangeChart,
+  mountRibbonChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -22,6 +23,7 @@ import type {
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
+  RibbonChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -36,6 +38,7 @@ export type {
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
+  RibbonChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -72,6 +75,10 @@ export interface BarBellChartHandle {
 }
 
 export interface RangeChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface RibbonChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -291,4 +298,27 @@ export const RangeChart = forwardRef<RangeChartHandle, RangeChartProps>(function
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
   return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
+});
+
+export const RibbonChart = forwardRef<RibbonChartHandle, RibbonChartProps>(function RibbonChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<RibbonChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountRibbonChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
 });

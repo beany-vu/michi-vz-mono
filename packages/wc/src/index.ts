@@ -10,6 +10,7 @@ import "./comparable-horizontal-bar-chart";
 import "./dual-horizontal-bar-chart";
 import "./bar-bell-chart";
 import "./range-chart";
+import "./ribbon-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -20,3 +21,4 @@ export { ComparableHorizontalBarChartElement } from "./comparable-horizontal-bar
 export { DualHorizontalBarChartElement } from "./dual-horizontal-bar-chart";
 export { BarBellChartElement } from "./bar-bell-chart";
 export { RangeChartElement } from "./range-chart";
+export { RibbonChartElement } from "./ribbon-chart";
