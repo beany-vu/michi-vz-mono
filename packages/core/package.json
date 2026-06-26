@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/core",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Framework-agnostic chart rendering engine + LLM-ready ChartContext. The multi-framework fork of the original React-only michi-vz (github.com/beany-vu/michi-vz).",
   "type": "module",
   "sideEffects": [
