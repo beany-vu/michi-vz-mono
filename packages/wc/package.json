@@ -81,5 +81,16 @@
   "dependencies": {
     "@michi-vz/core": "workspace:*",
     "lit": "^3.2.1"
-  }
+  },
+  "license": "MIT",
+  "author": "Beany Vu",
+  "keywords": [
+    "charts",
+    "web-components",
+    "custom-elements",
+    "lit",
+    "dataviz",
+    "svg",
+    "canvas"
+  ]
 }

@@ -35,5 +35,15 @@
     "react-dom": "^19.1.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0"
-  }
+  },
+  "license": "MIT",
+  "author": "Beany Vu",
+  "keywords": [
+    "charts",
+    "react",
+    "dataviz",
+    "svg",
+    "canvas"
+  ],
+  "sideEffects": false
 }
