@@ -1,0 +1,25 @@
+{
+  "name": "@michi-vz/examples",
+  "version": "1.0.0",
+  "description": "Canonical example configs for michi-vz charts — single source for VitePress, Storybook, and sandbox links",
+  "type": "module",
+  "private": true,
+  "files": ["dist"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@michi-vz/core": "workspace:*"
+  }
+}
