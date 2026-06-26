@@ -14,6 +14,7 @@ import type {
   DualHorizontalBarChartElement,
   BarBellChartElement,
   RangeChartElement,
+  RibbonChartElement,
 } from "@michi-vz/wc";
 import type {
   GapChartProps,
@@ -25,6 +26,7 @@ import type {
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
+  RibbonChartProps,
 } from "@michi-vz/core";
 
 export type {
@@ -37,6 +39,7 @@ export type {
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
+  RibbonChartProps,
   ChartContext,
 } from "@michi-vz/core";
 export type {
@@ -49,6 +52,7 @@ export type {
   DualHorizontalBarChartElement,
   BarBellChartElement,
   RangeChartElement,
+  RibbonChartElement,
 } from "@michi-vz/wc";
 
 /** Apply engine props onto a <michi-vz-gap-chart> element (property binding). */
@@ -208,6 +212,24 @@ export function applyRangeChartProps(el: RangeChartElement, props: RangeChartPro
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.curve !== undefined) el.curve = props.curve;
   if (props.fillOpacity !== undefined) el.fillOpacity = props.fillOpacity;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-ribbon-chart> element. */
+export function applyRibbonChartProps(el: RibbonChartElement, props: RibbonChartProps): void {
+  el.series = props.series;
+  el.keys = props.keys;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.columnWidth !== undefined) el.columnWidth = props.columnWidth;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;

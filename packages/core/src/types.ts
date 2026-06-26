@@ -676,8 +676,58 @@ export interface RangeChartContext extends BaseChartContext {
   stats: { seriesCount: number; pointCount: number; valueRange: [number, number] };
 }
 
+// ---- RibbonChart (stacked columns + connecting ribbons) ----
+
+export interface RibbonDataRow {
+  date: string | number;
+  [key: string]: number | string | undefined;
+}
+
+export interface RibbonChartProps {
+  series: RibbonDataRow[];
+  keys: string[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  /** column width in px (default 30). */
+  columnWidth?: number;
+  ticks?: number;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  tooltipFormatter?: (row: RibbonDataRow, key: string, value: number) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface RibbonSeriesContext {
+  key: string;
+  color: string;
+  total: number;
+}
+
+export interface RibbonChartContext extends BaseChartContext {
+  chartType: "ribbon-chart";
+  xAxis: { domain: string[] };
+  yAxis: { domain: [number, number] };
+  keys: string[];
+  series: RibbonSeriesContext[];
+  stats: { keyCount: number; dateCount: number; grandTotal: number };
+}
+
 /** Discriminated union of every chart's context, keyed on `chartType`. Grows as
- * charts are ported (Phase 4+: + RadarChartContext | RibbonChartContext | ...). */
+ * charts are ported (Phase 4+: + RadarChartContext | ...). */
 export type ChartContext =
   | GapChartContext
   | LineChartContext
@@ -687,7 +737,8 @@ export type ChartContext =
   | ComparableBarChartContext
   | DualBarChartContext
   | BarBellChartContext
-  | RangeChartContext;
+  | RangeChartContext
+  | RibbonChartContext;
 
 export interface DataWarning {
   type:

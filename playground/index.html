@@ -29,6 +29,8 @@
   #bellContract .bar { fill: rgb(210, 90, 40); }
   /* Range consumer colour contract: recolour band fills purely via CSS. */
   #rangeContract .area { fill: rgb(70, 50, 200); }
+  /* Ribbon consumer colour contract: recolour column fills purely via CSS. */
+  #ribbonContract .bar { fill: rgb(200, 30, 90); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -108,6 +110,14 @@
 </div>
 <h2>Range consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="rangeContract"><michi-vz-range-chart id="rangeContractChart"></michi-vz-range-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc — RibbonChart (stacked columns + connectors)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-ribbon-chart id="ribbonSvg"></michi-vz-ribbon-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-ribbon-chart id="ribbonCanvas"></michi-vz-ribbon-chart></div>
+</div>
+<h2>Ribbon consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="ribbonContract"><michi-vz-ribbon-chart id="ribbonContractChart"></michi-vz-ribbon-chart></div>
 
 <div id="results">running…</div>
 
@@ -267,6 +277,21 @@ const rangeContractEl = document.getElementById("rangeContractChart");
 Object.assign(rangeSvgEl, { dataSet: rangeData, chartTitle: "Bands", renderer: "svg", ...rangeCommon });
 Object.assign(rangeCanvasEl, { dataSet: rangeData, chartTitle: "Bands", renderer: "canvas", ...rangeCommon });
 Object.assign(rangeContractEl, { dataSet: rangeData, chartTitle: "Range canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...rangeCommon });
+
+// ---- RibbonChart setup ----
+const ribbonData = [
+  { date: "2001", Fruit: 10, Veg: 6 },
+  { date: "2002", Fruit: 14, Veg: 9 },
+  { date: "2003", Fruit: 8, Veg: 13 },
+];
+const ribbonKeys = ["Fruit", "Veg"];
+const ribbonCommon = { width: 460, height: 300 };
+const ribbonSvgEl = document.getElementById("ribbonSvg");
+const ribbonCanvasEl = document.getElementById("ribbonCanvas");
+const ribbonContractEl = document.getElementById("ribbonContractChart");
+Object.assign(ribbonSvgEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Stream", renderer: "svg", ...ribbonCommon });
+Object.assign(ribbonCanvasEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Stream", renderer: "canvas", ...ribbonCommon });
+Object.assign(ribbonContractEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Ribbon canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...ribbonCommon });
 
 await nextFrame();
 
@@ -533,6 +558,33 @@ try {
     }
   }
   log(rangeContractOk, "RANGE CANVAS colour contract: consumer CSS rgb(70,50,200) reached canvas pixels");
+
+  // ---- RibbonChart checks ----
+  const ribbonCols = ribbonSvgEl.querySelectorAll("rect.bar");
+  log(ribbonCols.length === 6, `RIBBON: SVG renders 6 stacked columns (3 dates x 2 keys) (got ${ribbonCols.length})`);
+  log(ribbonSvgEl.querySelectorAll("path.ribbon").length === 4, `RIBBON: 4 connector ribbons (2 gaps x 2 keys) (got ${ribbonSvgEl.querySelectorAll("path.ribbon").length})`);
+  log(!!ribbonSvgEl.querySelector('rect.bar[data-label-safe="Fruit"]'), 'RIBBON: column carries data-label-safe="Fruit"');
+
+  const ibctx = ribbonSvgEl.getContext();
+  log(ibctx && ibctx.chartType === "ribbon-chart" && ibctx.keys.length === 2, "RIBBON: getContext() returns ribbon-chart with 2 keys");
+
+  const iba = JSON.stringify({ ...ribbonSvgEl.getContext(), renderer: 0 });
+  const ibb = JSON.stringify({ ...ribbonCanvasEl.getContext(), renderer: 0 });
+  log(iba === ibb, "RIBBON: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(ribbonSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "RIBBON: a11y table mirror has 3 rows");
+
+  // THE ribbon colour contract: canvas pixels must reflect consumer CSS fill rgb(200,30,90)
+  const ibcnv = ribbonContractEl.querySelector("canvas");
+  let ribbonContractOk = false;
+  if (ibcnv) {
+    const c = ibcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, ibcnv.width, ibcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 175 && px[i + 1] < 70 && px[i + 2] > 65 && px[i + 2] < 115 && px[i + 3] > 0) { ribbonContractOk = true; break; }
+    }
+  }
+  log(ribbonContractOk, "RIBBON CANVAS colour contract: consumer CSS rgb(200,30,90) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }

@@ -11,6 +11,7 @@ export { mountComparableHorizontalBarChart } from "./engine/comparableHorizontal
 export { mountDualHorizontalBarChart } from "./engine/dualHorizontalBarChart";
 export { mountBarBellChart } from "./engine/barBellChart";
 export { mountRangeChart } from "./engine/rangeChart";
+export { mountRibbonChart } from "./engine/ribbonChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -74,6 +75,10 @@ export { buildBarBellContext } from "./context/buildBarBellContext";
 export { processRangeData } from "./rangeChart/data";
 export { buildRangeColors } from "./rangeChart/colors";
 export { buildRangeContext } from "./context/buildRangeContext";
+// RibbonChart pure layer
+export { processRibbonData } from "./ribbonChart/data";
+export { buildRibbonColors } from "./ribbonChart/colors";
+export { buildRibbonContext } from "./context/buildRibbonContext";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -156,4 +161,8 @@ export type {
   RangeChartProps,
   RangeSeriesContext,
   RangeChartContext,
+  RibbonDataRow,
+  RibbonChartProps,
+  RibbonSeriesContext,
+  RibbonChartContext,
 } from "./types";
