@@ -20,18 +20,31 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return d === 0 ? 0 : dot / d;
 }
 
-/** Deterministic, model-free hashing embedder (FNV-1a token hash → L2-normalized
- * bag-of-words). Crude but real similarity; the always-available fallback. */
+function fnv1a(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h);
+}
+
+/** Deterministic, model-free hashing embedder → L2-normalized vector. Hashes each
+ * word PLUS its character 3-grams (with `#word#` boundaries), so fuzzy lexical matches
+ * work: "customer" ≈ "customers", "forecast" ≈ "forecasting", typos partially match.
+ * True synonyms with no shared letters (revenue ≈ income) still need a real model
+ * (`backend:"transformers"`). Crude but useful; the always-available fallback. */
 export function hashEmbed(text: string, dim = 128): number[] {
   const v = new Array(dim).fill(0);
   const tokens = text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   for (const t of tokens) {
-    let h = 2166136261;
-    for (let i = 0; i < t.length; i++) {
-      h ^= t.charCodeAt(i);
-      h = Math.imul(h, 16777619);
+    v[fnv1a(t) % dim] += 1; // whole word — keeps exact matches strong
+    const w = `#${t}#`;
+    if (w.length <= 3) {
+      v[fnv1a(w) % dim] += 1;
+    } else {
+      for (let i = 0; i + 3 <= w.length; i++) v[fnv1a(w.slice(i, i + 3)) % dim] += 1;
     }
-    v[Math.abs(h) % dim] += 1;
   }
   const norm = Math.sqrt(v.reduce((s, x) => s + x * x, 0)) || 1;
   return v.map((x) => x / norm);
