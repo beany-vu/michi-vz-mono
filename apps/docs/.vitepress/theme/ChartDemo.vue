@@ -7,8 +7,30 @@ const host = ref<HTMLDivElement>();
 const el = shallowRef<any>(null);
 const ctx = ref<string>("");
 const title = ref<string>("");
+// Canvas-first: we built the canvas renderer in parallel with SVG and it is the
+// faster path, so the live demos lead with it. The toggle proves SVG/canvas parity.
+const renderer = ref<"canvas" | "svg">("canvas");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let exCache: any = null;
 let ro: ResizeObserver | null = null;
 let raf = 0;
+
+function buildNode() {
+  if (!exCache || !host.value) return;
+  const ex = exCache;
+  const node: any = document.createElement(ex.element);
+  // We own width/height/renderer for responsiveness - drop any from the example.
+  const { title: t, width: _w, height: _h, margin, renderer: _r, ...rest } = ex.props;
+  if (t) node.chartTitle = t;
+  Object.assign(node, rest);
+  node.renderer = renderer.value;
+  node.height = props.height ?? 340;
+  if (margin) node.margin = margin;
+  node.style.display = "block";
+  node.width = Math.max(280, host.value.clientWidth);
+  host.value.appendChild(node);
+  el.value = node;
+}
 
 onMounted(async () => {
   // Register the web components client-side only (never during SSR).
@@ -16,25 +38,15 @@ onMounted(async () => {
   const ex = (examples as any)[props.chart]?.[props.index ?? 0];
   if (!ex || !host.value) return;
   title.value = ex.title;
-
-  const node: any = document.createElement(ex.element);
-  // We own width/height for responsiveness - drop any from the example.
-  const { title: t, width: _w, height: _h, margin, ...rest } = ex.props;
-  if (t) node.chartTitle = t;
-  Object.assign(node, rest);
-  node.height = props.height ?? 340;
-  if (margin) node.margin = margin;
-  node.style.display = "block";
-  node.width = Math.max(280, host.value.clientWidth);
-  host.value.appendChild(node);
-  el.value = node;
+  exCache = ex;
+  buildNode();
 
   // Resize the chart to fill its container (rAF-throttled).
   ro = new ResizeObserver((entries) => {
     const w = Math.max(280, Math.floor(entries[0].contentRect.width));
-    if (w === node.width) return;
+    if (!el.value || w === el.value.width) return;
     cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => { node.width = w; });
+    raf = requestAnimationFrame(() => { if (el.value) el.value.width = w; });
   });
   ro.observe(host.value);
 });
@@ -43,6 +55,15 @@ onBeforeUnmount(() => {
   ro?.disconnect();
   cancelAnimationFrame(raf);
 });
+
+// Switching renderer recreates the element (the engine builds its SVG/canvas root once).
+function setRenderer(r: "canvas" | "svg") {
+  if (renderer.value === r) return;
+  renderer.value = r;
+  ctx.value = "";
+  if (el.value) { el.value.remove?.(); el.value = null; }
+  buildNode();
+}
 
 function toggleContext() {
   if (ctx.value) {
@@ -58,13 +79,17 @@ function toggleContext() {
   <div class="chart-demo">
     <div class="chart-demo-bar">
       <span class="chart-demo-title">{{ title || "Live example" }}</span>
-      <span class="chart-demo-tag">SVG · live · responsive</span>
+      <span class="chart-demo-rtoggle" role="group" aria-label="renderer">
+        <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">Canvas</button>
+        <button :class="{ on: renderer === 'svg' }" @click="setRenderer('svg')">SVG</button>
+      </span>
     </div>
     <div class="chart-demo-stage" ref="host"></div>
     <div class="chart-demo-foot">
       <button class="chart-demo-btn" @click="toggleContext">
         {{ ctx ? "▴ Hide" : "▾ Show" }} LLM context · getContext()
       </button>
+      <span class="chart-demo-note">{{ renderer === 'canvas' ? 'canvas · live · responsive' : 'SVG · live · responsive' }}</span>
     </div>
     <pre v-if="ctx" class="chart-demo-ctx">{{ ctx }}</pre>
   </div>
@@ -87,9 +112,13 @@ function toggleContext() {
   background: var(--vp-c-bg);
 }
 .chart-demo-title { font-family: "Spectral", Georgia, serif; font-weight: 600; }
-.chart-demo-tag { font-family: var(--vp-font-family-mono); font-size: 11px; color: var(--vp-c-text-3); letter-spacing: 0.04em; }
+/* Renderer toggle - a small segmented control; Canvas is the promoted default. */
+.chart-demo-rtoggle { display: inline-flex; border: 1px solid var(--vp-c-divider); border-radius: 999px; overflow: hidden; }
+.chart-demo-rtoggle button { font: inherit; font-size: 12px; padding: 3px 12px; border: none; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
+.chart-demo-rtoggle button.on { background: var(--vp-c-brand-1); color: #fff; }
 .chart-demo-stage { padding: 12px 16px; }
-.chart-demo-foot { padding: 0 16px 12px; }
+.chart-demo-foot { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 12px; }
 .chart-demo-btn { font: inherit; font-size: 12.5px; color: var(--vp-c-brand-1); background: none; border: none; cursor: pointer; padding: 0; }
+.chart-demo-note { font-family: var(--vp-font-family-mono); font-size: 11px; color: var(--vp-c-text-3); letter-spacing: 0.04em; }
 .chart-demo-ctx { max-height: 300px; overflow: auto; font-size: 12px; margin: 0 16px 16px; }
 </style>

@@ -19,6 +19,8 @@ const warnings = ref<string[]>([]);
 const transcript = ref<Array<{ q: string; result: string }>>([]);
 const active = ref<Record<string, boolean>>({ forecast: true, zone: true, forecastZone: true, narrate: false });
 const showLineToggles = feature === "forecast" && chartKind === "line";
+// Canvas-first (faster renderer, built in parallel with SVG); toggle proves parity.
+const renderer = ref<"canvas" | "svg">("canvas");
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let api: any = null;
@@ -57,19 +59,42 @@ const RANGE_PTS = [
   { date: 2022, valueMin: 1.5, valueMax: 3.7, valueMedium: 2.6, certainty: true },
 ];
 
-// feature="embeddings": model-free semantic search over chart labels (hash fallback).
+// feature="embeddings": model-free semantic search over chart labels (hash fallback),
+// drawn as a real ScatterChart "similarity map" - each label is a dot that slides toward
+// the right as it matches the typed query (x = cosine similarity).
 const LABELS = ["Quarterly revenue by region", "Revenue growth rate", "Customer churn %", "Website traffic", "Monthly active users", "Marketing spend", "Gross margin %", "Net-new customers"];
 const query = ref("revenue");
 const ranked = ref<Array<{ item: string; score: number }>>([]);
+const scatterHost = ref<HTMLDivElement>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let scatter: any = null;
+const sw = () => Math.max(280, scatterHost.value?.clientWidth ?? 600);
+
+function scatterProps() {
+  const byLabel: Record<string, number> = {};
+  for (const r of ranked.value) byLabel[r.item] = r.score;
+  const dataSet = LABELS.map((label, i) => {
+    const score = byLabel[label] ?? 0;
+    return { label, x: Math.round(score * 1000) / 1000, y: LABELS.length - i, d: Math.round(6 + score * 40), color: score > 0.001 ? "#2563eb" : "#9aa4b2" };
+  });
+  return { xAxisDataType: "number" as const, renderer: renderer.value, sizeRange: [5, 26] as [number, number], width: sw(), height: 300, dataSet };
+}
+function mountScatter() {
+  if (!scatterHost.value || !api) return;
+  scatter?.destroy();
+  scatter = api.mountScatterChart(scatterHost.value, scatterProps());
+}
 async function search() {
   if (!api) return;
   ranked.value = await api.findSimilar(query.value, LABELS, (t: string) => t, {});
+  if (scatter) scatter.update(scatterProps());
 }
 
 function lineProps() {
   return {
     dataSet: LINE[feature].map((s) => ({ ...s, series: s.series.map((d) => ({ ...d })) })),
     xAxisDataType: "date_annual",
+    renderer: renderer.value,
     showDataPoints: true,
     width: width(),
     height: 320,
@@ -92,13 +117,13 @@ function mountChart() {
   const w = width();
   if (feature === "forecast" && chartKind === "fan") {
     const item = api.forecastFan(HISTORY.map((d) => ({ ...d })), { method: "holt-winters", horizon: 4, levels: [0.5, 0.8], level: 0.95 }, "Revenue");
-    return api.mountFanChart(host.value, { dataSet: [item], xAxisDataType: "date_annual", fillOpacity: 0.22, forecastZone: active.value.forecastZone, width: w, height: 320 });
+    return api.mountFanChart(host.value, { dataSet: [item], xAxisDataType: "date_annual", renderer: renderer.value, fillOpacity: 0.22, forecastZone: active.value.forecastZone, width: w, height: 320 });
   }
   if (feature === "forecast" && chartKind === "area") {
-    return api.mountAreaChart(host.value, { keys: ["Wind", "Solar"], series: AREA_ROWS.map((r) => ({ ...r })), xAxisDataType: "date_annual", width: w, height: 320 }, { plugins: [api.forecast({ method: "holt-winters", horizon: 3 })] });
+    return api.mountAreaChart(host.value, { keys: ["Wind", "Solar"], series: AREA_ROWS.map((r) => ({ ...r })), xAxisDataType: "date_annual", renderer: renderer.value, width: w, height: 320 }, { plugins: [api.forecast({ method: "holt-winters", horizon: 3 })] });
   }
   if (feature === "forecast" && chartKind === "range") {
-    return api.mountRangeChart(host.value, { dataSet: [{ label: "GDP growth %", color: "#2563eb", series: RANGE_PTS.map((p) => ({ ...p })) }], xAxisDataType: "date_annual", width: w, height: 320 }, { plugins: [api.forecast({ method: "holt-winters", horizon: 3 })] });
+    return api.mountRangeChart(host.value, { dataSet: [{ label: "GDP growth %", color: "#2563eb", series: RANGE_PTS.map((p) => ({ ...p })) }], xAxisDataType: "date_annual", renderer: renderer.value, width: w, height: 320 }, { plugins: [api.forecast({ method: "holt-winters", horizon: 3 })] });
   }
   return api.mountLineChart(host.value, lineProps(), { plugins: buildPlugins() });
 }
@@ -117,6 +142,12 @@ function remount() {
 }
 
 function toggle(key: string) { active.value[key] = !active.value[key]; remount(); }
+function setRenderer(r: "canvas" | "svg") {
+  if (renderer.value === r) return;
+  renderer.value = r;
+  if (feature === "embeddings") mountScatter();
+  else remount();
+}
 
 async function explain() {
   if (!chart || !api || explaining.value) return;
@@ -144,11 +175,17 @@ onMounted(async () => {
   try {
     const [core, ins] = await Promise.all([import("@michi-vz/core"), import("@michi-vz/insights")]);
     api = {
-      mountLineChart: core.mountLineChart, mountFanChart: core.mountFanChart, mountAreaChart: core.mountAreaChart, mountRangeChart: core.mountRangeChart,
+      mountLineChart: core.mountLineChart, mountFanChart: core.mountFanChart, mountAreaChart: core.mountAreaChart, mountRangeChart: core.mountRangeChart, mountScatterChart: core.mountScatterChart,
       forecast: ins.forecast, forecastFan: ins.forecastFan, anomaly: ins.anomaly, validate: ins.validate, narrate: ins.narrate, explainChart: ins.explainChart,
       createAgentRegistry: ins.createAgentRegistry, chartHandle: ins.chartHandle, findSimilar: ins.findSimilar,
     };
-    if (feature === "embeddings") { await search(); return; }
+    if (feature === "embeddings") {
+      await search();
+      mountScatter();
+      ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => scatter?.update(scatterProps())); });
+      if (scatterHost.value) ro.observe(scatterHost.value);
+      return;
+    }
     remount();
     ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(remount); });
     if (host.value) ro.observe(host.value);
@@ -156,7 +193,7 @@ onMounted(async () => {
     loadError.value = e instanceof Error ? e.message : String(e);
   }
 });
-onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.destroy(); });
+onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.destroy(); scatter?.destroy(); });
 </script>
 
 <template>
@@ -164,6 +201,10 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
     <div class="insights-demo-bar">
       <span class="insights-demo-title">Live · {{ feature }}<span v-if="feature === 'forecast'"> · {{ chartKind }}</span></span>
       <div class="insights-demo-toggles">
+        <span class="idemo-rtoggle" role="group" aria-label="renderer">
+          <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">Canvas</button>
+          <button :class="{ on: renderer === 'svg' }" @click="setRenderer('svg')">SVG</button>
+        </span>
         <template v-if="showLineToggles">
           <button class="idemo-chip" :class="{ on: active.forecast }" @click="toggle('forecast')">Forecast</button>
           <button class="idemo-chip" :class="{ on: active.zone }" @click="toggle('zone')">Forecast bg</button>
@@ -183,8 +224,6 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
         <template v-else-if="feature === 'narrate'">
           <button class="idemo-chip explain" @click="explain">Explain ▸</button>
         </template>
-        <span v-else-if="feature === 'embeddings'" class="insights-demo-tag">hash · no model</span>
-        <span v-else class="insights-demo-tag">SVG · live</span>
       </div>
     </div>
 
@@ -193,6 +232,8 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
       <div class="idemo-search">
         <input v-model="query" @input="search" type="text" placeholder="Type a term, e.g. revenue, customers, traffic…" aria-label="search term" />
       </div>
+      <div class="insights-demo-stage" ref="scatterHost"></div>
+      <p class="insights-demo-summary" style="margin-top: -4px;">Each label is a dot; <strong>x = similarity</strong> to your query, so matches slide right. Bubble size = score.</p>
       <ul class="idemo-ranked">
         <li v-for="(r, i) in ranked" :key="i" :class="{ dim: r.score === 0 }">
           <span class="idemo-rank-label">{{ r.item }}</span>
@@ -240,6 +281,9 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 .idemo-chip { font: inherit; font-size: 12.5px; padding: 3px 10px; border: 1px solid var(--vp-c-divider); border-radius: 999px; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
 .idemo-chip.on { background: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); color: #fff; }
 .idemo-chip.explain { color: var(--vp-c-brand-1); }
+.idemo-rtoggle { display: inline-flex; border: 1px solid var(--vp-c-divider); border-radius: 999px; overflow: hidden; margin-right: 4px; }
+.idemo-rtoggle button { font: inherit; font-size: 12px; padding: 3px 11px; border: none; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
+.idemo-rtoggle button.on { background: var(--vp-c-brand-1); color: #fff; }
 .insights-demo-stage { padding: 12px 16px; }
 .insights-demo-summary, .insights-demo-explain, .insights-demo-warnings, .insights-demo-transcript { margin: 0 16px 12px; font-size: 13px; line-height: 1.5; color: var(--vp-c-text-2); }
 .insights-demo-explain { color: var(--vp-c-text-1); }
