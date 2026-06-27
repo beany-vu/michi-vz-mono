@@ -17,7 +17,22 @@ import { drawAreaCanvas } from "../areaChart/renderCanvas";
 import { buildAreaContext } from "../context/buildAreaContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkAreaData } from "../validate/areaWarnings";
-import type { AreaChartProps, AreaDataRow, ChartContext, ChartInstance, Margin } from "../types";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import type {
+  AreaChartProps,
+  AreaDataRow,
+  ChartContext,
+  ChartInstance,
+  Margin,
+  MountOptions,
+} from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
 
@@ -49,7 +64,11 @@ interface HitRow {
   bands: Array<{ key: string; y0: number; y1: number }>;
 }
 
-export function mountAreaChart(host: HTMLElement, initial: AreaChartProps): ChartInstance<AreaChartProps> {
+export function mountAreaChart(
+  host: HTMLElement,
+  initial: AreaChartProps,
+  opts?: MountOptions<AreaChartProps>
+): ChartInstance<AreaChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-area-chart");
 
@@ -64,8 +83,18 @@ export function mountAreaChart(host: HTMLElement, initial: AreaChartProps): Char
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: AreaChartProps = initial;
+  let baseProps: AreaChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<AreaChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<AreaChartProps> = {
+    chartType: "area-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let hitRows: HitRow[] = [];
@@ -75,8 +104,8 @@ export function mountAreaChart(host: HTMLElement, initial: AreaChartProps): Char
     const rect = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
     tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
-    const htmlStr = props.tooltipFormatter
-      ? props.tooltipFormatter(row, key, props.series)
+    const htmlStr = baseProps.tooltipFormatter
+      ? baseProps.tooltipFormatter(row, key, baseProps.series)
       : `<strong>${key}</strong><br/>${String(row.date)}: ${Number(row[key]) || 0}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
@@ -106,9 +135,9 @@ export function mountAreaChart(host: HTMLElement, initial: AreaChartProps): Char
     const hit = hitTest(x, y);
     if (hit) {
       showTooltip(hit.row, hit.key, ev);
-      props.onHighlightItem?.([hit.key]);
+      baseProps.onHighlightItem?.([hit.key]);
       if (hoverLine) {
-        const r = resolve(props);
+        const r = resolve(baseProps);
         hoverLine.setAttribute("x1", String(hit.rowX));
         hoverLine.setAttribute("x2", String(hit.rowX));
         hoverLine.setAttribute("y1", String(r.margin.top));
@@ -117,7 +146,7 @@ export function mountAreaChart(host: HTMLElement, initial: AreaChartProps): Char
       }
     } else {
       hideTooltip();
-      props.onHighlightItem?.([]);
+      baseProps.onHighlightItem?.([]);
     }
   };
 
@@ -128,6 +157,9 @@ export function mountAreaChart(host: HTMLElement, initial: AreaChartProps): Char
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
     const highlightItems = props.highlightItems ?? [];
@@ -269,26 +301,45 @@ export function mountAreaChart(host: HTMLElement, initial: AreaChartProps): Char
       activeKeys,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkAreaData(props.series, props.keys);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised points.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkAreaData(baseProps.series, baseProps.keys),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: AreaChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<AreaChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-area-chart");
     },

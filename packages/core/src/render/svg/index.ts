@@ -21,3 +21,6 @@ export type { LoadingIndicatorOptions } from "./loadingIndicator";
 
 export { renderOverlay } from "./overlay";
 export type { OverlayOptions } from "./overlay";
+
+export { renderAnnotationsSvg } from "./annotations";
+export type { AnnotationRenderContext } from "./annotations";

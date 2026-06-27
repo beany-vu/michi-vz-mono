@@ -12,7 +12,15 @@ import { renderRadarSvg } from "../radarChart/renderSvg";
 import { drawRadarCanvas } from "../radarChart/renderCanvas";
 import { buildRadarContext } from "../context/buildRadarContext";
 import { renderA11yMirror } from "../context/a11yMirror";
-import type { ChartContext, ChartInstance, DataWarning, Margin, RadarChartProps, RadarDataItem } from "../types";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import type { ChartContext, ChartInstance, DataWarning, Margin, MountOptions, RadarChartProps, RadarDataItem } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 60, right: 80, bottom: 60, left: 80 };
 
@@ -50,7 +58,11 @@ function checkData(series: RadarDataItem[], axes: string[]): DataWarning[] {
   return warnings;
 }
 
-export function mountRadarChart(host: HTMLElement, initial: RadarChartProps): ChartInstance<RadarChartProps> {
+export function mountRadarChart(
+  host: HTMLElement,
+  initial: RadarChartProps,
+  opts?: MountOptions<RadarChartProps>
+): ChartInstance<RadarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-radar-chart");
 
@@ -65,8 +77,18 @@ export function mountRadarChart(host: HTMLElement, initial: RadarChartProps): Ch
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: RadarChartProps = initial;
+  let baseProps: RadarChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<RadarChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<RadarChartProps> = {
+    chartType: "radar-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildRadarRenderModel> | null = null;
@@ -75,11 +97,11 @@ export function mountRadarChart(host: HTMLElement, initial: RadarChartProps): Ch
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
     tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    const item = props.series.find((it) => it.label === s.label);
+    const item = baseProps.series.find((it) => it.label === s.label);
     const htmlStr =
-      props.tooltipFormatter && item
-        ? props.tooltipFormatter(item)
-        : `<strong>${s.label}</strong>` + (item ? `<br/>${props.axes.map((a, i) => `${a}: ${item.values[i] ?? 0}`).join("<br/>")}` : "");
+      baseProps.tooltipFormatter && item
+        ? baseProps.tooltipFormatter(item)
+        : `<strong>${s.label}</strong>` + (item ? `<br/>${baseProps.axes.map((a, i) => `${a}: ${item.values[i] ?? 0}`).join("<br/>")}` : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
   };
@@ -94,6 +116,9 @@ export function mountRadarChart(host: HTMLElement, initial: RadarChartProps): Ch
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: forecast/etc. append predicted series/values.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -184,26 +209,45 @@ export function mountRadarChart(host: HTMLElement, initial: RadarChartProps): Ch
       items,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkData(props.series, props.axes);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised series.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkData(baseProps.series, baseProps.axes),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: RadarChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<RadarChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-radar-chart");
     },

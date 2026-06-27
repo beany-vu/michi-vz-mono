@@ -13,11 +13,20 @@ import { renderRangeSvg } from "../rangeChart/renderSvg";
 import { drawRangeCanvas } from "../rangeChart/renderCanvas";
 import { buildRangeContext } from "../context/buildRangeContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
 import type {
   ChartContext,
   ChartInstance,
   DataWarning,
   Margin,
+  MountOptions,
   RangeChartProps,
   RangeDataItem,
 } from "../types";
@@ -66,7 +75,11 @@ function checkData(dataSet: RangeDataItem[]): DataWarning[] {
   return warnings;
 }
 
-export function mountRangeChart(host: HTMLElement, initial: RangeChartProps): ChartInstance<RangeChartProps> {
+export function mountRangeChart(
+  host: HTMLElement,
+  initial: RangeChartProps,
+  opts?: MountOptions<RangeChartProps>
+): ChartInstance<RangeChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-range-chart");
 
@@ -81,8 +94,18 @@ export function mountRangeChart(host: HTMLElement, initial: RangeChartProps): Ch
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: RangeChartProps = initial;
+  let baseProps: RangeChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<RangeChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<RangeChartProps> = {
+    chartType: "range-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
 
@@ -90,11 +113,11 @@ export function mountRangeChart(host: HTMLElement, initial: RangeChartProps): Ch
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
     tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    const item = props.dataSet.find((it) => it.label === label);
+    const item = baseProps.dataSet.find((it) => it.label === label);
     const mid = item?.series[Math.floor(item.series.length / 2)];
     const htmlStr =
-      props.tooltipFormatter && item && mid
-        ? props.tooltipFormatter(mid, item)
+      baseProps.tooltipFormatter && item && mid
+        ? baseProps.tooltipFormatter(mid, item)
         : `<strong>${label}</strong>` + (mid ? `<br/>${String(mid.date)}: ${mid.valueMin}–${mid.valueMax}` : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
@@ -110,6 +133,9 @@ export function mountRangeChart(host: HTMLElement, initial: RangeChartProps): Ch
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
     svg.setAttribute("width", String(r.width));
@@ -215,26 +241,45 @@ export function mountRangeChart(host: HTMLElement, initial: RangeChartProps): Ch
       items,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkData(props.dataSet);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised points.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkData(baseProps.dataSet),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: RangeChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<RangeChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-range-chart");
     },

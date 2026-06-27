@@ -13,6 +13,14 @@ import { renderDualSvg } from "../dualBar/renderSvg";
 import { drawDualCanvas } from "../dualBar/renderCanvas";
 import { buildDualBarContext } from "../context/buildDualBarContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
 import type {
   ChartContext,
   ChartInstance,
@@ -20,6 +28,7 @@ import type {
   DualBarChartProps,
   DualBarDataPoint,
   Margin,
+  MountOptions,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 120 };
@@ -67,7 +76,8 @@ function checkData(dataSet: DualBarDataPoint[]): DataWarning[] {
 
 export function mountDualHorizontalBarChart(
   host: HTMLElement,
-  initial: DualBarChartProps
+  initial: DualBarChartProps,
+  opts?: MountOptions<DualBarChartProps>
 ): ChartInstance<DualBarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-dual-bar-chart");
@@ -83,8 +93,18 @@ export function mountDualHorizontalBarChart(
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: DualBarChartProps = initial;
+  let baseProps: DualBarChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<DualBarChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<DualBarChartProps> = {
+    chartType: "dual-horizontal-bar-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildDualRenderModel> | null = null;
@@ -93,8 +113,8 @@ export function mountDualHorizontalBarChart(
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
     tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    const htmlStr = props.tooltipFormatter
-      ? props.tooltipFormatter(d)
+    const htmlStr = baseProps.tooltipFormatter
+      ? baseProps.tooltipFormatter(d)
       : `<strong>${d.label}</strong><br/>Value 1: ${d.value1}<br/>Value 2: ${d.value2}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
@@ -105,7 +125,7 @@ export function mountDualHorizontalBarChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(props).renderer !== "canvas" || !model || sticky) return;
+    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -121,10 +141,10 @@ export function mountDualHorizontalBarChart(
     }
     if (hit) {
       showTooltip(hit.raw, ev);
-      props.onHighlightItem?.([hit.label]);
+      baseProps.onHighlightItem?.([hit.label]);
     } else {
       hideTooltip();
-      props.onHighlightItem?.([]);
+      baseProps.onHighlightItem?.([]);
     }
   };
   host.addEventListener("mousemove", onHostMove);
@@ -135,6 +155,9 @@ export function mountDualHorizontalBarChart(
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -227,26 +250,45 @@ export function mountDualHorizontalBarChart(
       points,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkData(props.dataSet);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised points.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkData(baseProps.dataSet),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: DualBarChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<DualBarChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-dual-bar-chart");

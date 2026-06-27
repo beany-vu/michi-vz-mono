@@ -16,7 +16,22 @@ import { drawScatterCanvas } from "../scatterChart/renderCanvas";
 import { buildScatterContext } from "../context/buildScatterContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkScatterData } from "../validate/scatterWarnings";
-import type { ChartContext, ChartInstance, Margin, ScatterChartProps, ScatterDataPoint } from "../types";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import type {
+  ChartContext,
+  ChartInstance,
+  Margin,
+  MountOptions,
+  ScatterChartProps,
+  ScatterDataPoint,
+} from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
 
@@ -44,7 +59,8 @@ function resolve(p: ScatterChartProps): Resolved {
 
 export function mountScatterChart(
   host: HTMLElement,
-  initial: ScatterChartProps
+  initial: ScatterChartProps,
+  opts?: MountOptions<ScatterChartProps>
 ): ChartInstance<ScatterChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-scatter-chart");
@@ -60,8 +76,18 @@ export function mountScatterChart(
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: ScatterChartProps = initial;
+  let baseProps: ScatterChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<ScatterChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<ScatterChartProps> = {
+    chartType: "scatter-plot-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildScatterRenderModel> | null = null;
@@ -70,8 +96,8 @@ export function mountScatterChart(
     const rect = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
     tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
-    const htmlStr = props.tooltipFormatter
-      ? props.tooltipFormatter(p)
+    const htmlStr = baseProps.tooltipFormatter
+      ? baseProps.tooltipFormatter(p)
       : `<strong>${p.label}</strong><br/>x: ${p.x}, y: ${p.y}${p.d !== undefined ? `<br/>size: ${p.d}` : ""}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
@@ -83,7 +109,7 @@ export function mountScatterChart(
 
   // Canvas-mode hit-test (topmost = smallest, model is largest-first → scan reverse).
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(props).renderer !== "canvas" || !model || sticky) return;
+    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -97,10 +123,10 @@ export function mountScatterChart(
     }
     if (hit) {
       showTooltip(hit.raw, ev);
-      props.onHighlightItem?.([hit.label]);
+      baseProps.onHighlightItem?.([hit.label]);
     } else {
       hideTooltip();
-      props.onHighlightItem?.([]);
+      baseProps.onHighlightItem?.([]);
     }
   };
   host.addEventListener("mousemove", onHostMove);
@@ -111,6 +137,9 @@ export function mountScatterChart(
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: append/transform points/series before layout.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
     const highlightItems = props.highlightItems ?? [];
@@ -230,26 +259,45 @@ export function mountScatterChart(
       points,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkScatterData(props.dataSet);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised points.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkScatterData(baseProps.dataSet),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: ScatterChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<ScatterChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-scatter-chart");

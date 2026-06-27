@@ -13,10 +13,15 @@ export { mountBarBellChart } from "./engine/barBellChart";
 export { mountRangeChart } from "./engine/rangeChart";
 export { mountRibbonChart } from "./engine/ribbonChart";
 export { mountRadarChart } from "./engine/radarChart";
+export { mountFanChart } from "./engine/fanChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
 export type { MichiVzStore, MichiVzState } from "./state/store";
+
+// ---- Plugin contract (consumed by @michi-vz/insights; interfaces only) ----
+export type { MichiVzPlugin, PluginContext, AgentTool, Annotation } from "./plugins/types";
+export type { MountOptions } from "./types";
 
 // ---- Styling ----
 export { CORE_CSS, ensureStyles } from "./styles";
@@ -84,6 +89,8 @@ export { buildRibbonContext } from "./context/buildRibbonContext";
 export { processRadarData } from "./radarChart/data";
 export { buildRadarColors } from "./radarChart/colors";
 export { buildRadarContext } from "./context/buildRadarContext";
+// FanChart (composes Line + Range; forecast fan)
+export { buildFanContext } from "./context/buildFanContext";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -95,6 +102,7 @@ export {
   renderLoadingIndicator,
   toggleLoadingIndicator,
   renderOverlay,
+  renderAnnotationsSvg,
 } from "./render/svg";
 export type {
   TitleOptions,
@@ -105,6 +113,7 @@ export type {
   YAxisLinearOptions,
   LoadingIndicatorOptions,
   OverlayOptions,
+  AnnotationRenderContext,
 } from "./render/svg";
 
 // ---- Canvas primitives (reused by other charts / insights) ----
@@ -174,4 +183,9 @@ export type {
   RadarChartProps,
   RadarSeriesContext,
   RadarChartContext,
+  FanBand,
+  FanDataItem,
+  FanChartProps,
+  FanSeriesContext,
+  FanChartContext,
 } from "./types";

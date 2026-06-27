@@ -782,6 +782,84 @@ export interface RadarChartContext extends BaseChartContext {
 }
 
 /** Discriminated union of every chart's context, keyed on `chartType`. */
+// ---- FanChart (forecast fan: a line + dashed median + nested confidence bands) ----
+// Composes the Line + Range primitives (no bespoke geometry): the `series` is a
+// LineChart series (history `certainty:true`, forecast median `certainty:false` →
+// dashed), and `bands` are RangeChart valueMin..valueMax bands drawn underneath with
+// graduated opacity. Same prop surface as LineChart so it feels familiar.
+
+/** One nested confidence band of a fan (e.g. the 80% interval). */
+export interface FanBand {
+  /** confidence level in (0,1), e.g. 0.8. */
+  level: number;
+  series: RangeDataPoint[];
+}
+
+export interface FanDataItem {
+  label: string;
+  color?: string;
+  /** the line: history (certainty:true) then forecast median (certainty:false). */
+  series: DataPoint[];
+  /** nested confidence bands; engine draws widest-first so narrower sit on top. */
+  bands: FanBand[];
+}
+
+export interface FanChartProps {
+  dataSet: FanDataItem[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  yAxisDomain?: [number, number];
+  xAxisDataType?: XaxisDataType;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  curve?: CurveType;
+  /** band fill opacity for the widest band (narrower bands scale up from here). */
+  fillOpacity?: number;
+  /** shade the forecast region (from the last solid point to the end). Default true. */
+  forecastZone?: boolean;
+  showDataPoints?: boolean;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface FanSeriesContext {
+  label: string;
+  color: string;
+  pointCount: number;
+  /** count of solid (certainty:true) history points. */
+  historyCount: number;
+  /** count of dashed (certainty:false) forecast points. */
+  forecastCount: number;
+  /** last median point (the end of the forecast). */
+  last: { x: number | string; y: number } | null;
+  /** confidence levels present, ascending. */
+  bandLevels: number[];
+  /** band half-width at the final forecast point for the widest level, or null. */
+  finalUncertainty: number | null;
+}
+
+export interface FanChartContext extends BaseChartContext {
+  chartType: "fan-chart";
+  xAxis: { type: XaxisDataType; domain: [number, number] };
+  yAxis: { domain: [number, number] };
+  series: FanSeriesContext[];
+  stats: { seriesCount: number; forecastHorizon: number };
+}
+
 export type ChartContext =
   | GapChartContext
   | LineChartContext
@@ -793,7 +871,8 @@ export type ChartContext =
   | BarBellChartContext
   | RangeChartContext
   | RibbonChartContext
-  | RadarChartContext;
+  | RadarChartContext
+  | FanChartContext;
 
 export interface DataWarning {
   type:
@@ -813,4 +892,13 @@ export interface ChartInstance<P> {
   update(props: P): void;
   getContext(): ChartContext | null;
   destroy(): void;
+  /** Register an insights plugin after mount (engines that support plugins). */
+  use?(plugin: import("./plugins/types").MichiVzPlugin<P>): void;
+  /** Collected agent/MCP tools from registered plugins. */
+  getTools?(): import("./plugins/types").AgentTool[];
+}
+
+/** Optional 3rd arg to every `mountXxxChart` for opt-in plugins. */
+export interface MountOptions<P> {
+  plugins?: Array<import("./plugins/types").MichiVzPlugin<P>>;
 }
