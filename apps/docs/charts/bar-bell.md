@@ -5,7 +5,7 @@ title: Bar-Bell
 
 <span class="vp-badge tip">Composition</span>
 
-Cumulative horizontal segments per row with end-cap circles marking each step.
+How does a running total stack up, piece by piece? Each row lays its parts end to end with an end-cap at every step, so the cumulative reach and each segment's share both read at a glance.
 
 <ChartDemo chart="bar-bell-chart" />
 

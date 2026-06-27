@@ -5,7 +5,7 @@ title: Dual Horizontal Bar (Tornado)
 
 <span class="vp-badge tip">Comparison</span>
 
-Diverging bars from a centre line - value1 right, value2 left (population pyramids, tornado charts).
+Which side wins, and by how much? Anchor two opposing values to a shared centre line and the imbalance reads at a glance - left vs right, men vs women, before vs after. The classic population pyramid and tornado chart, where the longest bar is the story.
 
 <ChartDemo chart="dual-horizontal-bar-chart" />
 

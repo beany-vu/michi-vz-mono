@@ -5,7 +5,7 @@ title: Area Chart
 
 <span class="vp-badge tip">Composition</span>
 
-Part-to-whole over time: how each component’s share of a stacked total shifts.
+The total is growing, but which slice is driving it? Stack your categories and watch each one's share of the whole expand or shrink across time, so a rising tide and a shifting mix tell their stories at once.
 
 <ChartDemo chart="area-chart" />
 

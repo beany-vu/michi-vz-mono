@@ -4,7 +4,7 @@ title: Bar-Bell API
 
 # Bar-Bell API
 
-The `<michi-vz-bar-bell-chart>` element and the `mountBarBellChart` engine. For examples and usage, see the **[Bar-Bell demo](/charts/bar-bell)**.
+Chain segments across each row to see exactly where every step's share of the total lands - props, events, and engine below; see it move on the **[Bar-Bell demo](/charts/bar-bell)**.
 
 ## Import
 

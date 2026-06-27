@@ -4,7 +4,7 @@ title: Range Chart API
 
 # Range Chart API
 
-The `<michi-vz-range-chart>` element and the `mountRangeChart` engine. For examples and usage, see the **[Range Chart demo](/charts/range)**.
+Shade the spread, not a single line - the API for min-max bands and forecast cones. See the **[Range Chart demo](/charts/range)** for examples and usage.
 
 ## Import
 

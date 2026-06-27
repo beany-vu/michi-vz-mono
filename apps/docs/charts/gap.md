@@ -5,7 +5,7 @@ title: Gap Chart
 
 <span class="vp-badge tip">Comparison</span>
 
-Two values per label joined by a gap bar - emphasises the difference between them.
+How far apart are the two numbers that matter? Plot before and after, target and actual, men and women, and the bar between them is the story - the wider the gap, the louder it reads.
 
 <ChartDemo chart="gap-chart" />
 

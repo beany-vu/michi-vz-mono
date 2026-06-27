@@ -5,7 +5,7 @@ title: Scatter Plot
 
 <span class="vp-badge tip">Correlation</span>
 
-Relationship between two numeric variables; bubble size encodes a third. Pearson correlation is surfaced in getContext().
+Does more of X really move Y, or are you chasing a coincidence? Plot your points and the trend, the clusters, and the outliers all surface at a glance, with bubble size carrying a third variable for free. The Pearson correlation comes back in getContext(), so you can quote the number instead of squinting at the cloud.
 
 <ChartDemo chart="scatter-chart" />
 

@@ -4,7 +4,7 @@ title: Ribbon Chart API
 
 # Ribbon Chart API
 
-The `<michi-vz-ribbon-chart>` element and the `mountRibbonChart` engine. For examples and usage, see the **[Ribbon Chart demo](/charts/ribbon)**.
+Watch a composition re-rank itself over time, one connected category at a time. See the **[Ribbon Chart demo](/charts/ribbon)**.
 
 ## Import
 

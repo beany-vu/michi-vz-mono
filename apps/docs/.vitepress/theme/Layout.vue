@@ -6,7 +6,7 @@ const { Layout } = DefaultTheme;
 
 // Small, factual proof chips shown under the hero actions. No marketing fluff.
 const META = [
-  "11 charts",
+  "12 charts",
   "5 outputs",
   "SVG or canvas",
   "getContext() on every chart",

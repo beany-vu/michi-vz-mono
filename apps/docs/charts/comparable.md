@@ -5,7 +5,7 @@ title: Comparable Horizontal Bar
 
 <span class="vp-badge tip">Comparison</span>
 
-Two overlaid horizontal sub-bars per label - a “based” vs “compared” value.
+Did it get better or worse? Put before and after side by side on one bar per label, and the gap that closed (or opened) is the first thing the reader sees.
 
 <ChartDemo chart="comparable-horizontal-bar-chart" />
 

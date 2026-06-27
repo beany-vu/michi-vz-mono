@@ -4,7 +4,7 @@ title: Line Chart API
 
 # Line Chart API
 
-The `<michi-vz-line-chart>` element and the `mountLineChart` engine. For examples and usage, see the **[Line Chart demo](/charts/line)**.
+Everything you need to wire up a line chart in code; for the story and live demos, see the **[Line Chart demo](/charts/line)**.
 
 ## Import
 

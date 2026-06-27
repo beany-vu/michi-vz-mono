@@ -5,7 +5,7 @@ title: Radar Chart
 
 <span class="vp-badge tip">Comparison</span>
 
-Compare several entities across a shared set of axes at a glance (a polygon per entity).
+Which option wins, and where? Lay a few candidates over the same set of criteria and each one becomes a polygon you can read in a glance - the spikes show every strength, the dents show every weakness, and the overlaps show exactly where they trade places.
 
 <ChartDemo chart="radar-chart" />
 

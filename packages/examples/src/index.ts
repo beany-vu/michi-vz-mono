@@ -19,6 +19,7 @@ import type {
   RangeChartProps,
   RibbonChartProps,
   RadarChartProps,
+  FanChartProps,
 } from "@michi-vz/core";
 
 export interface Example<P = Record<string, unknown>> {
@@ -1150,6 +1151,61 @@ const radar: Example<RadarChartProps>[] = [
   }
 ];
 
+const fan: Example<FanChartProps>[] = [
+  {
+    "id": "fan-revenue-forecast",
+    "title": "Revenue forecast with an 80/95% confidence fan",
+    "description": "Seven years of revenue (solid) continued by a dashed forecast median, wrapped in nested 80% and 95% confidence bands that widen with the horizon - the canonical forecast 'fan', composed from the Line + Range primitives.",
+    "element": "michi-vz-fan-chart",
+    "props": {
+      "title": "Revenue forecast, US$ m (Holt-Winters, 80/95% fan)",
+      "xAxisDataType": "date_annual",
+      "fillOpacity": 0.22,
+      "dataSet": [
+        {
+          "label": "Revenue",
+          "color": "#2563eb",
+          "series": [
+            { "date": 2017, "value": 42, "certainty": true },
+            { "date": 2018, "value": 55, "certainty": true },
+            { "date": 2019, "value": 63, "certainty": true },
+            { "date": 2020, "value": 71, "certainty": true },
+            { "date": 2021, "value": 88, "certainty": true },
+            { "date": 2022, "value": 104, "certainty": true },
+            { "date": 2023, "value": 121, "certainty": true },
+            { "date": 2024, "value": 138, "certainty": false },
+            { "date": 2025, "value": 155, "certainty": false },
+            { "date": 2026, "value": 172, "certainty": false },
+            { "date": 2027, "value": 189, "certainty": false }
+          ],
+          "bands": [
+            {
+              "level": 0.95,
+              "series": [
+                { "date": 2023, "valueMin": 121, "valueMax": 121, "valueMedium": 121 },
+                { "date": 2024, "valueMin": 126, "valueMax": 150, "valueMedium": 138 },
+                { "date": 2025, "valueMin": 135, "valueMax": 175, "valueMedium": 155 },
+                { "date": 2026, "valueMin": 142, "valueMax": 202, "valueMedium": 172 },
+                { "date": 2027, "valueMin": 148, "valueMax": 230, "valueMedium": 189 }
+              ]
+            },
+            {
+              "level": 0.8,
+              "series": [
+                { "date": 2023, "valueMin": 121, "valueMax": 121, "valueMedium": 121 },
+                { "date": 2024, "valueMin": 131, "valueMax": 145, "valueMedium": 138 },
+                { "date": 2025, "valueMin": 143, "valueMax": 167, "valueMedium": 155 },
+                { "date": 2026, "valueMin": 154, "valueMax": 190, "valueMedium": 172 },
+                { "date": 2027, "valueMin": 165, "valueMax": 213, "valueMedium": 189 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+];
+
 /** Canonical examples, keyed by chart id. Consumers index by key. */
 export const examples = {
   "gap-chart": gap,
@@ -1163,6 +1219,7 @@ export const examples = {
   "range-chart": range,
   "ribbon-chart": ribbon,
   "radar-chart": radar,
+  "fan-chart": fan,
 };
 
 /** Ordered chart ids (for nav / iteration). */

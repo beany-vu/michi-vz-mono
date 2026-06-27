@@ -23,9 +23,11 @@ import {
   mountDualHorizontalBarChart,
   mountBarBellChart,
   mountGapChart,
+  mountFanChart,
 } from "@michi-vz/core";
 import type {
   ChartInstance,
+  FanChartProps,
   LineChartProps,
   AreaChartProps,
   ScatterChartProps,
@@ -227,5 +229,34 @@ export const previews: Record<string, Preview> = {
         { label: "d", value1: 13, value2: 8 },
       ],
     } satisfies GapChartProps,
+  },
+
+  "fan-chart": {
+    mount: mountFanChart as Mount,
+    props: {
+      xAxisDataType: "date_annual",
+      fillOpacity: 0.28,
+      dataSet: [
+        {
+          label: "Fc",
+          color: BLUE,
+          series: [
+            { date: 2019, value: 10, certainty: true }, { date: 2020, value: 14, certainty: true },
+            { date: 2021, value: 17, certainty: true }, { date: 2022, value: 21, certainty: true },
+            { date: 2023, value: 25, certainty: false }, { date: 2024, value: 29, certainty: false },
+          ],
+          bands: [
+            { level: 0.95, series: [
+              { date: 2022, valueMin: 21, valueMax: 21, valueMedium: 21 },
+              { date: 2023, valueMin: 22, valueMax: 28, valueMedium: 25 },
+              { date: 2024, valueMin: 23, valueMax: 35, valueMedium: 29 }] },
+            { level: 0.8, series: [
+              { date: 2022, valueMin: 21, valueMax: 21, valueMedium: 21 },
+              { date: 2023, valueMin: 23, valueMax: 27, valueMedium: 25 },
+              { date: 2024, valueMin: 26, valueMax: 32, valueMedium: 29 }] },
+          ],
+        },
+      ],
+    } satisfies FanChartProps,
   },
 };

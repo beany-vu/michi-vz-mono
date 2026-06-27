@@ -4,7 +4,7 @@ title: Area Chart API
 
 # Area Chart API
 
-The `<michi-vz-area-chart>` element and the `mountAreaChart` engine. For examples and usage, see the **[Area Chart demo](/charts/area)**.
+See which slice of a growing total is really driving it - props and events below, or the **[Area Chart demo](/charts/area)** for it in action.
 
 ## Import
 
