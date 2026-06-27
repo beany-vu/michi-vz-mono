@@ -32,6 +32,9 @@ importers:
       '@michi-vz/examples':
         specifier: workspace:*
         version: link:../../packages/examples
+      '@michi-vz/insights':
+        specifier: workspace:*
+        version: link:../../packages/insights
       '@michi-vz/wc':
         specifier: workspace:*
         version: link:../../packages/wc
@@ -48,15 +51,19 @@ importers:
 
   packages/angular:
     dependencies:
-      '@angular/core':
-        specifier: '>=16'
-        version: 22.0.3(rxjs@7.8.2)
       '@michi-vz/core':
         specifier: workspace:*
         version: link:../core
       '@michi-vz/wc':
         specifier: workspace:*
         version: link:../wc
+    devDependencies:
+      '@angular/core':
+        specifier: ^22.0.0
+        version: 22.0.3(rxjs@7.8.2)
+      rxjs:
+        specifier: ^7.8.0
+        version: 7.8.2
 
   packages/core:
     dependencies:
@@ -94,6 +101,13 @@ importers:
       '@michi-vz/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(jsdom@25.0.1)
 
   packages/react:
     dependencies:
