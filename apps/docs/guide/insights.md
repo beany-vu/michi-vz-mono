@@ -210,68 +210,68 @@ await explainChart(ctx, {
 });
 ```
 
-## Semantic search (BERT embeddings)
+## Reconcile messy labels (embeddings)
 
-**The story.** Your charts have labels, your dashboard has dozens of series, and your users ask
-questions in their own words. "Show me anything about *earnings*" should also find the chart titled
-*Net income* - but plain text search only matches letters, so it misses it. **Embeddings** fix that:
-they turn each label (or a whole chart's context) into a list of numbers - a *vector* - positioned so
-that things which *mean* the same land near each other. **BERT** (here the small, fast **MiniLM**) is
-the model that produces those vectors. Once everything is a vector, "how related are these two?" is
-just the angle between them (cosine similarity). That one idea powers **semantic search**, **clustering
-similar series**, **auto-grouping a legend**, and **dashboard-wide RAG** (answering a question across
-every chart).
+**The problem every analyst knows.** Your data arrives from three sources and they each spell the
+same thing differently - `United States`, `united states`, `USA`. Group by exact match and your chart
+splits one country into three short bars with **wrong totals**, and you lose an afternoon hand-writing
+a lookup table. (Embeddings also power semantic *search* and *RAG* - but reconciling messy labels is
+the one that bites you on a Tuesday.)
 
-The lab below is the *same* embeddings shown three ways. Type a term and watch it re-rank. It runs
-**model-free** by default (a deterministic hash - instant, offline, matches shared words). Hit
-**⚡ Load real BERT** to pull MiniLM from a CDN on demand (nothing is bundled): then synonyms match
-too - search *income* and *Net income* / *revenue* light up even with no letters in common.
+**Embeddings fix it by meaning.** Turn each label into a vector and merge the ones that land close
+together. The **model-free** default (instant, offline) already collapses spelling, casing, spacing
+and typos. Load **BERT** (small **MiniLM**, on demand) and it also merges abbreviations and
+translations - `USA` ≈ `United States`, `Deutschland` ≈ `Germany`, `Nippon` ≈ `Japan`.
 
 <EmbeddingsLab />
 
-> **Reading it:** in the list, **bold** rows are matches (similarity above zero) and **faded** rows
-> haven't matched your query yet (score 0). Model-free, only shared-word matches are bold; load BERT
-> and semantically-related rows turn bold too. The three tabs are one vector set: **Ranking** (bars by
-> similarity), **Semantic map** (dots cluster by meaning), **Fingerprint** (top matches across concept axes).
+> Start on **Raw labels** to feel the mess - 10 bars, split totals - then hit **Reconcile**.
+> Model-free merges the spelling variants offline; **Load real BERT** merges the abbreviations and
+> translations too, down to the 3 real countries with correct totals.
 
-How you'd write it - search, embed with BERT, cluster, and dashboard RAG:
+How you'd write it - reconcile first, then the other embedding uses:
 
 ::: code-group
 
-```ts [Semantic search]
-import { findSimilar } from "@michi-vz/insights/embeddings";
-// rank labels by meaning; model-free by default (deterministic + instant)
-const ranked = await findSimilar("revenue", chartLabels, (l) => l);
-// → [{ item: "Quarterly revenue", score: 0.74 }, { item: "Net income", score: 0.61 }, …]
+```ts [Reconcile labels]
+import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings";
+const e = await createEmbedder();          // model-free; { backend: "transformers" } adds synonyms
+const vecs = await e.embed(rawLabels);
+// greedy group: a label joins the first bucket it's close enough to, else starts its own
+const groups: { name: string; vec: number[]; members: string[] }[] = [];
+rawLabels.forEach((label, i) => {
+  const hit = groups.find((g) => cosineSimilarity(vecs[i], g.vec) >= 0.6);
+  if (hit) hit.members.push(label);
+  else groups.push({ name: label, vec: vecs[i], members: [label] });
+});
+// now sum your series by group.name instead of the raw label → clean, correct totals
 ```
 
 ```ts [Embed with BERT]
 import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings";
-// opt into a small in-browser BERT (MiniLM via Transformers.js, WebGPU).
-// Lazy-loaded - nothing is bundled until this runs; falls back to hash if unavailable.
-const embedder = await createEmbedder({ backend: "transformers" }); // default all-MiniLM-L6-v2
-const [a, b] = await embedder.embed(["revenue", "income"]);
-cosineSimilarity(a, b); // ≈ 0.8 — synonyms match, with no letters in common
+// opt into a small in-browser BERT (MiniLM via Transformers.js, WebGPU); lazy, nothing bundled
+const e = await createEmbedder({ backend: "transformers" }); // default all-MiniLM-L6-v2
+const [a, b] = await e.embed(["USA", "United States"]);
+cosineSimilarity(a, b); // ≈ 0.8 — merges even with no letters in common
 ```
 
-```ts [Cluster series]
-import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings";
-const e = await createEmbedder({ backend: "transformers" });
-const vecs = await e.embed(seriesLabels);
-// group labels whose vectors are close (cosine > 0.5) → auto legend grouping / clusters
+```ts [Search by meaning]
+import { findSimilar } from "@michi-vz/insights/embeddings";
+// rank a large chart catalog by what a query means, not how it's spelled
+const ranked = await findSimilar("revenue", chartLabels, (l) => l);
 ```
 
 ```ts [Dashboard RAG]
 import { findSimilar } from "@michi-vz/insights/embeddings";
-// pick the charts most relevant to a question, then feed THEIR context to an LLM
+// retrieve the charts most relevant to a question, feed THEIR context to an LLM (see Agents)
 const top = (await findSimilar(question, charts, (c) => c.getContext().summary)).slice(0, 3);
-const answer = await llm(`${question}\n\n${top.map((r) => r.item.getContext().summary).join("\n")}`);
 ```
 
 :::
 
-BERT here is for **similarity / search** (find related charts, cluster series), not for writing text -
-that is narration, above. Different jobs, different models.
+Same engine, other uses: **searching** a big chart catalog by meaning, **clustering** similar series,
+and **dashboard-wide RAG** - retrieving the right charts so an agent can answer across a whole
+dashboard (see **Agents & MCP**). Embeddings are the retrieval layer; the headline is what sits on top.
 
 ## Agents & MCP (reference)
 
