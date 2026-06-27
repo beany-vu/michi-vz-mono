@@ -37,7 +37,7 @@
     "@types/d3-scale": "^4.0.8",
     "@types/d3-shape": "^3.1.7",
     "jsdom": "^25.0.1",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.6"
   },
   "license": "MIT",
   "author": "Beany Vu",
