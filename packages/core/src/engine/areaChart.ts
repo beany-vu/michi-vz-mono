@@ -279,8 +279,8 @@ export function mountAreaChart(
       if (!canvas) {
         canvas = htmlEl("canvas", { class: "area-chart-canvas" });
         canvas.style.position = "absolute";
-        canvas.style.top = "0";
-        canvas.style.left = "0";
+        canvas.style.top = getComputedStyle(host).paddingTop;
+        canvas.style.left = getComputedStyle(host).paddingLeft;
         canvas.style.pointerEvents = "none";
         host.insertBefore(canvas, tooltip);
       }

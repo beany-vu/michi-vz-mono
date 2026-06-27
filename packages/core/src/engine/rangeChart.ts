@@ -221,8 +221,8 @@ export function mountRangeChart(
       if (!canvas) {
         canvas = htmlEl("canvas", { class: "range-chart-canvas" });
         canvas.style.position = "absolute";
-        canvas.style.top = "0";
-        canvas.style.left = "0";
+        canvas.style.top = getComputedStyle(host).paddingTop;
+        canvas.style.left = getComputedStyle(host).paddingLeft;
         canvas.style.pointerEvents = "none";
         host.insertBefore(canvas, tooltip);
       }
