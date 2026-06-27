@@ -22,10 +22,19 @@ import { drawStackCanvas } from "../verticalStackBarChart/renderCanvas";
 import { buildStackContext } from "../context/buildStackContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkStackData } from "../validate/stackWarnings";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
 import type {
   ChartContext,
   ChartInstance,
   Margin,
+  MountOptions,
   StackLegendItem,
   StackRectData,
   VerticalStackBarChartProps,
@@ -61,7 +70,8 @@ function resolve(p: VerticalStackBarChartProps): Resolved {
 
 export function mountVerticalStackBarChart(
   host: HTMLElement,
-  initial: VerticalStackBarChartProps
+  initial: VerticalStackBarChartProps,
+  opts?: MountOptions<VerticalStackBarChartProps>
 ): ChartInstance<VerticalStackBarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-vertical-stack-bar-chart");
@@ -77,8 +87,18 @@ export function mountVerticalStackBarChart(
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: VerticalStackBarChartProps = initial;
+  let baseProps: VerticalStackBarChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<VerticalStackBarChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<VerticalStackBarChartProps> = {
+    chartType: "vertical-stack-bar-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let lastLegendSent = "";
@@ -88,8 +108,8 @@ export function mountVerticalStackBarChart(
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
     tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    const htmlStr = props.tooltipFormatter
-      ? props.tooltipFormatter(rect)
+    const htmlStr = baseProps.tooltipFormatter
+      ? baseProps.tooltipFormatter(rect)
       : `<strong>${rect.key}</strong> (${rect.seriesKeyAbbreviation})<br/>${String(rect.date)}: ${
           rect.value ?? "—"
         }`;
@@ -103,7 +123,7 @@ export function mountVerticalStackBarChart(
 
   // Canvas-mode hit-test: topmost segment wins (scan keys last-to-first).
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(props).renderer !== "canvas" || !model || sticky) return;
+    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -118,10 +138,10 @@ export function mountVerticalStackBarChart(
     }
     if (hit) {
       showTooltip(hit, ev);
-      props.onHighlightItem?.([hit.key]);
+      baseProps.onHighlightItem?.([hit.key]);
     } else {
       hideTooltip();
-      props.onHighlightItem?.([]);
+      baseProps.onHighlightItem?.([]);
     }
   };
   host.addEventListener("mousemove", onHostMove);
@@ -132,6 +152,9 @@ export function mountVerticalStackBarChart(
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -249,26 +272,45 @@ export function mountVerticalStackBarChart(
       colorsMapping: colors.generatedColorsMapping,
       yAxisDomain: yDomain,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkStackData(props.dataSet);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised points.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkStackData(baseProps.dataSet),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: VerticalStackBarChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<VerticalStackBarChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-vertical-stack-bar-chart");

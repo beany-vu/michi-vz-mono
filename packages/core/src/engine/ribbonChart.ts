@@ -14,11 +14,20 @@ import { renderRibbonSvg } from "../ribbonChart/renderSvg";
 import { drawRibbonCanvas } from "../ribbonChart/renderCanvas";
 import { buildRibbonContext } from "../context/buildRibbonContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
 import type {
   ChartContext,
   ChartInstance,
   DataWarning,
   Margin,
+  MountOptions,
   RibbonChartProps,
   RibbonDataRow,
 } from "../types";
@@ -54,7 +63,11 @@ function checkData(series: RibbonDataRow[], keys: string[]): DataWarning[] {
   return warnings;
 }
 
-export function mountRibbonChart(host: HTMLElement, initial: RibbonChartProps): ChartInstance<RibbonChartProps> {
+export function mountRibbonChart(
+  host: HTMLElement,
+  initial: RibbonChartProps,
+  opts?: MountOptions<RibbonChartProps>
+): ChartInstance<RibbonChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-ribbon-chart");
 
@@ -69,8 +82,18 @@ export function mountRibbonChart(host: HTMLElement, initial: RibbonChartProps): 
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: RibbonChartProps = initial;
+  let baseProps: RibbonChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<RibbonChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<RibbonChartProps> = {
+    chartType: "ribbon-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildRibbonRenderModel> | null = null;
@@ -79,9 +102,9 @@ export function mountRibbonChart(host: HTMLElement, initial: RibbonChartProps): 
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
     tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    const row = props.series.find((d) => String(d.date) === col.date) ?? props.series[0];
-    const htmlStr = props.tooltipFormatter
-      ? props.tooltipFormatter(row, col.key, col.value)
+    const row = baseProps.series.find((d) => String(d.date) === col.date) ?? baseProps.series[0];
+    const htmlStr = baseProps.tooltipFormatter
+      ? baseProps.tooltipFormatter(row, col.key, col.value)
       : `<strong>${col.key}</strong><br/>${col.date}: ${col.value}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
@@ -92,7 +115,7 @@ export function mountRibbonChart(host: HTMLElement, initial: RibbonChartProps): 
   };
 
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(props).renderer !== "canvas" || !model || sticky) return;
+    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -105,10 +128,10 @@ export function mountRibbonChart(host: HTMLElement, initial: RibbonChartProps): 
     }
     if (hit) {
       showTooltip(hit, ev);
-      props.onHighlightItem?.([hit.key]);
+      baseProps.onHighlightItem?.([hit.key]);
     } else {
       hideTooltip();
-      props.onHighlightItem?.([]);
+      baseProps.onHighlightItem?.([]);
     }
   };
   host.addEventListener("mousemove", onHostMove);
@@ -119,6 +142,9 @@ export function mountRibbonChart(host: HTMLElement, initial: RibbonChartProps): 
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: append/transform series before processing.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -220,26 +246,45 @@ export function mountRibbonChart(host: HTMLElement, initial: RibbonChartProps): 
       yAxisDomain,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkData(props.series, props.keys);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised series.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkData(baseProps.series, baseProps.keys),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: RibbonChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<RibbonChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-ribbon-chart");

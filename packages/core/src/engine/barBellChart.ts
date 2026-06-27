@@ -14,6 +14,14 @@ import { renderBarBellSvg } from "../barBell/renderSvg";
 import { drawBarBellCanvas } from "../barBell/renderCanvas";
 import { buildBarBellContext } from "../context/buildBarBellContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
 import type {
   BarBellChartProps,
   BarBellDataRow,
@@ -21,6 +29,7 @@ import type {
   ChartInstance,
   DataWarning,
   Margin,
+  MountOptions,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 100 };
@@ -60,7 +69,8 @@ function checkData(dataSet: BarBellDataRow[], keys: string[]): DataWarning[] {
 
 export function mountBarBellChart(
   host: HTMLElement,
-  initial: BarBellChartProps
+  initial: BarBellChartProps,
+  opts?: MountOptions<BarBellChartProps>
 ): ChartInstance<BarBellChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-bar-bell-chart");
@@ -76,8 +86,18 @@ export function mountBarBellChart(
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: BarBellChartProps = initial;
+  let baseProps: BarBellChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<BarBellChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<BarBellChartProps> = {
+    chartType: "bar-bell-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildBarBellRenderModel> | null = null;
@@ -86,9 +106,9 @@ export function mountBarBellChart(
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
     tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    const row = props.dataSet.find((d) => String(d.date) === seg.date) ?? props.dataSet[0];
-    const htmlStr = props.tooltipFormatter
-      ? props.tooltipFormatter(row, seg.key, seg.value)
+    const row = baseProps.dataSet.find((d) => String(d.date) === seg.date) ?? baseProps.dataSet[0];
+    const htmlStr = baseProps.tooltipFormatter
+      ? baseProps.tooltipFormatter(row, seg.key, seg.value)
       : `<strong>${seg.key}</strong><br/>${seg.date}: ${seg.value}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
@@ -99,7 +119,7 @@ export function mountBarBellChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(props).renderer !== "canvas" || !model || sticky) return;
+    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -118,10 +138,10 @@ export function mountBarBellChart(
     }
     if (hit) {
       showTooltip(hit, ev);
-      props.onHighlightItem?.([hit.key]);
+      baseProps.onHighlightItem?.([hit.key]);
     } else {
       hideTooltip();
-      props.onHighlightItem?.([]);
+      baseProps.onHighlightItem?.([]);
     }
   };
   host.addEventListener("mousemove", onHostMove);
@@ -132,6 +152,9 @@ export function mountBarBellChart(
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: append/rewrite rows before layout.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -235,26 +258,45 @@ export function mountBarBellChart(
       dates,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkData(props.dataSet, props.keys);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised rows.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkData(baseProps.dataSet, baseProps.keys),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: BarBellChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<BarBellChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-bar-bell-chart");

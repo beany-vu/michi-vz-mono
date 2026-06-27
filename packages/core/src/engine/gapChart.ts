@@ -16,7 +16,23 @@ import { drawGapCanvas } from "../gapChart/renderCanvas";
 import { buildGapContext } from "../context/buildContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkGapData } from "../validate/dataWarnings";
-import type { ChartContext, ChartInstance, GapChartProps, GapDataItem, Margin, Shape } from "../types";
+import {
+  applyTransformData,
+  applyEnrichContext,
+  collectValidate,
+  collectTools,
+  setupPlugins,
+} from "../plugins/runner";
+import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import type {
+  ChartContext,
+  ChartInstance,
+  GapChartProps,
+  GapDataItem,
+  Margin,
+  MountOptions,
+  Shape,
+} from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 150, bottom: 100, left: 150 };
 
@@ -50,7 +66,11 @@ function resolve(p: GapChartProps): Resolved {
   };
 }
 
-export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartInstance<GapChartProps> {
+export function mountGapChart(
+  host: HTMLElement,
+  initial: GapChartProps,
+  opts?: MountOptions<GapChartProps>
+): ChartInstance<GapChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-gap-chart");
 
@@ -65,8 +85,18 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let props: GapChartProps = initial;
+  let baseProps: GapChartProps = initial;
   let context: ChartContext | null = null;
+  const pluginList: MichiVzPlugin<GapChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<GapChartProps> = {
+    chartType: "gap-chart",
+    getProps: () => baseProps,
+    getContext: () => context,
+    setProps: (patch) => {
+      baseProps = { ...baseProps, ...patch };
+      render();
+    },
+  };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
 
@@ -74,8 +104,8 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
     const rect = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
     tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
-    const htmlStr = props.tooltipFormatter
-      ? props.tooltipFormatter(d)
+    const htmlStr = baseProps.tooltipFormatter
+      ? baseProps.tooltipFormatter(d)
       : `<strong>${d.label}</strong><br/>Value 1: ${d.value1}<br/>Value 2: ${d.value2}<br/>Difference: ${
           d.difference ?? d.value1 - d.value2
         }`;
@@ -90,7 +120,7 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
   // Canvas-mode hit-test (no retained SVG nodes to attach handlers to).
   let canvasModel: ReturnType<typeof buildGapRenderModel> | null = null;
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(props).renderer !== "canvas" || !canvasModel || sticky) return;
+    if (resolve(baseProps).renderer !== "canvas" || !canvasModel || sticky) return;
     const rect = svg.getBoundingClientRect();
     const x = ev.clientX - rect.left;
     const y = ev.clientY - rect.top;
@@ -108,10 +138,10 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
     }
     if (hit) {
       showTooltip(hit, ev);
-      props.onHighlightItem?.(hit);
+      baseProps.onHighlightItem?.(hit);
     } else {
       hideTooltip();
-      props.onHighlightItem?.(null);
+      baseProps.onHighlightItem?.(null);
     }
   };
   host.addEventListener("mousemove", onHostMove);
@@ -122,6 +152,9 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
   });
 
   function render(): void {
+    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // With no plugins this is an identity fold, so behaviour is unchanged.
+    const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     const highlightItems = props.highlightItems ?? [];
     const disabledItems = props.disabledItems ?? [];
@@ -263,26 +296,45 @@ export function mountGapChart(host: HTMLElement, initial: GapChartProps): ChartI
       processedDataSet,
       colorsMapping: colors.generatedColorsMapping,
     });
+    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // dataprocessed event, so narration flows to both for free.
+    context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    if (props.onDataWarning) {
-      const warnings = checkGapData(props.dataSet);
-      if (warnings.length > 0) props.onDataWarning(warnings);
+    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // USER's data (baseProps), not the plugin-synthesised points.
+    if (baseProps.onDataWarning) {
+      const warnings = [
+        ...checkGapData(baseProps.dataSet),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
+      if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
+  const teardowns = setupPlugins(pluginList, pc);
 
   return {
     update(next: GapChartProps) {
-      props = next;
+      baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
+    use(plugin: MichiVzPlugin<GapChartProps>) {
+      pluginList.push(plugin);
+      const t = plugin.setup?.(pc);
+      if (typeof t === "function") teardowns.push(t);
+      render();
+    },
+    getTools(): AgentTool[] {
+      return collectTools(pluginList, pc);
+    },
     destroy() {
+      for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-gap-chart");

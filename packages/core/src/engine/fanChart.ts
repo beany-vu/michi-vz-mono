@@ -1,24 +1,26 @@
-// LineChart engine: imperative mount/update/getContext/destroy over the ported
-// pure layer. Renders into LIGHT DOM. Mirrors mountGapChart's shape so wrappers
-// stay uniform. Proves the remaining render styles: per-run solid/dashed lines
-// (gap detection), single-point guide line, LTTB-decimated canvas, hover line.
+// FanChart engine: the canonical forecast visualization. A COMPOSITION of the
+// existing Line + Range primitives (no bespoke geometry): nested confidence bands
+// (RangeChart area generator, graduated opacity) drawn underneath a Line whose
+// history is solid and whose forecast median is dashed (certainty:false). Shares one
+// set of scales over the union domain. Renders in BOTH svg and canvas modes from one
+// model; canvas hover is hit-tested in the engine. LIGHT DOM. Same prop surface as Line.
 import DOMPurify from "dompurify";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
+import { sanitizeForClassName } from "../math/sanitize";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisLinear, renderAnnotationsSvg } from "../render/svg";
+import { createLineScales } from "../lineChart/scales";
 import { processLineChartData } from "../lineChart/data";
 import { buildLineColors } from "../lineChart/colors";
-import { createLineScales } from "../lineChart/scales";
 import { buildLineRenderModel } from "../lineChart/renderModel";
-import { lttb } from "../lineChart/lttb";
+import { renderLineSvg } from "../lineChart/renderSvg";
 import { projectX } from "../lineChart/geometry";
 import { parseXValue } from "../lineChart/lineUtils";
-import { renderLineSvg } from "../lineChart/renderSvg";
-import { drawLineCanvas } from "../lineChart/renderCanvas";
-import { buildLineContext } from "../context/buildLineContext";
+import { makeRangeAreaGenerator } from "../rangeChart/geometry";
+import { drawFanCanvas, type FanBandPath } from "../fanChart/renderCanvas";
+import { buildFanContext } from "../context/buildFanContext";
 import { renderA11yMirror } from "../context/a11yMirror";
-import { checkLineData } from "../validate/lineWarnings";
 import {
   applyTransformData,
   applyEnrichContext,
@@ -32,11 +34,12 @@ import type {
   ChartContext,
   ChartInstance,
   DataPoint,
-  LineChartProps,
+  DataWarning,
+  FanChartProps,
+  FanDataItem,
   LineDataItem,
   Margin,
   MountOptions,
-  SinglePointLineConfig,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
@@ -47,38 +50,51 @@ interface Resolved {
   margin: Margin;
   ticks: number;
   renderer: "svg" | "canvas";
+  fillOpacity: number;
   showDataPoints: boolean;
-  enableMouseLine: boolean;
   enableTransitions: boolean;
-  singlePointLine: SinglePointLineConfig | null;
 }
 
-function resolveSinglePointLine(v: LineChartProps["singlePointLine"]): SinglePointLineConfig | null {
-  if (!v) return null;
-  return v === true ? {} : v;
-}
-
-function resolve(p: LineChartProps): Resolved {
+function resolve(p: FanChartProps): Resolved {
   return {
     width: p.width ?? 1000,
     height: p.height ?? 500,
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
     renderer: p.renderer ?? "svg",
+    fillOpacity: p.fillOpacity ?? 0.18,
     showDataPoints: p.showDataPoints ?? false,
-    enableMouseLine: p.enableMouseLine ?? false,
     enableTransitions: p.enableTransitions ?? true,
-    singlePointLine: resolveSinglePointLine(p.singlePointLine),
   };
 }
 
-export function mountLineChart(
+function checkData(dataSet: FanDataItem[]): DataWarning[] {
+  const warnings: DataWarning[] = [];
+  if (!dataSet || dataSet.length === 0) {
+    warnings.push({ type: "empty-dataset", message: "FanChart received an empty dataSet." });
+    return warnings;
+  }
+  for (const it of dataSet) {
+    for (const d of it.series) {
+      if (!Number.isFinite(d.value)) {
+        warnings.push({
+          type: "non-finite-value",
+          message: `Fan series "${it.label}" has a non-finite value at ${String(d.date)}.`,
+          label: it.label,
+        });
+      }
+    }
+  }
+  return warnings;
+}
+
+export function mountFanChart(
   host: HTMLElement,
-  initial: LineChartProps,
-  opts?: MountOptions<LineChartProps>
-): ChartInstance<LineChartProps> {
+  initial: FanChartProps,
+  opts?: MountOptions<FanChartProps>
+): ChartInstance<FanChartProps> {
   ensureStyles();
-  host.classList.add("michi-vz", "michi-vz-line-chart");
+  host.classList.add("michi-vz", "michi-vz-fan-chart");
 
   const svg = svgEl("svg");
   const tooltip = htmlEl("div", { class: "tooltip" });
@@ -86,17 +102,16 @@ export function mountLineChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
-  let mouseLine: SVGLineElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
   host.appendChild(a11y);
 
-  let baseProps: LineChartProps = initial;
+  let baseProps: FanChartProps = initial;
   let context: ChartContext | null = null;
-  const pluginList: MichiVzPlugin<LineChartProps>[] = [...(opts?.plugins ?? [])];
-  const pc: PluginContext<LineChartProps> = {
-    chartType: "line-chart",
+  const pluginList: MichiVzPlugin<FanChartProps>[] = [...(opts?.plugins ?? [])];
+  const pc: PluginContext<FanChartProps> = {
+    chartType: "fan-chart",
     getProps: () => baseProps,
     getContext: () => context,
     setProps: (patch) => {
@@ -106,30 +121,18 @@ export function mountLineChart(
   };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
-  // Kept for canvas-mode hit-testing (full, undecimated points per label).
+  // Per-label pixel points for canvas-mode hit-testing (no per-mark DOM there).
   let hitData: Array<{ label: string; points: Array<{ x: number; y: number; d: DataPoint }> }> = [];
-
-  const findPoint = (label: string, x: number): { d: DataPoint; series: DataPoint[] } | null => {
-    const entry = hitData.find((h) => h.label === label);
-    if (!entry || entry.points.length === 0) return null;
-    let best = entry.points[0];
-    for (const p of entry.points) if (Math.abs(p.x - x) < Math.abs(best.x - x)) best = p;
-    return { d: best.d, series: entry.points.map((p) => p.d) };
-  };
 
   const showTooltip = (label: string, ev: MouseEvent): void => {
     const rect = host.getBoundingClientRect();
-    const svgRect = svg.getBoundingClientRect();
-    const hit = findPoint(label, ev.clientX - svgRect.left);
-    if (!hit) return;
     tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
     tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
-    const item = baseProps.dataSet.find((s) => s.label === label);
-    const htmlStr = baseProps.tooltipFormatter
-      ? baseProps.tooltipFormatter(hit.d, hit.series, baseProps.dataSet)
-      : `<strong>${label}</strong><br/>${String(hit.d.date)}: ${hit.d.value}`;
-    void item;
-    tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
+    const item = baseProps.dataSet.find((it) => it.label === label);
+    const last = item && item.series.length ? item.series[item.series.length - 1] : null;
+    tooltip.innerHTML = DOMPurify.sanitize(
+      `<strong>${label}</strong>` + (last ? `<br/>${String(last.date)}: ${last.value}` : "")
+    );
     tooltip.style.visibility = "visible";
   };
   const hideTooltip = (): void => {
@@ -137,21 +140,10 @@ export function mountLineChart(
     tooltip.style.visibility = "hidden";
   };
 
+  // Canvas-mode hover: find the nearest series and highlight + tooltip it. Mirrors
+  // lineChart's handler so canvas keeps the SAME interaction as SVG.
   const onHostMove = (ev: MouseEvent): void => {
     const r = resolve(baseProps);
-    if (r.enableMouseLine && mouseLine) {
-      const svgRect = svg.getBoundingClientRect();
-      const x = ev.clientX - svgRect.left;
-      if (x >= r.margin.left && x <= r.width - r.margin.right) {
-        mouseLine.setAttribute("x1", String(x));
-        mouseLine.setAttribute("x2", String(x));
-        mouseLine.setAttribute("y1", String(r.margin.top));
-        mouseLine.setAttribute("y2", String(r.height - r.margin.bottom));
-        mouseLine.style.visibility = "visible";
-      } else {
-        mouseLine.style.visibility = "hidden";
-      }
-    }
     if (r.renderer !== "canvas" || sticky || hitData.length === 0) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
@@ -185,33 +177,50 @@ export function mountLineChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
-    // With no plugins this is an identity fold, so behaviour is unchanged.
+    // Plugin hook #1 — transformData.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
+    const disabled = new Set(props.disabledItems ?? []);
     const highlightItems = props.highlightItems ?? [];
+    const highlightSet = new Set(highlightItems);
+    const anyHighlight = highlightSet.size > 0;
 
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
-    const { processedDataSet, xAxisDomain, yAxisDomain } = processLineChartData(props.dataSet, {
+    // The line layer (history + dashed median) via the Line pure layer.
+    const lineItems: LineDataItem[] = props.dataSet.map((d) => ({
+      label: d.label,
+      color: d.color,
+      series: d.series,
+    }));
+    const { processedDataSet, xAxisDomain, yAxisDomain: lineY } = processLineChartData(lineItems, {
       disabledItems: props.disabledItems,
-      filter: props.filter,
-      detectGaps: props.detectGaps,
-      expectedStep: props.expectedStep,
       xAxisDataType,
-      yAxisDomain: props.yAxisDomain,
     });
 
+    // Widen the y-domain to include the bands (unless the consumer fixed it).
+    let yMin = lineY[0];
+    let yMax = lineY[1];
+    for (const it of props.dataSet) {
+      if (disabled.has(it.label)) continue;
+      for (const band of it.bands) {
+        for (const p of band.series) {
+          if (Number.isFinite(p.valueMin)) yMin = Math.min(yMin, p.valueMin);
+          if (Number.isFinite(p.valueMax)) yMax = Math.max(yMax, p.valueMax);
+        }
+      }
+    }
+    const yAxisDomain: [number, number] = props.yAxisDomain ?? [yMin, yMax];
+
     const colors = buildLineColors(
-      props.dataSet,
+      lineItems,
       props.colors,
       props.colorsMapping,
       props.skipColorMappingDispatch ?? false
     );
-
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
       if (JSON.stringify(next) !== JSON.stringify(lastColorMappingSent)) {
@@ -220,16 +229,35 @@ export function mountLineChart(
       }
     }
 
-    const scales = createLineScales(
-      xAxisDomain,
-      yAxisDomain,
-      r.width,
-      r.height,
-      r.margin,
-      xAxisDataType
-    );
+    const scales = createLineScales(xAxisDomain, yAxisDomain, r.width, r.height, r.margin, xAxisDataType);
+    const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
+    const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
 
-    // Build hit-test data from the FULL (undecimated) processed points.
+    // ----- ONE render model: band area paths (graduated opacity) + the line model -----
+    const areaGen = makeRangeAreaGenerator(scales.xScale, scales.yScale, xAxisDataType, props.curve);
+    const bandPaths: FanBandPath[] = [];
+    for (const it of props.dataSet) {
+      if (disabled.has(it.label)) continue;
+      const safe = sanitizeForClassName(it.label);
+      const color = colors.getColor(it.label);
+      const dimmed = anyHighlight && !highlightSet.has(it.label);
+      const sorted = [...it.bands].sort((a, b) => b.level - a.level); // widest first
+      const n = sorted.length;
+      sorted.forEach((band, j) => {
+        const d = areaGen(band.series);
+        if (!d) return;
+        // narrower bands (later j) get more opaque so the fan reads as nested.
+        const base = r.fillOpacity * ((j + 1) / n);
+        bandPaths.push({ label: it.label, safe, color, areaPath: d, opacity: dimmed ? base * 0.3 : base });
+      });
+    }
+    const lineModel = buildLineRenderModel(processedDataSet, scales, colors, {
+      xAxisDataType,
+      curve: props.curve,
+      highlightItems,
+    });
+
+    // hit-test data (canvas hover) from the full processed line points.
     hitData = processedDataSet.map((item) => ({
       label: item.label,
       points: item.series.map((d) => ({
@@ -239,29 +267,7 @@ export function mountLineChart(
       })),
     }));
 
-    // Canvas mode: LTTB-decimate each series to ~2 points/px before drawing.
-    const drawDataSet: LineDataItem[] =
-      r.renderer === "canvas"
-        ? processedDataSet.map((item) => {
-            const pxX = (d: DataPoint) => projectX(d, scales.xScale, xAxisDataType);
-            const span = item.series.length
-              ? Math.abs(pxX(item.series[item.series.length - 1]) - pxX(item.series[0]))
-              : 0;
-            const threshold = Math.max(3, Math.min(item.series.length, Math.round(span * 2)));
-            return { ...item, series: lttb(item.series, threshold, pxX, (d) => d.value) };
-          })
-        : processedDataSet;
-
-    const model = buildLineRenderModel(drawDataSet, scales, colors, {
-      xAxisDataType,
-      curve: props.curve,
-      highlightItems,
-    });
-
-    const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
-    const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
-
-    // ----- SVG layer (axes + title always; marks only in svg mode) -----
+    // ----- SVG layer (axes + title always) -----
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
     renderXAxisLinear(svg, scales.xScale, {
@@ -283,14 +289,30 @@ export function mountLineChart(
     });
 
     if (r.renderer !== "canvas") {
+      // Bands underneath, then the line on top — both on the SVG layer.
+      const bandsLayer = svgEl("g", { class: "mv-fan-bands" });
+      for (const b of bandPaths) {
+        bandsLayer.appendChild(
+          svgEl("path", {
+            class: "mv-fan-band area",
+            "data-label": b.label,
+            "data-label-safe": b.safe,
+            d: b.areaPath,
+            fill: b.color,
+            stroke: "none",
+            opacity: b.opacity,
+          })
+        );
+      }
+      svg.appendChild(bandsLayer);
       renderLineSvg(
         svg,
-        model,
+        lineModel,
         {
           margin: r.margin,
           width: r.width,
           showDataPoints: r.showDataPoints,
-          singlePointLine: r.singlePointLine,
+          singlePointLine: null,
           enableTransitions: r.enableTransitions,
         },
         {
@@ -310,60 +332,57 @@ export function mountLineChart(
           },
         }
       );
-    }
-
-    // Mouse crosshair line (drawn above marks, below tooltip).
-    if (r.enableMouseLine) {
-      mouseLine = svgEl("line", { class: "mv-mouse-line" }) as SVGLineElement;
-      mouseLine.setAttribute("stroke", "#999");
-      mouseLine.setAttribute("stroke-width", "1");
-      mouseLine.setAttribute("stroke-dasharray", "3,3");
-      mouseLine.style.visibility = "hidden";
-      mouseLine.style.pointerEvents = "none";
-      svg.appendChild(mouseLine);
+      if (canvas) {
+        canvas.remove();
+        canvas = null;
+      }
     } else {
-      mouseLine = null;
-    }
-
-    // ----- Canvas layer -----
-    if (r.renderer === "canvas") {
+      // ----- Canvas layer (bands + line drawn from the same model) -----
       if (!canvas) {
-        canvas = htmlEl("canvas", { class: "line-chart-canvas" });
+        canvas = htmlEl("canvas", { class: "fan-chart-canvas" });
         canvas.style.position = "absolute";
         canvas.style.top = "0";
         canvas.style.left = "0";
         canvas.style.pointerEvents = "none";
         host.insertBefore(canvas, tooltip);
       }
-      drawLineCanvas(canvas, svg, model, {
-        width: r.width,
-        height: r.height,
-        margin: r.margin,
-        showDataPoints: r.showDataPoints,
-        singlePointLine: r.singlePointLine,
-      });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+      drawFanCanvas(canvas, svg, { bands: bandPaths, lineModel }, { width: r.width, height: r.height });
     }
 
-    // ----- Context (renderer-agnostic) + a11y + warnings -----
-    context = buildLineContext({
+    // ----- Context + plugin hooks + a11y + warnings -----
+    context = buildFanContext({
       title: props.title,
       renderer: r.renderer,
       xAxisDataType,
       xAxisDomain,
       yAxisDomain,
-      processedDataSet,
+      dataSet: props.dataSet,
       colorsMapping: colors.generatedColorsMapping,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
-    // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
 
-    // Plugin hook #4 — annotate: draw threshold/goal lines + "fall point" markers on
-    // the SVG layer (present in both render modes), above the marks.
     const annotations = collectAnnotations(pluginList, context, pc);
+
+    // Forecast-region highlight: shade the part of the x-range that is NOT actual
+    // data (from the last solid `certainty:true` point to the end). This is distinct
+    // from highlightItems (which highlights a series). Opt out with forecastZone:false.
+    if (props.forecastZone !== false) {
+      let boundary = -Infinity;
+      let end = -Infinity;
+      for (const it of props.dataSet) {
+        if (disabled.has(it.label)) continue;
+        for (const d of it.series) {
+          const xn = typeof d.date === "number" ? d.date : Number(d.date);
+          if (!Number.isFinite(xn)) continue;
+          if (d.certainty !== false) boundary = Math.max(boundary, xn);
+          end = Math.max(end, xn);
+        }
+      }
+      if (Number.isFinite(boundary) && end > boundary) {
+        annotations.push({ type: "xband", at: boundary, at2: end, label: "forecast", color: "#64748b", opacity: 0.1 });
+      }
+    }
+
     if (annotations.length > 0) {
       renderAnnotationsSvg(svg, annotations, {
         yPx: (v) => scales.yScale(v),
@@ -380,13 +399,8 @@ export function mountLineChart(
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
-    // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
-      const warnings = [
-        ...checkLineData(baseProps.dataSet, xAxisDataType),
-        ...collectValidate(pluginList, baseProps, pc),
-      ];
+      const warnings = [...checkData(baseProps.dataSet), ...collectValidate(pluginList, baseProps, pc)];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
@@ -395,14 +409,14 @@ export function mountLineChart(
   const teardowns = setupPlugins(pluginList, pc);
 
   return {
-    update(next: LineChartProps) {
+    update(next: FanChartProps) {
       baseProps = next;
       render();
     },
     getContext() {
       return context;
     },
-    use(plugin: MichiVzPlugin<LineChartProps>) {
+    use(plugin: MichiVzPlugin<FanChartProps>) {
       pluginList.push(plugin);
       const t = plugin.setup?.(pc);
       if (typeof t === "function") teardowns.push(t);
@@ -415,7 +429,7 @@ export function mountLineChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       clear(host);
-      host.classList.remove("michi-vz", "michi-vz-line-chart");
+      host.classList.remove("michi-vz", "michi-vz-fan-chart");
     },
   };
 }
