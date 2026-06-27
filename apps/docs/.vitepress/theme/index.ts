@@ -3,6 +3,7 @@ import type { Theme } from "vitepress";
 import Layout from "./Layout.vue";
 import ChartDemo from "./ChartDemo.vue";
 import InsightsDemo from "./InsightsDemo.vue";
+import EmbeddingsLab from "./EmbeddingsLab.vue";
 import PropsTable from "./PropsTable.vue";
 import "./custom.css";
 
@@ -17,6 +18,7 @@ export default {
   enhanceApp({ app }) {
     app.component("ChartDemo", ChartDemo);
     app.component("InsightsDemo", InsightsDemo);
+    app.component("EmbeddingsLab", EmbeddingsLab);
     app.component("PropsTable", PropsTable);
   },
 } satisfies Theme;
