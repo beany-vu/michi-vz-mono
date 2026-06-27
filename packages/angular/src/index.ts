@@ -4,9 +4,11 @@
 // An idiomatic standalone @Component wrapper (built with ng-packagr) is a later
 // increment; this thin layer works today with zero Angular-compiler coupling.
 import "@michi-vz/wc"; // registers all michi-vz elements + auto-injects core.css
+import { effect, type Injector, type Signal } from "@angular/core";
 import type {
   GapChartElement,
   LineChartElement,
+  FanChartElement,
   AreaChartElement,
   ScatterChartElement,
   VerticalStackBarChartElement,
@@ -20,6 +22,7 @@ import type {
 import type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -34,6 +37,7 @@ import type {
 export type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -48,6 +52,7 @@ export type {
 export type {
   GapChartElement,
   LineChartElement,
+  FanChartElement,
   AreaChartElement,
   ScatterChartElement,
   VerticalStackBarChartElement,
@@ -58,6 +63,31 @@ export type {
   RibbonChartElement,
   RadarChartElement,
 } from "@michi-vz/wc";
+
+/**
+ * Signals-first binding (preferred): re-apply a `Signal<Props>` to a michi-vz
+ * element whenever the signal changes, via Angular `effect`. Call inside an
+ * injection context (a component constructor) or pass an `injector`. Compose with
+ * the per-chart `apply*` fns below:
+ *
+ * ```ts
+ * @Component({ standalone: true, schemas: [CUSTOM_ELEMENTS_SCHEMA],
+ *   template: `<michi-vz-fan-chart #c></michi-vz-fan-chart>` })
+ * export class Forecast {
+ *   readonly props = input.required<FanChartProps>();        // signal input
+ *   @ViewChild('c', { read: ElementRef }) c!: ElementRef<FanChartElement>;
+ *   constructor() { afterNextRender(() => bindChart(this.c.nativeElement, this.props, applyFanChartProps)); }
+ * }
+ * ```
+ */
+export function bindChart<E, P>(
+  el: E,
+  props: Signal<P>,
+  apply: (el: E, props: P) => void,
+  injector?: Injector
+): void {
+  effect(() => apply(el, props()), injector ? { injector } : undefined);
+}
 
 /** Apply engine props onto a <michi-vz-gap-chart> element (property binding). */
 export function applyGapChartProps(el: GapChartElement, props: GapChartProps): void {
@@ -98,6 +128,24 @@ export function applyLineChartProps(el: LineChartElement, props: LineChartProps)
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-fan-chart> element (property binding). */
+export function applyFanChartProps(el: FanChartElement, props: FanChartProps): void {
+  el.dataSet = props.dataSet;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.xAxisDataType !== undefined) el.xAxisDataType = props.xAxisDataType;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.curve !== undefined) el.curve = props.curve;
+  if (props.fillOpacity !== undefined) el.fillOpacity = props.fillOpacity;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.locale !== undefined) el.locale = props.locale;
 }
 

@@ -1,7 +1,14 @@
 // <michi-vz-bar-bell-chart> — Lit, LIGHT DOM, over the @michi-vz/core BarBell engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountBarBellChart } from "@michi-vz/core";
-import type { BarBellChartProps, BarBellDataRow, ChartContext, ChartInstance } from "@michi-vz/core";
+import type {
+  AgentTool,
+  BarBellChartProps,
+  BarBellDataRow,
+  ChartContext,
+  ChartInstance,
+  MichiVzPlugin,
+} from "@michi-vz/core";
 
 export class BarBellChartElement extends LitElement {
   static properties = {
@@ -16,6 +23,7 @@ export class BarBellChartElement extends LitElement {
     disabledItems: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -30,6 +38,7 @@ export class BarBellChartElement extends LitElement {
   disabledItems?: string[];
   skipColorMappingDispatch = false;
   tooltipFormatter?: (row: BarBellDataRow, key: string, value: number) => string;
+  plugins?: MichiVzPlugin<BarBellChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<BarBellChartProps>;
@@ -69,7 +78,7 @@ export class BarBellChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountBarBellChart(host, this.chartProps);
+    if (host) this.chart = mountBarBellChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -84,6 +93,10 @@ export class BarBellChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

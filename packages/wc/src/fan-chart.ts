@@ -1,19 +1,22 @@
-// <michi-vz-range-chart> — Lit, LIGHT DOM, over the @michi-vz/core RangeChart engine.
+// <michi-vz-fan-chart> — native web component (Lit, LIGHT DOM) over the
+// @michi-vz/core FanChart engine (history line + dashed forecast median + nested
+// confidence bands). Same shape as the other elements; light DOM preserves the
+// consumer colour contract. Also forwards an opt-in `plugins` array.
 import { LitElement, html, type PropertyValues } from "lit";
-import { mountRangeChart } from "@michi-vz/core";
+import { mountFanChart } from "@michi-vz/core";
 import type {
   AgentTool,
-  RangeChartProps,
-  RangeDataItem,
-  RangeDataPoint,
-  CurveType,
   ChartContext,
   ChartInstance,
+  CurveType,
+  FanChartProps,
+  FanDataItem,
+  Margin,
   MichiVzPlugin,
   XaxisDataType,
 } from "@michi-vz/core";
 
-export class RangeChartElement extends LitElement {
+export class FanChartElement extends LitElement {
   static properties = {
     dataSet: { attribute: false },
     chartTitle: { type: String, attribute: "chart-title" },
@@ -26,13 +29,14 @@ export class RangeChartElement extends LitElement {
     disabledItems: { attribute: false },
     curve: { type: String },
     fillOpacity: { type: Number, attribute: "fill-opacity" },
+    showDataPoints: { type: Boolean, attribute: "show-data-points" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
-    tooltipFormatter: { attribute: false },
+    margin: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
   };
 
-  dataSet: RangeDataItem[] = [];
+  dataSet: FanDataItem[] = [];
   chartTitle = "";
   width = 1000;
   height = 500;
@@ -43,12 +47,13 @@ export class RangeChartElement extends LitElement {
   disabledItems?: string[];
   curve?: CurveType;
   fillOpacity?: number;
+  showDataPoints = false;
   skipColorMappingDispatch = false;
-  tooltipFormatter?: (d: RangeDataPoint, item: RangeDataItem) => string;
-  plugins?: MichiVzPlugin<RangeChartProps>[];
+  margin?: Margin;
+  plugins?: MichiVzPlugin<FanChartProps>[];
   locale?: string;
 
-  private chart?: ChartInstance<RangeChartProps>;
+  private chart?: ChartInstance<FanChartProps>;
 
   protected createRenderRoot(): HTMLElement {
     return this;
@@ -62,7 +67,7 @@ export class RangeChartElement extends LitElement {
     this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
   }
 
-  private get chartProps(): RangeChartProps {
+  private get chartProps(): FanChartProps {
     return {
       dataSet: this.dataSet,
       title: this.chartTitle || undefined,
@@ -75,8 +80,9 @@ export class RangeChartElement extends LitElement {
       disabledItems: this.disabledItems,
       curve: this.curve,
       fillOpacity: this.fillOpacity,
+      showDataPoints: this.showDataPoints,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
-      tooltipFormatter: this.tooltipFormatter,
+      margin: this.margin,
       locale: this.locale,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
@@ -87,7 +93,7 @@ export class RangeChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountRangeChart(host, this.chartProps, { plugins: this.plugins });
+    if (host) this.chart = mountFanChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -109,6 +115,6 @@ export class RangeChartElement extends LitElement {
   }
 }
 
-if (typeof customElements !== "undefined" && !customElements.get("michi-vz-range-chart")) {
-  customElements.define("michi-vz-range-chart", RangeChartElement);
+if (typeof customElements !== "undefined" && !customElements.get("michi-vz-fan-chart")) {
+  customElements.define("michi-vz-fan-chart", FanChartElement);
 }

@@ -3,11 +3,13 @@
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountVerticalStackBarChart } from "@michi-vz/core";
 import type {
+  AgentTool,
   VerticalStackBarChartProps,
   VerticalStackBarDataSet,
   StackRectData,
   ChartContext,
   ChartInstance,
+  MichiVzPlugin,
 } from "@michi-vz/core";
 
 export class VerticalStackBarChartElement extends LitElement {
@@ -25,6 +27,7 @@ export class VerticalStackBarChartElement extends LitElement {
     missingDataMarker: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -41,6 +44,7 @@ export class VerticalStackBarChartElement extends LitElement {
   missingDataMarker?: { height: number };
   skipColorMappingDispatch = false;
   tooltipFormatter?: (rect: StackRectData) => string;
+  plugins?: MichiVzPlugin<VerticalStackBarChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<VerticalStackBarChartProps>;
@@ -83,7 +87,8 @@ export class VerticalStackBarChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountVerticalStackBarChart(host, this.chartProps);
+    if (host)
+      this.chart = mountVerticalStackBarChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -98,6 +103,10 @@ export class VerticalStackBarChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

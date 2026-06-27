@@ -12,6 +12,7 @@ import "./bar-bell-chart";
 import "./range-chart";
 import "./ribbon-chart";
 import "./radar-chart";
+import "./fan-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -24,3 +25,4 @@ export { BarBellChartElement } from "./bar-bell-chart";
 export { RangeChartElement } from "./range-chart";
 export { RibbonChartElement } from "./ribbon-chart";
 export { RadarChartElement } from "./radar-chart";
+export { FanChartElement } from "./fan-chart";

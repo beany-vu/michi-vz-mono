@@ -5,12 +5,14 @@
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountLineChart } from "@michi-vz/core";
 import type {
+  AgentTool,
   LineChartProps,
   LineDataItem,
   DataPoint,
   CurveType,
   ChartContext,
   ChartInstance,
+  MichiVzPlugin,
   XaxisDataType,
   SinglePointLineConfig,
 } from "@michi-vz/core";
@@ -34,6 +36,7 @@ export class LineChartElement extends LitElement {
     singlePointLine: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -54,6 +57,7 @@ export class LineChartElement extends LitElement {
   singlePointLine?: boolean | SinglePointLineConfig;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;
+  plugins?: MichiVzPlugin<LineChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<LineChartProps>;
@@ -99,7 +103,7 @@ export class LineChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountLineChart(host, this.chartProps);
+    if (host) this.chart = mountLineChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -114,6 +118,10 @@ export class LineChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

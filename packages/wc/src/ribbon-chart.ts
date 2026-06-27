@@ -1,7 +1,14 @@
 // <michi-vz-ribbon-chart> — Lit, LIGHT DOM, over the @michi-vz/core RibbonChart engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountRibbonChart } from "@michi-vz/core";
-import type { RibbonChartProps, RibbonDataRow, ChartContext, ChartInstance } from "@michi-vz/core";
+import type {
+  AgentTool,
+  RibbonChartProps,
+  RibbonDataRow,
+  ChartContext,
+  ChartInstance,
+  MichiVzPlugin,
+} from "@michi-vz/core";
 
 export class RibbonChartElement extends LitElement {
   static properties = {
@@ -17,6 +24,7 @@ export class RibbonChartElement extends LitElement {
     columnWidth: { type: Number, attribute: "column-width" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -32,6 +40,7 @@ export class RibbonChartElement extends LitElement {
   columnWidth?: number;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (row: RibbonDataRow, key: string, value: number) => string;
+  plugins?: MichiVzPlugin<RibbonChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<RibbonChartProps>;
@@ -72,7 +81,7 @@ export class RibbonChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountRibbonChart(host, this.chartProps);
+    if (host) this.chart = mountRibbonChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -87,6 +96,10 @@ export class RibbonChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

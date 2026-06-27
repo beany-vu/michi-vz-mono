@@ -7,10 +7,12 @@
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountGapChart } from "@michi-vz/core";
 import type {
+  AgentTool,
   GapChartProps,
   GapDataItem,
   ChartContext,
   ChartInstance,
+  MichiVzPlugin,
   Shape,
   XaxisDataType,
 } from "@michi-vz/core";
@@ -30,6 +32,7 @@ export class GapChartElement extends LitElement {
     shapeValue2: { type: String, attribute: "shape-value2" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -46,6 +49,7 @@ export class GapChartElement extends LitElement {
   shapeValue2: Shape = "circle";
   skipColorMappingDispatch = false;
   tooltipFormatter?: (d: GapDataItem) => string;
+  plugins?: MichiVzPlugin<GapChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<GapChartProps>;
@@ -88,7 +92,7 @@ export class GapChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountGapChart(host, this.chartProps);
+    if (host) this.chart = mountGapChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -104,6 +108,10 @@ export class GapChartElement extends LitElement {
   /** Renderer-agnostic semantic snapshot (works in SVG and canvas mode). */
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

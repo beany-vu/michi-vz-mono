@@ -69,6 +69,11 @@
       "types": "./dist/radar-chart.d.ts",
       "import": "./dist/radar-chart.js",
       "require": "./dist/radar-chart.cjs"
+    },
+    "./fan-chart": {
+      "types": "./dist/fan-chart.d.ts",
+      "import": "./dist/fan-chart.js",
+      "require": "./dist/fan-chart.cjs"
     }
   },
   "scripts": {

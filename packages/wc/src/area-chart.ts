@@ -3,11 +3,13 @@
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountAreaChart } from "@michi-vz/core";
 import type {
+  AgentTool,
   AreaChartProps,
   AreaDataRow,
   CurveType,
   ChartContext,
   ChartInstance,
+  MichiVzPlugin,
   XaxisDataType,
 } from "@michi-vz/core";
 
@@ -27,6 +29,7 @@ export class AreaChartElement extends LitElement {
     forcePercentageScale: { type: Boolean, attribute: "force-percentage-scale" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -44,6 +47,7 @@ export class AreaChartElement extends LitElement {
   forcePercentageScale = false;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (row: AreaDataRow, key: string, series: AreaDataRow[]) => string;
+  plugins?: MichiVzPlugin<AreaChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<AreaChartProps>;
@@ -86,7 +90,7 @@ export class AreaChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountAreaChart(host, this.chartProps);
+    if (host) this.chart = mountAreaChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -101,6 +105,10 @@ export class AreaChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

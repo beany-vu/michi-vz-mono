@@ -2,7 +2,14 @@
 // DualHorizontalBar (tornado) engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountDualHorizontalBarChart } from "@michi-vz/core";
-import type { DualBarChartProps, DualBarDataPoint, ChartContext, ChartInstance } from "@michi-vz/core";
+import type {
+  AgentTool,
+  DualBarChartProps,
+  DualBarDataPoint,
+  ChartContext,
+  ChartInstance,
+  MichiVzPlugin,
+} from "@michi-vz/core";
 
 export class DualHorizontalBarChartElement extends LitElement {
   static properties = {
@@ -18,6 +25,7 @@ export class DualHorizontalBarChartElement extends LitElement {
     value2Opacity: { type: Number, attribute: "value2-opacity" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -33,6 +41,7 @@ export class DualHorizontalBarChartElement extends LitElement {
   value2Opacity?: number;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (d: DualBarDataPoint) => string;
+  plugins?: MichiVzPlugin<DualBarChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<DualBarChartProps>;
@@ -73,7 +82,8 @@ export class DualHorizontalBarChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountDualHorizontalBarChart(host, this.chartProps);
+    if (host)
+      this.chart = mountDualHorizontalBarChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -88,6 +98,10 @@ export class DualHorizontalBarChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

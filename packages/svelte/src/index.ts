@@ -3,6 +3,7 @@
 import {
   mountGapChart,
   mountLineChart,
+  mountFanChart,
   mountAreaChart,
   mountScatterChart,
   mountVerticalStackBarChart,
@@ -16,6 +17,7 @@ import {
 import type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -31,6 +33,7 @@ import type {
 export type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -68,6 +71,21 @@ export function lineChart(node: HTMLElement, props: LineChartProps): LineChartAc
   const chart = mountLineChart(node, props);
   return {
     update: (next: LineChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface FanChartAction {
+  update(props: FanChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<FanChartProps>["getContext"];
+}
+
+export function fanChart(node: HTMLElement, props: FanChartProps): FanChartAction {
+  const chart = mountFanChart(node, props);
+  return {
+    update: (next: FanChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };

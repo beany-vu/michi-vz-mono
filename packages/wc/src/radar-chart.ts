@@ -1,7 +1,14 @@
 // <michi-vz-radar-chart> — Lit, LIGHT DOM, over the @michi-vz/core RadarChart engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountRadarChart } from "@michi-vz/core";
-import type { RadarChartProps, RadarDataItem, ChartContext, ChartInstance } from "@michi-vz/core";
+import type {
+  AgentTool,
+  RadarChartProps,
+  RadarDataItem,
+  ChartContext,
+  ChartInstance,
+  MichiVzPlugin,
+} from "@michi-vz/core";
 
 export class RadarChartElement extends LitElement {
   static properties = {
@@ -19,6 +26,7 @@ export class RadarChartElement extends LitElement {
     fillOpacity: { type: Number, attribute: "fill-opacity" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -36,6 +44,7 @@ export class RadarChartElement extends LitElement {
   fillOpacity?: number;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (item: RadarDataItem) => string;
+  plugins?: MichiVzPlugin<RadarChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<RadarChartProps>;
@@ -78,7 +87,7 @@ export class RadarChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountRadarChart(host, this.chartProps);
+    if (host) this.chart = mountRadarChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -93,6 +102,10 @@ export class RadarChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

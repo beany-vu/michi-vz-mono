@@ -30,6 +30,10 @@
   "peerDependencies": {
     "@angular/core": ">=16"
   },
+  "devDependencies": {
+    "@angular/core": "^22.0.0",
+    "rxjs": "^7.8.0"
+  },
   "license": "MIT",
   "author": "Beany Vu",
   "keywords": [

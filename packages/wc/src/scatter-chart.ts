@@ -3,10 +3,12 @@
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountScatterChart } from "@michi-vz/core";
 import type {
+  AgentTool,
   ScatterChartProps,
   ScatterDataPoint,
   ChartContext,
   ChartInstance,
+  MichiVzPlugin,
   XaxisDataType,
 } from "@michi-vz/core";
 
@@ -24,6 +26,7 @@ export class ScatterChartElement extends LitElement {
     sizeRange: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -39,6 +42,7 @@ export class ScatterChartElement extends LitElement {
   sizeRange?: [number, number];
   skipColorMappingDispatch = false;
   tooltipFormatter?: (d: ScatterDataPoint) => string;
+  plugins?: MichiVzPlugin<ScatterChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<ScatterChartProps>;
@@ -79,7 +83,7 @@ export class ScatterChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountScatterChart(host, this.chartProps);
+    if (host) this.chart = mountScatterChart(host, this.chartProps, { plugins: this.plugins });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -94,6 +98,10 @@ export class ScatterChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

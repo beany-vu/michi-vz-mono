@@ -14,6 +14,7 @@ export default defineConfig({
     "src/range-chart.ts",
     "src/ribbon-chart.ts",
     "src/radar-chart.ts",
+    "src/fan-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,
