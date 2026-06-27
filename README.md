@@ -1,7 +1,7 @@
 # @michi-vz
 
 **Charts that move with your stack, not against it.** One rendering engine,
-eleven chart types, and first-class support for **React, Vue, Svelte, Angular,
+twelve chart types, and first-class support for **React, Vue, Svelte, Angular,
 native web components, or no framework at all**. Every chart is interactive,
 accessible, and emits an LLM-ready data context you can drop straight into a
 report, a dashboard, or an AI feature.
@@ -44,9 +44,9 @@ in progress). Every chart emits a renderer-agnostic, LLM-ready **`ChartContext`*
 (structured data + stats + rule-based NL summary + a hidden a11y table mirror)
 that is identical whether the chart renders as SVG or canvas.
 
-## Charts (11)
+## Charts (12)
 
-GapChart · LineChart · AreaChart · ScatterPlot · VerticalStackBar ·
+GapChart · LineChart · FanChart (forecast) · AreaChart · ScatterPlot · VerticalStackBar ·
 ComparableHorizontalBar · DualHorizontalBar (tornado) · BarBell · Range · Ribbon ·
 Radar - each available across all five outputs (core engine, web component, and
 React/Vue/Svelte/Angular wrappers), in both SVG and canvas renderers.

@@ -343,6 +343,230 @@
         }
       ]
     },
+    "fan-chart": {
+      "element": "michi-vz-fan-chart",
+      "propsType": "FanChartProps",
+      "context": "FanChartContext",
+      "mount": "mountFanChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "FanDataItem[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "1000",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "500",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisDataType",
+          "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
+          "optional": true,
+          "description": "",
+          "default": "\"number\"",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickValues",
+          "type": "Array<number | Date>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "curve",
+          "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "fillOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "band fill opacity for the widest band (narrower bands scale up from here).",
+          "default": "0.18",
+          "common": false
+        },
+        {
+          "name": "forecastZone",
+          "type": "boolean",
+          "optional": true,
+          "description": "shade the forecast region (from the last solid point to the end). Default true.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showDataPoints",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
     "area-chart": {
       "element": "michi-vz-area-chart",
       "propsType": "AreaChartProps",

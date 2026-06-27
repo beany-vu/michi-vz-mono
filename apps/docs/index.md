@@ -2,7 +2,7 @@
 layout: home
 hero:
   name: michi-vz
-  text: Eleven charts. Every framework. One typed API.
+  text: Twelve charts. Every framework. One typed API.
   tagline: Drop them in as web components, or import per-chart into React, Vue, Svelte, Angular, or plain TypeScript. Themed in your own CSS, and able to describe themselves in plain language.
   image:
     src: /michi-shield.png

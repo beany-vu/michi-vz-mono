@@ -100,6 +100,6 @@ Because charts render in **light DOM**, your CSS reaches every mark - including 
 ## Next steps
 
 - **[Render your first chart](/guide/getting-started)** - the per-framework quickstart.
-- **[Browse the charts](/charts/)** - 11 live examples, one page each.
+- **[Browse the charts](/charts/)** - 12 live examples, one page each.
 - **[API reference](/api/line)** - props, events, and `getContext()` per chart.
 - **[LLM context](/guide/llm-context)** - the renderer-agnostic `ChartContext` every chart emits.

@@ -5,7 +5,7 @@ title: Range Chart
 
 <span class="vp-badge tip">Trends</span>
 
-Min-max bands per series - forecasts, confidence intervals, or observed ranges over time.
+"How wide is the spread?" When a single line lies about your data, draw the band instead. Best case to worst case, the forecast cone, the 5th-to-95th percentile - this shades the whole range per series so uncertainty is something the reader can see, not guess at.
 
 <ChartDemo chart="range-chart" />
 

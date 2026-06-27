@@ -4,7 +4,7 @@ title: Vertical Stack Bar API
 
 # Vertical Stack Bar API
 
-The `<michi-vz-vertical-stack-bar-chart>` element and the `mountVerticalStackBarChart` engine. For examples and usage, see the **[Vertical Stack Bar demo](/charts/vertical-stack-bar)**.
+Show what each category is built from, segment by segment, with missing parts flagged instead of dropped - see the **[Vertical Stack Bar demo](/charts/vertical-stack-bar)**.
 
 ## Import
 

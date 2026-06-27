@@ -8,16 +8,17 @@ import CatalogCard from "./CatalogCard.vue";
 // the chart catalog order (charts/index.md).
 const CARDS = [
   { examplesKey: "line-chart", slug: "line", name: "Line", family: "Trends", roman: "I", blurb: "Trends over time across one or many series. The dashed run is a gap in the data (detectGaps).", tag: "<michi-vz-line-chart> · SVG/canvas" },
-  { examplesKey: "area-chart", slug: "area", name: "Area", family: "Composition", roman: "II", blurb: "Part to whole over time: how each component's share of a stacked total shifts.", tag: "<michi-vz-area-chart> · SVG/canvas" },
-  { examplesKey: "scatter-chart", slug: "scatter", name: "Scatter", family: "Correlation", roman: "III", blurb: "The relationship between two numeric variables; bubble size encodes a third.", tag: "<michi-vz-scatter-chart> · SVG/canvas" },
-  { examplesKey: "range-chart", slug: "range", name: "Range", family: "Trends", roman: "IV", blurb: "Min to max bands per series: forecasts, confidence intervals, or observed ranges.", tag: "<michi-vz-range-chart> · SVG/canvas" },
-  { examplesKey: "ribbon-chart", slug: "ribbon", name: "Ribbon", family: "Composition", roman: "V", blurb: "Stacked columns per period, linked by ribbons that trace each category over time.", tag: "<michi-vz-ribbon-chart> · SVG/canvas" },
-  { examplesKey: "radar-chart", slug: "radar", name: "Radar", family: "Comparison", roman: "VI", blurb: "Compare several entities across a shared set of axes at a glance.", tag: "<michi-vz-radar-chart> · SVG/canvas" },
-  { examplesKey: "vertical-stack-bar-chart", slug: "vertical-stack-bar", name: "Vertical Stack Bar", family: "Composition", roman: "VII", blurb: "Stacked vertical bars per category, with an explicit missing-data guard.", tag: "<michi-vz-vertical-stack-bar-chart> · SVG/canvas" },
-  { examplesKey: "comparable-horizontal-bar-chart", slug: "comparable", name: "Comparable Bar", family: "Comparison", roman: "VIII", blurb: "Two overlaid horizontal sub-bars per label: a based vs compared value.", tag: "<michi-vz-comparable-horizontal-bar-chart> · SVG/canvas" },
-  { examplesKey: "dual-horizontal-bar-chart", slug: "dual", name: "Dual Bar", family: "Comparison", roman: "IX", blurb: "Diverging bars from a centre line: population pyramids and tornado charts.", tag: "<michi-vz-dual-horizontal-bar-chart> · SVG/canvas" },
-  { examplesKey: "bar-bell-chart", slug: "bar-bell", name: "Bar-Bell", family: "Composition", roman: "X", blurb: "Cumulative horizontal segments per row with end-cap circles at each step.", tag: "<michi-vz-bar-bell-chart> · SVG/canvas" },
-  { examplesKey: "gap-chart", slug: "gap", name: "Gap", family: "Comparison", roman: "XI", blurb: "Two values per label joined by a gap bar that emphasises the difference.", tag: "<michi-vz-gap-chart> · SVG/canvas" },
+  { examplesKey: "fan-chart", slug: "fan", name: "Fan", family: "Trends", roman: "II", blurb: "A forecast fan: history, a dashed forecast median, and nested confidence bands that widen with the horizon.", tag: "<michi-vz-fan-chart> · SVG/canvas" },
+  { examplesKey: "area-chart", slug: "area", name: "Area", family: "Composition", roman: "III", blurb: "Part to whole over time: how each component's share of a stacked total shifts.", tag: "<michi-vz-area-chart> · SVG/canvas" },
+  { examplesKey: "scatter-chart", slug: "scatter", name: "Scatter", family: "Correlation", roman: "IV", blurb: "The relationship between two numeric variables; bubble size encodes a third.", tag: "<michi-vz-scatter-chart> · SVG/canvas" },
+  { examplesKey: "range-chart", slug: "range", name: "Range", family: "Trends", roman: "V", blurb: "Min to max bands per series: forecasts, confidence intervals, or observed ranges.", tag: "<michi-vz-range-chart> · SVG/canvas" },
+  { examplesKey: "ribbon-chart", slug: "ribbon", name: "Ribbon", family: "Composition", roman: "VI", blurb: "Stacked columns per period, linked by ribbons that trace each category over time.", tag: "<michi-vz-ribbon-chart> · SVG/canvas" },
+  { examplesKey: "radar-chart", slug: "radar", name: "Radar", family: "Comparison", roman: "VII", blurb: "Compare several entities across a shared set of axes at a glance.", tag: "<michi-vz-radar-chart> · SVG/canvas" },
+  { examplesKey: "vertical-stack-bar-chart", slug: "vertical-stack-bar", name: "Vertical Stack Bar", family: "Composition", roman: "VIII", blurb: "Stacked vertical bars per category, with an explicit missing-data guard.", tag: "<michi-vz-vertical-stack-bar-chart> · SVG/canvas" },
+  { examplesKey: "comparable-horizontal-bar-chart", slug: "comparable", name: "Comparable Bar", family: "Comparison", roman: "IX", blurb: "Two overlaid horizontal sub-bars per label: a based vs compared value.", tag: "<michi-vz-comparable-horizontal-bar-chart> · SVG/canvas" },
+  { examplesKey: "dual-horizontal-bar-chart", slug: "dual", name: "Dual Bar", family: "Comparison", roman: "X", blurb: "Diverging bars from a centre line: population pyramids and tornado charts.", tag: "<michi-vz-dual-horizontal-bar-chart> · SVG/canvas" },
+  { examplesKey: "bar-bell-chart", slug: "bar-bell", name: "Bar-Bell", family: "Composition", roman: "XI", blurb: "Cumulative horizontal segments per row with end-cap circles at each step.", tag: "<michi-vz-bar-bell-chart> · SVG/canvas" },
+  { examplesKey: "gap-chart", slug: "gap", name: "Gap", family: "Comparison", roman: "XII", blurb: "Two values per label joined by a gap bar that emphasises the difference.", tag: "<michi-vz-gap-chart> · SVG/canvas" },
 ];
 
 const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation"];

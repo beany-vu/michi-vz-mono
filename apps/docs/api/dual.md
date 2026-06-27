@@ -4,7 +4,7 @@ title: Dual Bar (Tornado) API
 
 # Dual Bar (Tornado) API
 
-The `<michi-vz-dual-horizontal-bar-chart>` element and the `mountDualHorizontalBarChart` engine. For examples and usage, see the **[Dual Bar (Tornado) demo](/charts/dual)**.
+Diverging bars from a centre line, when you need to show which side wins and by how much - see the **[Dual Bar (Tornado) demo](/charts/dual)**.
 
 ## Import
 

@@ -3,9 +3,10 @@ title: Charts
 ---
 # Chart catalog
 
-Eleven framework-agnostic charts. Each page has a live example, usage across every framework, and an LLM-context panel.
+Twelve framework-agnostic charts. Each page has a live example, usage across every framework, and an LLM-context panel.
 
 - [**Line Chart**](/charts/line) - _Trends_ · Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
+- [**Fan Chart**](/charts/fan) - _Trends · Forecast_ · A forecast fan: history, a dashed forecast median, and nested confidence bands that widen with the horizon (composed from Line + Range).
 - [**Area Chart**](/charts/area) - _Composition_ · Part-to-whole over time: how each component’s share of a stacked total shifts.
 - [**Scatter Plot**](/charts/scatter) - _Correlation_ · Relationship between two numeric variables; bubble size encodes a third.
 - [**Range Chart**](/charts/range) - _Trends_ · Min-max bands per series - forecasts, confidence intervals, or observed ranges over time.

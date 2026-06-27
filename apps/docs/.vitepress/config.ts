@@ -3,6 +3,7 @@ import { defineConfig } from "vitepress";
 // Charts in catalog order: [slug, display name, family]
 const charts: Array<[string, string, string]> = [
   ["line", "Line Chart", "Trends"],
+  ["fan", "Fan Chart", "Trends"],
   ["area", "Area Chart", "Composition"],
   ["scatter", "Scatter Plot", "Correlation"],
   ["range", "Range Chart", "Trends"],
@@ -58,18 +59,29 @@ export default defineConfig({
         text: "Chart API",
         items: charts.map(([slug, name]) => ({ text: name, link: `/api/${slug}` })),
       };
+      const insightsApiGroup = {
+        text: "Insights API",
+        items: [
+          { text: "forecast", link: "/api/insights/forecast" },
+          { text: "anomaly", link: "/api/insights/anomaly" },
+          { text: "narrate / explain", link: "/api/insights/narrate" },
+          { text: "validate", link: "/api/insights/validate" },
+          { text: "agent & MCP", link: "/api/insights/agent" },
+        ],
+      };
       const guideGroup = {
         text: "Guide",
         items: [
           { text: "Installation", link: "/guide/installation" },
           { text: "Getting started", link: "/guide/getting-started" },
           { text: "LLM context", link: "/guide/llm-context" },
+          { text: "Insights (AI)", link: "/guide/insights" },
         ],
       };
       return {
-        "/charts/": [chartsGroup, apiGroup],
-        "/api/": [chartsGroup, apiGroup],
-        "/guide/": [guideGroup],
+        "/charts/": [chartsGroup, apiGroup, insightsApiGroup],
+        "/api/": [chartsGroup, apiGroup, insightsApiGroup],
+        "/guide/": [guideGroup, insightsApiGroup],
       };
     })(),
     socialLinks: [{ icon: "github", link: "https://github.com/beany-vu/michi-vz-mono" }],

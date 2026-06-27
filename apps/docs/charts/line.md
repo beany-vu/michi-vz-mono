@@ -5,7 +5,7 @@ title: Line Chart
 
 <span class="vp-badge tip">Trends</span>
 
-Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
+"How did this move over time, and where can't I trust the data?" One series or fifty, with missing periods rendered as dashes so a reporting gap never reads as a real dip - plus an opt-in canvas renderer (LTTB-decimated for big data) when the points run into the thousands.
 
 <ChartDemo chart="line-chart" />
 

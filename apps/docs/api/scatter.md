@@ -4,7 +4,7 @@ title: Scatter Plot API
 
 # Scatter Plot API
 
-The `<michi-vz-scatter-chart>` element and the `mountScatterChart` engine. For examples and usage, see the **[Scatter Plot demo](/charts/scatter)**.
+Reach for this when the question is "are these two numbers related?" - the props and engine below; the live answer is on the **[Scatter Plot demo](/charts/scatter)**.
 
 ## Import
 

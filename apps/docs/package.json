@@ -13,7 +13,8 @@
   "dependencies": {
     "@michi-vz/core": "workspace:*",
     "@michi-vz/wc": "workspace:*",
-    "@michi-vz/examples": "workspace:*"
+    "@michi-vz/examples": "workspace:*",
+    "@michi-vz/insights": "workspace:*"
   },
   "devDependencies": {
     "ts-morph": "^21.0.0",

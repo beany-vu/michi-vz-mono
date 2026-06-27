@@ -19,6 +19,7 @@ const OUT = resolve(HERE, "../.vitepress/data/props.json");
 // chart key (= @michi-vz/examples key / element suffix) -> source locations.
 export const CHARTS = [
   { key: "line-chart", propsType: "LineChartProps", element: "michi-vz-line-chart", engine: "lineChart.ts", wc: "line-chart.ts", context: "LineChartContext", mount: "mountLineChart" },
+  { key: "fan-chart", propsType: "FanChartProps", element: "michi-vz-fan-chart", engine: "fanChart.ts", wc: "fan-chart.ts", context: "FanChartContext", mount: "mountFanChart" },
   { key: "area-chart", propsType: "AreaChartProps", element: "michi-vz-area-chart", engine: "areaChart.ts", wc: "area-chart.ts", context: "AreaChartContext", mount: "mountAreaChart" },
   { key: "scatter-chart", propsType: "ScatterChartProps", element: "michi-vz-scatter-chart", engine: "scatterChart.ts", wc: "scatter-chart.ts", context: "ScatterChartContext", mount: "mountScatterChart" },
   { key: "range-chart", propsType: "RangeChartProps", element: "michi-vz-range-chart", engine: "rangeChart.ts", wc: "range-chart.ts", context: "RangeChartContext", mount: "mountRangeChart" },

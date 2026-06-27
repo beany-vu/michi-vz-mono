@@ -4,7 +4,7 @@ title: Gap Chart API
 
 # Gap Chart API
 
-The `<michi-vz-gap-chart>` element and the `mountGapChart` engine. For examples and usage, see the **[Gap Chart demo](/charts/gap)**.
+Show the distance between two numbers and let the bar carry the punch - see the **[Gap Chart demo](/charts/gap)**.
 
 ## Import
 

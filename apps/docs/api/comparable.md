@@ -4,7 +4,7 @@ title: Comparable Bar API
 
 # Comparable Bar API
 
-The `<michi-vz-comparable-horizontal-bar-chart>` element and the `mountComparableHorizontalBarChart` engine. For examples and usage, see the **[Comparable Bar demo](/charts/comparable)**.
+Two values per label, based vs compared, so before/after shifts read at a glance - see the **[Comparable Bar demo](/charts/comparable)**.
 
 ## Import
 

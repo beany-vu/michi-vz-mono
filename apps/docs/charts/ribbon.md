@@ -5,7 +5,7 @@ title: Ribbon Chart
 
 <span class="vp-badge tip">Composition</span>
 
-Stacked columns per period, linked by connector ribbons that trace each category across time.
+Who's gaining and who's slipping? When market share, budget splits, or vote tallies reshuffle from one period to the next, the ribbons connecting each column let you follow a single category as it swells, shrinks, and trades places with its rivals.
 
 <ChartDemo chart="ribbon-chart" />
 

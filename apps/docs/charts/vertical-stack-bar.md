@@ -5,7 +5,7 @@ title: Vertical Stack Bar
 
 <span class="vp-badge tip">Composition</span>
 
-Stacked vertical bars per category, with an explicit missing-data marker guard for sparse datasets.
+"What's each category made of, and how does the mix shift across them?" Stack the parts in one bar per category and the composition reads at a glance. When a segment is missing, an explicit guard marks the gap instead of quietly flattening it to zero.
 
 <ChartDemo chart="vertical-stack-bar-chart" />
 

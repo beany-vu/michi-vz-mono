@@ -4,7 +4,7 @@ title: Radar Chart API
 
 # Radar Chart API
 
-The `<michi-vz-radar-chart>` element and the `mountRadarChart` engine. For examples and usage, see the **[Radar Chart demo](/charts/radar)**.
+Stack a few candidates over one shared set of criteria and read who wins where at a glance. See the **[Radar Chart demo](/charts/radar)**.
 
 ## Import
 
