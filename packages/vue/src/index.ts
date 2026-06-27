@@ -4,6 +4,7 @@ import { defineComponent, h, ref, onMounted, onBeforeUnmount, watch, type PropTy
 import {
   mountGapChart,
   mountLineChart,
+  mountFanChart,
   mountAreaChart,
   mountScatterChart,
   mountVerticalStackBarChart,
@@ -17,6 +18,7 @@ import {
 import type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -33,6 +35,7 @@ import type {
 export type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -88,6 +91,38 @@ export const LineChart = defineComponent({
 
     onMounted(() => {
       if (host.value) chart = mountLineChart(host.value, props.options);
+    });
+    watch(
+      () => props.options,
+      (next) => chart?.update(next),
+      { deep: true }
+    );
+    onBeforeUnmount(() => chart?.destroy());
+
+    expose({ getContext: (): ChartContext | null => chart?.getContext() ?? null });
+
+    return () =>
+      h("div", {
+        ref: host,
+        style: {
+          width: `${props.options.width ?? 1000}px`,
+          height: `${props.options.height ?? 500}px`,
+        },
+      });
+  },
+});
+
+export const FanChart = defineComponent({
+  name: "MichiVzFanChart",
+  props: {
+    options: { type: Object as PropType<FanChartProps>, required: true },
+  },
+  setup(props, { expose }) {
+    const host = ref<HTMLDivElement | null>(null);
+    let chart: ChartInstance<FanChartProps> | null = null;
+
+    onMounted(() => {
+      if (host.value) chart = mountFanChart(host.value, props.options);
     });
     watch(
       () => props.options,

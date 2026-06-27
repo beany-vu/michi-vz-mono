@@ -3,10 +3,12 @@
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountComparableHorizontalBarChart } from "@michi-vz/core";
 import type {
+  AgentTool,
   ComparableBarChartProps,
   ComparableBarDataPoint,
   ChartContext,
   ChartInstance,
+  MichiVzPlugin,
 } from "@michi-vz/core";
 
 export class ComparableHorizontalBarChartElement extends LitElement {
@@ -23,6 +25,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
     valueComparedOpacity: { type: Number, attribute: "value-compared-opacity" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    plugins: { attribute: false },
     locale: { type: String },
   };
 
@@ -38,6 +41,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
   valueComparedOpacity?: number;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (d: ComparableBarDataPoint) => string;
+  plugins?: MichiVzPlugin<ComparableBarChartProps>[];
   locale?: string;
 
   private chart?: ChartInstance<ComparableBarChartProps>;
@@ -78,7 +82,10 @@ export class ComparableHorizontalBarChartElement extends LitElement {
 
   protected firstUpdated(): void {
     const host = this.querySelector<HTMLElement>(".mv-host");
-    if (host) this.chart = mountComparableHorizontalBarChart(host, this.chartProps);
+    if (host)
+      this.chart = mountComparableHorizontalBarChart(host, this.chartProps, {
+        plugins: this.plugins,
+      });
   }
 
   protected updated(_changed: PropertyValues): void {
@@ -93,6 +100,10 @@ export class ComparableHorizontalBarChartElement extends LitElement {
 
   getContext(): ChartContext | null {
     return this.chart?.getContext() ?? null;
+  }
+
+  getTools(): AgentTool[] {
+    return this.chart?.getTools?.() ?? [];
   }
 }
 

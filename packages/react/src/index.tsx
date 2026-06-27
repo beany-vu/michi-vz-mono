@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import {
   mountGapChart,
   mountLineChart,
+  mountFanChart,
   mountAreaChart,
   mountScatterChart,
   mountVerticalStackBarChart,
@@ -17,6 +18,7 @@ import {
 import type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -33,6 +35,7 @@ import type {
 export type {
   GapChartProps,
   LineChartProps,
+  FanChartProps,
   AreaChartProps,
   ScatterChartProps,
   VerticalStackBarChartProps,
@@ -50,6 +53,10 @@ export interface GapChartHandle {
 }
 
 export interface LineChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface FanChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -121,6 +128,29 @@ export const LineChart = forwardRef<LineChartHandle, LineChartProps>(function Li
   useEffect(() => {
     if (!hostRef.current) return;
     chartRef.current = mountLineChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
+});
+
+export const FanChart = forwardRef<FanChartHandle, FanChartProps>(function FanChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<FanChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountFanChart(hostRef.current, props);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
