@@ -1,7 +1,7 @@
 {
   "name": "@michi-vz/insights",
   "version": "0.0.2",
-  "description": "Opt-in, client-side AI insights (forecast/anomaly/embeddings/narrate/validate/sql/agent) for michi-vz",
+  "description": "Opt-in, client-side AI insights (forecast/fan, anomaly, validate, narrate, embeddings, agent + MCP) for michi-vz",
   "type": "module",
   "files": [
     "dist"
@@ -14,17 +14,67 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./forecast": {
+      "types": "./dist/forecast/index.d.ts",
+      "import": "./dist/forecast/index.js",
+      "require": "./dist/forecast/index.cjs"
+    },
+    "./anomaly": {
+      "types": "./dist/anomaly/index.d.ts",
+      "import": "./dist/anomaly/index.js",
+      "require": "./dist/anomaly/index.cjs"
+    },
+    "./validate": {
+      "types": "./dist/validate/index.d.ts",
+      "import": "./dist/validate/index.js",
+      "require": "./dist/validate/index.cjs"
+    },
+    "./narrate": {
+      "types": "./dist/narrate/index.d.ts",
+      "import": "./dist/narrate/index.js",
+      "require": "./dist/narrate/index.cjs"
+    },
+    "./embeddings": {
+      "types": "./dist/embeddings/index.d.ts",
+      "import": "./dist/embeddings/index.js",
+      "require": "./dist/embeddings/index.cjs"
+    },
+    "./sql": {
+      "types": "./dist/sql/index.d.ts",
+      "import": "./dist/sql/index.js",
+      "require": "./dist/sql/index.cjs"
+    },
+    "./sonify": {
+      "types": "./dist/sonify/index.d.ts",
+      "import": "./dist/sonify/index.js",
+      "require": "./dist/sonify/index.cjs"
+    },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "import": "./dist/agent/index.js",
+      "require": "./dist/agent/index.cjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js",
+      "require": "./dist/mcp/index.cjs"
     }
   },
   "scripts": {
     "build": "tsup",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
     "@michi-vz/core": "workspace:*"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
   },
   "private": true,
   "repository": {
