@@ -1,7 +1,9 @@
 <script setup lang="ts">
-// Live @michi-vz/insights demos. `feature` = "forecast" | "anomaly" | "validate" | "agent".
+// Live @michi-vz/insights demos. `feature` = "forecast" | "anomaly" | "validate" | "agent"
+// | "narrate" | "embeddings".
 // For feature="forecast", `chart` = "line" | "fan" | "area" | "range" shows the SAME forecasting
-// on different chart types. Client-only (dynamic import) so SSR never touches the engine.
+// on different chart types. feature="embeddings" is a model-free semantic-search widget (no chart).
+// Client-only (dynamic import) so SSR never touches the engine.
 import { ref, onMounted, onBeforeUnmount } from "vue";
 
 const props = defineProps<{ feature?: string; chart?: string }>();
@@ -33,6 +35,10 @@ const LINE: Record<string, { label: string; color?: string; series: Array<{ date
   forecast: [{ label: "Revenue", color: "#2563eb", series: [pt(2017, 42), pt(2018, 55), pt(2019, 63), pt(2020, 71), pt(2021, 88), pt(2022, 104), pt(2023, 121)] }],
   anomaly: [{ label: "Traffic", color: "#2563eb", series: [pt(2016, 100), pt(2017, 105), pt(2018, 98), pt(2019, 102), pt(2020, 40), pt(2021, 103), pt(2022, 99), pt(2023, 101)] }],
   validate: [{ label: "Raw feed", color: "#dc2626", series: [pt(2018, 10), pt(2019, 20), pt(2019, 15), pt(2017, 8), pt(2021, 30)] }],
+  narrate: [
+    { label: "Premium", color: "#2563eb", series: [pt(2019, 30), pt(2020, 38), pt(2021, 52), pt(2022, 67), pt(2023, 79)] },
+    { label: "Standard", color: "#16a34a", series: [pt(2019, 60), pt(2020, 58), pt(2021, 57), pt(2022, 55), pt(2023, 52)] },
+  ],
   agent: [
     { label: "North", color: "#2563eb", series: [pt(2020, 40), pt(2021, 55), pt(2022, 70), pt(2023, 96)] },
     { label: "South", color: "#16a34a", series: [pt(2020, 30), pt(2021, 33), pt(2022, 38), pt(2023, 41)] },
@@ -50,6 +56,15 @@ const RANGE_PTS = [
   { date: 2021, valueMin: 1.3, valueMax: 3.5, valueMedium: 2.4, certainty: true },
   { date: 2022, valueMin: 1.5, valueMax: 3.7, valueMedium: 2.6, certainty: true },
 ];
+
+// feature="embeddings": model-free semantic search over chart labels (hash fallback).
+const LABELS = ["Quarterly revenue by region", "Revenue growth rate", "Customer churn %", "Website traffic", "Monthly active users", "Marketing spend", "Gross margin %", "Net-new customers"];
+const query = ref("revenue");
+const ranked = ref<Array<{ item: string; score: number }>>([]);
+async function search() {
+  if (!api) return;
+  ranked.value = await api.findSimilar(query.value, LABELS, (t: string) => t, {});
+}
 
 function lineProps() {
   return {
@@ -69,6 +84,7 @@ function buildPlugins() {
     if (active.value.narrate) p.push(api.narrate());
   } else if (feature === "anomaly") p.push(api.anomaly({ method: "zscore", threshold: 1.5 }));
   else if (feature === "validate") p.push(api.validate());
+  else if (feature === "narrate") p.push(api.narrate());
   return p;
 }
 
@@ -130,8 +146,9 @@ onMounted(async () => {
     api = {
       mountLineChart: core.mountLineChart, mountFanChart: core.mountFanChart, mountAreaChart: core.mountAreaChart, mountRangeChart: core.mountRangeChart,
       forecast: ins.forecast, forecastFan: ins.forecastFan, anomaly: ins.anomaly, validate: ins.validate, narrate: ins.narrate, explainChart: ins.explainChart,
-      createAgentRegistry: ins.createAgentRegistry, chartHandle: ins.chartHandle,
+      createAgentRegistry: ins.createAgentRegistry, chartHandle: ins.chartHandle, findSimilar: ins.findSimilar,
     };
+    if (feature === "embeddings") { await search(); return; }
     remount();
     ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(remount); });
     if (host.value) ro.observe(host.value);
@@ -163,31 +180,54 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
           <button v-if="chartKind === 'fan'" class="idemo-chip" :class="{ on: active.forecastZone }" @click="toggle('forecastZone')">Forecast bg</button>
           <button class="idemo-chip explain" @click="explain">Explain ▸</button>
         </template>
+        <template v-else-if="feature === 'narrate'">
+          <button class="idemo-chip explain" @click="explain">Explain ▸</button>
+        </template>
+        <span v-else-if="feature === 'embeddings'" class="insights-demo-tag">hash · no model</span>
         <span v-else class="insights-demo-tag">SVG · live</span>
       </div>
     </div>
 
-    <div class="insights-demo-stage" ref="host"></div>
-    <p v-if="loadError" class="insights-demo-error">⚠ {{ loadError }}</p>
+    <!-- Semantic search (embeddings): a search box + ranked labels, not a chart. -->
+    <template v-if="feature === 'embeddings'">
+      <div class="idemo-search">
+        <input v-model="query" @input="search" type="text" placeholder="Type a term, e.g. revenue, customers, traffic…" aria-label="search term" />
+      </div>
+      <ul class="idemo-ranked">
+        <li v-for="(r, i) in ranked" :key="i" :class="{ dim: r.score === 0 }">
+          <span class="idemo-rank-label">{{ r.item }}</span>
+          <span class="idemo-rank-bar"><i :style="{ width: Math.round(r.score * 100) + '%' }"></i></span>
+          <span class="idemo-rank-score">{{ r.score.toFixed(2) }}</span>
+        </li>
+      </ul>
+      <p class="insights-demo-summary"><strong>findSimilar()</strong> ranks by shared terms here (model-free). Opt into <code>{{ '{ backend: "transformers" }' }}</code> and synonyms match too.</p>
+      <p v-if="loadError" class="insights-demo-error">⚠ {{ loadError }}</p>
+    </template>
 
-    <p v-if="summary && feature !== 'validate'" class="insights-demo-summary"><strong>getContext().summary →</strong> {{ summary }}</p>
+    <!-- Every other feature: a live chart. -->
+    <template v-else>
+      <div class="insights-demo-stage" ref="host"></div>
+      <p v-if="loadError" class="insights-demo-error">⚠ {{ loadError }}</p>
 
-    <div v-if="explaining" class="ai-loading">
-      <span class="ai-orb"></span>
-      <span class="ai-load-text">Generating narration</span>
-      <span class="ai-dots"><i></i><i></i><i></i></span>
-    </div>
-    <p v-else-if="explanation" class="insights-demo-explain"><strong>explainChart() →</strong> {{ explanation }}</p>
+      <p v-if="summary && feature !== 'validate'" class="insights-demo-summary"><strong>getContext().summary →</strong> {{ summary }}</p>
 
-    <div v-if="feature === 'validate'" class="insights-demo-warnings">
-      <strong>onDataWarning →</strong>
-      <ul v-if="warnings.length"><li v-for="(w, i) in warnings" :key="i">⚠ {{ w }}</li></ul>
-      <span v-else> no warnings</span>
-    </div>
+      <div v-if="explaining" class="ai-loading">
+        <span class="ai-orb"></span>
+        <span class="ai-load-text">Generating narration</span>
+        <span class="ai-dots"><i></i><i></i><i></i></span>
+      </div>
+      <p v-else-if="explanation" class="insights-demo-explain"><strong>explainChart() →</strong> {{ explanation }}</p>
 
-    <div v-if="feature === 'agent' && transcript.length" class="insights-demo-transcript">
-      <div v-for="(t, i) in transcript" :key="i" class="idemo-turn"><code>{{ t.q }}</code> → {{ t.result }}</div>
-    </div>
+      <div v-if="feature === 'validate'" class="insights-demo-warnings">
+        <strong>onDataWarning →</strong>
+        <ul v-if="warnings.length"><li v-for="(w, i) in warnings" :key="i">⚠ {{ w }}</li></ul>
+        <span v-else> no warnings</span>
+      </div>
+
+      <div v-if="feature === 'agent' && transcript.length" class="insights-demo-transcript">
+        <div v-for="(t, i) in transcript" :key="i" class="idemo-turn"><code>{{ t.q }}</code> → {{ t.result }}</div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -219,4 +259,16 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 @keyframes ai-dot { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 0.9; transform: translateY(-2px); } }
 @media (prefers-reduced-motion: reduce) { .ai-orb, .ai-dots i { animation: none; } }
 .insights-demo-error { margin: 0 16px 12px; font-size: 13px; color: var(--vp-c-danger-1, #c0392b); }
+
+/* Semantic-search widget */
+.idemo-search { padding: 14px 16px 8px; }
+.idemo-search input { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 12px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg); color: var(--vp-c-text-1); }
+.idemo-search input:focus { outline: none; border-color: var(--vp-c-brand-1); }
+.idemo-ranked { list-style: none; margin: 4px 0 6px; padding: 0 16px; }
+.idemo-ranked li { display: grid; grid-template-columns: 1fr 90px 34px; align-items: center; gap: 10px; padding: 5px 0; font-size: 13px; border-top: 1px solid var(--vp-c-divider); }
+.idemo-ranked li.dim { opacity: 0.5; }
+.idemo-rank-label { color: var(--vp-c-text-1); }
+.idemo-rank-bar { height: 6px; border-radius: 3px; background: var(--vp-c-bg); overflow: hidden; }
+.idemo-rank-bar i { display: block; height: 100%; min-width: 1px; background: var(--vp-c-brand-1); transition: width 0.18s ease; }
+.idemo-rank-score { font-family: var(--vp-font-family-mono); font-size: 11.5px; color: var(--vp-c-text-3); text-align: right; }
 </style>

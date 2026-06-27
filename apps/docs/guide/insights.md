@@ -156,6 +156,12 @@ More pure, deterministic helpers in `@michi-vz/insights/forecast`: `forecastFan(
 
 ## Narration: customize, localize (i18n), or bring a model
 
+Here is narration live - a two-series chart that writes its own sentence. Hit **Explain ▸** to
+generate it (the calm "thinking" indicator is the Nordic-style loader you'd show while a real SLM
+loads; here it runs the instant rule-based path):
+
+<InsightsDemo feature="narrate" />
+
 The default `narrate()` is **rule-based** (no model). Make it yours three ways:
 
 ```ts
@@ -206,6 +212,12 @@ await explainChart(ctx, {
 
 ## Semantic search (BERT embeddings)
 
+Try it live - type a term and the chart labels re-rank by similarity (this runs the **model-free
+hash** fallback, so it matches shared words; a BERT model adds true semantic matches like
+*sales ≈ revenue*):
+
+<InsightsDemo feature="embeddings" />
+
 ```ts
 import { findSimilar, createEmbedder } from "@michi-vz/insights/embeddings";
 
@@ -218,6 +230,11 @@ BERT here is for **similarity / search** (find related charts, cluster series), 
 that is narration, above. Different jobs, different models.
 
 ## Agents & MCP (reference)
+
+The same registry powers the live demo below - each button is a real tool call against the chart
+(the identical tools an MCP client like Claude Code would invoke):
+
+<InsightsDemo feature="agent" />
 
 ```ts
 import { createAgentRegistry, chartHandle } from "@michi-vz/insights/agent";
