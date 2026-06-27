@@ -26,6 +26,7 @@ const AXIS_ANCHORS = [
 ];
 
 const query = ref("revenue");
+const EXAMPLES = ["revenue", "customers", "cost", "growth", "traffic"];
 const view = ref<"rank" | "map" | "fingerprint">("rank");
 const backend = ref<"hash" | "bert">("hash");
 const modelStatus = ref<"" | "loading" | "ready" | "error">("");
@@ -119,6 +120,7 @@ async function loadBert() {
 }
 
 function setView(v: "rank" | "map" | "fingerprint") { view.value = v; recompute(); }
+function setQuery(q: string) { query.value = q; recompute(); }
 
 onMounted(async () => {
   const [core, ins] = await Promise.all([import("@michi-vz/core"), import("@michi-vz/insights")]);
@@ -152,16 +154,32 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
       </button>
     </div>
 
+    <p class="elab-scenario">
+      The 12 items below are <strong>charts on an imaginary dashboard</strong>. Your <strong>query</strong> is what
+      someone types to find one - and semantic search ranks every chart by how close its meaning is to that query.
+    </p>
+
     <div class="elab-search">
-      <input v-model="query" @input="recompute" type="text" placeholder="Type a term: revenue, customers, cost, growth…" aria-label="query" />
+      <label class="elab-q-label" for="elab-q">Your query</label>
+      <input id="elab-q" v-model="query" @input="recompute" type="text" placeholder="e.g. revenue, customers, cost…" aria-label="query" />
     </div>
+    <div class="elab-chips">
+      <span class="elab-chips-lead">Try:</span>
+      <button v-for="q in EXAMPLES" :key="q" :class="{ on: query === q }" @click="setQuery(q)">{{ q }}</button>
+    </div>
+
+    <p class="elab-result">
+      Best match for <strong>"{{ query || "…" }}"</strong>:
+      <template v-if="ranked[0] && ranked[0].score >= MATCH"><strong class="elab-hit">{{ ranked[0].label }}</strong> <span class="elab-hit-score">({{ ranked[0].score.toFixed(2) }})</span></template>
+      <template v-else><span class="elab-nohit">no strong match{{ backend === "hash" ? " — try Load real BERT" : "" }}</span></template>
+    </p>
 
     <div class="elab-stage" ref="host"></div>
 
     <p class="elab-cap">
-      <span v-if="view === 'rank'"><strong>Ranking</strong> — bar length = similarity of each label to your query.</span>
-      <span v-else-if="view === 'map'"><strong>Semantic map</strong> — x = finance-ness, y = people-ness; dots cluster by meaning, size = match to your query.</span>
-      <span v-else><strong>Fingerprint</strong> — the top 3 matches scored across five concept axes (their "shape of meaning").</span>
+      <span v-if="view === 'rank'"><strong>Ranking</strong> — bar length = how closely each chart matches your query <em>"{{ query }}"</em>.</span>
+      <span v-else-if="view === 'map'"><strong>Semantic map</strong> — every chart placed by meaning (x = finance-like, y = people-like); bubble size = match to <em>"{{ query }}"</em>.</span>
+      <span v-else><strong>Fingerprint</strong> — the 3 charts closest to <em>"{{ query }}"</em>, scored across five concept axes (their "shape of meaning").</span>
     </p>
 
     <p class="elab-legend">
@@ -191,9 +209,19 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 .elab-bert { font: inherit; font-size: 12.5px; padding: 4px 12px; border: 1px solid var(--vp-c-brand-1); border-radius: 999px; background: var(--vp-c-bg-soft); color: var(--vp-c-brand-1); cursor: pointer; }
 .elab-bert.ready { background: var(--vp-c-brand-1); color: #fff; }
 .elab-bert:disabled { opacity: 0.7; cursor: progress; }
-.elab-search { padding: 12px 16px 6px; }
-.elab-search input { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 12px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg); color: var(--vp-c-text-1); }
+.elab-scenario { margin: 12px 16px 4px; font-size: 13px; line-height: 1.55; color: var(--vp-c-text-2); }
+.elab-search { display: flex; align-items: center; gap: 10px; padding: 8px 16px 4px; }
+.elab-q-label { font-size: 12px; font-weight: 600; color: var(--vp-c-text-2); white-space: nowrap; }
+.elab-search input { flex: 1; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 12px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg); color: var(--vp-c-text-1); }
 .elab-search input:focus { outline: none; border-color: var(--vp-c-brand-1); }
+.elab-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 16px 6px; }
+.elab-chips-lead { font-size: 12px; color: var(--vp-c-text-3); }
+.elab-chips button { font: inherit; font-size: 12px; padding: 2px 10px; border: 1px solid var(--vp-c-divider); border-radius: 999px; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
+.elab-chips button.on { background: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); color: #fff; }
+.elab-result { margin: 4px 16px 0; font-size: 13.5px; color: var(--vp-c-text-2); }
+.elab-hit { color: var(--vp-c-brand-1); }
+.elab-hit-score { font-family: var(--vp-font-family-mono); font-size: 12px; color: var(--vp-c-text-3); }
+.elab-nohit { color: var(--vp-c-text-3); }
 .elab-stage { padding: 8px 16px 0; }
 .elab-cap, .elab-legend { margin: 6px 16px; font-size: 13px; line-height: 1.55; color: var(--vp-c-text-2); }
 .elab-legend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
