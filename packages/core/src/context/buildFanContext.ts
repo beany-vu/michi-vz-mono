@@ -1,6 +1,7 @@
 // Renderer-agnostic semantic context for FanChart. Derived from the data model
 // (history + median forecast line + nested bands), so identical in SVG and canvas.
 import type { FanChartContext, FanDataItem, FanSeriesContext, XaxisDataType } from "../types";
+import { provenanceCounts } from "../math/provenance";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -16,8 +17,9 @@ export interface BuildFanContextInput {
 
 function seriesContext(item: FanDataItem, colorsMapping: Record<string, string>): FanSeriesContext {
   const pts = item.series;
-  const historyCount = pts.filter((d) => d.certainty !== false).length;
-  const forecastCount = pts.length - historyCount;
+  // History vs forecast via shared provenance (explicit `predicted`, else certainty).
+  const { actualCount: historyCount, predictedCount: forecastCount, forecastStart } =
+    provenanceCounts(pts);
   const lastPt = pts.length ? pts[pts.length - 1] : null;
   const bandLevels = item.bands.map((b) => b.level).sort((a, b) => a - b);
 
@@ -34,6 +36,7 @@ function seriesContext(item: FanDataItem, colorsMapping: Record<string, string>)
     pointCount: pts.length,
     historyCount,
     forecastCount,
+    forecastStart,
     last: lastPt ? { x: lastPt.date, y: round(lastPt.value) } : null,
     bandLevels,
     finalUncertainty,

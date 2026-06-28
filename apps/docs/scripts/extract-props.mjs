@@ -31,6 +31,9 @@ export const CHARTS = [
   { key: "bar-bell-chart", propsType: "BarBellChartProps", element: "michi-vz-bar-bell-chart", engine: "barBellChart.ts", wc: "bar-bell-chart.ts", context: "BarBellChartContext", mount: "mountBarBellChart" },
   { key: "gap-chart", propsType: "GapChartProps", element: "michi-vz-gap-chart", engine: "gapChart.ts", wc: "gap-chart.ts", context: "GapChartContext", mount: "mountGapChart" },
   { key: "treemap-chart", propsType: "TreemapChartProps", element: "michi-vz-treemap-chart", engine: "treemapChart.ts", wc: "treemap-chart.ts", context: "TreemapChartContext", mount: "mountTreemapChart" },
+  { key: "pie-chart", propsType: "PieChartProps", element: "michi-vz-pie-chart", engine: "pieChart.ts", wc: "pie-chart.ts", context: "PieChartContext", mount: "mountPieChart" },
+  { key: "bubble-chart", propsType: "BubbleChartProps", element: "michi-vz-bubble-chart", engine: "bubbleChart.ts", wc: "bubble-chart.ts", context: "BubbleChartContext", mount: "mountBubbleChart" },
+  { key: "sankey-chart", propsType: "SankeyChartProps", element: "michi-vz-sankey-chart", engine: "sankeyChart.ts", wc: "sankey-chart.ts", context: "SankeyChartContext", mount: "mountSankeyChart" },
 ];
 
 // Props shared (identical type) across (almost) every chart - flagged `common`

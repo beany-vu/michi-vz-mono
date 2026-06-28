@@ -4,7 +4,11 @@ title: Forecast API
 
 # Forecast API
 
-A plugin that turns any time chart into a forecast, projecting future steps with a confidence band; for the story and live demos, see the **[Insights guide](/guide/insights)**.
+A plugin that turns any time chart into a forecast, projecting future steps with a confidence band; for the full story see the **[Insights guide](/guide/insights)**.
+
+Try it - toggle the forecast, its band, and narration:
+
+<InsightsDemo feature="forecast" />
 
 ## Import
 

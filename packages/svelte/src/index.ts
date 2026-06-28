@@ -14,6 +14,9 @@ import {
   mountRibbonChart,
   mountRadarChart,
   mountTreemapChart,
+  mountPieChart,
+  mountBubbleChart,
+  mountSankeyChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -29,6 +32,9 @@ import type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -46,6 +52,9 @@ export type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -248,6 +257,51 @@ export function treemapChart(node: HTMLElement, props: TreemapChartProps): Treem
   const chart = mountTreemapChart(node, props);
   return {
     update: (next: TreemapChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface PieChartAction {
+  update(props: PieChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<PieChartProps>["getContext"];
+}
+
+export function pieChart(node: HTMLElement, props: PieChartProps): PieChartAction {
+  const chart = mountPieChart(node, props);
+  return {
+    update: (next: PieChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface BubbleChartAction {
+  update(props: BubbleChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<BubbleChartProps>["getContext"];
+}
+
+export function bubbleChart(node: HTMLElement, props: BubbleChartProps): BubbleChartAction {
+  const chart = mountBubbleChart(node, props);
+  return {
+    update: (next: BubbleChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface SankeyChartAction {
+  update(props: SankeyChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<SankeyChartProps>["getContext"];
+}
+
+export function sankeyChart(node: HTMLElement, props: SankeyChartProps): SankeyChartAction {
+  const chart = mountSankeyChart(node, props);
+  return {
+    update: (next: SankeyChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };

@@ -9,6 +9,10 @@ title: Vertical Stack Bar
 
 <ChartDemo chart="vertical-stack-bar-chart" />
 
+Need to compare two things side by side? Pass **more than one series** in `dataSet` and the bars **group**: per x-category you get one stacked bar per series, clustered together. Here, two regions across three years, each bar split into five product lines - so you read which region is bigger *and* how its mix differs, at once:
+
+<ChartDemo chart="vertical-stack-bar-chart" :index="1" />
+
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Usage

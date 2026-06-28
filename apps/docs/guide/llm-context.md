@@ -11,7 +11,7 @@ and exposes its controls as **tools** the model can call. So an assistant can *u
 
 <InsightsDemo feature="forecast" />
 
-> The sentence under the chart is its live `getContext().summary` - written from the data, not scraped
+> The sentence under the chart is its `getContext().summary` - written from the data, not scraped
 > from the DOM. A model gets that, plus the full structured context below.
 
 ## What the context is
@@ -48,7 +48,7 @@ The shape is a discriminated union keyed on `chartType`, so it narrows cleanly p
 ## Talk to your chart: a chatbot that drives it
 
 Because the meaning is structured **and** the controls are tools, a chatbot does not scrape pixels - it
-calls functions. Every button below is a real tool call against the live chart (the exact calls an MCP
+calls functions. Every button below is a real tool call against the chart (the exact calls an MCP
 client like Claude Code would make):
 
 <InsightsDemo feature="agent" />
@@ -81,4 +81,4 @@ point it at your LLM, and hand it the same `getContext()` and tools. (Hat tip to
 
 The same tools are exposed over **MCP** (Model Context Protocol), so Claude Code, Cursor, and Claude
 Desktop connect with no custom integration. The full tool list, the `michivz://chart/<name>` resources,
-and the live registry demo are in **[Insights → Agents & MCP](/guide/insights)**.
+and the registry demo are in **[Insights → Agents & MCP](/guide/insights)**.

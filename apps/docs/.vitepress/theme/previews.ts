@@ -25,6 +25,9 @@ import {
   mountGapChart,
   mountFanChart,
   mountTreemapChart,
+  mountPieChart,
+  mountBubbleChart,
+  mountSankeyChart,
 } from "@michi-vz/core";
 import type {
   ChartInstance,
@@ -41,6 +44,9 @@ import type {
   BarBellChartProps,
   GapChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
 } from "@michi-vz/core";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -248,6 +254,57 @@ export const previews: Record<string, Preview> = {
         { label: "G", value: 8, partial: 3, color: RED },
       ],
     } satisfies TreemapChartProps,
+  },
+
+  "pie-chart": {
+    mount: mountPieChart as Mount,
+    props: {
+      innerRadiusRatio: 0.55,
+      padAngle: 0.02,
+      showLabels: false,
+      dataSet: [
+        { label: "A", value: 40, color: BLUE },
+        { label: "B", value: 30, color: GOLD },
+        { label: "C", value: 18, color: RED },
+        { label: "D", value: 12, color: GREEN },
+      ],
+    } satisfies PieChartProps,
+  },
+
+  "bubble-chart": {
+    mount: mountBubbleChart as Mount,
+    props: {
+      splitOpacity: 0.4,
+      showLabels: false,
+      dataSet: [
+        { label: "A", value: 40, partial: 27, color: BLUE },
+        { label: "B", value: 30, partial: 11, color: GOLD },
+        { label: "C", value: 24, partial: 16, color: RED },
+        { label: "D", value: 16, partial: 6, color: GREEN },
+        { label: "E", value: 11, partial: 7, color: PLUM },
+      ],
+    } satisfies BubbleChartProps,
+  },
+
+  "sankey-chart": {
+    mount: mountSankeyChart as Mount,
+    props: {
+      nodePadding: 8,
+      nodeWidth: 10,
+      showLabels: false,
+      nodes: [
+        { id: "A", color: BLUE },
+        { id: "B", color: GOLD },
+        { id: "M", color: RED },
+        { id: "N", color: GREEN },
+      ],
+      links: [
+        { source: "A", target: "M", value: 20 },
+        { source: "A", target: "N", value: 10 },
+        { source: "B", target: "M", value: 14 },
+        { source: "B", target: "N", value: 18 },
+      ],
+    } satisfies SankeyChartProps,
   },
 
   "fan-chart": {

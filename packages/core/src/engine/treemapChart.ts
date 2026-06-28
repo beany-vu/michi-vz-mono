@@ -3,6 +3,7 @@
 // just a title, the tiles, and an optional split legend. Mirrors the other engines'
 // plugin wiring + colour-mapping dispatch; the tiling/geometry live in the pure layer.
 import DOMPurify from "dompurify";
+import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
@@ -165,7 +166,21 @@ export function mountTreemapChart(
       baseProps.onHighlightItem?.([]);
     }
   };
+  // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
+  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
+  const onHostClick = (): void => {
+    if (resolve(baseProps).renderer !== "canvas") return;
+    if (sticky) {
+      sticky = false;
+      tooltip.classList.remove("sticky");
+      tooltip.style.visibility = "hidden";
+    } else if (tooltip.style.visibility === "visible") {
+      sticky = true;
+      tooltip.classList.add("sticky");
+    }
+  };
   host.addEventListener("mousemove", onHostMove);
+  host.addEventListener("click", onHostClick);
   tooltip.addEventListener("click", () => {
     sticky = false;
     tooltip.classList.remove("sticky");
@@ -350,7 +365,7 @@ export function mountTreemapChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  return {
+  const instance = {
     update(next: TreemapChartProps) {
       baseProps = next;
       render();
@@ -370,8 +385,11 @@ export function mountTreemapChart(
     destroy() {
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
+      host.removeEventListener("click", onHostClick);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-treemap-chart");
     },
   };
+
+  return attachDevtools(instance, host, "treemap-chart", () => baseProps);
 }

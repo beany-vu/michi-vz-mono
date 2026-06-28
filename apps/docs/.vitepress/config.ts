@@ -15,6 +15,9 @@ const charts: Array<[string, string, string]> = [
   ["bar-bell", "Bar-Bell", "Composition"],
   ["gap", "Gap Chart", "Comparison"],
   ["treemap", "Treemap", "Composition"],
+  ["pie", "Pie / Donut", "Composition"],
+  ["bubble", "Bubble Chart", "Composition"],
+  ["sankey", "Sankey", "Flow"],
 ];
 
 export default defineConfig({
@@ -64,9 +67,13 @@ export default defineConfig({
         text: "Insights API",
         items: [
           { text: "forecast", link: "/api/insights/forecast" },
+          { text: "forecast extras", link: "/api/insights/forecast-extras" },
           { text: "anomaly", link: "/api/insights/anomaly" },
           { text: "narrate / explain", link: "/api/insights/narrate" },
           { text: "validate", link: "/api/insights/validate" },
+          { text: "embeddings", link: "/api/insights/embeddings" },
+          { text: "aggregate (sql)", link: "/api/insights/sql" },
+          { text: "sonify", link: "/api/insights/sonify" },
           { text: "agent & MCP", link: "/api/insights/agent" },
         ],
       };
@@ -77,6 +84,7 @@ export default defineConfig({
           { text: "Getting started", link: "/guide/getting-started" },
           { text: "LLM context", link: "/guide/llm-context" },
           { text: "Insights (AI boost)", link: "/guide/insights" },
+          { text: "DevTools", link: "/guide/devtools" },
         ],
       };
       return {

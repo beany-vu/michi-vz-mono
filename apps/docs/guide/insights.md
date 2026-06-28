@@ -60,7 +60,7 @@ mountLineChart(el, { dataSet: revenue, xAxisDataType: "date_annual" }, {
 // getContext().summary → "...Revenue projected to 189 by 2027 (holt-winters, MAPE 6.1%)."
 ```
 
-(The demo at the top of the page is this, live.) And it is **not line-only** - the same forecast
+(The demo at the top of the page is this.) And it is **not line-only** - the same forecast
 extends a Fan chart (nested confidence bands), an Area chart's stack, a Range band, and more:
 
 <InsightsDemo feature="forecast" chart="fan" />
@@ -195,7 +195,7 @@ with a dot - turning "did anything odd happen?" into a single glance.
 
 <InsightsDemo feature="anomaly" dataset="anom-gdp" />
 
-## More from the toolbox, live
+## More from the toolbox
 
 The **Sub-paths** table near the end lists more than the gallery above shows. Here are six more of
 those plugins running for real - each one model-free, deterministic, and a few lines to wire in. They
@@ -227,7 +227,7 @@ smooth trend and a repeating seasonal wave, and detects the cycle length on its 
 
 **Aggregate - raw rows to a chart in one call.** Before you can chart data you usually have to *shape*
 it. `aggregate()` does group-by + measures with zero dependencies (opt into DuckDB-Wasm for real SQL
-over millions of rows). Flip the grouping and it re-rolls live.
+over millions of rows). Flip the grouping and it re-rolls.
 
 <PluginLab feature="sql" />
 
@@ -249,7 +249,7 @@ over millions of rows). Flip the grouping and it re-rolls live.
 
 **Who it is for:**
 
-- **Building a product (embedded analytics)?** Ship live forecasting and self-explaining charts to
+- **Building a product (embedded analytics)?** Ship forecasting and self-explaining charts to
   *your* users - client-side, no Python service to run.
 - **A data / market analyst?** The methods you already know (Holt-Winters, MAPE, z-score) - now
   running at runtime in the app, not just in a notebook (see **vs a pandas / notebook workflow** below).
@@ -295,7 +295,7 @@ More pure, deterministic helpers in `@michi-vz/insights/forecast`: `forecastFan(
 
 ## Narration: customize, localize (i18n), or bring a model
 
-Here is narration live - a two-series chart that writes its own sentence. Hit **Explain ▸** to
+Here is narration - a two-series chart that writes its own sentence. Hit **Explain ▸** to
 generate it (the calm "thinking" indicator is the Nordic-style loader you would show while a real SLM
 loads; here it runs the instant rule-based path):
 
@@ -468,7 +468,7 @@ dashboard (see **Agents & MCP**). Embeddings are the retrieval layer; the headli
 
 ## Agents & MCP
 
-The same registry powers the live demo below - each button is a real tool call against the chart
+The same registry powers the demo below - each button is a real tool call against the chart
 (the identical tools an MCP client like Claude Code would invoke):
 
 <InsightsDemo feature="agent" />
@@ -484,7 +484,7 @@ createMcpServer(registry, stdioTransport(), { name: "michi-vz" });
 Tools: `get_chart_context`, `summarize_chart`, `list_series`, `forecast_series`,
 `detect_threshold_breach`, `set_filter`, `highlight`, `set_disabled`, `set_data`. Each chart's context
 is also a readable `michivz://chart/<name>` resource. A `messagePortTransport` bridges a running web
-app's live charts.
+app's charts.
 
 ---
 
@@ -494,17 +494,18 @@ app's live charts.
 
 Each capability is its own tree-shakeable import:
 
-| Import | What you get |
-| --- | --- |
-| `@michi-vz/insights/forecast` | `forecast()` plugin (dashed prediction + band + backtested accuracy), scenarios, trendline, threshold + "fall point", Monte Carlo, seasonality/STL, changepoints, goal-seek, `forecastFan()` |
-| `@michi-vz/insights/anomaly` | `anomaly()` / `detectAnomalies()` - z-score / IQR / forecast-band outliers |
-| `@michi-vz/insights/validate` | `validate()` - richer data-quality warnings |
-| `@michi-vz/insights/narrate` | `narrate()` / `explainChart()` - rules baseline, opt-in SLM/remote |
-| `@michi-vz/insights/embeddings` | `reconcileLabels()` / `findSimilar()` / `createEmbedder()` - hash fallback, opt-in BERT/MiniLM |
-| `@michi-vz/insights/sql` | `aggregate()` - group-by/measures (opt-in DuckDB-Wasm) |
-| `@michi-vz/insights/sonify` | `sonify()` - hear a series as pitch |
-| `@michi-vz/insights/agent` | `createAgent()` + tool registry |
-| `@michi-vz/insights/mcp` | `createMcpServer()` - Claude Code / Codex / Cursor |
+| Import | What you get | API |
+| --- | --- | --- |
+| `@michi-vz/insights/forecast` | `forecast()` plugin (dashed prediction + band + backtested accuracy), scenarios, trendline, threshold + "fall point", `forecastFan()` | [forecast](/api/insights/forecast) |
+| `@michi-vz/insights/forecast` (extras) | `decompose()` / `detectPeriod()` (seasonality), `detectChangepoints()`, `monteCarloForecast()`, `requiredGrowth()` / `pacingToGoal()` (goal-seek) | [forecast extras](/api/insights/forecast-extras) |
+| `@michi-vz/insights/anomaly` | `anomaly()` / `detectAnomalies()` - z-score / IQR / forecast-band outliers | [anomaly](/api/insights/anomaly) |
+| `@michi-vz/insights/validate` | `validate()` - richer data-quality warnings | [validate](/api/insights/validate) |
+| `@michi-vz/insights/narrate` | `narrate()` / `explainChart()` - rules baseline, opt-in SLM/remote | [narrate](/api/insights/narrate) |
+| `@michi-vz/insights/embeddings` | `reconcileLabels()` / `findSimilar()` / `createEmbedder()` - hash fallback, opt-in BERT/MiniLM | [embeddings](/api/insights/embeddings) |
+| `@michi-vz/insights/sql` | `aggregate()` - group-by/measures (opt-in DuckDB-Wasm) | [aggregate](/api/insights/sql) |
+| `@michi-vz/insights/sonify` | `sonify()` - hear a series as pitch | [sonify](/api/insights/sonify) |
+| `@michi-vz/insights/agent` | `createAgent()` + tool registry | [agent & MCP](/api/insights/agent) |
+| `@michi-vz/insights/mcp` | `createMcpServer()` - Claude Code / Codex / Cursor | [agent & MCP](/api/insights/agent) |
 
 ### How it works (the logic, in plain terms)
 
@@ -592,7 +593,7 @@ is *where the insight runs*:
 
 | | pandas / notebook | `@michi-vz/insights` |
 | --- | --- | --- |
-| **Runs where** | your machine, offline, once | the live app, the user's browser |
+| **Runs where** | your machine, offline, once | the app, the user's browser |
 | **Output** | a static number / image to share | the *rendered* chart updates itself |
 | **Audience** | the analyst | your product's users |
 | **Backend** | Python runtime | none - zero server, data stays local |

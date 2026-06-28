@@ -15,6 +15,9 @@ import {
   mountRibbonChart,
   mountRadarChart,
   mountTreemapChart,
+  mountPieChart,
+  mountBubbleChart,
+  mountSankeyChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -30,6 +33,9 @@ import type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -48,6 +54,9 @@ export type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -462,6 +471,102 @@ export const TreemapChart = defineComponent({
         style: {
           width: `${props.options.width ?? 900}px`,
           height: `${props.options.height ?? 520}px`,
+        },
+      });
+  },
+});
+
+export const PieChart = defineComponent({
+  name: "MichiVzPieChart",
+  props: {
+    options: { type: Object as PropType<PieChartProps>, required: true },
+  },
+  setup(props, { expose }) {
+    const host = ref<HTMLDivElement | null>(null);
+    let chart: ChartInstance<PieChartProps> | null = null;
+
+    onMounted(() => {
+      if (host.value) chart = mountPieChart(host.value, props.options);
+    });
+    watch(
+      () => props.options,
+      (next) => chart?.update(next),
+      { deep: true }
+    );
+    onBeforeUnmount(() => chart?.destroy());
+
+    expose({ getContext: (): ChartContext | null => chart?.getContext() ?? null });
+
+    return () =>
+      h("div", {
+        ref: host,
+        style: {
+          width: `${props.options.width ?? 600}px`,
+          height: `${props.options.height ?? 420}px`,
+        },
+      });
+  },
+});
+
+export const BubbleChart = defineComponent({
+  name: "MichiVzBubbleChart",
+  props: {
+    options: { type: Object as PropType<BubbleChartProps>, required: true },
+  },
+  setup(props, { expose }) {
+    const host = ref<HTMLDivElement | null>(null);
+    let chart: ChartInstance<BubbleChartProps> | null = null;
+
+    onMounted(() => {
+      if (host.value) chart = mountBubbleChart(host.value, props.options);
+    });
+    watch(
+      () => props.options,
+      (next) => chart?.update(next),
+      { deep: true }
+    );
+    onBeforeUnmount(() => chart?.destroy());
+
+    expose({ getContext: (): ChartContext | null => chart?.getContext() ?? null });
+
+    return () =>
+      h("div", {
+        ref: host,
+        style: {
+          width: `${props.options.width ?? 700}px`,
+          height: `${props.options.height ?? 500}px`,
+        },
+      });
+  },
+});
+
+export const SankeyChart = defineComponent({
+  name: "MichiVzSankeyChart",
+  props: {
+    options: { type: Object as PropType<SankeyChartProps>, required: true },
+  },
+  setup(props, { expose }) {
+    const host = ref<HTMLDivElement | null>(null);
+    let chart: ChartInstance<SankeyChartProps> | null = null;
+
+    onMounted(() => {
+      if (host.value) chart = mountSankeyChart(host.value, props.options);
+    });
+    watch(
+      () => props.options,
+      (next) => chart?.update(next),
+      { deep: true }
+    );
+    onBeforeUnmount(() => chart?.destroy());
+
+    expose({ getContext: (): ChartContext | null => chart?.getContext() ?? null });
+
+    return () =>
+      h("div", {
+        ref: host,
+        style: {
+          width: `${props.options.width ?? 800}px`,
+          height: `${props.options.height ?? 500}px`,
         },
       });
   },

@@ -20,9 +20,12 @@ const CARDS = [
   { examplesKey: "bar-bell-chart", slug: "bar-bell", name: "Bar-Bell", family: "Composition", roman: "XI", blurb: "Cumulative horizontal segments per row with end-cap circles at each step.", tag: "<michi-vz-bar-bell-chart> · SVG/canvas" },
   { examplesKey: "gap-chart", slug: "gap", name: "Gap", family: "Comparison", roman: "XII", blurb: "Two values per label joined by a gap bar that emphasises the difference.", tag: "<michi-vz-gap-chart> · SVG/canvas" },
   { examplesKey: "treemap-chart", slug: "treemap", name: "Treemap", family: "Composition", roman: "XIII", blurb: "Hierarchical tiles sized by value; each splits into two parts (e.g. realized vs untapped). Falls back to a stack on narrow screens.", tag: "<michi-vz-treemap-chart> · SVG/canvas" },
+  { examplesKey: "pie-chart", slug: "pie", name: "Pie / Donut", family: "Composition", roman: "XIV", blurb: "Slices sized by share of a whole; set innerRadiusRatio for a donut. Per-slice % labels and an optional legend.", tag: "<michi-vz-pie-chart> · SVG/canvas" },
+  { examplesKey: "bubble-chart", slug: "bubble", name: "Bubble", family: "Composition", roman: "XV", blurb: "Circles sized by value, pulled into a cluster by gravity; each can split into a realized core inside a lighter untapped ring.", tag: "<michi-vz-bubble-chart> · SVG/canvas" },
+  { examplesKey: "sankey-chart", slug: "sankey", name: "Sankey", family: "Flow", roman: "XVI", blurb: "Flows between nodes laid out in columns; each band's thickness is the flow value. Built on d3-sankey.", tag: "<michi-vz-sankey-chart> · SVG/canvas" },
 ];
 
-const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation"];
+const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation", "Flow"];
 const active = ref("All");
 const visible = (family: string) => active.value === "All" || active.value === family;
 </script>
@@ -35,7 +38,7 @@ const visible = (family: string) => active.value === "All" || active.value === f
       <span class="mv-rule"></span>
     </div>
     <p class="mv-lede">
-      Pick a chart by the question you are asking. Every card is a live component on real data:
+      Pick a chart by the question you are asking. Every card is a component on real data:
       hover to feel the interaction, click to open its full spec.
     </p>
 

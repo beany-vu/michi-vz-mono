@@ -4,7 +4,7 @@ title: Line Chart API
 
 # Line Chart API
 
-Everything you need to wire up a line chart in code; for the story and live demos, see the **[Line Chart demo](/charts/line)**.
+Everything you need to wire up a line chart in code; for the story and demos, see the **[Line Chart demo](/charts/line)**.
 
 ## Import
 

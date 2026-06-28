@@ -7,6 +7,7 @@ import EmbeddingsLab from "./EmbeddingsLab.vue";
 import SemanticSearchLab from "./SemanticSearchLab.vue";
 import CategorizeLab from "./CategorizeLab.vue";
 import PluginLab from "./PluginLab.vue";
+import DevtoolsDemo from "./DevtoolsDemo.vue";
 import PropsTable from "./PropsTable.vue";
 import "./custom.css";
 import "./embeddings-lab.css";
@@ -26,6 +27,7 @@ export default {
     app.component("SemanticSearchLab", SemanticSearchLab);
     app.component("CategorizeLab", CategorizeLab);
     app.component("PluginLab", PluginLab);
+    app.component("DevtoolsDemo", DevtoolsDemo);
     app.component("PropsTable", PropsTable);
   },
 } satisfies Theme;

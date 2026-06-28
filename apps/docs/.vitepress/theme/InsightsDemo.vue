@@ -342,7 +342,7 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 <template>
   <div class="insights-demo">
     <div class="insights-demo-bar">
-      <span class="insights-demo-title">Live · {{ feature }}<span v-if="ds"> · {{ ds.title }}</span><span v-else-if="feature === 'forecast'"> · {{ chartKind }}</span></span>
+      <span class="insights-demo-title">{{ feature }}<span v-if="ds"> · {{ ds.title }}</span><span v-else-if="feature === 'forecast'"> · {{ chartKind }}</span></span>
       <div class="insights-demo-toggles">
         <span class="idemo-rtoggle" role="group" aria-label="renderer">
           <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">Canvas</button>
@@ -445,7 +445,7 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 </template>
 
 <style scoped>
-.insights-demo { border: 1px solid var(--vp-c-divider); border-radius: 8px; margin: 18px 0; background: var(--vp-c-bg-soft); overflow: hidden; }
+.insights-demo { border: 1px solid var(--vp-c-divider); border-radius: 8px; margin: 18px 0; background: var(--vp-c-bg-soft); overflow: hidden; --michi-vz-ink: var(--vp-c-text-1); }
 .insights-demo-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--vp-c-divider); background: var(--vp-c-bg); }
 .insights-demo-title { font-family: "Spectral", Georgia, serif; font-weight: 600; text-transform: capitalize; }
 .insights-demo-tag { font-family: var(--vp-font-family-mono); font-size: 11px; color: var(--vp-c-text-3); }

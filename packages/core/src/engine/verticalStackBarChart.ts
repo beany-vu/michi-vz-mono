@@ -2,6 +2,7 @@
 // linear y; stacked rects in LIGHT DOM (SVG) or canvas. The hasOwnProperty marker
 // guard lives in the pure stack layer; this engine just orchestrates.
 import DOMPurify from "dompurify";
+import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
@@ -144,7 +145,21 @@ export function mountVerticalStackBarChart(
       baseProps.onHighlightItem?.([]);
     }
   };
+  // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
+  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
+  const onHostClick = (): void => {
+    if (resolve(baseProps).renderer !== "canvas") return;
+    if (sticky) {
+      sticky = false;
+      tooltip.classList.remove("sticky");
+      tooltip.style.visibility = "hidden";
+    } else if (tooltip.style.visibility === "visible") {
+      sticky = true;
+      tooltip.classList.add("sticky");
+    }
+  };
   host.addEventListener("mousemove", onHostMove);
+  host.addEventListener("click", onHostClick);
   tooltip.addEventListener("click", () => {
     sticky = false;
     tooltip.classList.remove("sticky");
@@ -292,7 +307,7 @@ export function mountVerticalStackBarChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  return {
+  const instance = {
     update(next: VerticalStackBarChartProps) {
       baseProps = next;
       render();
@@ -312,8 +327,11 @@ export function mountVerticalStackBarChart(
     destroy() {
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
+      host.removeEventListener("click", onHostClick);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-vertical-stack-bar-chart");
     },
   };
+
+  return attachDevtools(instance, host, "vertical-stack-bar-chart", () => baseProps);
 }

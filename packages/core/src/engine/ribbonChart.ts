@@ -1,6 +1,7 @@
 // RibbonChart engine: mount/update/getContext/destroy. Stacked columns + ribbon
 // connectors; band x (dates), linear y. LIGHT DOM (SVG) or canvas.
 import DOMPurify from "dompurify";
+import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
@@ -134,7 +135,21 @@ export function mountRibbonChart(
       baseProps.onHighlightItem?.([]);
     }
   };
+  // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
+  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
+  const onHostClick = (): void => {
+    if (resolve(baseProps).renderer !== "canvas") return;
+    if (sticky) {
+      sticky = false;
+      tooltip.classList.remove("sticky");
+      tooltip.style.visibility = "hidden";
+    } else if (tooltip.style.visibility === "visible") {
+      sticky = true;
+      tooltip.classList.add("sticky");
+    }
+  };
   host.addEventListener("mousemove", onHostMove);
+  host.addEventListener("click", onHostClick);
   tooltip.addEventListener("click", () => {
     sticky = false;
     tooltip.classList.remove("sticky");
@@ -266,7 +281,7 @@ export function mountRibbonChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  return {
+  const instance = {
     update(next: RibbonChartProps) {
       baseProps = next;
       render();
@@ -286,8 +301,11 @@ export function mountRibbonChart(
     destroy() {
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
+      host.removeEventListener("click", onHostClick);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-ribbon-chart");
     },
   };
+
+  return attachDevtools(instance, host, "ribbon-chart", () => baseProps);
 }

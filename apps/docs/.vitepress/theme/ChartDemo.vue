@@ -78,7 +78,7 @@ function toggleContext() {
 <template>
   <div class="chart-demo">
     <div class="chart-demo-bar">
-      <span class="chart-demo-title">{{ title || "Live example" }}</span>
+      <span class="chart-demo-title">{{ title || "Example" }}</span>
       <span class="chart-demo-rtoggle" role="group" aria-label="renderer">
         <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">Canvas</button>
         <button :class="{ on: renderer === 'svg' }" @click="setRenderer('svg')">SVG</button>
@@ -89,7 +89,7 @@ function toggleContext() {
       <button class="chart-demo-btn" @click="toggleContext">
         {{ ctx ? "▴ Hide" : "▾ Show" }} LLM context · getContext()
       </button>
-      <span class="chart-demo-note">{{ renderer === 'canvas' ? 'canvas · live · responsive' : 'SVG · live · responsive' }}</span>
+      <span class="chart-demo-note">{{ renderer === 'canvas' ? 'canvas · responsive' : 'SVG · responsive' }}</span>
     </div>
     <pre v-if="ctx" class="chart-demo-ctx">{{ ctx }}</pre>
   </div>

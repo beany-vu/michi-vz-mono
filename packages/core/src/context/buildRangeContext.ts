@@ -1,5 +1,6 @@
 // Renderer-agnostic semantic context for RangeChart.
 import type { RangeChartContext, RangeDataItem, RangeSeriesContext, XaxisDataType } from "../types";
+import { provenanceCounts } from "../math/provenance";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -18,6 +19,7 @@ function seriesContext(it: RangeDataItem, color: string): RangeSeriesContext {
   const maxs = it.series.map((p) => p.valueMax).filter(Number.isFinite);
   const ranges = it.series.map((p) => p.valueMax - p.valueMin).filter(Number.isFinite);
   const meanRange = ranges.length ? ranges.reduce((a, b) => a + b, 0) / ranges.length : 0;
+  const { actualCount, predictedCount, forecastStart } = provenanceCounts(it.series);
   return {
     label: it.label,
     color,
@@ -25,6 +27,9 @@ function seriesContext(it: RangeDataItem, color: string): RangeSeriesContext {
     minValue: mins.length ? round(Math.min(...mins)) : 0,
     maxValue: maxs.length ? round(Math.max(...maxs)) : 0,
     meanRange: round(meanRange),
+    actualCount,
+    predictedCount,
+    forecastStart,
   };
 }
 

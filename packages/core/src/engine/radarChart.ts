@@ -1,6 +1,7 @@
 // RadarChart engine: mount/update/getContext/destroy. Polar grid + one polygon
 // per series. LIGHT DOM (SVG) or canvas. No cartesian axes.
 import DOMPurify from "dompurify";
+import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { renderTitle } from "../render/svg";
@@ -229,7 +230,7 @@ export function mountRadarChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  return {
+  const instance = {
     update(next: RadarChartProps) {
       baseProps = next;
       render();
@@ -252,4 +253,6 @@ export function mountRadarChart(
       host.classList.remove("michi-vz", "michi-vz-radar-chart");
     },
   };
+
+  return attachDevtools(instance, host, "radar-chart", () => baseProps);
 }

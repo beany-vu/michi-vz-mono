@@ -15,6 +15,9 @@ export { mountRibbonChart } from "./engine/ribbonChart";
 export { mountRadarChart } from "./engine/radarChart";
 export { mountFanChart } from "./engine/fanChart";
 export { mountTreemapChart } from "./engine/treemapChart";
+export { mountPieChart } from "./engine/pieChart";
+export { mountBubbleChart } from "./engine/bubbleChart";
+export { mountSankeyChart } from "./engine/sankeyChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -23,6 +26,10 @@ export type { MichiVzStore, MichiVzState } from "./state/store";
 // ---- Plugin contract (consumed by @michi-vz/insights; interfaces only) ----
 export type { MichiVzPlugin, PluginContext, AgentTool, Annotation } from "./plugins/types";
 export type { MountOptions } from "./types";
+
+// ---- Devtools hook (opt-in page-level registry consumed by @michi-vz/devtools) ----
+export { enableDevtools, getDevtoolsHook, attachDevtools } from "./devtools/hook";
+export type { MichiVzDevtoolsHook, DevtoolsChartEntry } from "./devtools/hook";
 
 // ---- Styling ----
 export { CORE_CSS, ensureStyles } from "./styles";
@@ -36,6 +43,8 @@ export { DEFAULT_COLORS } from "./theme/colors";
 // ---- Pure utilities (reused by wrappers, insights, tests) ----
 export { sanitizeForClassName } from "./math/sanitize";
 export { readableTextColor, relativeLuminance } from "./math/contrast";
+export { isPredicted, provenanceCounts } from "./math/provenance";
+export type { ProvenancePoint, ProvenanceCounts } from "./math/provenance";
 export { processGapChartData } from "./gapChart/data";
 export { buildGapColors } from "./gapChart/colors";
 export { buildGapContext } from "./context/buildContext";
@@ -100,6 +109,27 @@ export { layoutTreemap, layoutStack } from "./treemapChart/layout";
 export { buildTreemapRenderModel } from "./treemapChart/renderModel";
 export { buildTreemapContext } from "./context/buildTreemapContext";
 export { checkTreemapData } from "./validate/treemapWarnings";
+// Pie pure layer (pie + donut via innerRadiusRatio)
+export { processPieData } from "./pieChart/data";
+export { buildPieColors } from "./pieChart/colors";
+export { layoutPie } from "./pieChart/geometry";
+export { buildPieRenderModel } from "./pieChart/renderModel";
+export { buildPieContext } from "./context/buildPieContext";
+export { checkPieData } from "./validate/pieWarnings";
+// Bubble pure layer (gravity-packed circles + realized/untapped split)
+export { processBubbleData } from "./bubbleChart/data";
+export { buildBubbleColors } from "./bubbleChart/colors";
+export { layoutBubbles } from "./bubbleChart/layout";
+export { buildBubbleRenderModel } from "./bubbleChart/renderModel";
+export { buildBubbleContext } from "./context/buildBubbleContext";
+export { checkBubbleData } from "./validate/bubbleWarnings";
+// Sankey pure layer (flow diagram via d3-sankey)
+export { processSankeyData } from "./sankeyChart/data";
+export { buildSankeyColors } from "./sankeyChart/colors";
+export { layoutSankey } from "./sankeyChart/layout";
+export { buildSankeyRenderModel } from "./sankeyChart/renderModel";
+export { buildSankeyContext } from "./context/buildSankeyContext";
+export { checkSankeyData } from "./validate/sankeyWarnings";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -201,4 +231,18 @@ export type {
   TreemapChartProps,
   TreemapLeafContext,
   TreemapChartContext,
+  PieDataItem,
+  PieChartProps,
+  PieSliceContext,
+  PieChartContext,
+  BubbleDataItem,
+  BubbleChartProps,
+  BubbleContext,
+  BubbleChartContext,
+  SankeyNodeItem,
+  SankeyLinkItem,
+  SankeyChartProps,
+  SankeyNodeContext,
+  SankeyLinkContext,
+  SankeyChartContext,
 } from "./types";

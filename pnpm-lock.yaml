@@ -29,6 +29,9 @@ importers:
       '@michi-vz/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@michi-vz/devtools':
+        specifier: workspace:*
+        version: link:../../packages/devtools
       '@michi-vz/examples':
         specifier: workspace:*
         version: link:../../packages/examples
@@ -132,6 +135,19 @@ importers:
       '@types/d3-shape':
         specifier: ^3.1.7
         version: 3.1.8
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(jsdom@25.0.1)
+
+  packages/devtools:
+    dependencies:
+      '@michi-vz/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1

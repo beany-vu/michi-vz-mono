@@ -3,6 +3,7 @@
 // (shared renderOverlay) + a vertical hover line, with row/key hit-testing shared
 // across SVG and canvas modes.
 import DOMPurify from "dompurify";
+import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
@@ -321,7 +322,7 @@ export function mountAreaChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  return {
+  const instance = {
     update(next: AreaChartProps) {
       baseProps = next;
       render();
@@ -344,4 +345,6 @@ export function mountAreaChart(
       host.classList.remove("michi-vz", "michi-vz-area-chart");
     },
   };
+
+  return attachDevtools(instance, host, "area-chart", () => baseProps);
 }

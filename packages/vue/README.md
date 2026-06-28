@@ -10,7 +10,7 @@ React/Vue/Svelte/Angular wrappers. Every chart emits an LLM-ready `ChartContext`
 npm i @michi-vz/vue
 ```
 
-See the [monorepo README](https://github.com/) for full usage, the 13 charts, and the
+See the [monorepo README](https://github.com/) for full usage, the 16 charts, and the
 light-DOM colour contract.
 
 ## License

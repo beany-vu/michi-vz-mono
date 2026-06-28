@@ -32,3 +32,6 @@ export const DualBar = fromExample("dual-horizontal-bar-chart");
 export const BarBell = fromExample("bar-bell-chart");
 export const Gap = fromExample("gap-chart");
 export const Treemap = fromExample("treemap-chart");
+export const Pie = fromExample("pie-chart");
+export const Bubble = fromExample("bubble-chart");
+export const Sankey = fromExample("sankey-chart");

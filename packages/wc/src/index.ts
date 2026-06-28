@@ -14,6 +14,9 @@ import "./ribbon-chart";
 import "./radar-chart";
 import "./fan-chart";
 import "./treemap-chart";
+import "./pie-chart";
+import "./bubble-chart";
+import "./sankey-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -28,3 +31,6 @@ export { RibbonChartElement } from "./ribbon-chart";
 export { RadarChartElement } from "./radar-chart";
 export { FanChartElement } from "./fan-chart";
 export { TreemapChartElement } from "./treemap-chart";
+export { PieChartElement } from "./pie-chart";
+export { BubbleChartElement } from "./bubble-chart";
+export { SankeyChartElement } from "./sankey-chart";

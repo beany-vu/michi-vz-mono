@@ -1,6 +1,7 @@
 // RangeChart engine: mount/update/getContext/destroy. Per-series valueMin..valueMax
 // bands (+ median lines) over a linear/time x. Reuses Line's scales. LIGHT DOM.
 import DOMPurify from "dompurify";
+import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
@@ -261,7 +262,7 @@ export function mountRangeChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  return {
+  const instance = {
     update(next: RangeChartProps) {
       baseProps = next;
       render();
@@ -284,4 +285,6 @@ export function mountRangeChart(
       host.classList.remove("michi-vz", "michi-vz-range-chart");
     },
   };
+
+  return attachDevtools(instance, host, "range-chart", () => baseProps);
 }

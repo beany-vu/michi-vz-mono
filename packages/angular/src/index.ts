@@ -19,6 +19,9 @@ import type {
   RibbonChartElement,
   RadarChartElement,
   TreemapChartElement,
+  PieChartElement,
+  BubbleChartElement,
+  SankeyChartElement,
 } from "@michi-vz/wc";
 import type {
   GapChartProps,
@@ -34,6 +37,9 @@ import type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
 } from "@michi-vz/core";
 
 export type {
@@ -50,6 +56,9 @@ export type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
   ChartContext,
 } from "@michi-vz/core";
 export type {
@@ -66,6 +75,9 @@ export type {
   RibbonChartElement,
   RadarChartElement,
   TreemapChartElement,
+  PieChartElement,
+  BubbleChartElement,
+  SankeyChartElement,
 } from "@michi-vz/wc";
 
 /**
@@ -344,6 +356,80 @@ export function applyTreemapChartProps(el: TreemapChartElement, props: TreemapCh
   if (props.showSplit !== undefined) el.showSplit = props.showSplit;
   if (props.showLegend !== undefined) el.showLegend = props.showLegend;
   if (props.minTileShare !== undefined) el.minTileShare = props.minTileShare;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.valueFormatter !== undefined) el.valueFormatter = props.valueFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-pie-chart> element (property binding). */
+export function applyPieChartProps(el: PieChartElement, props: PieChartProps): void {
+  el.dataSet = props.dataSet;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.innerRadiusRatio !== undefined) el.innerRadiusRatio = props.innerRadiusRatio;
+  if (props.padAngle !== undefined) el.padAngle = props.padAngle;
+  if (props.cornerRadius !== undefined) el.cornerRadius = props.cornerRadius;
+  if (props.sortByValue !== undefined) el.sortByValue = props.sortByValue;
+  if (props.showLabels !== undefined) el.showLabels = props.showLabels;
+  if (props.showLegend !== undefined) el.showLegend = props.showLegend;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.valueFormatter !== undefined) el.valueFormatter = props.valueFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-bubble-chart> element (property binding). */
+export function applyBubbleChartProps(el: BubbleChartElement, props: BubbleChartProps): void {
+  el.dataSet = props.dataSet;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.gravity !== undefined) el.gravity = props.gravity;
+  if (props.chargeStrength !== undefined) el.chargeStrength = props.chargeStrength;
+  if (props.padding !== undefined) el.padding = props.padding;
+  if (props.fillRatio !== undefined) el.fillRatio = props.fillRatio;
+  if (props.splitLabels !== undefined) el.splitLabels = props.splitLabels;
+  if (props.splitOpacity !== undefined) el.splitOpacity = props.splitOpacity;
+  if (props.showSplit !== undefined) el.showSplit = props.showSplit;
+  if (props.showLegend !== undefined) el.showLegend = props.showLegend;
+  if (props.showLabels !== undefined) el.showLabels = props.showLabels;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.valueFormatter !== undefined) el.valueFormatter = props.valueFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-sankey-chart> element (property binding). */
+export function applySankeyChartProps(el: SankeyChartElement, props: SankeyChartProps): void {
+  el.nodes = props.nodes;
+  el.links = props.links;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.nodeWidth !== undefined) el.nodeWidth = props.nodeWidth;
+  if (props.nodePadding !== undefined) el.nodePadding = props.nodePadding;
+  if (props.nodeRadius !== undefined) el.nodeRadius = props.nodeRadius;
+  if (props.linkRadius !== undefined) el.linkRadius = props.linkRadius;
+  if (props.linkColorMode !== undefined) el.linkColorMode = props.linkColorMode;
+  if (props.linkOpacity !== undefined) el.linkOpacity = props.linkOpacity;
+  if (props.showLabels !== undefined) el.showLabels = props.showLabels;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;

@@ -1,0 +1,53 @@
+{
+  "name": "@michi-vz/devtools",
+  "version": "0.0.1",
+  "description": "Opt-in in-page developer devtools for michi-vz: inspect every chart's live ChartContext (incl. actual vs predicted), drive highlight/disable + agent tools, and edit data — no browser extension required.",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@michi-vz/core": "workspace:*"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
+  },
+  "license": "MIT",
+  "author": "Beany Vu",
+  "keywords": [
+    "charts",
+    "devtools",
+    "debug",
+    "inspector",
+    "michi-vz",
+    "dataviz"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beany-vu/michi-vz-mono.git",
+    "directory": "packages/devtools"
+  },
+  "homepage": "https://michi-vz.netlify.app/",
+  "bugs": "https://github.com/beany-vu/michi-vz-mono/issues"
+}

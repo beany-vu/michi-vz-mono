@@ -3,7 +3,7 @@ title: Charts
 ---
 # Chart catalog
 
-Thirteen framework-agnostic charts. Each page has a live example, usage across every framework, and an LLM-context panel.
+Sixteen framework-agnostic charts. Each page has an example, usage across every framework, and an LLM-context panel.
 
 - [**Line Chart**](/charts/line) - _Trends_ · Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
 - [**Fan Chart**](/charts/fan) - _Trends · Forecast_ · A forecast fan: history, a dashed forecast median, and nested confidence bands that widen with the horizon (composed from Line + Range).
@@ -18,3 +18,6 @@ Thirteen framework-agnostic charts. Each page has a live example, usage across e
 - [**Bar-Bell**](/charts/bar-bell) - _Composition_ · Cumulative horizontal segments per row with end-cap circles marking each step.
 - [**Gap Chart**](/charts/gap) - _Comparison_ · Two values per label joined by a gap bar - emphasises the difference between them.
 - [**Treemap**](/charts/treemap) - _Composition_ · Hierarchical tiles sized by value, each optionally split into two parts (e.g. realized vs untapped) - with a mobile-friendly stack layout.
+- [**Pie / Donut**](/charts/pie) - _Composition_ · Slices sized by share of a whole, with per-slice % labels; set `innerRadiusRatio` for a donut.
+- [**Bubble**](/charts/bubble) - _Composition_ · Circles sized by value, pulled into a cluster by gravity, each optionally split into a realized core and an untapped ring.
+- [**Sankey**](/charts/sankey) - _Flow_ · Flows between nodes laid out in columns, with band thickness proportional to the flow value (built on d3-sankey).

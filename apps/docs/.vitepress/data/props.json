@@ -5,85 +5,85 @@
       "name": "width",
       "type": "number",
       "optional": true,
-      "description": ""
+      "description": "Chart width in pixels"
     },
     {
       "name": "height",
       "type": "number",
       "optional": true,
-      "description": ""
+      "description": "Chart height in pixels"
     },
     {
       "name": "margin",
       "type": "Margin",
       "optional": true,
-      "description": ""
+      "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels"
     },
     {
       "name": "colors",
       "type": "string[]",
       "optional": true,
-      "description": ""
+      "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry"
     },
     {
       "name": "colorsMapping",
       "type": "Record<string, string>",
       "optional": true,
-      "description": ""
+      "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours"
     },
     {
       "name": "renderer",
       "type": "\"svg\" | \"canvas\"",
       "optional": true,
-      "description": ""
+      "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way"
     },
     {
       "name": "highlightItems",
       "type": "string[]",
       "optional": true,
-      "description": ""
+      "description": "Labels to emphasise; all other marks dim"
     },
     {
       "name": "disabledItems",
       "type": "string[]",
       "optional": true,
-      "description": ""
+      "description": "Labels to hide and exclude from scales/stacks"
     },
     {
       "name": "locale",
       "type": "string",
       "optional": true,
-      "description": ""
+      "description": "BCP-47 locale used for number and date formatting"
     },
     {
       "name": "skipColorMappingDispatch",
       "type": "boolean",
       "optional": true,
-      "description": ""
+      "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract"
     },
     {
       "name": "enableTransitions",
       "type": "boolean",
       "optional": true,
-      "description": ""
+      "description": "Animate updates with CSS transitions (default true)"
     },
     {
       "name": "onColorMappingGenerated",
       "type": "(mapping: Record<string, string>) => void",
       "optional": true,
-      "description": ""
+      "description": "Called with the resolved label -> colour map after the chart assigns colours"
     },
     {
       "name": "onChartDataProcessed",
       "type": "(context: ChartContext) => void",
       "optional": true,
-      "description": ""
+      "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed"
     },
     {
       "name": "onDataWarning",
       "type": "(warnings: DataWarning[]) => void",
       "optional": true,
-      "description": ""
+      "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)"
     }
   ],
   "charts": {
@@ -97,7 +97,7 @@
           "name": "dataSet",
           "type": "LineDataItem[]",
           "optional": false,
-          "description": "",
+          "description": "Array of line series, each with its own points",
           "default": "",
           "common": false
         },
@@ -105,7 +105,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -113,7 +113,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "1000",
           "common": true
         },
@@ -121,7 +121,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "500",
           "common": true
         },
@@ -129,7 +129,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -137,7 +137,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -145,7 +145,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -153,7 +153,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fix the y-axis range as [min, max] instead of deriving it from the data",
           "default": "",
           "common": false
         },
@@ -161,7 +161,7 @@
           "name": "xAxisDataType",
           "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
           "optional": true,
-          "description": "",
+          "description": "How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers",
           "default": "\"number\"",
           "common": false
         },
@@ -169,7 +169,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -177,7 +177,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -185,7 +185,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -193,7 +193,7 @@
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
-          "description": "",
+          "description": "Explicit tick values, overriding the generated ones",
           "default": "",
           "common": false
         },
@@ -225,7 +225,7 @@
           "name": "showDataPoints",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Whether to draw a marker at each data point (default false)",
           "default": "false",
           "common": false
         },
@@ -233,7 +233,7 @@
           "name": "enableMouseLine",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Whether to show a dashed vertical crosshair line that tracks the cursor (default false)",
           "default": "false",
           "common": false
         },
@@ -249,7 +249,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -257,7 +257,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -265,7 +265,7 @@
           "name": "filter",
           "type": "Filter",
           "optional": true,
-          "description": "",
+          "description": "Top-N / sort filter applied to the data before rendering",
           "default": "",
           "common": false
         },
@@ -273,7 +273,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -281,7 +281,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -289,7 +289,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -297,7 +297,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -305,7 +305,7 @@
           "name": "tooltipFormatter",
           "type": "(d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -313,7 +313,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -321,7 +321,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -329,7 +329,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -337,7 +337,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -353,7 +353,7 @@
           "name": "dataSet",
           "type": "FanDataItem[]",
           "optional": false,
-          "description": "",
+          "description": "Array of forecast series, each a median line plus its nested confidence bands",
           "default": "",
           "common": false
         },
@@ -361,7 +361,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -369,7 +369,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "1000",
           "common": true
         },
@@ -377,7 +377,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "500",
           "common": true
         },
@@ -385,7 +385,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -393,7 +393,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -401,7 +401,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -409,7 +409,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fixed [min, max] for the y-axis; when omitted the domain auto-fits the line plus the widest band extents",
           "default": "",
           "common": false
         },
@@ -417,7 +417,7 @@
           "name": "xAxisDataType",
           "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
           "optional": true,
-          "description": "",
+          "description": "How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers",
           "default": "\"number\"",
           "common": false
         },
@@ -425,7 +425,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -433,7 +433,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -441,7 +441,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -449,7 +449,7 @@
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
-          "description": "",
+          "description": "Explicit tick values, overriding the generated ones",
           "default": "",
           "common": false
         },
@@ -457,7 +457,7 @@
           "name": "curve",
           "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
           "optional": true,
-          "description": "",
+          "description": "Line interpolation: curveLinear, curveMonotoneX, or curveBumpX",
           "default": "",
           "common": false
         },
@@ -481,7 +481,7 @@
           "name": "showDataPoints",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Draw a marker at each median data point (default false)",
           "default": "false",
           "common": false
         },
@@ -489,7 +489,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -497,7 +497,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -505,7 +505,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -513,7 +513,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -521,7 +521,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -529,7 +529,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -545,7 +545,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -553,7 +553,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -561,7 +561,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -569,7 +569,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -585,7 +585,7 @@
           "name": "series",
           "type": "AreaDataRow[]",
           "optional": false,
-          "description": "",
+          "description": "Array of rows, each carrying an x (`date`) plus one numeric value per stacked key",
           "default": "",
           "common": false
         },
@@ -601,7 +601,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -609,7 +609,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -617,7 +617,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "480",
           "common": true
         },
@@ -625,7 +625,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -633,7 +633,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -641,7 +641,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -649,7 +649,7 @@
           "name": "xAxisDataType",
           "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
           "optional": true,
-          "description": "",
+          "description": "How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers",
           "default": "\"number\"",
           "common": false
         },
@@ -657,7 +657,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -665,7 +665,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -673,7 +673,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fix the y-axis range as [min, max] instead of deriving it from the data",
           "default": "",
           "common": false
         },
@@ -689,7 +689,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -697,7 +697,7 @@
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
-          "description": "",
+          "description": "Explicit tick values, overriding the generated ones",
           "default": "",
           "common": false
         },
@@ -705,7 +705,7 @@
           "name": "curve",
           "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
           "optional": true,
-          "description": "",
+          "description": "Line interpolation: curveLinear, curveMonotoneX, or curveBumpX",
           "default": "",
           "common": false
         },
@@ -713,7 +713,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -721,7 +721,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -729,7 +729,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -737,7 +737,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -745,7 +745,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -753,7 +753,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -761,7 +761,7 @@
           "name": "tooltipFormatter",
           "type": "(row: AreaDataRow, key: string, series: AreaDataRow[]) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -769,7 +769,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -777,7 +777,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -785,7 +785,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -793,7 +793,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -809,7 +809,7 @@
           "name": "dataSet",
           "type": "ScatterDataPoint[]",
           "optional": false,
-          "description": "",
+          "description": "Array of points to plot in the cloud",
           "default": "",
           "common": false
         },
@@ -817,7 +817,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -825,7 +825,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -833,7 +833,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "480",
           "common": true
         },
@@ -841,7 +841,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -849,7 +849,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -857,7 +857,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -873,7 +873,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -881,7 +881,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -889,7 +889,7 @@
           "name": "xAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fix the x-axis range instead of deriving it from the data",
           "default": "",
           "common": false
         },
@@ -897,7 +897,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fix the y-axis range as [min, max] instead of deriving it from the data",
           "default": "",
           "common": false
         },
@@ -913,7 +913,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -921,7 +921,7 @@
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
-          "description": "",
+          "description": "Explicit tick values, overriding the generated ones",
           "default": "",
           "common": false
         },
@@ -929,7 +929,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -937,7 +937,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -945,7 +945,7 @@
           "name": "filter",
           "type": "Filter",
           "optional": true,
-          "description": "",
+          "description": "Top-N / sort filter applied to the data before rendering",
           "default": "",
           "common": false
         },
@@ -953,7 +953,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -961,7 +961,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -969,7 +969,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -977,7 +977,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -985,7 +985,7 @@
           "name": "tooltipFormatter",
           "type": "(d: ScatterDataPoint) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -993,7 +993,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -1001,7 +1001,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -1009,7 +1009,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -1017,7 +1017,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -1033,7 +1033,7 @@
           "name": "dataSet",
           "type": "RangeDataItem[]",
           "optional": false,
-          "description": "",
+          "description": "Array of series, each drawn as a filled valueMin..valueMax band over time with an optional median line",
           "default": "",
           "common": false
         },
@@ -1041,7 +1041,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -1049,7 +1049,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "1000",
           "common": true
         },
@@ -1057,7 +1057,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "500",
           "common": true
         },
@@ -1065,7 +1065,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -1073,7 +1073,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1081,7 +1081,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -1089,7 +1089,7 @@
           "name": "xAxisDataType",
           "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
           "optional": true,
-          "description": "",
+          "description": "How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers",
           "default": "\"number\"",
           "common": false
         },
@@ -1097,7 +1097,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1105,7 +1105,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1113,7 +1113,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Explicit [min, max] for the value (y) axis; overrides the auto domain derived from the bands",
           "default": "",
           "common": false
         },
@@ -1121,7 +1121,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -1129,7 +1129,7 @@
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
-          "description": "",
+          "description": "Explicit tick values, overriding the generated ones",
           "default": "",
           "common": false
         },
@@ -1137,7 +1137,7 @@
           "name": "curve",
           "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
           "optional": true,
-          "description": "",
+          "description": "Line interpolation: curveLinear, curveMonotoneX, or curveBumpX",
           "default": "",
           "common": false
         },
@@ -1153,7 +1153,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -1161,7 +1161,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -1169,7 +1169,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -1177,7 +1177,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -1185,7 +1185,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -1193,7 +1193,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -1201,7 +1201,7 @@
           "name": "tooltipFormatter",
           "type": "(d: RangeDataPoint, item: RangeDataItem) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -1209,7 +1209,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -1217,7 +1217,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -1225,7 +1225,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -1233,7 +1233,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -1249,7 +1249,7 @@
           "name": "series",
           "type": "RibbonDataRow[]",
           "optional": false,
-          "description": "",
+          "description": "Array of rows (one per date) whose keys stack into a column; same-key segments are linked across adjacent dates by ribbon trapezoids",
           "default": "",
           "common": false
         },
@@ -1257,7 +1257,7 @@
           "name": "keys",
           "type": "string[]",
           "optional": false,
-          "description": "",
+          "description": "Ordered segment keys to stack within each column (bottom-to-top) and to connect with ribbons between columns",
           "default": "",
           "common": false
         },
@@ -1265,7 +1265,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -1273,7 +1273,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -1281,7 +1281,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "480",
           "common": true
         },
@@ -1289,7 +1289,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 60, left: 60 }",
           "common": true
         },
@@ -1297,7 +1297,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1305,7 +1305,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -1313,7 +1313,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1321,7 +1321,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1329,7 +1329,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Explicit [min, max] for the value (y) axis; overrides the auto domain from the stacked column totals",
           "default": "",
           "common": false
         },
@@ -1345,7 +1345,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -1353,7 +1353,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -1361,7 +1361,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -1369,7 +1369,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -1377,7 +1377,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -1385,7 +1385,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -1393,7 +1393,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -1401,7 +1401,7 @@
           "name": "tooltipFormatter",
           "type": "(row: RibbonDataRow, key: string, value: number) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -1409,7 +1409,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -1417,7 +1417,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -1425,7 +1425,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -1433,7 +1433,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -1449,7 +1449,7 @@
           "name": "series",
           "type": "RadarDataItem[]",
           "optional": false,
-          "description": "",
+          "description": "Array of polygon series to plot, one closed shape per item drawn over the shared polar grid",
           "default": "",
           "common": false
         },
@@ -1465,7 +1465,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -1473,7 +1473,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "600",
           "common": true
         },
@@ -1481,7 +1481,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "600",
           "common": true
         },
@@ -1489,7 +1489,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 60, right: 80, bottom: 60, left: 80 }",
           "common": true
         },
@@ -1497,7 +1497,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1505,7 +1505,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -1513,7 +1513,7 @@
           "name": "maxValue",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Value mapped to the outer ring (full radius), shared by every spoke; defaults to the largest value across all series and axes (or 1 when all are zero)",
           "default": "",
           "common": false
         },
@@ -1537,7 +1537,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -1545,7 +1545,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -1553,7 +1553,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -1561,7 +1561,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -1569,7 +1569,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -1577,7 +1577,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -1585,7 +1585,7 @@
           "name": "tooltipFormatter",
           "type": "(item: RadarDataItem) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -1593,7 +1593,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -1601,7 +1601,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -1609,7 +1609,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -1617,7 +1617,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -1633,7 +1633,7 @@
           "name": "dataSet",
           "type": "VerticalStackBarDataSet[]",
           "optional": false,
-          "description": "",
+          "description": "Array of grouped series; each entry contributes its own bar slot per date and stacks its segment keys vertically",
           "default": "",
           "common": false
         },
@@ -1649,7 +1649,7 @@
           "name": "keysOrder",
           "type": "\"topToBottom\" | \"bottomToTop\"",
           "optional": true,
-          "description": "",
+          "description": "Where keys[0] sits in the stack: \"topToBottom\" (default) puts keys[0] at the top, \"bottomToTop\" anchors keys[0] at the bottom",
           "default": "\"topToBottom\"",
           "common": false
         },
@@ -1657,7 +1657,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -1665,7 +1665,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -1673,7 +1673,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "480",
           "common": true
         },
@@ -1681,7 +1681,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 100, left: 60 }",
           "common": true
         },
@@ -1689,7 +1689,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1697,7 +1697,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1705,7 +1705,7 @@
           "name": "xAxisDomain",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Explicit ordered list of date band categories; overrides the auto-collected, sorted set of dates from the data",
           "default": "",
           "common": false
         },
@@ -1713,7 +1713,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fix the y-axis range as [min, max] instead of deriving it from the data",
           "default": "",
           "common": false
         },
@@ -1721,7 +1721,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1729,7 +1729,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -1737,7 +1737,7 @@
           "name": "minBarWidth",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Minimum width in px for each bar slot, floored when bands get narrow (default 5)",
           "default": "5",
           "common": false
         },
@@ -1745,7 +1745,7 @@
           "name": "minBarHeight",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Minimum height in px for a non-zero segment so thin values stay visible (default 15)",
           "default": "15",
           "common": false
         },
@@ -1753,7 +1753,7 @@
           "name": "minBarHeightZero",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Height in px drawn for an explicit zero-value segment (default 0, i.e. nothing)",
           "default": "0",
           "common": false
         },
@@ -1769,7 +1769,7 @@
           "name": "filter",
           "type": "{ limit: number; sortingDir: \"asc\" | \"desc\"; date?: string }",
           "optional": true,
-          "description": "",
+          "description": "Keep only the top-N dates ranked by grand total across all series and keys: limit caps the count, sortingDir picks highest (desc) or lowest (asc), optional date is the reference date; chronological order is preserved in output",
           "default": "",
           "common": false
         },
@@ -1777,7 +1777,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -1785,7 +1785,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -1793,7 +1793,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -1801,7 +1801,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -1809,7 +1809,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -1817,7 +1817,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -1825,7 +1825,7 @@
           "name": "tooltipFormatter",
           "type": "(rect: StackRectData) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -1833,7 +1833,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -1841,7 +1841,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -1849,7 +1849,7 @@
           "name": "onLegendDataChange",
           "type": "(legendData: StackLegendItem[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the computed legend items (label, color, order, disabled, dataLabelSafe) whenever the legend changes",
           "default": "",
           "common": false
         },
@@ -1857,7 +1857,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -1865,7 +1865,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -1881,7 +1881,7 @@
           "name": "dataSet",
           "type": "ComparableBarDataPoint[]",
           "optional": false,
-          "description": "",
+          "description": "Array of horizontal-bar rows; each renders two overlaid sub-bars (valueBased behind, valueCompared in front) for one label",
           "default": "",
           "common": false
         },
@@ -1889,7 +1889,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -1897,7 +1897,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -1905,7 +1905,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "480",
           "common": true
         },
@@ -1913,7 +1913,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 120 }",
           "common": true
         },
@@ -1921,7 +1921,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1929,7 +1929,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -1937,7 +1937,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1945,7 +1945,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -1953,7 +1953,7 @@
           "name": "xAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fix the x-axis range instead of deriving it from the data",
           "default": "",
           "common": false
         },
@@ -1961,7 +1961,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -1969,7 +1969,7 @@
           "name": "tickHtmlWidth",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Width in px reserved for each y-axis (label) tick's HTML (default 100)",
           "default": "100",
           "common": false
         },
@@ -1985,7 +1985,7 @@
           "name": "valueComparedOpacity",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Fill opacity of the front valueCompared sub-bar (default 0.9)",
           "default": "0.9",
           "common": false
         },
@@ -1993,7 +1993,7 @@
           "name": "filter",
           "type": "{ limit: number; criteria: \"valueBased\" | \"valueCompared\"; sortingDir: \"asc\" | \"desc\" }",
           "optional": true,
-          "description": "",
+          "description": "Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects \"valueBased\" or \"valueCompared\", sortingDir picks highest (desc) or lowest (asc)",
           "default": "",
           "common": false
         },
@@ -2001,7 +2001,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -2009,7 +2009,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -2017,7 +2017,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2025,7 +2025,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -2033,7 +2033,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2041,7 +2041,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -2049,7 +2049,7 @@
           "name": "tooltipFormatter",
           "type": "(d: ComparableBarDataPoint) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -2057,7 +2057,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -2065,7 +2065,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -2073,7 +2073,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -2081,7 +2081,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -2097,7 +2097,7 @@
           "name": "dataSet",
           "type": "DualBarDataPoint[]",
           "optional": false,
-          "description": "",
+          "description": "Array of diverging (tornado) rows; each row draws value1 as a bar extending right and value2 as a bar extending left from a shared center",
           "default": "",
           "common": false
         },
@@ -2105,7 +2105,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -2113,7 +2113,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -2121,7 +2121,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "480",
           "common": true
         },
@@ -2129,7 +2129,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 120 }",
           "common": true
         },
@@ -2137,7 +2137,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -2145,7 +2145,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -2153,7 +2153,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -2161,7 +2161,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -2169,7 +2169,7 @@
           "name": "xAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Fix the x-axis range instead of deriving it from the data",
           "default": "",
           "common": false
         },
@@ -2177,7 +2177,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "",
           "common": false
         },
@@ -2185,7 +2185,7 @@
           "name": "tickHtmlWidth",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Width in px reserved for each y-axis (label) tick's HTML (default 100)",
           "default": "100",
           "common": false
         },
@@ -2201,7 +2201,7 @@
           "name": "value2Opacity",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Fill opacity of the left-extending value2 bar (default 0.55)",
           "default": "0.55",
           "common": false
         },
@@ -2209,7 +2209,7 @@
           "name": "filter",
           "type": "{ limit: number; criteria: \"value1\" | \"value2\"; sortingDir: \"asc\" | \"desc\" }",
           "optional": true,
-          "description": "",
+          "description": "Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects \"value1\" or \"value2\", sortingDir picks highest (desc) or lowest (asc)",
           "default": "",
           "common": false
         },
@@ -2217,7 +2217,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -2225,7 +2225,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -2233,7 +2233,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2241,7 +2241,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -2249,7 +2249,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2257,7 +2257,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -2265,7 +2265,7 @@
           "name": "tooltipFormatter",
           "type": "(d: DualBarDataPoint) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -2273,7 +2273,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -2281,7 +2281,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -2289,7 +2289,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -2297,7 +2297,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -2313,7 +2313,7 @@
           "name": "dataSet",
           "type": "BarBellDataRow[]",
           "optional": false,
-          "description": "",
+          "description": "Array of rows (one per date/y-band); within each row the keys are laid out cumulatively along x as thin bars capped by end-cap circles",
           "default": "",
           "common": false
         },
@@ -2321,7 +2321,7 @@
           "name": "keys",
           "type": "string[]",
           "optional": false,
-          "description": "",
+          "description": "Ordered segment keys to draw per row; their values accumulate left-to-right and each gets a colored bar plus end-cap circle",
           "default": "",
           "common": false
         },
@@ -2329,7 +2329,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -2337,7 +2337,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -2345,7 +2345,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "480",
           "common": true
         },
@@ -2353,7 +2353,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 50, bottom: 50, left: 100 }",
           "common": true
         },
@@ -2361,7 +2361,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -2369,7 +2369,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -2377,7 +2377,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -2385,7 +2385,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -2393,7 +2393,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "",
+          "description": "Explicit [min, max] for the cumulative value (x) axis; overrides the auto domain of [0, max cumulative row total]",
           "default": "",
           "common": false
         },
@@ -2401,7 +2401,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -2409,7 +2409,7 @@
           "name": "tickHtmlWidth",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Width in px reserved for each y-axis (date) tick's HTML (default 80)",
           "default": "80",
           "common": false
         },
@@ -2417,7 +2417,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -2425,7 +2425,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -2433,7 +2433,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2441,7 +2441,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -2449,7 +2449,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2457,7 +2457,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -2465,7 +2465,7 @@
           "name": "tooltipFormatter",
           "type": "(row: BarBellDataRow, key: string, value: number) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -2473,7 +2473,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -2481,7 +2481,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -2489,7 +2489,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -2497,7 +2497,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -2513,7 +2513,7 @@
           "name": "dataSet",
           "type": "GapDataItem[]",
           "optional": false,
-          "description": "",
+          "description": "Array of rows, one horizontal value1->value2 gap bar per item",
           "default": "",
           "common": false
         },
@@ -2521,7 +2521,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -2529,7 +2529,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "1000",
           "common": true
         },
@@ -2537,7 +2537,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "500",
           "common": true
         },
@@ -2545,7 +2545,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 50, right: 150, bottom: 100, left: 150 }",
           "common": true
         },
@@ -2553,7 +2553,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -2561,7 +2561,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -2569,7 +2569,7 @@
           "name": "colorMode",
           "type": "\"label\" | \"shape\"",
           "optional": true,
-          "description": "",
+          "description": "Whether marks are colored per row label (\"label\", default) or per role/shape via shapeColorsMapping (\"shape\")",
           "default": "\"label\"",
           "common": false
         },
@@ -2577,7 +2577,7 @@
           "name": "shapeColorsMapping",
           "type": "ShapeMapping",
           "optional": true,
-          "description": "",
+          "description": "When colorMode is \"shape\", the colors for the value1, value2, and gap parts",
           "default": "",
           "common": false
         },
@@ -2585,7 +2585,7 @@
           "name": "shapesLabelsMapping",
           "type": "ShapeMapping",
           "optional": true,
-          "description": "",
+          "description": "Optional display labels for the value1/value2/gap roles (e.g. legend captions)",
           "default": "",
           "common": false
         },
@@ -2593,7 +2593,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -2601,7 +2601,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -2609,7 +2609,7 @@
           "name": "filter",
           "type": "Filter",
           "optional": true,
-          "description": "",
+          "description": "Top-N / sort filter applied to the data before rendering",
           "default": "",
           "common": false
         },
@@ -2617,7 +2617,7 @@
           "name": "shapeValue1",
           "type": "\"circle\" | \"square\" | \"triangle\"",
           "optional": true,
-          "description": "",
+          "description": "Marker shape for the value1 endpoint: \"circle\" (default), \"square\", or \"triangle\"",
           "default": "\"circle\"",
           "common": false
         },
@@ -2625,7 +2625,7 @@
           "name": "shapeValue2",
           "type": "\"circle\" | \"square\" | \"triangle\"",
           "optional": true,
-          "description": "",
+          "description": "Marker shape for the value2 endpoint: \"circle\" (default), \"square\", or \"triangle\"",
           "default": "\"circle\"",
           "common": false
         },
@@ -2633,7 +2633,7 @@
           "name": "xAxisDataType",
           "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
           "optional": true,
-          "description": "",
+          "description": "How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers",
           "default": "\"number\"",
           "common": false
         },
@@ -2641,7 +2641,7 @@
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats an x tick value into its display label",
           "default": "",
           "common": false
         },
@@ -2649,7 +2649,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a y tick value into its display label",
           "default": "",
           "common": false
         },
@@ -2657,7 +2657,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Approximate number of axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -2665,7 +2665,7 @@
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
-          "description": "",
+          "description": "Explicit tick values, overriding the generated ones",
           "default": "",
           "common": false
         },
@@ -2673,7 +2673,7 @@
           "name": "tickHtmlWidth",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Width in px of the HTML y-axis label box, which ellipsizes longer labels (default 100)",
           "default": "100",
           "common": false
         },
@@ -2681,7 +2681,7 @@
           "name": "squareRadius",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Corner radius in px for square markers (default 2)",
           "default": "2",
           "common": false
         },
@@ -2689,7 +2689,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2697,7 +2697,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -2705,7 +2705,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to \"transparent\" and the chart does not emit onColorMappingGenerated. Mark colours then come from consumer CSS via the data-label-safe color contract.",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2713,7 +2713,7 @@
           "name": "showLegend",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Whether to render a legend",
           "default": "",
           "common": false
         },
@@ -2721,7 +2721,7 @@
           "name": "legendAlign",
           "type": "\"left\" | \"center\" | \"right\"",
           "optional": true,
-          "description": "",
+          "description": "Horizontal alignment of the legend: \"left\", \"center\", or \"right\"",
           "default": "",
           "common": false
         },
@@ -2729,7 +2729,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -2737,7 +2737,7 @@
           "name": "tooltipFormatter",
           "type": "(d: GapDataItem) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -2745,7 +2745,7 @@
           "name": "onHighlightItem",
           "type": "(item: GapDataItem | null) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -2753,7 +2753,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -2761,7 +2761,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -2769,7 +2769,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }
@@ -2785,7 +2785,7 @@
           "name": "dataSet",
           "type": "TreemapNode[]",
           "optional": false,
-          "description": "",
+          "description": "Forest of nodes (each a leaf or a parent with children) sized by value and tiled to fill the area",
           "default": "",
           "common": false
         },
@@ -2793,7 +2793,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -2801,7 +2801,7 @@
           "name": "width",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart width in pixels",
           "default": "900",
           "common": true
         },
@@ -2809,7 +2809,7 @@
           "name": "height",
           "type": "number",
           "optional": true,
-          "description": "",
+          "description": "Chart height in pixels",
           "default": "520",
           "common": true
         },
@@ -2817,7 +2817,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "",
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
           "default": "{ top: 36, right: 6, bottom: 6, left: 6 }",
           "common": true
         },
@@ -2825,7 +2825,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -2833,7 +2833,7 @@
           "name": "colorsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "",
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
           "default": "",
           "common": true
         },
@@ -2921,7 +2921,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to emphasise; all other marks dim",
           "default": "",
           "common": true
         },
@@ -2929,7 +2929,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "",
+          "description": "Labels to hide and exclude from scales/stacks",
           "default": "",
           "common": true
         },
@@ -2937,7 +2937,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\"",
           "optional": true,
-          "description": "",
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2945,7 +2945,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "BCP-47 locale used for number and date formatting",
           "default": "",
           "common": true
         },
@@ -2953,7 +2953,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2961,7 +2961,223 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "valueFormatter",
+          "type": "(n: number) => string",
+          "optional": true,
+          "description": "Formats numeric values shown in the default tooltip (defaults to a locale number formatter)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(leaf: TreemapLeafContext) => string",
+          "optional": true,
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called when the hovered/highlighted label(s) change",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "pie-chart": {
+      "element": "michi-vz-pie-chart",
+      "propsType": "PieChartProps",
+      "context": "PieChartContext",
+      "mount": "mountPieChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "PieDataItem[]",
+          "optional": false,
           "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "Optional chart title rendered above the plot",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "600",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "420",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 36, right: 8, bottom: 8, left: 8 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "innerRadiusRatio",
+          "type": "number",
+          "optional": true,
+          "description": "0 = full pie (default); (0,1) = donut hole as a fraction of the outer radius.",
+          "default": "0",
+          "common": false
+        },
+        {
+          "name": "padAngle",
+          "type": "number",
+          "optional": true,
+          "description": "Gap between slices in radians (default 0).",
+          "default": "0",
+          "common": false
+        },
+        {
+          "name": "cornerRadius",
+          "type": "number",
+          "optional": true,
+          "description": "Corner radius on the arcs in px (default 0).",
+          "default": "0",
+          "common": false
+        },
+        {
+          "name": "sortByValue",
+          "type": "boolean",
+          "optional": true,
+          "description": "Sort slices by value descending (default true); false keeps data order.",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "showLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw the % label inside each slice when it is large enough (default true).",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "showLegend",
+          "type": "boolean",
+          "optional": true,
+          "description": "Render a swatch+label legend below the chart (default false).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "filter",
+          "type": "{ limit: number; sortingDir: \"asc\" | \"desc\" }",
+          "optional": true,
+          "description": "Keep only the top-N slices by value.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
         },
@@ -2975,7 +3191,247 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(leaf: TreemapLeafContext) => string",
+          "type": "(slice: PieSliceContext) => string",
+          "optional": true,
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called when the hovered/highlighted label(s) change",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "bubble-chart": {
+      "element": "michi-vz-bubble-chart",
+      "propsType": "BubbleChartProps",
+      "context": "BubbleChartContext",
+      "mount": "mountBubbleChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "BubbleDataItem[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "700",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "500",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 36, right: 8, bottom: 8, left: 8 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "gravity",
+          "type": "number",
+          "optional": true,
+          "description": "Strength of the pull toward the centre in [0,1] (default 0.09) — higher = tighter cluster (\"suck together\").",
+          "default": "0.09",
+          "common": false
+        },
+        {
+          "name": "chargeStrength",
+          "type": "number",
+          "optional": true,
+          "description": "Many-body charge: negative repels, positive attracts (default 0).",
+          "default": "0",
+          "common": false
+        },
+        {
+          "name": "padding",
+          "type": "number",
+          "optional": true,
+          "description": "Gap between packed circles in px (default 2).",
+          "default": "2",
+          "common": false
+        },
+        {
+          "name": "fillRatio",
+          "type": "number",
+          "optional": true,
+          "description": "Fraction of the plot area the bubbles should fill, in (0,1] (default 0.62).",
+          "default": "0.62",
+          "common": false
+        },
+        {
+          "name": "splitLabels",
+          "type": "[string, string]",
+          "optional": true,
+          "description": "Names of the two split parts (default [\"Realized\",\"Untapped\"]).",
+          "default": "[\"Realized\", \"Untapped\"]",
+          "common": false
+        },
+        {
+          "name": "splitOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "Apparent colour strength of the untapped veil in [0,1] (default 0.35); rendered as solid colour under a white veil so it reads as a lighter tint of the same hue on any background.",
+          "default": "0.35",
+          "common": false
+        },
+        {
+          "name": "showSplit",
+          "type": "boolean",
+          "optional": true,
+          "description": "Render the realized/untapped split. Defaults to auto-on when any item has `partial`.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showLegend",
+          "type": "boolean",
+          "optional": true,
+          "description": "Render a 2-swatch split legend (uses splitLabels).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "showLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw the label inside each bubble when it is large enough (default true).",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "filter",
+          "type": "{ limit: number; sortingDir: \"asc\" | \"desc\" }",
+          "optional": true,
+          "description": "Keep only the top-N bubbles by value.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "valueFormatter",
+          "type": "(n: number) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(bubble: BubbleContext) => string",
           "optional": true,
           "description": "",
           "default": "",
@@ -2993,7 +3449,7 @@
           "name": "onColorMappingGenerated",
           "type": "(mapping: Record<string, string>) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
           "default": "",
           "common": true
         },
@@ -3001,7 +3457,7 @@
           "name": "onChartDataProcessed",
           "type": "(context: ChartContext) => void",
           "optional": true,
-          "description": "",
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
           "default": "",
           "common": true
         },
@@ -3009,7 +3465,231 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "sankey-chart": {
+      "element": "michi-vz-sankey-chart",
+      "propsType": "SankeyChartProps",
+      "context": "SankeyChartContext",
+      "mount": "mountSankeyChart",
+      "props": [
+        {
+          "name": "nodes",
+          "type": "SankeyNodeItem[]",
+          "optional": false,
           "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "links",
+          "type": "SankeyLinkItem[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "800",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "500",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 36, right: 12, bottom: 12, left: 12 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "nodeWidth",
+          "type": "number",
+          "optional": true,
+          "description": "Node rect width in px (default 18).",
+          "default": "18",
+          "common": false
+        },
+        {
+          "name": "nodePadding",
+          "type": "number",
+          "optional": true,
+          "description": "Vertical gap between nodes in a column in px (default 12).",
+          "default": "12",
+          "common": false
+        },
+        {
+          "name": "nodeRadius",
+          "type": "number",
+          "optional": true,
+          "description": "Corner radius of the node rects in px (default 2; 0 = square corners). Clamped to half the node's shorter side.",
+          "default": "2",
+          "common": false
+        },
+        {
+          "name": "linkRadius",
+          "type": "number",
+          "optional": true,
+          "description": "Corner radius (px) of the filled flow ribbons where they meet the nodes (default 2; 0 = sharp corners). Clamped to half the band's thickness.",
+          "default": "2",
+          "common": false
+        },
+        {
+          "name": "linkColorMode",
+          "type": "\"source\" | \"target\"",
+          "optional": true,
+          "description": "Colour links by their \"source\" (default) or \"target\" node.",
+          "default": "\"source\"",
+          "common": false
+        },
+        {
+          "name": "linkOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "Link opacity in [0,1] (default 0.45).",
+          "default": "0.45",
+          "common": false
+        },
+        {
+          "name": "showLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw node labels (default true).",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "valueFormatter",
+          "type": "(n: number) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(mark: SankeyNodeContext | SankeyLinkContext) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
         }

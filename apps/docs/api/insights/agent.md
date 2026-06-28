@@ -4,7 +4,11 @@ title: Agent & MCP API
 
 # Agent & MCP API
 
-Wrap a mounted chart so an AI agent can both read it and drive it - in-page via a tool-calling agent, or out-of-process over MCP; for the story and live demos, see the **[Insights guide](/guide/insights)**.
+Wrap a mounted chart so an AI agent can both read it and drive it - in-page via a tool-calling agent, or out-of-process over MCP; for the full story see the **[Insights guide](/guide/insights)**.
+
+Try it - type a command (even a sloppy one like "hilight north") and the chart responds:
+
+<InsightsDemo feature="agent" />
 
 ## Import
 
@@ -27,7 +31,7 @@ import { createMcpServer, stdioTransport, messagePortTransport } from "@michi-vz
 | Argument | Type | Default | What it does |
 | --- | --- | --- | --- |
 | `name` | `string` | required | Stable id the agent and tools use to address this chart. |
-| `instance` | mounted chart | required | The live chart returned by `mount*` (or a framework wrapper). |
+| `instance` | mounted chart | required | The chart returned by `mount*` (or a framework wrapper). |
 | `props` | chart props | required | The props the chart was rendered with, so the handle can read or update them. |
 
 Returns a `ChartHandle` that exposes the chart to be read and driven.
@@ -60,7 +64,7 @@ Returns `{ registry, ask(prompt) }`, an in-page tool-calling agent.
 | Argument | Type | Default | What it does |
 | --- | --- | --- | --- |
 | `registry` | `AgentRegistry` | required | The registry whose charts and tools the server exposes. |
-| `transport` | `Transport` | required | `stdioTransport()` for Claude Code, Codex, or Cursor, or `messagePortTransport(port)` to bridge a live web app. |
+| `transport` | `Transport` | required | `stdioTransport()` for Claude Code, Codex, or Cursor, or `messagePortTransport(port)` to bridge a web app. |
 | `options` | `object` | `{}` | Optional server config (name, version, and similar metadata). |
 
 Returns an MCP (JSON-RPC) server.

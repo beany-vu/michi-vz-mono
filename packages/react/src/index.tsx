@@ -15,6 +15,9 @@ import {
   mountRibbonChart,
   mountRadarChart,
   mountTreemapChart,
+  mountPieChart,
+  mountBubbleChart,
+  mountSankeyChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -30,6 +33,9 @@ import type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -48,6 +54,9 @@ export type {
   RibbonChartProps,
   RadarChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -100,6 +109,18 @@ export interface RadarChartHandle {
 }
 
 export interface TreemapChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface PieChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface BubbleChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface SankeyChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -411,4 +432,73 @@ export const TreemapChart = forwardRef<TreemapChartHandle, TreemapChartProps>(fu
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
   return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 520 }} />;
+});
+
+export const PieChart = forwardRef<PieChartHandle, PieChartProps>(function PieChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<PieChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountPieChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 600, height: props.height ?? 420 }} />;
+});
+
+export const BubbleChart = forwardRef<BubbleChartHandle, BubbleChartProps>(function BubbleChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<BubbleChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountBubbleChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 700, height: props.height ?? 500 }} />;
+});
+
+export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartProps>(function SankeyChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<SankeyChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountSankeyChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 800, height: props.height ?? 500 }} />;
 });

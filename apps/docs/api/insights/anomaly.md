@@ -4,7 +4,11 @@ title: Anomaly API
 
 # Anomaly API
 
-Flags the points that do not belong, marking them on the chart and noting them in the summary; for the story and live demos, see the **[Insights guide](/guide/insights)**.
+Flags the points that do not belong, marking them on the chart and noting them in the summary; for the full story see the **[Insights guide](/guide/insights)**.
+
+Try it - the outlier is flagged on the chart and called out in the summary:
+
+<InsightsDemo feature="anomaly" />
 
 ## Import
 

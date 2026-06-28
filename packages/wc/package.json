@@ -79,6 +79,21 @@
       "types": "./dist/treemap-chart.d.ts",
       "import": "./dist/treemap-chart.js",
       "require": "./dist/treemap-chart.cjs"
+    },
+    "./pie-chart": {
+      "types": "./dist/pie-chart.d.ts",
+      "import": "./dist/pie-chart.js",
+      "require": "./dist/pie-chart.cjs"
+    },
+    "./bubble-chart": {
+      "types": "./dist/bubble-chart.d.ts",
+      "import": "./dist/bubble-chart.js",
+      "require": "./dist/bubble-chart.cjs"
+    },
+    "./sankey-chart": {
+      "types": "./dist/sankey-chart.d.ts",
+      "import": "./dist/sankey-chart.js",
+      "require": "./dist/sankey-chart.cjs"
     }
   },
   "scripts": {

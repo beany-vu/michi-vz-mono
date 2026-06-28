@@ -7,6 +7,7 @@ import type {
   LineSeriesContext,
   XaxisDataType,
 } from "../types";
+import { provenanceCounts } from "../math/provenance";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -34,6 +35,8 @@ function seriesContext(item: LineDataItem): LineSeriesContext {
   const trend = change > 0 ? "up" : change < 0 ? "down" : "flat";
   // Uncertain segments (gaps / dashed) — first point has no incoming segment.
   const gaps = pts.reduce((n, d, i) => (i > 0 && d.certainty === false ? n + 1 : n), 0);
+  // Provenance: actual vs predicted (explicit `predicted`, else derived from certainty).
+  const { actualCount, predictedCount, forecastStart } = provenanceCounts(pts);
 
   return {
     label: item.label,
@@ -49,6 +52,9 @@ function seriesContext(item: LineDataItem): LineSeriesContext {
     changePct,
     trend,
     gaps,
+    actualCount,
+    predictedCount,
+    forecastStart,
   };
 }
 

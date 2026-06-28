@@ -21,6 +21,9 @@ import type {
   RadarChartProps,
   FanChartProps,
   TreemapChartProps,
+  PieChartProps,
+  BubbleChartProps,
+  SankeyChartProps,
 } from "@michi-vz/core";
 
 export interface Example<P = Record<string, unknown>> {
@@ -587,7 +590,39 @@ const verticalStackBar: Example<VerticalStackBarChartProps>[] = [
         }
       ]
     }
-  }
+  },
+  {
+    id: "vsb-revenue-region-grouped",
+    title: "Revenue by product line: EMEA vs Americas",
+    description:
+      "Grouped + stacked: two bars per year (EMEA and Americas) sit side by side, each split into five product lines. One view answers two questions at once - which region is bigger overall, and how the product mix differs between them (Cloud is the growth engine in both, but a larger share of the Americas total).",
+    element: "michi-vz-vertical-stack-bar-chart",
+    props: {
+      title: "Revenue by product line: EMEA vs Americas (US$ M)",
+      keys: ["Cloud", "Hardware", "Licenses", "Services", "Support"],
+      keysOrder: "bottomToTop",
+      dataSet: [
+        {
+          seriesKey: "EMEA",
+          seriesKeyAbbreviation: "EMEA",
+          series: [
+            { date: "2021", Cloud: 210, Hardware: 180, Licenses: 140, Services: 95, Support: 70 },
+            { date: "2022", Cloud: 265, Hardware: 172, Licenses: 128, Services: 108, Support: 76 },
+            { date: "2023", Cloud: 324, Hardware: 161, Licenses: 112, Services: 121, Support: 82 },
+          ],
+        },
+        {
+          seriesKey: "Americas",
+          seriesKeyAbbreviation: "AMER",
+          series: [
+            { date: "2021", Cloud: 298, Hardware: 205, Licenses: 176, Services: 132, Support: 88 },
+            { date: "2022", Cloud: 371, Hardware: 198, Licenses: 159, Services: 147, Support: 94 },
+            { date: "2023", Cloud: 452, Hardware: 189, Licenses: 141, Services: 168, Support: 101 },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 const comparable: Example<ComparableBarChartProps>[] = [
@@ -1299,6 +1334,145 @@ const treemap: Example<TreemapChartProps>[] = [
   },
 ];
 
+const pie: Example<PieChartProps>[] = [
+  // [0] Solid pie: export value share by sector.
+  {
+    id: "pie-export-share",
+    title: "Export value share by sector",
+    description:
+      "A classic pie: each slice is a sector's share of total export value, sized by value and labelled with its percentage. Slices sort by value so the biggest reads first.",
+    element: "michi-vz-pie-chart",
+    props: {
+      title: "Export value by sector",
+      width: 460,
+      height: 420,
+      showLabels: true,
+      showLegend: true,
+      dataSet: [
+        { label: "Industry", value: 281, color: TM_BLUE },
+        { label: "Agri-food", value: 381, color: TM_GOLD },
+        { label: "Materials", value: 132, color: TM_TEAL },
+        { label: "Textiles", value: 64, color: TM_RED },
+        { label: "Pharmaceuticals", value: 41, color: TM_BLUE2 },
+      ],
+    },
+  },
+  // [1] Donut: same data with an inner radius (innerRadiusRatio > 0).
+  {
+    id: "pie-export-share-donut",
+    title: "Export value share — donut",
+    description:
+      "The same shares as a donut: set innerRadiusRatio to carve out the hole. The mode flips to \"donut\" in the chart context, but the data and slices are identical.",
+    element: "michi-vz-pie-chart",
+    props: {
+      title: "Export value by sector",
+      width: 460,
+      height: 420,
+      innerRadiusRatio: 0.6,
+      padAngle: 0.01,
+      cornerRadius: 2,
+      showLabels: true,
+      showLegend: true,
+      dataSet: [
+        { label: "Industry", value: 281, color: TM_BLUE },
+        { label: "Agri-food", value: 381, color: TM_GOLD },
+        { label: "Materials", value: 132, color: TM_TEAL },
+        { label: "Textiles", value: 64, color: TM_RED },
+        { label: "Pharmaceuticals", value: 41, color: TM_BLUE2 },
+      ],
+    },
+  },
+];
+
+const bubble: Example<BubbleChartProps>[] = [
+  // [0] Gravity-clustered bubbles with a realized/untapped split per market.
+  {
+    id: "bubble-export-potential",
+    title: "Export potential by market (realized vs untapped)",
+    description:
+      "Each market is a bubble sized by its total export potential; gravity pulls them into a cluster so size comparisons read at a glance. The solid core is the realized share, the lighter ring the untapped opportunity.",
+    element: "michi-vz-bubble-chart",
+    props: {
+      title: "Export potential by market (by 2030)",
+      width: 720,
+      height: 520,
+      splitLabels: ["Realized", "Untapped"],
+      showLegend: true,
+      dataSet: [
+        { label: "Germany", value: 120, partial: 64, color: TM_BLUE },
+        { label: "France", value: 95, partial: 32, color: TM_GOLD },
+        { label: "United States", value: 152, partial: 88, color: TM_RED },
+        { label: "China", value: 168, partial: 51, color: TM_BLUE2 },
+        { label: "Italy", value: 72, partial: 40, color: TM_TEAL },
+        { label: "Spain", value: 58, partial: 22, color: TM_CORAL },
+        { label: "Netherlands", value: 64, partial: 47, color: TM_GOLD },
+        { label: "Poland", value: 44, partial: 12, color: TM_BLUE },
+        { label: "Türkiye", value: 51, partial: 18, color: TM_RED },
+      ],
+    },
+  },
+  // [1] Plain bubbles (no split): one colour per category, sized by value.
+  {
+    id: "bubble-market-size",
+    title: "Market size cloud",
+    description:
+      "Single-fill bubbles sized by value, clustered by gravity. With no `partial`, there's no split veil — just a clean proportional bubble cloud.",
+    element: "michi-vz-bubble-chart",
+    props: {
+      title: "Addressable market by category",
+      width: 720,
+      height: 520,
+      dataSet: [
+        { label: "Machinery", value: 120, color: TM_BLUE },
+        { label: "Fruits", value: 95, color: TM_GOLD },
+        { label: "Oil seeds", value: 88, color: TM_RED },
+        { label: "Beverages", value: 78, color: TM_BLUE2 },
+        { label: "Ferrous metals", value: 80, color: TM_TEAL },
+        { label: "Textiles", value: 42, color: TM_CORAL },
+        { label: "Dairy", value: 38, color: TM_GOLD },
+      ],
+    },
+  },
+];
+
+const sankey: Example<SankeyChartProps>[] = [
+  // [0] Exporter -> destination-market trade flows.
+  {
+    id: "sankey-trade-flows",
+    title: "Trade flows: exporters → markets",
+    description:
+      "A flow diagram of who exports to where: left nodes are exporters, right nodes destination markets, and each band's thickness is the bilateral trade value. Hover a node or a flow for the figures.",
+    element: "michi-vz-sankey-chart",
+    props: {
+      title: "Bilateral trade flows (US$ bn)",
+      width: 820,
+      height: 500,
+      linkColorMode: "source",
+      nodeRadius: 3,
+      linkRadius: 2,
+      nodes: [
+        { id: "France", color: TM_BLUE },
+        { id: "Germany", color: TM_GOLD },
+        { id: "Italy", color: TM_TEAL },
+        { id: "EU", color: TM_BLUE2 },
+        { id: "United States", color: TM_RED },
+        { id: "Asia", color: TM_CORAL },
+      ],
+      links: [
+        { source: "France", target: "EU", value: 40 },
+        { source: "France", target: "United States", value: 18 },
+        { source: "France", target: "Asia", value: 22 },
+        { source: "Germany", target: "EU", value: 55 },
+        { source: "Germany", target: "United States", value: 30 },
+        { source: "Germany", target: "Asia", value: 35 },
+        { source: "Italy", target: "EU", value: 28 },
+        { source: "Italy", target: "United States", value: 12 },
+        { source: "Italy", target: "Asia", value: 9 },
+      ],
+    },
+  },
+];
+
 /** Canonical examples, keyed by chart id. Consumers index by key. */
 export const examples = {
   "gap-chart": gap,
@@ -1314,6 +1488,9 @@ export const examples = {
   "radar-chart": radar,
   "fan-chart": fan,
   "treemap-chart": treemap,
+  "pie-chart": pie,
+  "bubble-chart": bubble,
+  "sankey-chart": sankey,
 };
 
 /** Ordered chart ids (for nav / iteration). */

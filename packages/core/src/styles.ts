@@ -31,6 +31,12 @@ export const CORE_CSS = `
 .michi-vz .tile-pct { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 1.08); font-weight: 700; }
 .michi-vz .tile-group-label { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); font-weight: 600; }
 .michi-vz .treemap-legend-label { pointer-events: none; user-select: none; font-size: var(--michi-vz-font-size, 12px); }
+.michi-vz .slice-label { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); font-weight: 600; }
+.michi-vz .pie-legend-label { pointer-events: none; user-select: none; font-size: var(--michi-vz-font-size, 12px); }
+.michi-vz .bubble-label { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); font-weight: 600; }
+.michi-vz .bubble-legend-label { pointer-events: none; user-select: none; font-size: var(--michi-vz-font-size, 12px); }
+.michi-vz .sankey-nodes .node-label { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); }
+.michi-vz .sankey-links .link { transition: stroke-opacity 0.2s ease-in-out; }
 .michi-vz .mv-stack-abbrev { font-size: var(--michi-vz-font-size, 12px); }
 .michi-vz .mv-annotation-label { font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); }
 .michi-vz .tooltip {

@@ -4,7 +4,11 @@ title: Narrate API
 
 # Narrate API
 
-Turns any chart into a sentence about itself, rule-based by default and optionally upgraded to a small local model; for the story and live demos, see the **[Insights guide](/guide/insights)**.
+Turns any chart into a sentence about itself, rule-based by default and optionally upgraded to a small local model; for the full story see the **[Insights guide](/guide/insights)**.
+
+Try it - hit **Explain ▸** and the chart writes its own sentence:
+
+<InsightsDemo feature="narrate" />
 
 ## Import
 

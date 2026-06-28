@@ -14,7 +14,8 @@
     "@michi-vz/core": "workspace:*",
     "@michi-vz/wc": "workspace:*",
     "@michi-vz/examples": "workspace:*",
-    "@michi-vz/insights": "workspace:*"
+    "@michi-vz/insights": "workspace:*",
+    "@michi-vz/devtools": "workspace:*"
   },
   "devDependencies": {
     "ts-morph": "^21.0.0",

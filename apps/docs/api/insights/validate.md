@@ -4,7 +4,11 @@ title: Validate API
 
 # Validate API
 
-Surfaces bad data and paints the offending points red on the chart; for the story and live demos, see the **[Insights guide](/guide/insights)**.
+Surfaces bad data and paints the offending points red on the chart; for the full story see the **[Insights guide](/guide/insights)**.
+
+Try it - the bad points paint red and surface as warnings:
+
+<InsightsDemo feature="validate" />
 
 ## Import
 

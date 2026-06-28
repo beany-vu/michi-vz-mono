@@ -239,7 +239,7 @@ const pct = (x: number) => Math.round(x * 100);
 <template>
   <div class="plab ai-glow">
     <div class="plab-bar">
-      <span class="plab-title">Live · {{ TITLES[feature] }}</span>
+      <span class="plab-title">{{ TITLES[feature] }}</span>
       <div class="plab-controls">
         <span class="plab-rtoggle" role="group" aria-label="renderer">
           <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">Canvas</button>
@@ -341,7 +341,9 @@ const pct = (x: number) => Math.round(x * 100);
 </template>
 
 <style scoped>
-.plab { border: 1px solid var(--vp-c-divider); border-radius: 10px; margin: 18px 0; background: var(--vp-c-bg-soft); overflow: hidden; }
+/* bind the charts' ink colour to the theme so SVG/canvas text (e.g. the comparable-bar
+   y-axis labels) stays legible in BOTH light and dark mode - it defaults to dark otherwise. */
+.plab { border: 1px solid var(--vp-c-divider); border-radius: 10px; margin: 18px 0; background: var(--vp-c-bg-soft); overflow: hidden; --michi-vz-ink: var(--vp-c-text-1); }
 .plab-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--vp-c-divider); background: var(--vp-c-bg); }
 .plab-title { font-family: "Spectral", Georgia, serif; font-weight: 600; }
 .plab-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }

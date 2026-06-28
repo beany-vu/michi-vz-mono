@@ -4,7 +4,7 @@ title: Scatter Plot API
 
 # Scatter Plot API
 
-Reach for this when the question is "are these two numbers related?" - the props and engine below; the live answer is on the **[Scatter Plot demo](/charts/scatter)**.
+Reach for this when the question is "are these two numbers related?" - the props and engine below; the answer is on the **[Scatter Plot demo](/charts/scatter)**.
 
 ## Import
 
