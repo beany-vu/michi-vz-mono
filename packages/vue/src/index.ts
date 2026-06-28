@@ -18,6 +18,7 @@ import {
   mountPieChart,
   mountBubbleChart,
   mountSankeyChart,
+  mountFountainChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -36,6 +37,7 @@ import type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -57,6 +59,7 @@ export type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -551,6 +554,38 @@ export const SankeyChart = defineComponent({
 
     onMounted(() => {
       if (host.value) chart = mountSankeyChart(host.value, props.options);
+    });
+    watch(
+      () => props.options,
+      (next) => chart?.update(next),
+      { deep: true }
+    );
+    onBeforeUnmount(() => chart?.destroy());
+
+    expose({ getContext: (): ChartContext | null => chart?.getContext() ?? null });
+
+    return () =>
+      h("div", {
+        ref: host,
+        style: {
+          width: `${props.options.width ?? 800}px`,
+          height: `${props.options.height ?? 500}px`,
+        },
+      });
+  },
+});
+
+export const FountainChart = defineComponent({
+  name: "MichiVzFountainChart",
+  props: {
+    options: { type: Object as PropType<FountainChartProps>, required: true },
+  },
+  setup(props, { expose }) {
+    const host = ref<HTMLDivElement | null>(null);
+    let chart: ChartInstance<FountainChartProps> | null = null;
+
+    onMounted(() => {
+      if (host.value) chart = mountFountainChart(host.value, props.options);
     });
     watch(
       () => props.options,

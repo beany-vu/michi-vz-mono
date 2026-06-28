@@ -1,7 +1,7 @@
 # @michi-vz
 
 **Charts that move with your stack, not against it.** One rendering engine,
-sixteen chart types, and first-class support for **React, Vue, Svelte, Angular,
+seventeen chart types, and first-class support for **React, Vue, Svelte, Angular,
 native web components, or no framework at all**. Every chart is interactive,
 accessible, and emits an LLM-ready data context you can drop straight into a
 report, a dashboard, or an AI feature.

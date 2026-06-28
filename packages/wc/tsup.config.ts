@@ -19,6 +19,7 @@ export default defineConfig({
     "src/pie-chart.ts",
     "src/bubble-chart.ts",
     "src/sankey-chart.ts",
+    "src/fountain-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

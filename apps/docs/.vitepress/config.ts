@@ -18,6 +18,7 @@ const charts: Array<[string, string, string]> = [
   ["pie", "Pie / Donut", "Composition"],
   ["bubble", "Bubble Chart", "Composition"],
   ["sankey", "Sankey", "Flow"],
+  ["fountain", "Fountain (Jet d'Eau)", "Comparison"],
 ];
 
 export default defineConfig({

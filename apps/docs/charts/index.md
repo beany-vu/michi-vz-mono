@@ -3,7 +3,7 @@ title: Charts
 ---
 # Chart catalog
 
-Sixteen framework-agnostic charts. Each page has an example, usage across every framework, and an LLM-context panel.
+Seventeen framework-agnostic charts. Each page has an example, usage across every framework, and an LLM-context panel.
 
 - [**Line Chart**](/charts/line) - _Trends_ · Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
 - [**Fan Chart**](/charts/fan) - _Trends · Forecast_ · A forecast fan: history, a dashed forecast median, and nested confidence bands that widen with the horizon (composed from Line + Range).
@@ -21,3 +21,4 @@ Sixteen framework-agnostic charts. Each page has an example, usage across every 
 - [**Pie / Donut**](/charts/pie) - _Composition_ · Slices sized by share of a whole, with per-slice % labels; set `innerRadiusRatio` for a donut.
 - [**Bubble**](/charts/bubble) - _Composition_ · Circles sized by value, pulled into a cluster by gravity, each optionally split into a realized core and an untapped ring.
 - [**Sankey**](/charts/sankey) - _Flow_ · Flows between nodes laid out in columns, with band thickness proportional to the flow value (built on d3-sankey).
+- [**Fountain (Jet d'Eau)**](/charts/fountain) - _Comparison_ · Apex height = value, the blooming plume = uncertainty. Categorical x = snapshot/comparison of KPIs; temporal or numeric x = trend with optional forecast jets (best for ~5-12 periods).

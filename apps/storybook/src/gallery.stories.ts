@@ -35,3 +35,4 @@ export const Treemap = fromExample("treemap-chart");
 export const Pie = fromExample("pie-chart");
 export const Bubble = fromExample("bubble-chart");
 export const Sankey = fromExample("sankey-chart");
+export const Fountain = fromExample("fountain-chart");

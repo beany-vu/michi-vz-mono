@@ -22,6 +22,7 @@ import type {
   PieChartElement,
   BubbleChartElement,
   SankeyChartElement,
+  FountainChartElement,
 } from "@michi-vz/wc";
 import type {
   GapChartProps,
@@ -40,6 +41,7 @@ import type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
 } from "@michi-vz/core";
 
 export type {
@@ -59,6 +61,7 @@ export type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
   ChartContext,
 } from "@michi-vz/core";
 export type {
@@ -78,6 +81,7 @@ export type {
   PieChartElement,
   BubbleChartElement,
   SankeyChartElement,
+  FountainChartElement,
 } from "@michi-vz/wc";
 
 /**
@@ -437,5 +441,29 @@ export function applySankeyChartProps(el: SankeyChartElement, props: SankeyChart
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
   if (props.valueFormatter !== undefined) el.valueFormatter = props.valueFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-fountain-chart> element (property binding). */
+export function applyFountainChartProps(el: FountainChartElement, props: FountainChartProps): void {
+  el.dataSet = props.dataSet;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.xAxisDataType !== undefined) el.xAxisDataType = props.xAxisDataType;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.style !== undefined) el.fountainStyle = props.style;
+  if (props.frothLayers !== undefined) el.frothLayers = props.frothLayers;
+  if (props.bloomExponent !== undefined) el.bloomExponent = props.bloomExponent;
+  if (props.stemFraction !== undefined) el.stemFraction = props.stemFraction;
+  if (props.showDroplets !== undefined) el.showDroplets = props.showDroplets;
+  if (props.showMist !== undefined) el.showMist = props.showMist;
+  if (props.showTrendLine !== undefined) el.showTrendLine = props.showTrendLine;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
   if (props.locale !== undefined) el.locale = props.locale;
 }

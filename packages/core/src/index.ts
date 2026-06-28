@@ -18,6 +18,7 @@ export { mountTreemapChart } from "./engine/treemapChart";
 export { mountPieChart } from "./engine/pieChart";
 export { mountBubbleChart } from "./engine/bubbleChart";
 export { mountSankeyChart } from "./engine/sankeyChart";
+export { mountFountainChart } from "./engine/fountainChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -130,6 +131,13 @@ export { layoutSankey } from "./sankeyChart/layout";
 export { buildSankeyRenderModel } from "./sankeyChart/renderModel";
 export { buildSankeyContext } from "./context/buildSankeyContext";
 export { checkSankeyData } from "./validate/sankeyWarnings";
+// Fountain ("Jet d'Eau") pure layer (rising column + blooming plume; snapshot/trend)
+export { processFountainData } from "./fountainChart/data";
+export { buildFountainColors } from "./fountainChart/colors";
+export { createFountainScales } from "./fountainChart/scales";
+export { buildJetPath, buildFrothSlices, buildDropletPaths, buildMistPath } from "./fountainChart/geometry";
+export { buildFountainRenderModel } from "./fountainChart/renderModel";
+export { buildFountainContext } from "./context/buildFountainContext";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -245,4 +253,9 @@ export type {
   SankeyNodeContext,
   SankeyLinkContext,
   SankeyChartContext,
+  FountainXAxisType,
+  FountainDataItem,
+  FountainChartProps,
+  FountainJetContext,
+  FountainChartContext,
 } from "./types";

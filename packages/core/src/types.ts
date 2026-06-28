@@ -1095,6 +1095,138 @@ export interface RibbonChartContext extends BaseChartContext {
   stats: { keyCount: number; dateCount: number; grandTotal: number };
 }
 
+// ---- FountainChart ("Jet d'Eau") ----
+
+/** x-axis modes for the fountain: a temporal/numeric axis = trend, "band" = snapshot. */
+export type FountainXAxisType = XaxisDataType | "band";
+
+export interface FountainDataItem {
+  /** Series/category name; drives the colour mapping, the data-label hook, and (in snapshot mode) the x-band */
+  label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
+  code?: string;
+  /** Primary magnitude: the apex height of the jet, mapped to the y-axis */
+  value: number;
+  /** Plume bloom half-width at the apex, in the SAME units as value; encodes uncertainty/volatility (0 => a tight spike) */
+  spread: number;
+  /** Optional sample size / volume; normalised across the dataset to drive froth-layer + droplet density */
+  density?: number;
+  /** Optional directional bias in [-1, 1]; leans the column like wind (0 = upright, experimental) */
+  lean?: number;
+  /** Optional explicit colour for this jet, overriding the generated palette colour */
+  color?: string;
+  /** When false, the jet renders in the dashed/uncertain "forecast" style (default true) */
+  certainty?: boolean;
+  /** Explicit forecast provenance; preferred over certainty (which detectGaps overloads) */
+  predicted?: boolean;
+  /** x position for trend mode (year number, epoch ms, or date string); absent => categorical by label */
+  date?: number | string;
+}
+
+export interface FountainChartProps {
+  /** Array of jets; each item renders one fountain */
+  dataSet: FountainDataItem[];
+  /** Optional chart title rendered above the plot */
+  title?: string;
+  /** Chart width in pixels */
+  width?: number;
+  /** Chart height in pixels */
+  height?: number;
+  /** Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels */
+  margin?: Margin;
+  /** Categorical palette for jets without an explicit colour or colorsMapping entry */
+  colors?: string[];
+  /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
+  colorsMapping?: Record<string, string>;
+  /** Silhouette style: "jet" (default) is the faithful asymmetric Jet d'Eau (vertical column + wind-blown
+   *  diagonal + a triangular droplet spray curtain); "plume" is the symmetric blooming column. */
+  style?: "jet" | "plume";
+  /** How the x-axis is parsed: a temporal/numeric type renders TREND mode; "band" (or omitted) renders SNAPSHOT mode */
+  xAxisDataType?: FountainXAxisType;
+  /** Explicit [min, max] for the value (y) axis; overrides the auto domain from value + spread */
+  yAxisDomain?: [number, number];
+  /** Formats an x tick value into its display label */
+  xAxisFormat?: (d: number | string) => string;
+  /** Formats a y tick value into its display label */
+  yAxisFormat?: (d: number | string) => string;
+  /** Approximate number of axis ticks to generate */
+  ticks?: number;
+  /** Explicit tick values, overriding the generated ones (trend mode) */
+  tickValues?: Array<number | Date>;
+  /** Number of graduated-opacity froth layers per jet (default 8, max 20); a per-item density overrides it */
+  frothLayers?: number;
+  /** Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 3) */
+  bloomExponent?: number;
+  /** Stem half-width at the base as a fraction of the jet's slot width (default 0.08) */
+  stemFraction?: number;
+  /** Draw ballistic droplet arcs above each apex (default true) */
+  showDroplets?: boolean;
+  /** Draw the misty falling skirt around each nozzle (default true) */
+  showMist?: boolean;
+  /** Draw a connecting line through the apexes in trend mode (default true) */
+  showTrendLine?: boolean;
+  /** Labels to emphasise; all other jets dim */
+  highlightItems?: string[];
+  /** Labels to hide and exclude from scales */
+  disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas; getContext() is identical either way */
+  renderer?: "svg" | "canvas";
+  /** BCP-47 locale used for number and date formatting */
+  locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted */
+  skipColorMappingDispatch?: boolean;
+  /** Animate updates with CSS transitions (default true) */
+  enableTransitions?: boolean;
+  /** Returns custom tooltip HTML for a hovered jet (sanitized before it is inserted) */
+  tooltipFormatter?: (d: FountainDataItem) => string;
+  /** Called when the hovered/highlighted label(s) change */
+  onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
+  onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (non-finite values, crowding, clipped spread, ...) */
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface FountainJetContext {
+  label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
+  code?: string;
+  color: string;
+  value: number;
+  spread: number;
+  /** value + spread (the upper extent of the plume) */
+  upperBound: number;
+  /** spread / value, the relative uncertainty (0 when value is 0 and spread is 0) */
+  spreadRatio: number;
+  predicted: boolean;
+  /** x position in trend mode (the raw date/number), or null in snapshot mode */
+  xPosition: number | string | null;
+}
+
+export interface FountainChartContext extends BaseChartContext {
+  chartType: "fountain-chart";
+  /** "snapshot" for a categorical/band x, "trend" for a temporal/numeric x */
+  mode: "snapshot" | "trend";
+  xAxis: { type: FountainXAxisType; domain: string[] | [number, number] };
+  yAxis: { domain: [number, number] };
+  jets: FountainJetContext[];
+  stats: {
+    jetCount: number;
+    /** The jet with the largest value */
+    tallest: { label: string; value: number } | null;
+    /** The jet with the largest spread-to-value ratio (most uncertain) */
+    frothiest: { label: string; spreadRatio: number } | null;
+    /** Slope of a linear regression through the jet values by index (trend mode), else null */
+    trendSlope: number | null;
+    /** [min, max] of the jet values */
+    valueRange: [number, number] | null;
+    /** Count of predicted/forecast jets */
+    predictedCount: number;
+  };
+}
+
 // ---- RadarChart (polar) ----
 
 export interface RadarDataItem {
@@ -1744,7 +1876,8 @@ export type ChartContext =
   | TreemapChartContext
   | PieChartContext
   | BubbleChartContext
-  | SankeyChartContext;
+  | SankeyChartContext
+  | FountainChartContext;
 
 export interface DataWarning {
   type:
@@ -1753,7 +1886,8 @@ export interface DataWarning {
     | "difference-mismatch"
     | "empty-dataset"
     | "non-monotonic-date"
-    | "duplicate-date";
+    | "duplicate-date"
+    | "layout-overflow";
   message: string;
   label?: string;
 }

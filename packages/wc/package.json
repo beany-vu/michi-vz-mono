@@ -94,6 +94,11 @@
       "types": "./dist/sankey-chart.d.ts",
       "import": "./dist/sankey-chart.js",
       "require": "./dist/sankey-chart.cjs"
+    },
+    "./fountain-chart": {
+      "types": "./dist/fountain-chart.d.ts",
+      "import": "./dist/fountain-chart.js",
+      "require": "./dist/fountain-chart.cjs"
     }
   },
   "scripts": {

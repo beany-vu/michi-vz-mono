@@ -18,6 +18,7 @@ import {
   mountPieChart,
   mountBubbleChart,
   mountSankeyChart,
+  mountFountainChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -36,6 +37,7 @@ import type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -57,6 +59,7 @@ export type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -121,6 +124,10 @@ export interface BubbleChartHandle {
 }
 
 export interface SankeyChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface FountainChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -487,6 +494,29 @@ export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartProps>(funct
   useEffect(() => {
     if (!hostRef.current) return;
     chartRef.current = mountSankeyChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 800, height: props.height ?? 500 }} />;
+});
+
+export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>(function FountainChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<FountainChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountFountainChart(hostRef.current, props);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;

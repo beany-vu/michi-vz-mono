@@ -3694,6 +3694,262 @@
           "common": true
         }
       ]
+    },
+    "fountain-chart": {
+      "element": "michi-vz-fountain-chart",
+      "propsType": "FountainChartProps",
+      "context": "FountainChartContext",
+      "mount": "mountFountainChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "FountainDataItem[]",
+          "optional": false,
+          "description": "Array of jets; each item renders one fountain",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "Optional chart title rendered above the plot",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 50, right: 40, bottom: 50, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "style",
+          "type": "\"jet\" | \"plume\"",
+          "optional": true,
+          "description": "Silhouette style: \"jet\" (default) is the faithful asymmetric Jet d'Eau (vertical column + wind-blown diagonal + a triangular droplet spray curtain); \"plume\" is the symmetric blooming column.",
+          "default": "\"jet\"",
+          "common": false
+        },
+        {
+          "name": "xAxisDataType",
+          "type": "FountainXAxisType",
+          "optional": true,
+          "description": "How the x-axis is parsed: a temporal/numeric type renders TREND mode; \"band\" (or omitted) renders SNAPSHOT mode",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "Explicit [min, max] for the value (y) axis; overrides the auto domain from value + spread",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "Formats an x tick value into its display label",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "Formats a y tick value into its display label",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "Approximate number of axis ticks to generate",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "tickValues",
+          "type": "Array<number | Date>",
+          "optional": true,
+          "description": "Explicit tick values, overriding the generated ones (trend mode)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "frothLayers",
+          "type": "number",
+          "optional": true,
+          "description": "Number of graduated-opacity froth layers per jet (default 8, max 20); a per-item density overrides it",
+          "default": "14",
+          "common": false
+        },
+        {
+          "name": "bloomExponent",
+          "type": "number",
+          "optional": true,
+          "description": "Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 3)",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "stemFraction",
+          "type": "number",
+          "optional": true,
+          "description": "Stem half-width at the base as a fraction of the jet's slot width (default 0.08)",
+          "default": "0.045",
+          "common": false
+        },
+        {
+          "name": "showDroplets",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw ballistic droplet arcs above each apex (default true)",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "showMist",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw the misty falling skirt around each nozzle (default true)",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "showTrendLine",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw a connecting line through the apexes in trend mode (default true)",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: FountainDataItem) => string",
+          "optional": true,
+          "description": "Returns custom tooltip HTML for a hovered jet (sanitized before it is inserted)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called when the hovered/highlighted label(s) change",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
     }
   }
 }

@@ -17,6 +17,7 @@ import "./treemap-chart";
 import "./pie-chart";
 import "./bubble-chart";
 import "./sankey-chart";
+import "./fountain-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -34,3 +35,4 @@ export { TreemapChartElement } from "./treemap-chart";
 export { PieChartElement } from "./pie-chart";
 export { BubbleChartElement } from "./bubble-chart";
 export { SankeyChartElement } from "./sankey-chart";
+export { FountainChartElement } from "./fountain-chart";

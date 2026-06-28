@@ -23,6 +23,7 @@ const CARDS = [
   { examplesKey: "pie-chart", slug: "pie", name: "Pie / Donut", family: "Composition", roman: "XIV", blurb: "Slices sized by share of a whole; set innerRadiusRatio for a donut. Per-slice % labels and an optional legend.", tag: "<michi-vz-pie-chart> · SVG/canvas" },
   { examplesKey: "bubble-chart", slug: "bubble", name: "Bubble", family: "Composition", roman: "XV", blurb: "Circles sized by value, pulled into a cluster by gravity; each can split into a realized core inside a lighter untapped ring.", tag: "<michi-vz-bubble-chart> · SVG/canvas" },
   { examplesKey: "sankey-chart", slug: "sankey", name: "Sankey", family: "Flow", roman: "XVI", blurb: "Flows between nodes laid out in columns; each band's thickness is the flow value. Built on d3-sankey.", tag: "<michi-vz-sankey-chart> · SVG/canvas" },
+  { examplesKey: "fountain-chart", slug: "fountain", name: "Fountain (Jet d'Eau)", family: "Comparison", roman: "XVII", blurb: "A Jet d'Eau: apex height is the value, the blooming plume is the uncertainty. Categorical x = snapshot/comparison, temporal x = trend.", tag: "<michi-vz-fountain-chart> · SVG/canvas" },
 ];
 
 const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation", "Flow"];

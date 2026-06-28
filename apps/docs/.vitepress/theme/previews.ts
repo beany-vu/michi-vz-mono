@@ -28,6 +28,7 @@ import {
   mountPieChart,
   mountBubbleChart,
   mountSankeyChart,
+  mountFountainChart,
 } from "@michi-vz/core";
 import type {
   ChartInstance,
@@ -47,6 +48,7 @@ import type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
 } from "@michi-vz/core";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -305,6 +307,19 @@ export const previews: Record<string, Preview> = {
         { source: "B", target: "N", value: 18 },
       ],
     } satisfies SankeyChartProps,
+  },
+
+  "fountain-chart": {
+    mount: mountFountainChart as Mount,
+    props: {
+      xAxisDataType: "band",
+      frothLayers: 7,
+      dataSet: [
+        { label: "A", value: 28, spread: 8, color: GOLD },
+        { label: "B", value: 20, spread: 4, color: BLUE },
+        { label: "C", value: 15, spread: 7, color: RED },
+      ],
+    } satisfies FountainChartProps,
   },
 
   "fan-chart": {

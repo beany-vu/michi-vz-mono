@@ -24,6 +24,7 @@ import type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
 } from "@michi-vz/core";
 
 export interface Example<P = Record<string, unknown>> {
@@ -1473,6 +1474,109 @@ const sankey: Example<SankeyChartProps>[] = [
   },
 ];
 
+const fountain: Example<FountainChartProps>[] = [
+  {
+    id: "fountain-saas",
+    title: "SaaS: revenue booked vs revenue leaking",
+    description:
+      "Read the spike to know how big the book of business is; read the spray as a flag for how much is quietly bleeding out to churn, downgrades and refunds (the gross-to-net retention gap). The exact leak is on the tooltip - the plume is the attention-getter, not the ruler. SMB books less and leaks more.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Recurring revenue booked ($M), spray = at-risk / leaking (gross-to-net gap)",
+      xAxisDataType: "band",
+      dataSet: [
+        { label: "Enterprise", value: 118, spread: 4, density: 0.2 },
+        { label: "Mid-market", value: 106, spread: 11, density: 0.5 },
+        { label: "SMB", value: 97, spread: 21, density: 0.9, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-retail",
+    title: "Retail: sales secured vs shrink eroding margin",
+    description:
+      "Three stores post near-identical sales (near-identical spikes), but the fat, dense plume on Store C flags where to send loss-prevention first. Shrink (theft + spoilage) norm is ~1.6% of sales; over 2% is an alert. The plume flags it; the % lives on the label.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Net sales ($M), spray = shrink as a share of sales (theft + spoilage)",
+      xAxisDataType: "band",
+      dataSet: [
+        { label: "Store A", value: 4.2, spread: 0.06, density: 0.2 },
+        { label: "Store B", value: 4.0, spread: 0.07, density: 0.3 },
+        { label: "Store C", value: 4.1, spread: 0.13, density: 0.9, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-water",
+    title: "Water utility: delivered vs non-revenue water",
+    description:
+      "Volume delivered keeps climbing (rising spikes), but the widening plume warns that more of it never gets billed - leaks and unmetered use outpacing growth. Under 10% is good, 10-20% normal, over 20% act (US average ~19.5%). Trend mode, a few periods so each plume can breathe.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Treated water delivered (million m3), spray = non-revenue water (losses)",
+      xAxisDataType: "date_annual",
+      dataSet: [
+        { label: "NRW", date: "2021", value: 52, spread: 5, density: 0.4 },
+        { label: "NRW", date: "2022", value: 55, spread: 7, density: 0.5 },
+        { label: "NRW", date: "2023", value: 58, spread: 10, density: 0.7 },
+        { label: "NRW", date: "2024", value: 61, spread: 13, density: 0.9, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-forecast",
+    title: "Forecast: a number that is high but shaky",
+    description:
+      "The trend rises, but the forecast spikes fray into froth: the same apex with a far wider, dashed plume says 'we project growth, but our confidence is thinning fast.' A deliberate don't-trust-this-to-the-decimal signal - for precise bands, use the Fan chart.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Projected MRR ($K), spray = forecast spread (P10-P90); dashed = forecast",
+      xAxisDataType: "date_annual",
+      dataSet: [
+        { label: "MRR", date: "2023", value: 63, spread: 6, density: 0.3 },
+        { label: "MRR", date: "2024", value: 70, spread: 8, density: 0.4 },
+        { label: "MRR", date: "2025", value: 78, spread: 16, density: 0.8, predicted: true },
+        { label: "MRR", date: "2026", value: 85, spread: 26, density: 1, predicted: true },
+      ],
+    },
+  },
+  {
+    id: "fountain-story",
+    title: "Open source: the stars you see, the maintainers you don't",
+    description:
+      "The hook the chart was built for. The spike is what everyone sees and stars; the spray is the invisible contributors and unpaid maintainers the project actually rests on. Similar fame (spikes), very different foundations (sprays). Storytelling, not measurement.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "GitHub stars (k) - spray = the contributors & maintainers holding it up",
+      xAxisDataType: "band",
+      dataSet: [
+        { label: "React", value: 230, spread: 85, density: 0.9 },
+        { label: "Vue", value: 208, spread: 55, density: 0.6 },
+        { label: "Svelte", value: 82, spread: 40, density: 0.7, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-plume",
+    title: "Alternative symmetric 'plume' silhouette",
+    description:
+      "The same idea in the optional symmetric style (style: \"plume\"): a column blooming into a feathery crown instead of the asymmetric Jet d'Eau blade. Cleaner for a single KPI hero where the spread reads as a confidence halo.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Quarterly revenue ($M) with confidence halo - plume style",
+      xAxisDataType: "band",
+      style: "plume",
+      dataSet: [
+        { label: "Q1", value: 42, spread: 6, density: 6 },
+        { label: "Q2", value: 55, spread: 9, density: 7 },
+        { label: "Q3", value: 61, spread: 12, density: 8 },
+        { label: "Q4", value: 78, spread: 20, density: 9, color: "#D4AF37" },
+      ],
+    },
+  },
+];
+
 /** Canonical examples, keyed by chart id. Consumers index by key. */
 export const examples = {
   "gap-chart": gap,
@@ -1491,6 +1595,7 @@ export const examples = {
   "pie-chart": pie,
   "bubble-chart": bubble,
   "sankey-chart": sankey,
+  "fountain-chart": fountain,
 };
 
 /** Ordered chart ids (for nav / iteration). */

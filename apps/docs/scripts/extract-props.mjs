@@ -34,6 +34,7 @@ export const CHARTS = [
   { key: "pie-chart", propsType: "PieChartProps", element: "michi-vz-pie-chart", engine: "pieChart.ts", wc: "pie-chart.ts", context: "PieChartContext", mount: "mountPieChart" },
   { key: "bubble-chart", propsType: "BubbleChartProps", element: "michi-vz-bubble-chart", engine: "bubbleChart.ts", wc: "bubble-chart.ts", context: "BubbleChartContext", mount: "mountBubbleChart" },
   { key: "sankey-chart", propsType: "SankeyChartProps", element: "michi-vz-sankey-chart", engine: "sankeyChart.ts", wc: "sankey-chart.ts", context: "SankeyChartContext", mount: "mountSankeyChart" },
+  { key: "fountain-chart", propsType: "FountainChartProps", element: "michi-vz-fountain-chart", engine: "fountainChart.ts", wc: "fountain-chart.ts", context: "FountainChartContext", mount: "mountFountainChart" },
 ];
 
 // Props shared (identical type) across (almost) every chart - flagged `common`

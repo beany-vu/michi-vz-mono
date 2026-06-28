@@ -17,6 +17,7 @@ import {
   mountPieChart,
   mountBubbleChart,
   mountSankeyChart,
+  mountFountainChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -35,6 +36,7 @@ import type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -55,6 +57,7 @@ export type {
   PieChartProps,
   BubbleChartProps,
   SankeyChartProps,
+  FountainChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -302,6 +305,21 @@ export function sankeyChart(node: HTMLElement, props: SankeyChartProps): SankeyC
   const chart = mountSankeyChart(node, props);
   return {
     update: (next: SankeyChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface FountainChartAction {
+  update(props: FountainChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<FountainChartProps>["getContext"];
+}
+
+export function fountainChart(node: HTMLElement, props: FountainChartProps): FountainChartAction {
+  const chart = mountFountainChart(node, props);
+  return {
+    update: (next: FountainChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };
