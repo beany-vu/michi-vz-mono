@@ -104,9 +104,43 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const container = opts.container ?? document.body;
   const hotkey = opts.hotkey === undefined ? DEFAULT_HOTKEY : opts.hotkey;
 
+  const MAX_HISTORY = 30;
   let selectedId: string | null = null;
-  let controlsFor: string | null = null; // selection the controls were last built for
+  let controlsKey = ""; // selection + live/history mode the controls were last built for
+  let viewBack = 0; // 0 = live (latest); N = N snapshots back for the selected chart
   let isOpen = opts.open ?? true;
+
+  // Per-chart ring buffer of ChartContext snapshots (captured on every update), so
+  // you can step back through how a chart's state changed - the core debug feature.
+  const history = new Map<string, ChartContext[]>();
+  const lastJson = new Map<string, string>();
+
+  function capture(): void {
+    for (const e of entries()) {
+      const ctx = e.getContext();
+      if (!ctx) continue;
+      const json = safeJson(ctx);
+      if (lastJson.get(e.id) === json) continue; // unchanged since last snapshot
+      const arr = history.get(e.id) ?? [];
+      arr.push(JSON.parse(json) as ChartContext);
+      lastJson.set(e.id, json);
+      let shifted = false;
+      if (arr.length > MAX_HISTORY) {
+        arr.shift();
+        shifted = true;
+      }
+      history.set(e.id, arr);
+      // Keep a paused view pinned to the same snapshot when newer data lands.
+      if (e.id === selectedId && viewBack > 0 && !shifted) {
+        viewBack = Math.min(viewBack + 1, arr.length - 1);
+      }
+    }
+  }
+
+  function refresh(): void {
+    capture();
+    render();
+  }
 
   // -- structure --
   const toggleBtn = el("button", { class: "mv-devtools-toggle", title: "michi-vz devtools" }, ["◧ michi-vz"]);
@@ -149,13 +183,18 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   function render(): void {
     const list = entries();
     countEl.textContent = `${list.length} chart${list.length === 1 ? "" : "s"}`;
+    const prev = selectedId;
     if (!list.some((e) => e.id === selectedId)) selectedId = list[0]?.id ?? null;
+    if (selectedId !== prev) viewBack = 0; // reset the history view when selection changes
     renderList(list);
     const sel = list.find((e) => e.id === selectedId) ?? null;
     renderReadout(sel);
-    if (selectedId !== controlsFor) {
+    // Rebuild controls only when selection or live/history mode changes, so a live
+    // edit (notify -> render) never blows away the dataSet textarea mid-typing.
+    const key = `${selectedId}|${viewBack === 0 ? "live" : "hist"}`;
+    if (key !== controlsKey) {
       renderControls(sel);
-      controlsFor = selectedId;
+      controlsKey = key;
     }
   }
 
@@ -181,7 +220,42 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   function renderReadout(entry: DevtoolsChartEntry | null): void {
     readoutEl.replaceChildren();
     if (!entry) return;
-    const ctx = entry.getContext();
+    const hist = history.get(entry.id) ?? [];
+    const live = viewBack === 0 || hist.length === 0;
+    const ctx = live ? entry.getContext() : hist[hist.length - 1 - viewBack];
+
+    // History timeline: step through past ChartContext snapshots.
+    if (hist.length > 1) {
+      const older = el("button", { class: "mv-devtools-btn" }, ["◀"]);
+      const newer = el("button", { class: "mv-devtools-btn" }, ["▶"]);
+      const liveBtn = el("button", { class: "mv-devtools-btn" + (live ? " is-active" : "") }, ["● live"]);
+      const pos = live ? `${hist.length}/${hist.length}` : `${hist.length - viewBack}/${hist.length}`;
+      older.addEventListener("click", () => {
+        viewBack = Math.min(viewBack + 1, hist.length - 1);
+        render();
+      });
+      newer.addEventListener("click", () => {
+        viewBack = Math.max(viewBack - 1, 0);
+        render();
+      });
+      liveBtn.addEventListener("click", () => {
+        viewBack = 0;
+        render();
+      });
+      readoutEl.append(
+        el("div", { class: "mv-devtools-history" }, [
+          el("span", { class: "k" }, ["History"]),
+          older,
+          el("span", { class: "k" }, [pos]),
+          newer,
+          liveBtn,
+        ])
+      );
+      if (!live) {
+        readoutEl.append(el("div", { class: "mv-devtools-histbanner" }, ["viewing snapshot (read-only)"]));
+      }
+    }
+
     if (!ctx) {
       readoutEl.append(el("div", { class: "empty" }, ["No context yet (chart not rendered)"]));
       return;
@@ -243,11 +317,19 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     controlsEl.replaceChildren();
     if (!entry) return;
 
+    const hist = history.get(entry.id) ?? [];
+    if (viewBack !== 0 && hist.length > 0) {
+      controlsEl.append(
+        el("div", { class: "empty" }, ["Controls are disabled while viewing history. Click the live button to resume."])
+      );
+      return;
+    }
+
     function apply(patch: Record<string, unknown>): void {
       try {
         entry!.setProps(patch);
       } finally {
-        render();
+        refresh();
       }
     }
 
@@ -314,7 +396,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
             out.className = "err";
           }
           out.hidden = false;
-          render();
+          refresh();
         });
         controlsEl.append(
           el("div", { class: "row" }, [el("strong", {}, [tool.name]), run]),
@@ -369,9 +451,9 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
 
   toggleBtn.addEventListener("click", open);
   closeBtn.addEventListener("click", close);
-  refreshBtn.addEventListener("click", render);
+  refreshBtn.addEventListener("click", refresh);
 
-  const unsubscribe = hook.subscribe(() => render());
+  const unsubscribe = hook.subscribe(() => refresh());
 
   let onKey: ((e: KeyboardEvent) => void) | null = null;
   if (hotkey) {
@@ -387,7 +469,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   }
 
   applyVisibility();
-  render();
+  refresh();
 
   return {
     open,

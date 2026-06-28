@@ -129,6 +129,59 @@ describe("mountDevtools panel", () => {
     dt.destroy();
   });
 
+  it("captures a ChartContext history and steps back into a read-only snapshot", () => {
+    const dt = mountDevtools();
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountLineChart(host, props);
+
+    // First snapshot is captured when the chart registers. Change the data -> 2nd snapshot.
+    chart.update({
+      ...props,
+      title: "Demo v2",
+      dataSet: [
+        {
+          label: "Revenue",
+          series: [
+            { date: 2020, value: 100, certainty: true },
+            { date: 2021, value: 555, certainty: true },
+          ],
+        },
+      ],
+    });
+
+    // Timeline nav appears once there is more than one snapshot.
+    const nav = q(document.body, ".mv-devtools-history");
+    expect(nav).not.toBeNull();
+    expect(nav?.textContent).toContain("2/2");
+    // Live view shows the latest summary (the v2 max of 555).
+    expect(q(document.body, ".mv-devtools-summary")?.textContent).toContain("555");
+
+    // Step back to the first snapshot -> read-only banner, older summary, controls disabled.
+    const older = Array.from(document.body.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
+      (b) => b.textContent === "◀"
+    );
+    expect(older).not.toBeNull();
+    older!.click();
+
+    expect(q(document.body, ".mv-devtools-histbanner")?.textContent).toContain("viewing snapshot");
+    expect(q(document.body, ".mv-devtools-summary")?.textContent).toContain("140"); // original max
+    expect(q(document.body, ".mv-devtools-summary")?.textContent).not.toContain("555");
+    // editing is disabled while viewing history
+    expect(document.body.querySelector(".mv-devtools textarea")).toBeNull();
+
+    // Return to live.
+    const liveBtn = Array.from(document.body.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
+      (b) => b.textContent?.includes("live")
+    );
+    liveBtn!.click();
+    expect(q(document.body, ".mv-devtools-histbanner")).toBeNull();
+    expect(document.body.querySelector(".mv-devtools textarea")).not.toBeNull();
+
+    chart.destroy();
+    dt.destroy();
+  });
+
   it("destroy removes the panel and unsubscribes", () => {
     const dt = mountDevtools();
     expect(q(document.body, ".mv-devtools")).not.toBeNull();

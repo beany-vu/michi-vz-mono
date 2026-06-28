@@ -67,6 +67,12 @@ export const DEVTOOLS_CSS = `
   background: #232733; border: 1px solid #333a45; border-radius: 6px; padding: 2px 6px; }
 .mv-devtools .err { color: #ff8a8a; }
 .mv-devtools .empty { color: #8a93a3; padding: 16px; text-align: center; }
+.mv-devtools-history { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+.mv-devtools-btn.is-active { background: #2f3a52; color: #fff; }
+.mv-devtools-histbanner {
+  color: #ffce7a; background: #3a2f1f; border: 1px solid #5a4a2a;
+  border-radius: 6px; padding: 3px 8px; margin-bottom: 6px;
+}
 .mv-devtools-toggle {
   position: fixed; z-index: 2147482999; right: 16px; bottom: 16px;
   background: #232733; color: #ffd24a; border: 1px solid #333a45; border-radius: 999px;

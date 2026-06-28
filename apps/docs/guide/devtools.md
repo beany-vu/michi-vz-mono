@@ -30,6 +30,14 @@ devtools:
 A real browser extension is only worth it later, to inspect michi-vz on pages that do **not** bundle
 the devtools module. It would reuse the same hook, so nothing here is throwaway.
 
+## Time travel through state
+
+The panel snapshots each chart's `ChartContext` on **every update** and keeps a short history. When a
+chart has changed more than once, a **History** bar appears: step `◀` / `▶` through past snapshots to
+see exactly how the state evolved, or click **● live** to return to the latest. While you are viewing a
+past snapshot the controls are read-only (you are inspecting history, not driving the chart). This is
+the fastest way to answer "what did this chart look like one update ago, and what changed?"
+
 ## Quick start
 
 ```bash
@@ -90,6 +98,11 @@ const series = [
 > [!TIP] Prefer `predicted` over `certainty` to mark a forecast.
 > `certainty` also goes `false` for auto-detected data **gaps** (`detectGaps`), so it cannot tell a
 > forecast apart from a hole in the data. `predicted` is unambiguous.
+
+**Coverage.** Provenance is a time-series idea, so it is carried by the charts where a forecast is
+natural: **Line**, **Fan**, and **Range** (per series), and **Area** (per row). The categorical,
+part-to-whole, and relational charts (stacked bar, bar-bell, comparable, dual, gap, pie/donut, bubble,
+sankey, treemap, radar, scatter) have no forecast axis, so they do not carry a `predicted` flag.
 
 ## How it works
 
