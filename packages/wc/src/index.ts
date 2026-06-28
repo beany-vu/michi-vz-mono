@@ -13,6 +13,7 @@ import "./range-chart";
 import "./ribbon-chart";
 import "./radar-chart";
 import "./fan-chart";
+import "./treemap-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -26,3 +27,4 @@ export { RangeChartElement } from "./range-chart";
 export { RibbonChartElement } from "./ribbon-chart";
 export { RadarChartElement } from "./radar-chart";
 export { FanChartElement } from "./fan-chart";
+export { TreemapChartElement } from "./treemap-chart";

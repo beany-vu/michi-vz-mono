@@ -14,6 +14,7 @@ import {
   mountRangeChart,
   mountRibbonChart,
   mountRadarChart,
+  mountTreemapChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -28,6 +29,7 @@ import type {
   RangeChartProps,
   RibbonChartProps,
   RadarChartProps,
+  TreemapChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -45,6 +47,7 @@ export type {
   RangeChartProps,
   RibbonChartProps,
   RadarChartProps,
+  TreemapChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -93,6 +96,10 @@ export interface RibbonChartHandle {
 }
 
 export interface RadarChartHandle {
+  getContext(): ChartContext | null;
+}
+
+export interface TreemapChartHandle {
   getContext(): ChartContext | null;
 }
 
@@ -381,4 +388,27 @@ export const RadarChart = forwardRef<RadarChartHandle, RadarChartProps>(function
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
   return <div ref={hostRef} style={{ width: props.width ?? 600, height: props.height ?? 600 }} />;
+});
+
+export const TreemapChart = forwardRef<TreemapChartHandle, TreemapChartProps>(function TreemapChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<TreemapChartProps> | null>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountTreemapChart(hostRef.current, props);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(props);
+  });
+
+  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+
+  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 520 }} />;
 });

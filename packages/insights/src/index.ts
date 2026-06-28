@@ -73,12 +73,15 @@ export {
 export {
   createEmbedder,
   findSimilar,
+  reconcileLabels,
   cosineSimilarity,
   hashEmbed,
   type Embedder,
   type EmbedBackend,
   type EmbedOptions,
   type SimilarItem,
+  type ReconcileGroup,
+  type ReconcileOptions,
 } from "./embeddings";
 
 // ---- SQL / data wrangling (pure aggregate; opt-in DuckDB-Wasm) ----

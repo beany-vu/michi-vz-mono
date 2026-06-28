@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cosineSimilarity, hashEmbed, createEmbedder, findSimilar } from "../src/embeddings";
+import { cosineSimilarity, hashEmbed, createEmbedder, findSimilar, reconcileLabels } from "../src/embeddings";
 
 describe("embeddings", () => {
   it("cosineSimilarity handles parallel / orthogonal / opposite", () => {
@@ -29,5 +29,37 @@ describe("embeddings", () => {
     expect(e.backend).toBe("hash");
     const [v] = await e.embed(["hello world"]);
     expect(v.length).toBe(128);
+  });
+
+  describe("reconcileLabels (hash fallback)", () => {
+    it("merges spelling/case variants and keeps no-shared-letter labels apart", async () => {
+      const groups = await reconcileLabels([
+        "United States",
+        "united states",
+        "USA",
+        "Germany",
+        "germany",
+      ]);
+      // hash merges case variants (United States/united states, Germany/germany) but USA
+      // shares no letters with "united states", so it stays its own group: 3 groups total.
+      expect(groups).toHaveLength(3);
+      const byName = Object.fromEntries(groups.map((g) => [g.name, g.members]));
+      // medoid picks the tidy Title-Case representative
+      expect(byName["United States"]).toEqual(["United States", "united states"]);
+      expect(byName["Germany"]).toEqual(["Germany", "germany"]);
+      expect(byName["USA"]).toEqual(["USA"]);
+    });
+
+    it("every input label lands in exactly one group", async () => {
+      const labels = ["Apple", "apple", "APPLE", "Banana", "banana"];
+      const groups = await reconcileLabels(labels);
+      const members = groups.flatMap((g) => g.members);
+      expect(members.sort()).toEqual([...labels].sort());
+    });
+
+    it("a high threshold keeps everything separate", async () => {
+      const groups = await reconcileLabels(["alpha", "alphaa", "beta"], { threshold: 0.999, margin: 0 });
+      expect(groups).toHaveLength(3);
+    });
   });
 });

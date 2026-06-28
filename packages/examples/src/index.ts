@@ -20,6 +20,7 @@ import type {
   RibbonChartProps,
   RadarChartProps,
   FanChartProps,
+  TreemapChartProps,
 } from "@michi-vz/core";
 
 export interface Example<P = Record<string, unknown>> {
@@ -1206,6 +1207,98 @@ const fan: Example<FanChartProps>[] = [
   }
 ];
 
+// Flat-treemap palette: products reuse a small set of hues (blue / gold / red / teal /
+// coral), each tile split into realized (solid) + untapped (lighter veil).
+const TM_BLUE = "#005aba";
+const TM_BLUE2 = "#1f78c8";
+const TM_GOLD = "#f0a500";
+const TM_RED = "#e8312a";
+const TM_TEAL = "#2aa39a";
+const TM_CORAL = "#ef8a6a";
+
+const treemap: Example<TreemapChartProps>[] = [
+  // [0] Nested: products grouped under their sector (the primary demo).
+  {
+    id: "treemap-export-potential-grouped",
+    title: "Export potential — grouped by sector",
+    description:
+      "Products nested under their sector: parent tiles get a header label and the colour groups by sector. Each leaf splits into the realized share (solid) + the untapped opportunity (lighter).",
+    element: "michi-vz-treemap-chart",
+    props: {
+      title: "Export potential by sector (by 2030)",
+      width: 900,
+      height: 540,
+      splitLabels: ["Realized", "Untapped"],
+      showLegend: true,
+      layout: "squarify",
+      paddingTop: 20,
+      dataSet: [
+        {
+          label: "Industry",
+          color: TM_BLUE,
+          children: [
+            { label: "Machinery & electricity", value: 120, partial: 64 },
+            { label: "Ferrous metals", value: 80, partial: 54 },
+            { label: "Fertilisers", value: 48, partial: 25 },
+            { label: "Plastics & rubber", value: 33, partial: 19 },
+          ],
+        },
+        {
+          label: "Agri-food",
+          color: TM_GOLD,
+          children: [
+            { label: "Fruits", value: 95, partial: 32 },
+            { label: "Oil seeds", value: 88, partial: 29 },
+            { label: "Meat (poultry)", value: 58, partial: 37 },
+            { label: "Beverages", value: 78, partial: 55 },
+            { label: "Wheat", value: 62, partial: 1 },
+          ],
+        },
+        {
+          label: "Materials",
+          color: TM_TEAL,
+          children: [
+            { label: "Vegetable oils & fats", value: 52, partial: 28 },
+            { label: "Textiles", value: 42, partial: 8 },
+            { label: "Dairy products", value: 38, partial: 16 },
+          ],
+        },
+      ],
+    },
+  },
+  // [1] Flat: one tile per product, each its own colour (flattened data, no nesting).
+  {
+    id: "treemap-export-potential-flat",
+    title: "Export potential — flattened data",
+    description:
+      "A flat list: one tile per product, each sized by its total export potential and coloured individually, with the realized/untapped split inside. On a narrow screen, layout:\"auto\" falls back to a single-column stack.",
+    element: "michi-vz-treemap-chart",
+    props: {
+      title: "Export potential (by 2030)",
+      width: 900,
+      height: 540,
+      splitLabels: ["Realized", "Untapped"],
+      showLegend: true,
+      layout: "auto",
+      dataSet: [
+        { label: "Machinery, electricity", value: 120, partial: 64, color: TM_BLUE },
+        { label: "Fruits", value: 95, partial: 32, color: TM_GOLD },
+        { label: "Oil seeds", value: 88, partial: 29, color: TM_RED },
+        { label: "Beverages (alcoholic)", value: 78, partial: 55, color: TM_BLUE2 },
+        { label: "Ferrous metals", value: 80, partial: 54, color: TM_RED },
+        { label: "Wheat", value: 62, partial: 1, color: TM_CORAL },
+        { label: "Meat (poultry)", value: 58, partial: 37, color: TM_BLUE },
+        { label: "Fertilisers", value: 48, partial: 25, color: TM_TEAL },
+        { label: "Vegetable oils & fats", value: 52, partial: 28, color: TM_GOLD },
+        { label: "Textiles", value: 42, partial: 8, color: TM_RED },
+        { label: "Dairy products", value: 38, partial: 16, color: TM_TEAL },
+        { label: "Plastics & rubber", value: 33, partial: 19, color: TM_BLUE2 },
+        { label: "Pharmaceuticals", value: 28, partial: 13, color: TM_GOLD },
+      ],
+    },
+  },
+];
+
 /** Canonical examples, keyed by chart id. Consumers index by key. */
 export const examples = {
   "gap-chart": gap,
@@ -1220,6 +1313,7 @@ export const examples = {
   "ribbon-chart": ribbon,
   "radar-chart": radar,
   "fan-chart": fan,
+  "treemap-chart": treemap,
 };
 
 /** Ordered chart ids (for nav / iteration). */

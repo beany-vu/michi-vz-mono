@@ -14,6 +14,7 @@ const charts: Array<[string, string, string]> = [
   ["dual", "Dual Bar (Tornado)", "Comparison"],
   ["bar-bell", "Bar-Bell", "Composition"],
   ["gap", "Gap Chart", "Comparison"],
+  ["treemap", "Treemap", "Composition"],
 ];
 
 export default defineConfig({
@@ -75,7 +76,7 @@ export default defineConfig({
           { text: "Installation", link: "/guide/installation" },
           { text: "Getting started", link: "/guide/getting-started" },
           { text: "LLM context", link: "/guide/llm-context" },
-          { text: "Insights (AI)", link: "/guide/insights" },
+          { text: "Insights (AI boost)", link: "/guide/insights" },
         ],
       };
       return {

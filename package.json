@@ -13,6 +13,8 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "dev": "turbo run dev",
+    "storybook": "pnpm --filter @michi-vz/storybook storybook",
+    "build-storybook": "pnpm --filter @michi-vz/storybook build-storybook",
     "verify:playground": "node scripts/verify-playground.mjs",
     "screenshot": "node scripts/screenshot.mjs",
     "changeset": "changeset",

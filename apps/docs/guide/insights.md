@@ -4,20 +4,31 @@ title: Insights - predict, explain, and drive charts with AI
 
 # Charts that predict, explain themselves, and talk to AI
 
-`@michi-vz/insights` is an **opt-in** layer over your charts. Every michi-vz chart already emits a
-structured, machine-readable `ChartContext` - this package turns that into three superpowers:
-**AI agents can read and drive your charts**, the charts **forecast the future**, and they
-**explain themselves**. It's **100% client-side**, uses **plain, textbook methods** (no black box),
-and ships **zero bytes** until you import a feature.
+A chart usually just *draws* the past. `@michi-vz/insights` makes it **forecast the future**,
+**explain itself in plain English**, **catch bad data**, and **answer to an AI assistant** - all in
+the browser, with no server and nothing leaving the page. It is **opt-in** and uses **plain, textbook
+methods** (no black box); every michi-vz chart already carries a structured `ChartContext`, and these
+features simply read from it.
 
 <InsightsDemo feature="forecast" />
 
 > Above is a real line chart. Toggle **Forecast** to see a dashed prediction + shaded forecast region;
 > **Explain** writes a sentence from the data. No server - it all runs in your browser.
 
+> [!IMPORTANT] A model assists; it does not decide.
+> Different models give different answers, and even a strong one can be wrong - the smaller and faster
+> it is, the more so. These tools speed up the *reading* of a chart; they do not take responsibility for
+> it. Treat any model output as a starting point, lean on the deterministic rule-based fallback as the
+> honest baseline, and **verify anything that matters before you act on it**. AI is here to help, not to
+> answer for you.
+
 ---
 
-## 1. Charts AI agents can read *and* drive
+## What it does
+
+Three things become possible once a chart carries its own structured meaning:
+
+### Read and drive charts from an AI assistant
 
 This is the headline. Because each chart exposes its meaning (`ChartContext`) **and** its controls as
 **tools**, an AI assistant can summarize it, filter it, highlight a series, or forecast it - by
@@ -35,10 +46,10 @@ await agent.ask("Filter to the top 5 and forecast next quarter");
 The same tools are exposed over **MCP** (Model Context Protocol), so **Claude Code, Codex, Cursor, and
 Claude Desktop** connect with zero custom integration - see **Agents & MCP** in the reference below.
 
-## 2. Charts that predict the future
+### Predict the future
 
 Add one plugin and the chart grows a dashed prediction, a confidence band, and a **backtested
-accuracy** figure (so it's trustworthy, not a guess). Forecasting works on Line, **Fan**, Range,
+accuracy** figure (so it is trustworthy, not a guess). Forecasting works on Line, **Fan**, Range,
 Area, and the stacked-bar family.
 
 ```ts
@@ -59,7 +70,7 @@ extends a Fan chart (nested confidence bands), an Area chart's stack, a Range ba
 The **[Fan chart](/charts/fan)** is the dedicated forecast presentation, built in one call with
 `forecastFan()`.
 
-## 3. Charts that explain themselves (and catch bad data)
+### Explain themselves, catch bad data
 
 The chart **detects anomalies** (and marks them), writes a **plain-English narration**, and runs
 **data-quality validation** - all from the same structured context.
@@ -79,23 +90,169 @@ chart.use(validate());  // warns via onDataWarning AND marks the bad points red 
 
 ---
 
-## Why you can trust it
+## Real-world examples
+
+Every chart below is the real thing - it computes in your browser as the page loads, and it is
+clickable (toggle Canvas/SVG, hit **Explain ▸**). The point is not the demo; it is that an analyst, a
+banker, a pharma scientist, or a historian gets the answer *on the chart* - no notebook, no server.
+Each term is explained the first time it appears, and gathered in the [Glossary](#glossary).
+
+### Forecast: where is this heading, and will it hit the target?
+
+The dashed line projects the recent trend. The shaded **confidence band** is the model's own past
+error, so it shows an honest *range* rather than one hopeful number. And where the projection meets a
+goal, a red **fall point** marks *when* the target is reached - answering both "where is this going?"
+and the goal-seek question "will it get there, and when?".
+
+**A bank's revenue run-rate - is the year-end plan in reach?**
+
+<InsightsDemo feature="forecast" dataset="bank-revenue" />
+
+**A clinical trial - will it enroll its 300th patient before the readout deadline?**
+
+<InsightsDemo feature="forecast" dataset="pharma-enrollment" />
+
+**Inflation (CPI) - the band is wide because the future genuinely is uncertain.**
+
+<InsightsDemo feature="forecast" dataset="cpi" />
+
+**A power grid - does peak demand reach capacity before the next plant is built?**
+
+<InsightsDemo feature="forecast" dataset="energy-demand" />
+
+**A SaaS book - how close is recurring revenue to the next milestone?**
+
+<InsightsDemo feature="forecast" dataset="saas-mrr" />
+
+### Scenarios: best, base, worst
+
+One projection is rarely enough. Add **scenario** lines - an optimistic and a pessimistic growth
+assumption - and the same history fans into a best / base / worst spread, the way a CFO or a bank
+stress test brackets the future.
+
+**A bank stress test - revenue under an upside and a severe case, against the plan line.**
+
+<InsightsDemo feature="forecast" dataset="scen-bank-stress" />
+
+**A startup's runway - when does cash hit zero if the next round slips a quarter?**
+
+<InsightsDemo feature="forecast" dataset="scen-startup-runway" />
+
+**A new drug's launch - strong vs slow adoption from day one.**
+
+<InsightsDemo feature="forecast" dataset="scen-pharma-uptake" />
+
+### Narration: the chart writes its own headline (and never makes it up)
+
+A busy chart hides its own story. `narrate()` reads the data and writes one plain sentence: it names
+the **top mover** (the series that moved the most between the start and the end) and the up-vs-down
+split. Every figure is computed from the numbers, so - unlike a chatbot - it cannot invent one. Hit
+**Explain ▸** to see the sentence.
+
+**A retail bank - digital deposits quietly overtake the branch network.**
+
+<InsightsDemo feature="narrate" dataset="narr-bank-channel" />
+
+**A trial with two sites - which one is actually carrying the study?**
+
+<InsightsDemo feature="narrate" dataset="narr-pharma-sites" />
+
+**Real wages - a decade that lost ground, despite the recent uptick.**
+
+<InsightsDemo feature="narrate" dataset="narr-real-wages" />
+
+**A century of urbanisation - the countryside empties as the cities fill.**
+
+<InsightsDemo feature="narrate" dataset="narr-urbanisation" />
+
+**The electricity mix - coal exits, renewables take the lead.**
+
+<InsightsDemo feature="narrate" dataset="narr-energy-mix" />
+
+### Anomaly: what does not belong?
+
+An **anomaly** is a year that stands out from the rest of the series. It is found with a **z-score**
+(how many standard steps a point sits from the average; past about three, it is flagged) and marked
+with a dot - turning "did anything odd happen?" into a single glance.
+
+**A bank - the year card-fraud losses break out of the trend (a breach or scam wave).**
+
+<InsightsDemo feature="anomaly" dataset="anom-fraud" />
+
+**Drug safety - the year reported adverse events spike, a signal for pharmacovigilance.**
+
+<InsightsDemo feature="anomaly" dataset="anom-adverse" />
+
+**Operations - the year peak latency balloons, marking a major outage.**
+
+<InsightsDemo feature="anomaly" dataset="anom-latency" />
+
+**Retail - the year product returns jump, pointing at a defective batch.**
+
+<InsightsDemo feature="anomaly" dataset="anom-returns" />
+
+**An economy - the year GDP plunges, a recessionary shock against steady growth.**
+
+<InsightsDemo feature="anomaly" dataset="anom-gdp" />
+
+## More from the toolbox, live
+
+The **Sub-paths** table near the end lists more than the gallery above shows. Here are six more of
+those plugins running for real - each one model-free, deterministic, and a few lines to wire in. They
+answer questions a plain chart leaves on the table: *what would it take to hit the number, what are the
+odds, when did the trend actually change, and what is seasonal versus real growth.*
+
+**Goal-seek - what would it take to hit the number?** Forecasting runs time forward; goal-seek runs it
+*backward* from a target you set. Move the target and watch the required pace (the gold dashed line)
+react, with a verdict on whether your recent pace gets there.
+
+<PluginLab feature="goalseek" />
+
+**Monte Carlo - the odds, not just a line.** One forecast line hides the risk. This runs hundreds of
+simulated futures and reports the *band* plus the probability of clearing a target - seeded, so it
+replays exactly, with a **Re-roll** to see the spread shift.
+
+<PluginLab feature="montecarlo" />
+
+**Changepoints - when did the trend actually change?** Averages blur the moment a story turns. This
+finds where the slope structurally shifts and colours the line by regime - here a clean
+peak-then-decline.
+
+<PluginLab feature="changepoints" />
+
+**Seasonality - separate real growth from "it's December again."** One call splits a wiggly line into a
+smooth trend and a repeating seasonal wave, and detects the cycle length on its own.
+
+<PluginLab feature="seasonal" />
+
+**Aggregate - raw rows to a chart in one call.** Before you can chart data you usually have to *shape*
+it. `aggregate()` does group-by + measures with zero dependencies (opt into DuckDB-Wasm for real SQL
+over millions of rows). Flip the grouping and it re-rolls live.
+
+<PluginLab feature="sql" />
+
+**Sonify - hear the trend.** An accessibility win: every value becomes a pitch, so a rising series
+*sounds* like it rises. Press play - the bars are the pure, testable `valuesToTones()` output.
+
+<PluginLab feature="sonify" />
+
+## Why trust it (and who it's for)
 
 - **Not a black box.** Every number is a named, textbook method (Holt-Winters, MAPE, z-score, IQR,
-  STL, Pearson…) - see **Methods & formulas** below. Same primitives a stats library uses.
+  STL, Pearson…) - see **Methods & formulas** in the reference. The same primitives a stats library uses.
 - **Deterministic + tested.** Statistical features give the same output for the same input and are
   covered by an extensive test suite; anything random (Monte Carlo) is seeded.
-- **Your data stays in the browser.** No server, no upload. Remote model backends are strictly opt-in
+- **Data stays in the browser.** No server, no upload. Remote model backends are strictly opt-in
   and documented as "data leaves the client."
 - **No lock-in.** No model is ever bundled; model features are opt-in and **fall back** to a working
-  statistical/rule-based version if a model isn't available.
+  statistical/rule-based version if a model is unavailable.
 
-## Is it for you?
+**Who it is for:**
 
 - **Building a product (embedded analytics)?** Ship live forecasting and self-explaining charts to
   *your* users - client-side, no Python service to run.
 - **A data / market analyst?** The methods you already know (Holt-Winters, MAPE, z-score) - now
-  running at runtime in the app, not just in a notebook. See **vs pandas** below.
+  running at runtime in the app, not just in a notebook (see **vs a pandas / notebook workflow** below).
 - **Building with AI agents?** Your charts become MCP tools an agent can read and drive.
 
 ## Get started
@@ -113,29 +270,11 @@ const chart = mountLineChart(el, { dataSet: revenue, xAxisDataType: "date_annual
 });
 ```
 
-That's it - the chart now forecasts. Everything below is reference.
+That is it - the chart now forecasts. Everything below is reference.
 
 ---
 
-## Reference
-
-### Sub-paths
-
-Each capability is its own tree-shakeable import:
-
-| Import | What you get |
-| --- | --- |
-| `@michi-vz/insights/forecast` | `forecast()` plugin (dashed prediction + band + backtested accuracy), scenarios, trendline, threshold + "fall point", Monte Carlo, seasonality/STL, changepoints, goal-seek, `forecastFan()` |
-| `@michi-vz/insights/anomaly` | `anomaly()` / `detectAnomalies()` - z-score / IQR / forecast-band outliers |
-| `@michi-vz/insights/validate` | `validate()` - richer data-quality warnings |
-| `@michi-vz/insights/narrate` | `narrate()` / `explainChart()` - rules baseline, opt-in SLM/remote |
-| `@michi-vz/insights/embeddings` | `findSimilar()` / `createEmbedder()` - hash fallback, opt-in BERT/MiniLM |
-| `@michi-vz/insights/sql` | `aggregate()` - group-by/measures (opt-in DuckDB-Wasm) |
-| `@michi-vz/insights/sonify` | `sonify()` - hear a series as pitch |
-| `@michi-vz/insights/agent` | `createAgent()` + tool registry |
-| `@michi-vz/insights/mcp` | `createMcpServer()` - Claude Code / Codex / Cursor |
-
-## Forecasting options
+## Forecasting
 
 ```ts
 forecast({
@@ -157,7 +296,7 @@ More pure, deterministic helpers in `@michi-vz/insights/forecast`: `forecastFan(
 ## Narration: customize, localize (i18n), or bring a model
 
 Here is narration live - a two-series chart that writes its own sentence. Hit **Explain ▸** to
-generate it (the calm "thinking" indicator is the Nordic-style loader you'd show while a real SLM
+generate it (the calm "thinking" indicator is the Nordic-style loader you would show while a real SLM
 loads; here it runs the instant rule-based path):
 
 <InsightsDemo feature="narrate" />
@@ -177,11 +316,11 @@ narrate({ strings: {
 narrate({ render: (ctx) => myTemplate(ctx) });
 ```
 
-### Bring a model (we prefer SLMs)
+### Bring a model
 
 `explainChart(ctx, { backend, model })` upgrades the prose with a model and **always falls back** to
-the rule-based text. No plugin needed - call it on demand. We deliberately prefer **small language
-models that run in the browser** (local-first, private, no server):
+the rule-based text. No plugin needed - call it on demand. **Small language models that run in the
+browser** are preferred (local-first, private, no server):
 
 ```ts
 // In-browser via Transformers.js (ONNX + WebGPU). Phi-3-mini (MIT) or Google Gemma 2 (2B):
@@ -196,7 +335,7 @@ await explainChart(chart.getContext(), { backend: "remote", caller: (prompt) => 
 ```
 
 `SLM_PRESETS` ships model ids for **Phi-3-mini** and **Gemma 2 (2B)**. The model is lazy-loaded only
-when you call this; nothing is bundled, and if it can't load you get the rule-based text. Combine with
+when called; nothing is bundled, and if it cannot load the rule-based text is returned. Combine with
 `strings` / `render` so even the fallback is in your language.
 
 A first model load downloads weights, so show a loader with `onProgress` (wired to Transformers.js /
@@ -210,40 +349,94 @@ await explainChart(ctx, {
 });
 ```
 
-## Reconcile messy labels (embeddings)
+## Michi-vz in the AI world
+
+Three things AI gives a chart, all in the browser: **merge** messy labels, **find** a series by
+meaning, **sort** free text - powered by small open models, not a giant cloud one.
+
+**Turn text into meaning.** An *embedding* is a way to turn a word or phrase into a list of numbers,
+arranged so that things that *mean* the same land close together - so a computer can tell `USA` and
+`United States` are the same place even though they share no letters. `@michi-vz/insights` invents none
+of this; it shows how to *leverage* the open-source models the community already built: small
+**embedding models** (the BERT / MiniLM family) and **small-enough open LLMs** (Qwen, Gemma, Phi), all
+running **client-side in your browser** - no server, no API key, nothing sent anywhere. Pointed at your
+chart data, they lift its **quality** and clean up **wrong, messy data**: three everyday problems become
+one trick - **merge** what means the same, **find** what you mean, **sort** the unsorted. The
+**model-free** default runs instantly offline (character n-grams, great for spelling and typos); **pick
+a model** from the dropdown (MiniLM ~23 MB → MPNet ~110 MB, sizes shown, loaded on demand) to go from
+matching *letters* to matching *meaning* - and bring a small LLM to **certify** the result.
+
+### Merge - reconcile messy labels
 
 **The problem every analyst knows.** Your data arrives from three sources and they each spell the
 same thing differently - `United States`, `united states`, `USA`. Group by exact match and your chart
-splits one country into three short bars with **wrong totals**, and you lose an afternoon hand-writing
-a lookup table. (Embeddings also power semantic *search* and *RAG* - but reconciling messy labels is
-the one that bites you on a Tuesday.)
+splits one country into three short bars with **wrong totals**, and an afternoon goes to hand-writing
+a lookup table.
 
 **Embeddings fix it by meaning.** Turn each label into a vector and merge the ones that land close
 together. The **model-free** default (instant, offline) already collapses spelling, casing, spacing
-and typos. Load **BERT** (small **MiniLM**, on demand) and it also merges abbreviations and
-translations - `USA` ≈ `United States`, `Deutschland` ≈ `Germany`, `Nippon` ≈ `Japan`.
+and typos. Load a real model (the dropdown shows each one's size) and it also merges abbreviations and
+translations - `USA` ≈ `United States`, `Deutschland` ≈ `Germany`, `Nippon` ≈ `Japan`. **Certify**
+then adds a small LLM that confirms each group and stamps the authoritative name.
 
 <EmbeddingsLab />
 
 > Start on **Raw labels** to feel the mess - 10 bars, split totals - then hit **Reconcile**.
-> Model-free merges the spelling variants offline; **Load real BERT** merges the abbreviations and
-> translations too, down to the 3 real countries with correct totals.
+> Model-free merges the spelling variants offline; loading a model (MiniLM → MPNet) merges the
+> abbreviations and translations too, down to the 3 real countries. **Certify** hands those groups to a
+> small in-browser LLM for an authoritative name.
 
-How you'd write it - reconcile first, then the other embedding uses:
+> [!NOTE] Similarity proposes, a model *certifies*.
+> An embedding model runs fully **offline** - it has no internet and looks nothing up. It merges
+> `Deutschland` with `Germany` because their vectors landed near each other in training, not because it
+> "knows" the country. So the merge is not decided on the raw threshold alone: a label only joins a group
+> when it is **decisively closer to that group than to any other** (a confidence margin), which keeps two
+> distinct countries from collapsing just because they sit close. For an *authoritative* answer, **Certify**
+> runs a **cascade** (not a mixture-of-experts - that is internal to one model): embeddings propose the
+> merges cheaply, then a **small** in-browser LLM (Qwen / Gemma, sizes shown) confirms each group is one
+> country and returns the canonical name. That model genuinely knows countries, but it needs **WebGPU** and
+> the weights download once. (In a real app a custom caller could point at a bigger model or a local
+> **Ollama** server instead; a static website cannot call Ollama directly - the browser's CORS policy
+> blocks `localhost`. See **Agents & MCP** below.)
+
+> [!NOTE] The bet: a quick model finishes, a smarter one refines.
+> The flow above is a deliberate experiment - let a fast, naive model (the embeddings) do the bulk of
+> the work, then call a heavier, smarter model (a small LLM) only to refine what is left. It trades a
+> little up-front accuracy for speed and cost, and pays for the bigger model only where it matters. This
+> is a belief being tested here, not settled doctrine; it can be argued the other way, and the approach -
+> along with these results - will evolve as the models do.
+
+### Find - search your series by meaning
+
+A dashboard with dozens of series and you cannot recall the exact name. Type what you *mean* and
+embeddings rank every series by similarity - no keyword has to match.
+
+<SemanticSearchLab />
+
+> Try `customer` first - model-free finds the customer KPIs by shared letters. Then `money coming in`:
+> only **BERT** reaches `Revenue`, because they share *meaning*, not spelling.
+
+### Sort - categorize free text with no rules
+
+A pile of survey comments with no tags. Hand embeddings just the **theme names** (no keyword lists, no
+training) and each comment drops into its nearest theme - so unstructured text becomes a chart you can
+act on. This is the one that truly needs a model: `keeps freezing` → **Performance** shares no letters
+with any theme name.
+
+<CategorizeLab />
+
+> **Load BERT** and watch the comments snap into the right themes by meaning - `too expensive` →
+> Pricing, `love the clean new look` → Design & UX - none of which share a keyword with their theme.
+
+How to write it - reconcile first, then the other embedding uses:
 
 ::: code-group
 
 ```ts [Reconcile labels]
-import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings";
-const e = await createEmbedder();          // model-free; { backend: "transformers" } adds synonyms
-const vecs = await e.embed(rawLabels);
-// greedy group: a label joins the first bucket it's close enough to, else starts its own
-const groups: { name: string; vec: number[]; members: string[] }[] = [];
-rawLabels.forEach((label, i) => {
-  const hit = groups.find((g) => cosineSimilarity(vecs[i], g.vec) >= 0.6);
-  if (hit) hit.members.push(label);
-  else groups.push({ name: label, vec: vecs[i], members: [label] });
-});
+import { reconcileLabels } from "@michi-vz/insights/embeddings";
+// one call: groups messy labels by meaning, with a confidence gate + a tidy representative name
+const groups = await reconcileLabels(rawLabels); // { backend: "transformers" } adds synonyms
+// → [{ name: "United States", members: ["United States", "USA", ...] }, ...]
 // now sum your series by group.name instead of the raw label → clean, correct totals
 ```
 
@@ -252,12 +445,12 @@ import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings"
 // opt into a small in-browser BERT (MiniLM via Transformers.js, WebGPU); lazy, nothing bundled
 const e = await createEmbedder({ backend: "transformers" }); // default all-MiniLM-L6-v2
 const [a, b] = await e.embed(["USA", "United States"]);
-cosineSimilarity(a, b); // ≈ 0.8 — merges even with no letters in common
+cosineSimilarity(a, b); // ≈ 0.8 — close, even with no letters in common
 ```
 
 ```ts [Search by meaning]
 import { findSimilar } from "@michi-vz/insights/embeddings";
-// rank a large chart catalog by what a query means, not how it's spelled
+// rank a large chart catalog by what a query means, not how it is spelled
 const ranked = await findSimilar("revenue", chartLabels, (l) => l);
 ```
 
@@ -273,7 +466,7 @@ Same engine, other uses: **searching** a big chart catalog by meaning, **cluster
 and **dashboard-wide RAG** - retrieving the right charts so an agent can answer across a whole
 dashboard (see **Agents & MCP**). Embeddings are the retrieval layer; the headline is what sits on top.
 
-## Agents & MCP (reference)
+## Agents & MCP
 
 The same registry powers the live demo below - each button is a real tool call against the chart
 (the identical tools an MCP client like Claude Code would invoke):
@@ -293,64 +486,129 @@ Tools: `get_chart_context`, `summarize_chart`, `list_series`, `forecast_series`,
 is also a readable `michivz://chart/<name>` resource. A `messagePortTransport` bridges a running web
 app's live charts.
 
-## How it works (the logic, in plain terms)
+---
+
+## Reference
+
+### Sub-paths
+
+Each capability is its own tree-shakeable import:
+
+| Import | What you get |
+| --- | --- |
+| `@michi-vz/insights/forecast` | `forecast()` plugin (dashed prediction + band + backtested accuracy), scenarios, trendline, threshold + "fall point", Monte Carlo, seasonality/STL, changepoints, goal-seek, `forecastFan()` |
+| `@michi-vz/insights/anomaly` | `anomaly()` / `detectAnomalies()` - z-score / IQR / forecast-band outliers |
+| `@michi-vz/insights/validate` | `validate()` - richer data-quality warnings |
+| `@michi-vz/insights/narrate` | `narrate()` / `explainChart()` - rules baseline, opt-in SLM/remote |
+| `@michi-vz/insights/embeddings` | `reconcileLabels()` / `findSimilar()` / `createEmbedder()` - hash fallback, opt-in BERT/MiniLM |
+| `@michi-vz/insights/sql` | `aggregate()` - group-by/measures (opt-in DuckDB-Wasm) |
+| `@michi-vz/insights/sonify` | `sonify()` - hear a series as pitch |
+| `@michi-vz/insights/agent` | `createAgent()` + tool registry |
+| `@michi-vz/insights/mcp` | `createMcpServer()` - Claude Code / Codex / Cursor |
+
+### How it works (the logic, in plain terms)
 
 - **Forecast.** Fit a model (Holt-Winters tracks *level* + *trend*; linear regression fits a best-fit
   line) → project ahead. The **band** comes from the model's own past error spread (widening with
   distance). A **backtest** hides the last few real points and measures the error → the accuracy figure.
-- **Anomaly.** Compute the average + spread, flag points too far out - **z-score** (k std-devs from
-  the mean) or **IQR** (outside the Tukey fences).
+- **Anomaly.** Compute the average and the spread, then flag points that sit too far out - by
+  **z-score** (how many standard deviations a point is from the average; flagged past about 3) or
+  **IQR** (whether a point falls outside the usual middle range of the data).
 - **Narrate / Explain - where the words come from.** By **default there is no AI model at all**:
   `narrate()` reads the structured `ChartContext` (trend, biggest mover, % change, totals) and fills
   sentence templates. It is pure, deterministic string assembly - instant and offline. `explainChart()`
   can **optionally** upgrade to a real **generative** language model: `backend: "transformers"` loads a
   small text-generation model (default Phi-3-mini) in the browser via Transformers.js, `backend:
-  "webllm"` runs Llama/Phi on WebGPU, or `backend: "remote"` calls your own model (e.g. a Claude API).
+  "webllm"` runs Llama/Phi on WebGPU, or `backend: "remote"` calls a model of your own (e.g. a Claude API).
   Any of them gets the `ChartContext` as its prompt and **falls back to the rules** if unavailable.
   > **Not BERT.** BERT (in `@michi-vz/insights/embeddings`) turns text into vectors for *similarity /
   > search*, not for writing sentences. Narration is rules by default, or a small generative LLM when
-  > you opt in - two different jobs.
+  > opted in - two different jobs.
 
-## Methods & formulas
+### Glossary
 
-| Feature | Method | Formula (plain) | Reference |
+Plain-English meanings of the terms these charts use:
+
+- **Fall point** - the spot where the projected line is expected to reach a target you care about (a
+  break-even, a goal), whether it climbs up to it or drops down to it; it answers "when will we get there?".
+- **Confidence band (prediction interval)** - the shaded zone around the forecast line showing the range
+  the future value is likely to land in; narrow means fairly sure, wide means a rough guess, and it widens
+  the further ahead it reaches.
+- **Forecast horizon** - how many future periods the forecast extends; a short horizon is more
+  trustworthy, a long one more speculative.
+- **MAPE / backtest** - a grade for the forecast's accuracy: the most recent real years are hidden,
+  predicted from the earlier ones, and the average miss is reported as a percentage (lower is better).
+- **Holt-Winters** - the default forecasting method; it learns the current level and the trend direction
+  and carries that momentum forward, weighting recent years more than old ones.
+- **z-score** - how unusual a value is, counted as the number of standard steps it sits from the average;
+  past about three, it is flagged as an outlier.
+- **IQR (Tukey fences)** - an alternative outlier test built from the middle half of the data, so a single
+  extreme value cannot throw it off; robust for lumpy or skewed series.
+- **Anomaly** - a point flagged as standing out from the rest of the series (a spike, a slump, a possible
+  data error), marked with a dot.
+- **Top mover** - on a multi-line chart, the series that moved the most between the start and the end; the
+  plain-English summary names it, so the headline finding is handed over rather than hunted for.
+- **Threshold / reference line** - a horizontal line at a value that matters (a target, a budget, a
+  break-even); every other value is read against it, and it is the line the forecast is watched against
+  to find the fall point.
+
+And the units and shorthands the example charts use:
+
+- **CPI (Consumer Price Index)** - the standard gauge of inflation: the average price of a basket of
+  everyday goods, so a rising CPI means the cost of living is climbing.
+- **$k / $M** - thousands / millions of dollars (so "$120M" is 120 million).
+- **Index (base 100)** - a series rescaled so its first year equals 100, so "down to 92" reads at a
+  glance as "8% below where it started", whatever the original units.
+- **Gigawatt (GW)** - a unit of electrical power; a large power station is roughly one GW.
+- **Run-rate** - the pace a number is growing at right now, carried forward (for example "$1.2M a week").
+- **MRR (monthly recurring revenue)** - the predictable subscription income a SaaS business books each
+  month, the headline number such companies are measured by.
+
+### Methods & formulas
+
+Every figure in these demos is computed from the data, never hand-waved - and none of it needs a
+statistics degree. Below is what each method does in plain words, the formula behind it for the curious,
+and a free, readable source. References to *Hyndman* point to
+[*Forecasting: Principles and Practice*](https://otexts.com/fpp3/), a free online textbook.
+
+| What it does | Method | Formula (for the curious) | Learn more |
 | --- | --- | --- | --- |
-| Forecast (default) | Holt-Winters / Holt's linear trend | `ℓₜ = α·yₜ + (1−α)(ℓₜ₋₁+bₜ₋₁)`, `bₜ = β(ℓₜ−ℓₜ₋₁)+(1−β)bₜ₋₁`, `ŷₜ₊ₕ = ℓₜ + h·bₜ` | [FPP3 §8](https://otexts.com/fpp3/expsmooth.html) |
-| Forecast (alt) | Linear regression (OLS) | `ŷ = a + b·x`, least squares | [FPP3 §7](https://otexts.com/fpp3/regression.html) |
-| Forecast (alt) | ARIMA / SARIMA (lazy) | autoregressive + moving average | [FPP3 §9](https://otexts.com/fpp3/arima.html) · [`arima`](https://github.com/zemlyansky/arima) |
-| Confidence band | residual spread | `ŷ ± z·σ·√h` (z = 1.96 for 95%) | [FPP3 §5.5](https://otexts.com/fpp3/prediction-intervals.html) |
-| Accuracy | rolling-origin backtest | `MAPE = mean(abs(y−ŷ)/abs(y))·100`; `RMSE = √mean((y−ŷ)²)` | [FPP3 §5.8](https://otexts.com/fpp3/accuracy.html) |
-| Seasonality | STL decomposition | trend + seasonal + remainder (Loess) | [FPP3 §3.6](https://otexts.com/fpp3/stl.html) |
-| Simulation | Monte Carlo | resample residuals over N paths → outcome distribution | [Hyndman, simulation](https://otexts.com/fpp3/simulation.html) |
-| Anomaly | z-score | `z = (x−μ)/σ`; flag `abs(z) > k` (k≈3) | [NIST §1.3.5.17](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm) |
-| Anomaly | IQR (Tukey fences) | flag `x < Q1−1.5·IQR` or `x > Q3+1.5·IQR` | [NIST §7.1.6](https://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm) |
-| Correlation (scatter) | Pearson *r* | `r = cov(x,y)/(σₓσᵧ)` | [FPP3 §7.1](https://otexts.com/fpp3/regression.html) |
-| Embeddings | cosine similarity | `cos = (a·b)/(‖a‖·‖b‖)`; MiniLM vectors | [Transformers.js](https://huggingface.co/docs/transformers.js) |
+| **Project a trend forward** - carries the recent level and slope ahead; tracks a repeating season if one exists. | Holt-Winters | `ŷₜ₊ₕ = ℓₜ + h·bₜ` (level + trend updated each step) | [Exponential smoothing](https://otexts.com/fpp3/expsmooth.html) (Hyndman, ch. 8) |
+| **Fit a straight line** - the best-fit line through the points. | Linear regression (OLS) | `ŷ = a + b·x` (least squares) | [Time-series regression](https://otexts.com/fpp3/regression.html) (Hyndman, ch. 7) |
+| **Forecast with momentum** - learns how each point depends on the recent past. | ARIMA / SARIMA (loads on demand) | autoregressive + moving average | [ARIMA models](https://otexts.com/fpp3/arima.html) (Hyndman, ch. 9) · [`arima` library](https://github.com/zemlyansky/arima) |
+| **Show how sure the forecast is** - turns the model's own past errors into the 50/80/95% bands; wider further out. | Prediction interval | `ŷ ± z·σ·√h` (z = 1.96 for 95%) | [Prediction intervals](https://otexts.com/fpp3/prediction-intervals.html) (Hyndman, §5.5) |
+| **Score the accuracy** - hides recent points, re-predicts them, and reports how far off. | Rolling-origin backtest | `MAPE = mean(\|y−ŷ\|/\|y\|)·100` · `RMSE = √mean((y−ŷ)²)` | [Forecast accuracy](https://otexts.com/fpp3/accuracy.html) (Hyndman, §5.8) |
+| **Separate season from trend** - splits a series into trend + repeating season + leftover noise. | STL decomposition | trend + seasonal + remainder (Loess) | [STL decomposition](https://otexts.com/fpp3/stl.html) (Hyndman, §3.6) |
+| **Simulate many futures** - replays thousands of plausible paths for a best/worst spread. | Monte Carlo | resample residuals over N paths → outcome spread | [Bootstrap & simulation](https://otexts.com/fpp3/prediction-intervals.html) (Hyndman, §5.5) |
+| **Flag an outlier (simple)** - marks points far from the average. | z-score | `z = (x−μ)/σ`, flag `\|z\| > 3` | [Outlier detection](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm) (NIST handbook) |
+| **Flag an outlier (robust)** - marks points outside the typical middle range; shrugs off extremes. | IQR / Tukey fences | `x < Q1−1.5·IQR` or `x > Q3+1.5·IQR` | [Boxplots & fences](https://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm) (NIST handbook) |
+| **Measure a relationship** - how tightly two variables move together, from −1 to +1. | Pearson *r* | `r = cov(x,y)/(σₓ·σᵧ)` | [Correlation](https://otexts.com/fpp3/regression.html) (Hyndman, ch. 7) |
+| **Match text by meaning** - turns words into vectors so similar meanings score high. | Cosine similarity | `cos = (a·b)/(‖a‖·‖b‖)` | [Sentence embeddings](https://huggingface.co/docs/transformers.js) (Transformers.js) |
 
-## How this differs from a pandas / notebook workflow
+### vs a pandas / notebook workflow
 
-Not a replacement for your exploration - keep using pandas / R / a notebook for that. The difference
+Not a replacement for exploration - keep using pandas / R / a notebook for that. The difference
 is *where the insight runs*:
 
 | | pandas / notebook | `@michi-vz/insights` |
 | --- | --- | --- |
 | **Runs where** | your machine, offline, once | the live app, the user's browser |
-| **Output** | a static number / image you share | the *rendered* chart updates itself |
-| **Audience** | you, the analyst | your product's users |
+| **Output** | a static number / image to share | the *rendered* chart updates itself |
+| **Audience** | the analyst | your product's users |
 | **Backend** | Python runtime | none - zero server, data stays local |
-| **AI-ready** | you write the prompt by hand | the chart **is** the tool surface (MCP) |
+| **AI-ready** | the prompt is written by hand | the chart **is** the tool surface (MCP) |
 
-pandas is how *you* discover the insight; this is how you **ship** it to users and make a chart an AI
-agent can drive - same trustworthy methods, delivered at runtime.
+pandas is how an insight is *discovered*; this is how it is **shipped** to users and made into a chart
+an AI agent can drive - same trustworthy methods, delivered at runtime.
 
-## Further reading
+### Further reading
 
 - **Forecasting: Principles and Practice** (Hyndman & Athanasopoulos): <https://otexts.com/fpp3/>
 - **Model Context Protocol**: <https://modelcontextprotocol.io> · [Anthropic's announcement](https://www.anthropic.com/news/model-context-protocol)
 - **Transformers.js** (BERT/embeddings in the browser): <https://huggingface.co/docs/transformers.js>
 - **NIST/SEMATECH e-Handbook of Statistical Methods**: <https://www.itl.nist.gov/div898/handbook/>
 
-## Principles
+### Principles
 
 - **Opt-in & tree-shakeable** - unused capabilities ship zero bytes.
 - **Graceful degradation** - statistical/rule-based paths need no model; model paths fall back.

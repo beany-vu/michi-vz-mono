@@ -6,8 +6,9 @@ coverage/
 *.log
 *.tsbuildinfo
 .DS_Store
-.vitepress/cache/
-.vitepress/dist/
+**/.vitepress/cache/
+**/.vitepress/dist/
+storybook-static/
 playground/screenshot.png
 
 # AI assistant artifacts - keep ALL of these out of git (user preference)

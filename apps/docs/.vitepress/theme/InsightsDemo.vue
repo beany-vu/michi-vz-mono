@@ -4,11 +4,56 @@
 // For feature="forecast", `chart` = "line" | "fan" | "area" | "range" shows the SAME forecasting
 // on different chart types. feature="embeddings" is a model-free semantic-search widget (no chart).
 // Client-only (dynamic import) so SSR never touches the engine.
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { useLlm, LLM_CATALOG } from "./useLlm";
 
-const props = defineProps<{ feature?: string; chart?: string }>();
+const props = defineProps<{ feature?: string; chart?: string; dataset?: string }>();
 const feature = props.feature ?? "forecast";
 const chartKind = props.chart ?? "line";
+
+// Named domain datasets so one demo can show many attractive, real-world examples - just pass
+// `dataset`. Single-series ones (`pts`) suit forecast/anomaly; multi-series ones (`series`) suit
+// narration (a "top mover" needs more than one line). Forecast-only datasets carry a `threshold`.
+type DemoSeries = { label: string; color?: string; pts: [number, number][] };
+const DATASETS: Record<string, { title: string; color?: string; threshold?: { value: number; label: string }; scenarios?: { name: string; growth: number }[]; pts?: [number, number][]; series?: DemoSeries[] }> = {
+  "bank-revenue": { title: "Quarterly revenue ($M)", color: "#2563eb", threshold: { value: 200, label: "Target $200M" }, pts: [[2017, 42], [2018, 55], [2019, 63], [2020, 71], [2021, 88], [2022, 104], [2023, 121]] },
+  "pharma-enrollment": { title: "Trial enrollment (patients)", color: "#16a34a", threshold: { value: 300, label: "Target 300" }, pts: [[2019, 20], [2020, 55], [2021, 95], [2022, 150], [2023, 210]] },
+  "cpi": { title: "Inflation, CPI (%)", color: "#d97706", threshold: { value: 2, label: "2% target" }, pts: [[2017, 2.1], [2018, 2.4], [2019, 1.8], [2020, 1.2], [2021, 4.7], [2022, 8.0], [2023, 4.1]] },
+  "energy-demand": { title: "Peak demand (GW)", color: "#dc2626", threshold: { value: 60, label: "Capacity 60" }, pts: [[2017, 38], [2018, 40], [2019, 43], [2020, 42], [2021, 47], [2022, 51], [2023, 55]] },
+  "saas-mrr": { title: "Monthly recurring revenue ($k)", color: "#8e5aa8", threshold: { value: 500, label: "Target $500k" }, pts: [[2019, 30], [2020, 52], [2021, 88], [2022, 140], [2023, 205]] },
+  // Anomaly: one clear outlier per series (z-score flags it).
+  "anom-fraud": { title: "Card fraud losses ($M)", color: "#dc2626", pts: [[2016, 42], [2017, 48], [2018, 51], [2019, 55], [2020, 59], [2021, 63], [2022, 210], [2023, 68], [2024, 72]] },
+  "anom-adverse": { title: "Reported adverse events (cases)", color: "#16a34a", pts: [[2017, 12], [2018, 15], [2019, 14], [2020, 17], [2021, 16], [2022, 19], [2023, 148], [2024, 21]] },
+  "anom-latency": { title: "Peak service latency (ms)", color: "#2563eb", pts: [[2018, 120], [2019, 128], [2020, 135], [2021, 142], [2022, 1180], [2023, 150], [2024, 158]] },
+  "anom-returns": { title: "Product return rate (%)", color: "#d97706", pts: [[2016, 6.1], [2017, 6.4], [2018, 6], [2019, 6.6], [2020, 6.3], [2021, 18.7], [2022, 6.8], [2023, 6.5], [2024, 7]] },
+  "anom-gdp": { title: "Annual GDP growth (%)", color: "#8e5aa8", pts: [[2015, 2.1], [2016, 2.4], [2017, 2.2], [2018, 2.6], [2019, 2.3], [2020, -4.3], [2021, 2.5], [2022, 2.7], [2023, 2.4]] },
+  // Narration: multi-series with a clear "top mover".
+  "narr-bank-channel": { title: "Deposits by channel ($M)", series: [
+    { label: "Digital", color: "#2563eb", pts: [[2018, 46], [2019, 58], [2020, 77], [2021, 99], [2022, 124], [2023, 151], [2024, 188]] },
+    { label: "Branch", color: "#9aa4b2", pts: [[2018, 142], [2019, 133], [2020, 118], [2021, 104], [2022, 92], [2023, 79], [2024, 71]] },
+  ] },
+  "narr-pharma-sites": { title: "Enrollment by trial site (patients)", series: [
+    { label: "Lead site", color: "#16a34a", pts: [[2019, 28], [2020, 52], [2021, 84], [2022, 121], [2023, 164], [2024, 205]] },
+    { label: "Backup site", color: "#d97706", pts: [[2019, 24], [2020, 31], [2021, 37], [2022, 40], [2023, 42], [2024, 43]] },
+  ] },
+  "narr-real-wages": { title: "Real median wage (index, 2015=100)", series: [
+    { label: "Real wage", color: "#8e5aa8", pts: [[2015, 100], [2016, 101], [2017, 99], [2018, 98], [2019, 97], [2020, 96], [2021, 93], [2022, 89], [2023, 90], [2024, 92]] },
+  ] },
+  "narr-urbanisation": { title: "Population by settlement (millions)", series: [
+    { label: "Urban", color: "#2563eb", pts: [[1900, 30], [1920, 45], [1940, 68], [1960, 110], [1980, 165], [2000, 215], [2020, 250]] },
+    { label: "Rural", color: "#16a34a", pts: [[1900, 90], [1920, 85], [1940, 78], [1960, 72], [1980, 66], [2000, 62], [2020, 58]] },
+  ] },
+  "narr-energy-mix": { title: "Electricity mix (% of power)", series: [
+    { label: "Coal", color: "#6b7280", pts: [[2010, 45], [2013, 40], [2016, 33], [2019, 24], [2022, 18], [2024, 14]] },
+    { label: "Gas", color: "#d97706", pts: [[2010, 24], [2013, 27], [2016, 33], [2019, 38], [2022, 40], [2024, 41]] },
+    { label: "Renewables", color: "#16a34a", pts: [[2010, 9], [2013, 14], [2016, 21], [2019, 31], [2022, 38], [2024, 43]] },
+  ] },
+  // Scenarios: best / base / worst projection lines from the same history.
+  "scen-bank-stress": { title: "Revenue under stress ($M)", color: "#2563eb", threshold: { value: 200, label: "Plan $200M" }, scenarios: [{ name: "Upside +15%", growth: 0.15 }, { name: "Severe −20%", growth: -0.2 }], pts: [[2017, 42], [2018, 55], [2019, 63], [2020, 71], [2021, 88], [2022, 104], [2023, 121]] },
+  "scen-startup-runway": { title: "Cash on hand ($M)", color: "#dc2626", threshold: { value: 0, label: "Out of cash" }, scenarios: [{ name: "Plan holds", growth: 0.05 }, { name: "Funding slips", growth: -0.3 }], pts: [[2019, 52], [2020, 44], [2021, 37], [2022, 28], [2023, 19]] },
+  "scen-pharma-uptake": { title: "New-drug uptake (thousands of prescriptions)", color: "#16a34a", scenarios: [{ name: "Strong adoption", growth: 0.2 }, { name: "Slow adoption", growth: -0.05 }], pts: [[2020, 5], [2021, 14], [2022, 28], [2023, 46], [2024, 68]] },
+};
+const ds = props.dataset ? DATASETS[props.dataset] ?? null : null;
 
 const host = ref<HTMLDivElement>();
 const summary = ref("");
@@ -16,7 +61,7 @@ const explanation = ref("");
 const explaining = ref(false);
 const loadError = ref("");
 const warnings = ref<string[]>([]);
-const transcript = ref<Array<{ q: string; result: string }>>([]);
+const transcript = ref<Array<{ q: string; result: string; hint?: boolean }>>([]);
 const active = ref<Record<string, boolean>>({ forecast: true, zone: true, forecastZone: true, narrate: false });
 const showLineToggles = feature === "forecast" && chartKind === "line";
 // Canvas-first (faster renderer, built in parallel with SVG); toggle proves parity.
@@ -31,7 +76,15 @@ let ro: ResizeObserver | null = null;
 let raf = 0;
 
 const pt = (date: number, value: number, certainty = true) => ({ date, value, certainty });
-const width = () => Math.max(280, host.value?.clientWidth ?? 600);
+// clientWidth INCLUDES padding, so subtract the host's horizontal padding, else the canvas
+// renders wider than its container and overflows (clips the last axis label).
+const width = () => {
+  const el = host.value;
+  if (!el) return 600;
+  const cs = getComputedStyle(el);
+  const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  return Math.max(280, el.clientWidth - pad);
+};
 
 const LINE: Record<string, { label: string; color?: string; series: Array<{ date: number; value: number; certainty: boolean }> }[]> = {
   forecast: [{ label: "Revenue", color: "#2563eb", series: [pt(2017, 42), pt(2018, 55), pt(2019, 63), pt(2020, 71), pt(2021, 88), pt(2022, 104), pt(2023, 121)] }],
@@ -91,8 +144,13 @@ async function search() {
 }
 
 function lineProps() {
+  const dataSet = ds
+    ? (ds.series
+        ? ds.series.map((s) => ({ label: s.label, color: s.color, series: s.pts.map((p) => pt(p[0], p[1])) }))
+        : [{ label: ds.title, color: ds.color, series: (ds.pts ?? []).map((p) => pt(p[0], p[1])) }])
+    : LINE[feature].map((s) => ({ ...s, series: s.series.map((d) => ({ ...d })) }));
   return {
-    dataSet: LINE[feature].map((s) => ({ ...s, series: s.series.map((d) => ({ ...d })) })),
+    dataSet,
     xAxisDataType: "date_annual",
     renderer: renderer.value,
     showDataPoints: true,
@@ -105,7 +163,7 @@ function lineProps() {
 function buildPlugins() {
   const p = [];
   if (feature === "forecast") {
-    if (active.value.forecast) p.push(api.forecast({ method: "holt-winters", horizon: 4, level: 0.95, threshold: { value: 200, label: "Target 200" }, zone: active.value.zone }));
+    if (active.value.forecast) p.push(api.forecast({ method: "holt-winters", horizon: 4, level: 0.95, threshold: ds?.threshold ?? { value: 200, label: "Target 200" }, scenarios: ds?.scenarios, zone: active.value.zone }));
     if (active.value.narrate) p.push(api.narrate());
   } else if (feature === "anomaly") p.push(api.anomaly({ method: "zscore", threshold: 1.5 }));
   else if (feature === "validate") p.push(api.validate());
@@ -171,6 +229,91 @@ function runTool(q: string, tool: string, args: Record<string, unknown>) {
   summary.value = chart?.getContext()?.summary ?? summary.value;
 }
 
+// Chat with the chart. Two engines: an INSTANT typo-tolerant router (offline, default) and an
+// opt-in REAL model (Qwen/Llama/Gemma via WebLLM) that reads the chart's context to interpret
+// free text. The model picks the action; the router is both the default and the fallback.
+const { loadedId: chatLlmLoaded, pct: chatLlmPct, errMsg: chatLlmErr, load: chatLlmLoad, generate: chatLlmGen } = useLlm();
+const chatQuery = ref("");
+const chatReal = ref(false); // ⚡ Instant by default
+const chatLlmId = ref("gemma-2-2b-it-q4f16_1-MLC");
+const selectedChatLlm = computed(() => LLM_CATALOG.find((m) => m.id === chatLlmId.value) ?? LLM_CATALOG[0]);
+const chatBusy = ref(false);
+const fmtSize = (mb: number) => (mb >= 1000 ? `~${(mb / 1000).toFixed(1)} GB` : `~${mb} MB`);
+const CHAT_PROMPTS = ["Which series grew the most?", "Highlight North", "Hide everything except East", "Show all"];
+const SERIES = ["North", "South", "East"];
+function say(q: string, result: string) { transcript.value = [...transcript.value, { q, result, hint: true }]; }
+
+// Tiny edit-distance (Levenshtein), dependency-free, to forgive typos like "hilight" / "sumarize".
+function editDist(a: string, b: string) {
+  const m = a.length, n = b.length;
+  const d: number[][] = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[m][n];
+}
+function closest(w: string, words: string[], max: number) {
+  let best: string | null = null, bd = max + 1;
+  for (const c of words) { const e = editDist(w, c.toLowerCase()); if (e < bd) { bd = e; best = c; } }
+  return bd <= max ? best : null;
+}
+const ACTION_WORDS: Record<string, string> = { summarize: "summary", summary: "summary", describe: "summary", highlight: "highlight", show: "highlight", hide: "hide", remove: "hide", reset: "showall", clear: "showall" };
+function fuzzyIntent(text: string) {
+  const t = text.toLowerCase();
+  const words = t.split(/[^a-z]+/).filter(Boolean);
+  let action: string | null = null, series: string | null = null;
+  if (/show all|reset|clear|everything|unhide/.test(t)) action = "showall";
+  for (const w of words) {
+    if (!series) { const s = closest(w, SERIES, w.length <= 4 ? 1 : 2); if (s) series = s; }
+    if (!action) { const a = closest(w, Object.keys(ACTION_WORDS), w.length <= 4 ? 1 : 2); if (a) action = ACTION_WORDS[a]; }
+  }
+  if (!action && /grew|most|top|biggest|winner|mover|rose|fell/.test(t)) action = "summary";
+  if (/except|only|just/.test(t) && series) action = "isolate"; // "hide everything except East"
+  return { action, series };
+}
+function routeIntent(text: string, action: string | null, series: string | null) {
+  if (action === "summary") runTool(text, "summarize_chart", { chart: "sales" });
+  else if (action === "showall") { runTool(text, "set_disabled", { chart: "sales", labels: [] }); runTool(text, "highlight", { chart: "sales", labels: [] }); }
+  else if (action === "isolate" && series) runTool(text, "set_disabled", { chart: "sales", labels: SERIES.filter((s) => s !== series) });
+  else if (action === "hide" && series) runTool(text, "set_disabled", { chart: "sales", labels: [series] });
+  else if (action === "highlight" && series) runTool(text, "highlight", { chart: "sales", labels: [series] });
+  else if (series) say(text, `Did you mean "highlight ${series}" or "hide ${series}"?`);
+  else if (action) say(text, `Which series? Try "highlight North" or "hide South".`);
+  else say(text, `Try: "which series grew the most?", "highlight North", "hide South", or "show all".`);
+}
+
+async function sendChat(preset?: string) {
+  const text = (typeof preset === "string" ? preset : chatQuery.value).trim();
+  if (!text || !registry || chatBusy.value) return;
+  chatQuery.value = "";
+  // Real model: let the chosen LLM read the chart + pick an action (typo-tolerant by nature).
+  if (chatReal.value && chatLlmLoaded.value) {
+    chatBusy.value = true;
+    try {
+      const ctx = chart?.getContext?.()?.summary ?? "";
+      const prompt = `You control a chart with series North, South, East. Context: ${ctx}\nThe user says: "${text}".\nReply with EXACTLY one line, nothing else: SUMMARY, or HIGHLIGHT <series>, or HIDE <series>, or SHOWALL.`;
+      const reply = (await chatLlmGen(prompt, 12)).toUpperCase();
+      const series = SERIES.find((s) => reply.includes(s.toUpperCase())) ?? null;
+      let action: string | null = null;
+      if (/SUMMAR/.test(reply)) action = "summary";
+      else if (/SHOW ?ALL|RESET/.test(reply)) action = "showall";
+      else if (/HIDE/.test(reply)) action = "hide";
+      else if (/HIGHLIGHT|SHOW/.test(reply)) action = "highlight";
+      if (action) { routeIntent(text, action, series); return; } // else fall through to the router
+    } catch { /* model error → fall through to the instant router */ }
+    finally { chatBusy.value = false; }
+  }
+  // Instant router (default + fallback)
+  const { action, series } = fuzzyIntent(text);
+  routeIntent(text, action, series);
+}
+
+async function loadChatModel() {
+  if (chatBusy.value || chatLlmLoaded.value === selectedChatLlm.value.id) return;
+  chatBusy.value = true;
+  try { await chatLlmLoad(selectedChatLlm.value); } catch { /* chatLlmErr surfaced in the panel */ } finally { chatBusy.value = false; }
+}
+
 onMounted(async () => {
   try {
     const [core, ins] = await Promise.all([import("@michi-vz/core"), import("@michi-vz/insights")]);
@@ -199,7 +342,7 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 <template>
   <div class="insights-demo">
     <div class="insights-demo-bar">
-      <span class="insights-demo-title">Live · {{ feature }}<span v-if="feature === 'forecast'"> · {{ chartKind }}</span></span>
+      <span class="insights-demo-title">Live · {{ feature }}<span v-if="ds"> · {{ ds.title }}</span><span v-else-if="feature === 'forecast'"> · {{ chartKind }}</span></span>
       <div class="insights-demo-toggles">
         <span class="idemo-rtoggle" role="group" aria-label="renderer">
           <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">Canvas</button>
@@ -265,8 +408,37 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
         <span v-else> no warnings</span>
       </div>
 
+      <div v-if="feature === 'agent'" class="idemo-chat ai-glow">
+        <div class="idemo-chat-engine">
+          <div class="idemo-modes" role="group" aria-label="Chat engine">
+            <button :class="{ on: !chatReal }" @click="chatReal = false" title="Instant: a typo-tolerant matcher routes your words to the chart's tools - offline, no download.">⚡ Instant</button>
+            <button :class="{ on: chatReal }" @click="chatReal = true" title="Real model: a small in-browser LLM (Qwen / Llama / Gemma) reads the chart and interprets your message. Falls back to Instant.">Real model</button>
+          </div>
+          <template v-if="chatReal">
+            <select v-model="chatLlmId" :disabled="chatBusy" aria-label="chat model">
+              <option v-for="m in LLM_CATALOG" :key="m.id" :value="m.id">{{ m.name }} · {{ fmtSize(m.sizeMB) }}</option>
+            </select>
+            <button class="idemo-chip" :class="{ ready: chatLlmLoaded === selectedChatLlm.id }" @click="loadChatModel" :disabled="chatBusy">
+              <span v-if="chatBusy && chatLlmLoaded !== selectedChatLlm.id">Loading… {{ chatLlmPct }}%</span>
+              <span v-else-if="chatLlmLoaded === selectedChatLlm.id">✓ {{ selectedChatLlm.name }}</span>
+              <span v-else>⚡ Load {{ selectedChatLlm.name }}</span>
+            </button>
+          </template>
+        </div>
+        <div class="idemo-chat-row">
+          <input v-model="chatQuery" @keyup.enter="sendChat()" :disabled="chatBusy" :placeholder="chatBusy ? 'Thinking…' : 'Ask the chart… e.g. hilight North, then hide South'" aria-label="chat with the chart" />
+          <button class="idemo-chip explain" @click="sendChat()" :disabled="chatBusy">Send ▸</button>
+        </div>
+        <div class="idemo-chat-suggest">
+          <span>Paste one:</span>
+          <button v-for="p in CHAT_PROMPTS" :key="p" @click="sendChat(p)">{{ p }}</button>
+        </div>
+        <p v-if="chatReal && chatLlmErr" class="idemo-chat-warn">⚠ {{ chatLlmErr }} (needs a recent Chrome/Edge with WebGPU). The instant matcher still works.</p>
+        <p class="idemo-chat-warn"><strong>Typo-tolerant</strong> - understands near-misses like "hilight east" and suggests a fix when unsure. A model can be confidently wrong and different models answer differently, so <strong>don't trust AI blindly</strong> - verify before you act.</p>
+      </div>
+
       <div v-if="feature === 'agent' && transcript.length" class="insights-demo-transcript">
-        <div v-for="(t, i) in transcript" :key="i" class="idemo-turn"><code>{{ t.q }}</code> → {{ t.result }}</div>
+        <div v-for="(t, i) in transcript" :key="i" class="idemo-turn" :class="{ hint: t.hint }"><code>{{ t.q }}</code> <span class="idemo-turn-arw">{{ t.hint ? "⚠ not sure -" : "→" }}</span> {{ t.result }}</div>
       </div>
     </template>
   </div>
@@ -290,6 +462,32 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 .insights-demo-warnings ul { margin: 4px 0 0; padding-left: 18px; }
 .idemo-turn { font-size: 12.5px; padding: 2px 0; }
 .idemo-turn code { color: var(--vp-c-brand-1); }
+/* a "did you mean / not sure" hint stands out from a successful tool result */
+.idemo-turn.hint { color: #8a5a00; background: rgba(231, 177, 67, 0.16); border-left: 2px solid var(--mv-gold-bright, #e7b143); border-radius: 0 6px 6px 0; padding: 4px 10px; margin: 3px 0; }
+.dark .idemo-turn.hint { color: #e7b143; background: rgba(231, 177, 67, 0.12); }
+.idemo-turn.hint .idemo-turn-arw { font-weight: 600; }
+
+/* chat-with-the-chart input */
+.idemo-chat { margin: 0 16px 12px; }
+.idemo-chat-row { display: flex; gap: 8px; }
+.idemo-chat-row input { flex: 1; min-width: 0; font: inherit; font-size: 13px; padding: 7px 12px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg); color: var(--vp-c-text-1); }
+.idemo-chat-row input:focus { outline: none; border-color: var(--vp-c-brand-1); box-shadow: 0 0 0 2px var(--vp-c-brand-soft); }
+.idemo-chat-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--vp-c-text-3); }
+.idemo-chat-suggest button { font: inherit; font-size: 12px; padding: 3px 10px; border: 1px solid var(--vp-c-divider); border-radius: 999px; background: var(--vp-c-bg); color: var(--vp-c-text-2); cursor: pointer; }
+.idemo-chat-suggest button:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
+.idemo-chat-warn { margin: 8px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--vp-c-text-3); }
+/* chat engine: Instant / Real-model toggle + model picker */
+.idemo-chat-engine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+.idemo-modes { display: inline-flex; border: 1px solid var(--vp-c-divider); border-radius: 999px; overflow: hidden; }
+.idemo-modes button { font: inherit; font-size: 12px; padding: 4px 12px; border: none; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
+.idemo-modes button.on { background: var(--vp-c-brand-1); color: #fff; }
+.idemo-chat select { font: inherit; font-size: 12px; padding: 5px 28px 5px 10px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background-color: var(--vp-c-bg); color: var(--vp-c-text-1); cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; background-size: 11px; }
+.idemo-chip.ready { background: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); color: #fff; }
+.idemo-chip:disabled { opacity: 0.7; cursor: progress; }
+/* AI glow: a calm pulse between Geneva crest-red and gold around the chat */
+@keyframes ai-glow { 0%, 100% { box-shadow: 0 0 0 1px rgba(147, 31, 26, 0.16), 0 0 13px -4px rgba(147, 31, 26, 0.4); } 50% { box-shadow: 0 0 0 1px rgba(231, 177, 67, 0.34), 0 0 22px -2px rgba(231, 177, 67, 0.5); } }
+.idemo-chat.ai-glow { padding: 13px; border: 1px solid var(--vp-c-divider); border-radius: 10px; animation: ai-glow 3.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .idemo-chat.ai-glow { animation: none; box-shadow: 0 0 14px -4px rgba(147, 31, 26, 0.4); } }
 
 /* AI loading - Nordic-minimal: calm, muted slate-blue, a breathing orb + soft dots. */
 .ai-loading { display: flex; align-items: center; gap: 10px; margin: 0 16px 14px; font-size: 13px; color: var(--vp-c-text-3); }

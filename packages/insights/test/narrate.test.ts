@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { narrateRules, explainChart, narrate } from "../src/narrate";
-import type { LineChartContext } from "@michi-vz/core";
+import type { LineChartContext, TreemapChartContext } from "@michi-vz/core";
 
 const lineCtx: LineChartContext = {
   chartType: "line-chart",
@@ -51,5 +51,35 @@ describe("narrate", () => {
   it("narrate() plugin rewrites the summary", () => {
     const out = narrate().enrichContext!(lineCtx, {} as never);
     expect(out.summary).toContain("A rose the most");
+  });
+
+  // The treemap is a non-time-series chart, so forecast/anomaly don't apply — but it
+  // IS a first-class insight via the generic narrate/explain path (its rich summary
+  // carries the realized/untapped headline + biggest opportunity).
+  it("narrates a treemap from its summary (insight coverage)", async () => {
+    const treemapCtx: TreemapChartContext = {
+      chartType: "treemap-chart",
+      renderer: "svg",
+      layout: "squarify",
+      splitLabels: ["Realized", "Untapped"],
+      leaves: [],
+      depth: 2,
+      stats: {
+        leafCount: 3,
+        grandTotal: 300,
+        totalPartial: 120,
+        totalRemainder: 180,
+        largestLeaf: { label: "Machinery", value: 120 },
+        largestRemainder: { label: "Fruits", remainder: 66 },
+      },
+      colorsMapping: {},
+      summary:
+        "Treemap with 3 tiles across 2 groups. Largest: Machinery (120). Realized 120 of 300 (40%); Untapped 180. Biggest untapped: Fruits (66).",
+      a11yTable: { headers: ["Label", "Value", "Realized", "Untapped", "%"], rows: [] },
+    };
+    const text = narrateRules(treemapCtx);
+    expect(text).toContain("Untapped");
+    expect(text).toContain("Biggest untapped: Fruits");
+    expect(await explainChart(treemapCtx, { backend: "rules" })).toBe(text);
   });
 });

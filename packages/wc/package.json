@@ -74,6 +74,11 @@
       "types": "./dist/fan-chart.d.ts",
       "import": "./dist/fan-chart.js",
       "require": "./dist/fan-chart.cjs"
+    },
+    "./treemap-chart": {
+      "types": "./dist/treemap-chart.d.ts",
+      "import": "./dist/treemap-chart.js",
+      "require": "./dist/treemap-chart.cjs"
     }
   },
   "scripts": {

@@ -830,6 +830,8 @@ export interface FanChartProps {
   locale?: string;
   skipColorMappingDispatch?: boolean;
   enableTransitions?: boolean;
+  /** Custom HTML for the tooltip (DOMPurify-sanitized; may include `<a href>` links). */
+  tooltipFormatter?: (item: FanDataItem, lastPoint: DataPoint | null) => string;
   onHighlightItem?: (labels: string[]) => void;
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   onChartDataProcessed?: (context: ChartContext) => void;
@@ -860,6 +862,175 @@ export interface FanChartContext extends BaseChartContext {
   stats: { seriesCount: number; forecastHorizon: number };
 }
 
+// ---- TreemapChart (hierarchical squarified tiling; optional two-part split per leaf) ----
+// Each leaf's rect is sized by `value`; an optional `partial` sub-value splits the rect into a
+// solid primary part (width = partial/value) and a lighter remainder. The two parts are named by a
+// configurable `splitLabels` (e.g. ["Realized","Untapped"]) — nothing here hardcodes domain words.
+// Parents render as padded containers with a header label. Generic "part-of-a-total in a tile".
+
+export interface TreemapNode {
+  /** Node name (drives data-label, the colour group, legend, and the leaf label). */
+  label: string;
+  code?: string;
+  /** Leaf size; for a parent the value is derived as the sum of its children. */
+  value?: number;
+  /** Emphasized sub-portion of a leaf (0..value); remainder = value - partial. Omit for single-fill. */
+  partial?: number;
+  color?: string;
+  children?: TreemapNode[];
+}
+
+export interface TreemapChartProps {
+  dataSet: TreemapNode[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  /** Gap between sibling tiles in px (default 1). */
+  paddingInner?: number;
+  /** Header strip height (px) reserved on parent tiles for their label in nested mode (default 18). */
+  paddingTop?: number;
+  /** Layout algorithm: "squarify" (treemap, default), "stack" (single-column, mobile-friendly),
+   * or "auto" (stack below `stackBreakpoint` width). */
+  layout?: "squarify" | "stack" | "auto";
+  /** Width (px) below which `layout: "auto"` switches to the stack layout (default 480). */
+  stackBreakpoint?: number;
+  /** Names of the two split parts (default ["Filled","Remaining"]). */
+  splitLabels?: [string, string];
+  /** Apparent colour strength of the remainder/untapped segment in [0,1] (default 0.35).
+   * Rendered as the solid colour under a white veil, so it reads as a lighter tint of the
+   * same hue on any background (light or dark) rather than depending on the backdrop. */
+  splitOpacity?: number;
+  /** Render the primary/remainder split. Defaults to auto-on when any leaf carries `partial`. */
+  showSplit?: boolean;
+  /** Render a 2-swatch split legend (uses splitLabels). */
+  showLegend?: boolean;
+  /** Floor each leaf's tiling area to this percent of the largest leaf, so tiny tiles stay visible. */
+  minTileShare?: number;
+  /** Keep only the top-N leaves by value. */
+  filter?: { limit: number; sortingDir: "asc" | "desc" };
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  valueFormatter?: (n: number) => string;
+  tooltipFormatter?: (leaf: TreemapLeafContext) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface TreemapLeafContext {
+  label: string;
+  code?: string;
+  color: string;
+  /** Path from the top-level group to this leaf, e.g. ["Sectors","Coffee"]. */
+  path: string[];
+  value: number;
+  partial: number | null;
+  remainder: number | null;
+  /** partial / value in [0,1], or null when there's no split. */
+  partialPct: number | null;
+}
+
+export interface TreemapChartContext extends BaseChartContext {
+  chartType: "treemap-chart";
+  /** The layout actually used to place the tiles (after resolving "auto"). */
+  layout: "squarify" | "stack";
+  splitLabels: [string, string];
+  leaves: TreemapLeafContext[];
+  /** Maximum nesting depth (1 = flat). */
+  depth: number;
+  stats: {
+    leafCount: number;
+    grandTotal: number;
+    totalPartial: number | null;
+    totalRemainder: number | null;
+    largestLeaf: { label: string; value: number } | null;
+    /** Leaf with the biggest remainder (e.g. the largest untapped opportunity). */
+    largestRemainder: { label: string; remainder: number } | null;
+  };
+}
+
+// ---- PieChart (pie + donut) ----
+// One engine renders both: `innerRadiusRatio` 0 = solid pie, >0 = donut hole as a
+// fraction of the outer radius. Slices are sized by value (a part-of-a-whole share).
+
+export interface PieDataItem {
+  /** Slice name (drives data-label, the colour, the legend, and the label). */
+  label: string;
+  code?: string;
+  /** Slice size (>= 0; negatives/non-finite are clamped to 0). */
+  value: number;
+  color?: string;
+}
+
+export interface PieChartProps {
+  dataSet: PieDataItem[];
+  title?: string;
+  width?: number;
+  height?: number;
+  margin?: Margin;
+  colors?: string[];
+  colorsMapping?: Record<string, string>;
+  /** 0 = full pie (default); (0,1) = donut hole as a fraction of the outer radius. */
+  innerRadiusRatio?: number;
+  /** Gap between slices in radians (default 0). */
+  padAngle?: number;
+  /** Corner radius on the arcs in px (default 0). */
+  cornerRadius?: number;
+  /** Sort slices by value descending (default true); false keeps data order. */
+  sortByValue?: boolean;
+  /** Draw the % label inside each slice when it is large enough (default true). */
+  showLabels?: boolean;
+  /** Render a swatch+label legend below the chart (default false). */
+  showLegend?: boolean;
+  /** Keep only the top-N slices by value. */
+  filter?: { limit: number; sortingDir: "asc" | "desc" };
+  highlightItems?: string[];
+  disabledItems?: string[];
+  renderer?: "svg" | "canvas";
+  locale?: string;
+  skipColorMappingDispatch?: boolean;
+  enableTransitions?: boolean;
+  valueFormatter?: (n: number) => string;
+  tooltipFormatter?: (slice: PieSliceContext) => string;
+  onHighlightItem?: (labels: string[]) => void;
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  onChartDataProcessed?: (context: ChartContext) => void;
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface PieSliceContext {
+  label: string;
+  code?: string;
+  color: string;
+  value: number;
+  /** value / total in [0,1]. */
+  share: number;
+  /** Radians, clockwise from 12 o'clock. */
+  startAngle: number;
+  endAngle: number;
+}
+
+export interface PieChartContext extends BaseChartContext {
+  chartType: "pie-chart";
+  /** "pie" when innerRadiusRatio === 0, else "donut". */
+  mode: "pie" | "donut";
+  innerRadiusRatio: number;
+  slices: PieSliceContext[];
+  stats: {
+    sliceCount: number;
+    total: number;
+    largestSlice: { label: string; value: number; share: number } | null;
+  };
+}
+
 export type ChartContext =
   | GapChartContext
   | LineChartContext
@@ -872,7 +1043,9 @@ export type ChartContext =
   | RangeChartContext
   | RibbonChartContext
   | RadarChartContext
-  | FanChartContext;
+  | FanChartContext
+  | TreemapChartContext
+  | PieChartContext;
 
 export interface DataWarning {
   type:

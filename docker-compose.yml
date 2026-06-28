@@ -1,0 +1,22 @@
+# Run the dev apps via Docker (user preference: never start apps directly).
+#   docker compose up storybook   -> http://localhost:6006   (component workshop)
+#   docker compose up docs        -> http://localhost:5173   (VitePress docs site)
+# The repo is bind-mounted; the container installs deps with pnpm via corepack.
+services:
+  storybook:
+    image: node:22
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "6006:6006"
+    command: sh -c "corepack enable && pnpm install && pnpm --filter @michi-vz/storybook storybook --host 0.0.0.0"
+
+  docs:
+    image: node:22
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "5173:5173"
+    command: sh -c "corepack enable && pnpm install && pnpm --filter docs dev --host 0.0.0.0"

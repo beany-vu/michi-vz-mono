@@ -453,3 +453,81 @@
     animation: none;
   }
 }
+
+/* ==========================================================================
+   BOUNDED content-page elegance pass (additive, fully reversible).
+   A calm "Nordic" reading rhythm laid over the existing Geneva palette.
+   Scoped to `.vp-doc`, so the home hero + chart atlas (.VPHome / .mv-atlas)
+   are untouched. Delete this entire block to revert.
+   ========================================================================== */
+
+/* Airier reading rhythm */
+.vp-doc p,
+.vp-doc li {
+  line-height: 1.75;
+}
+.vp-doc li + li {
+  margin-top: 6px;
+}
+
+/* Section headings: drop the plain full-width rule for a restrained heraldic
+   gold tick + more breathing room (editorial, ties content to the brand). */
+.vp-doc h2 {
+  margin-top: 60px;
+  padding-top: 0;
+  border-top: 0;
+}
+.vp-doc h2::before {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 2px;
+  margin-bottom: 18px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--mv-brick, #b23a2e), var(--mv-gold, #cda14a));
+}
+.vp-doc h3 {
+  margin-top: 38px;
+}
+
+/* Code: one calm hairline frame with soft corners (single frame for groups). */
+.vp-doc div[class*="language-"] {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+}
+.vp-doc .vp-code-group {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.vp-doc .vp-code-group div[class*="language-"] {
+  border: 0;
+  border-radius: 0;
+}
+.vp-doc .vp-code-group .tabs {
+  border-radius: 10px 10px 0 0;
+}
+
+/* Callouts: rounded with a restrained accent rail. */
+.vp-doc .custom-block {
+  border-radius: 10px;
+  border-left-width: 3px;
+}
+
+/* Tables: calm header + roomier cells (keep VitePress responsive scroll). */
+.vp-doc th {
+  background: var(--vp-c-bg-soft);
+}
+.vp-doc th,
+.vp-doc td {
+  padding: 9px 14px;
+}
+
+/* Blockquotes: an elegant gold rule (the heraldic accent). */
+.vp-doc blockquote {
+  border-left: 3px solid var(--mv-gold, #cda14a);
+  background: var(--vp-c-bg-soft);
+  border-radius: 0 8px 8px 0;
+  padding: 4px 18px;
+  color: var(--vp-c-text-2);
+}

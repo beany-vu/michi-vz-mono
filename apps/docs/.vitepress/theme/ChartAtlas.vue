@@ -19,6 +19,7 @@ const CARDS = [
   { examplesKey: "dual-horizontal-bar-chart", slug: "dual", name: "Dual Bar", family: "Comparison", roman: "X", blurb: "Diverging bars from a centre line: population pyramids and tornado charts.", tag: "<michi-vz-dual-horizontal-bar-chart> · SVG/canvas" },
   { examplesKey: "bar-bell-chart", slug: "bar-bell", name: "Bar-Bell", family: "Composition", roman: "XI", blurb: "Cumulative horizontal segments per row with end-cap circles at each step.", tag: "<michi-vz-bar-bell-chart> · SVG/canvas" },
   { examplesKey: "gap-chart", slug: "gap", name: "Gap", family: "Comparison", roman: "XII", blurb: "Two values per label joined by a gap bar that emphasises the difference.", tag: "<michi-vz-gap-chart> · SVG/canvas" },
+  { examplesKey: "treemap-chart", slug: "treemap", name: "Treemap", family: "Composition", roman: "XIII", blurb: "Hierarchical tiles sized by value; each splits into two parts (e.g. realized vs untapped). Falls back to a stack on narrow screens.", tag: "<michi-vz-treemap-chart> · SVG/canvas" },
 ];
 
 const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation"];
@@ -32,7 +33,6 @@ const visible = (family: string) => active.value === "All" || active.value === f
       <span class="mv-mark">&#10022;</span>
       <h2>Chart atlas</h2>
       <span class="mv-rule"></span>
-      <span class="mv-section-roman">§ I</span>
     </div>
     <p class="mv-lede">
       Pick a chart by the question you are asking. Every card is a live component on real data:
@@ -54,7 +54,7 @@ const visible = (family: string) => active.value === "All" || active.value === f
     </div>
 
     <div class="mv-grid">
-      <CatalogCard v-for="c in CARDS" v-show="visible(c.family)" :key="c.slug" v-bind="c" />
+      <CatalogCard v-for="(c, i) in CARDS" v-show="visible(c.family)" :key="c.slug" v-bind="c" :roman="String(i + 1)" />
     </div>
   </section>
 </template>

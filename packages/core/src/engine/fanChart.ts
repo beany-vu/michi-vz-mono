@@ -130,9 +130,11 @@ export function mountFanChart(
     tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
     const item = baseProps.dataSet.find((it) => it.label === label);
     const last = item && item.series.length ? item.series[item.series.length - 1] : null;
-    tooltip.innerHTML = DOMPurify.sanitize(
-      `<strong>${label}</strong>` + (last ? `<br/>${String(last.date)}: ${last.value}` : "")
-    );
+    const htmlStr =
+      baseProps.tooltipFormatter && item
+        ? baseProps.tooltipFormatter(item, last)
+        : `<strong>${label}</strong>` + (last ? `<br/>${String(last.date)}: ${last.value}` : "");
+    tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
   };
   const hideTooltip = (): void => {

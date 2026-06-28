@@ -30,6 +30,7 @@ export const CHARTS = [
   { key: "dual-horizontal-bar-chart", propsType: "DualBarChartProps", element: "michi-vz-dual-horizontal-bar-chart", engine: "dualHorizontalBarChart.ts", wc: "dual-horizontal-bar-chart.ts", context: "DualBarChartContext", mount: "mountDualHorizontalBarChart" },
   { key: "bar-bell-chart", propsType: "BarBellChartProps", element: "michi-vz-bar-bell-chart", engine: "barBellChart.ts", wc: "bar-bell-chart.ts", context: "BarBellChartContext", mount: "mountBarBellChart" },
   { key: "gap-chart", propsType: "GapChartProps", element: "michi-vz-gap-chart", engine: "gapChart.ts", wc: "gap-chart.ts", context: "GapChartContext", mount: "mountGapChart" },
+  { key: "treemap-chart", propsType: "TreemapChartProps", element: "michi-vz-treemap-chart", engine: "treemapChart.ts", wc: "treemap-chart.ts", context: "TreemapChartContext", mount: "mountTreemapChart" },
 ];
 
 // Props shared (identical type) across (almost) every chart - flagged `common`

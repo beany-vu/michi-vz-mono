@@ -60,8 +60,15 @@ export function drawStackCanvas(
   ctx.globalAlpha = 1;
 
   // Series abbreviation labels (width>=20 already enforced in the model).
+  // Read font size/family off the SVG so canvas honours --michi-vz-font-size/-family.
+  const cs =
+    svg && typeof window !== "undefined" && window.getComputedStyle
+      ? window.getComputedStyle(svg)
+      : null;
+  const fs = (cs && parseFloat(cs.getPropertyValue("--michi-vz-font-size"))) || 12;
+  const fam = (cs && cs.fontFamily) || "sans-serif";
   ctx.fillStyle = "#000";
-  ctx.font = "12px sans-serif";
+  ctx.font = `${Math.round(fs)}px ${fam}`;
   ctx.textAlign = "center";
   for (const lbl of model.abbrevLabels) ctx.fillText(lbl.text, lbl.x, lbl.y);
 }

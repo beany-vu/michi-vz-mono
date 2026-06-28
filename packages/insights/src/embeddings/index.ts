@@ -118,3 +118,85 @@ export async function findSimilar<T>(
     .map((item, i) => ({ item, score: cosineSimilarity(q, vecs[i]) }))
     .sort((a, b) => b.score - a.score);
 }
+
+export interface ReconcileGroup {
+  /** Representative label for the group (the cluster medoid). */
+  name: string;
+  /** Every raw label that merged into this group, in encounter order. */
+  members: string[];
+}
+
+export interface ReconcileOptions extends EmbedOptions {
+  /** Minimum cosine to merge into a group. Default: 0.7 (transformers) / 0.6 (hash). */
+  threshold?: number;
+  /** Confidence gate: a label only merges when it is at least this much closer to its best
+   * group than to the next-best (best - secondBest >= margin). Default 0.05; set 0 to disable. */
+  margin?: number;
+  /** Reuse a prebuilt embedder instead of creating one from the EmbedOptions. */
+  embedder?: Embedder;
+}
+
+/** Pick a group's representative: the MEDOID (member closest to all the others), with a small
+ * tidiness nudge toward a clean Title-Case, single-spaced name so groups read naturally. */
+function medoid(members: string[], vecs: number[][]): string {
+  let best = 0;
+  let bestScore = -Infinity;
+  for (let i = 0; i < members.length; i++) {
+    let s = 0;
+    for (let j = 0; j < members.length; j++) if (i !== j) s += cosineSimilarity(vecs[i], vecs[j]);
+    if (/^[A-Z][a-z]/.test(members[i]) && !/\s{2,}/.test(members[i])) s += 1e-3;
+    if (s > bestScore) {
+      bestScore = s;
+      best = i;
+    }
+  }
+  return members[best];
+}
+
+/** Merge messy labels that mean the same thing. The same entity often arrives spelled many
+ * ways ("United States" / "united states" / "USA"); grouping by exact match splits it into
+ * several buckets with wrong totals. This embeds each label and greedily clusters by cosine
+ * similarity (single-linkage), with a confidence gate so a label only joins a group when it is
+ * decisively closer to it than to any other - distinct entities never collapse just by being
+ * near. Returns groups whose `name` is the medoid; sum your series by `name` for clean totals.
+ *
+ * The model-free default merges spelling/case/typos offline; `{ backend: "transformers" }` also
+ * merges synonyms/abbreviations/translations. For authoritative canonical names (USA ->
+ * United States), pair this with an alias list or an LLM (see the docs "Certify" recipe). */
+export async function reconcileLabels(
+  labels: string[],
+  options: ReconcileOptions = {}
+): Promise<ReconcileGroup[]> {
+  const embedder = options.embedder ?? (await createEmbedder(options));
+  const threshold = options.threshold ?? (embedder.backend === "transformers" ? 0.7 : 0.6);
+  const margin = options.margin ?? 0.05;
+  const vecs = await embedder.embed(labels);
+  const clusters: { members: string[]; vecs: number[][] }[] = [];
+  labels.forEach((label, i) => {
+    let best: (typeof clusters)[number] | null = null;
+    let bestSim = -Infinity;
+    let secondSim = -Infinity;
+    for (const c of clusters) {
+      let s = 0;
+      for (const v of c.vecs) {
+        const x = cosineSimilarity(vecs[i], v);
+        if (x > s) s = x; // single-linkage: closeness to the nearest member
+      }
+      if (s > bestSim) {
+        secondSim = bestSim;
+        bestSim = s;
+        best = c;
+      } else if (s > secondSim) {
+        secondSim = s;
+      }
+    }
+    const confident = best && bestSim >= threshold && (secondSim < 0 || bestSim - secondSim >= margin);
+    if (confident && best) {
+      best.members.push(label);
+      best.vecs.push(vecs[i]);
+    } else {
+      clusters.push({ members: [label], vecs: [vecs[i]] });
+    }
+  });
+  return clusters.map((c) => ({ name: medoid(c.members, c.vecs), members: c.members }));
+}

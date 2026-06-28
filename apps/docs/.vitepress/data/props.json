@@ -534,6 +534,14 @@
           "common": true
         },
         {
+          "name": "tooltipFormatter",
+          "type": "(item: FanDataItem, lastPoint: DataPoint | null) => string",
+          "optional": true,
+          "description": "Custom HTML for the tooltip (DOMPurify-sanitized; may include `<a href>` links).",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
@@ -2736,6 +2744,246 @@
         {
           "name": "onHighlightItem",
           "type": "(item: GapDataItem | null) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "treemap-chart": {
+      "element": "michi-vz-treemap-chart",
+      "propsType": "TreemapChartProps",
+      "context": "TreemapChartContext",
+      "mount": "mountTreemapChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "TreemapNode[]",
+          "optional": false,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "default": "520",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "",
+          "default": "{ top: 36, right: 6, bottom: 6, left: 6 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "paddingInner",
+          "type": "number",
+          "optional": true,
+          "description": "Gap between sibling tiles in px (default 1).",
+          "default": "1",
+          "common": false
+        },
+        {
+          "name": "paddingTop",
+          "type": "number",
+          "optional": true,
+          "description": "Header strip height (px) reserved on parent tiles for their label in nested mode (default 18).",
+          "default": "18",
+          "common": false
+        },
+        {
+          "name": "layout",
+          "type": "\"squarify\" | \"stack\" | \"auto\"",
+          "optional": true,
+          "description": "Layout algorithm: \"squarify\" (treemap, default), \"stack\" (single-column, mobile-friendly), or \"auto\" (stack below `stackBreakpoint` width).",
+          "default": "\"squarify\"",
+          "common": false
+        },
+        {
+          "name": "stackBreakpoint",
+          "type": "number",
+          "optional": true,
+          "description": "Width (px) below which `layout: \"auto\"` switches to the stack layout (default 480).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "splitLabels",
+          "type": "[string, string]",
+          "optional": true,
+          "description": "Names of the two split parts (default [\"Filled\",\"Remaining\"]).",
+          "default": "[\"Filled\", \"Remaining\"]",
+          "common": false
+        },
+        {
+          "name": "splitOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "Apparent colour strength of the remainder/untapped segment in [0,1] (default 0.35). Rendered as the solid colour under a white veil, so it reads as a lighter tint of the same hue on any background (light or dark) rather than depending on the backdrop.",
+          "default": "0.35",
+          "common": false
+        },
+        {
+          "name": "showSplit",
+          "type": "boolean",
+          "optional": true,
+          "description": "Render the primary/remainder split. Defaults to auto-on when any leaf carries `partial`.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showLegend",
+          "type": "boolean",
+          "optional": true,
+          "description": "Render a 2-swatch split legend (uses splitLabels).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "minTileShare",
+          "type": "number",
+          "optional": true,
+          "description": "Floor each leaf's tiling area to this percent of the largest leaf, so tiny tiles stay visible.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "filter",
+          "type": "{ limit: number; sortingDir: \"asc\" | \"desc\" }",
+          "optional": true,
+          "description": "Keep only the top-N leaves by value.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\"",
+          "optional": true,
+          "description": "",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "valueFormatter",
+          "type": "(n: number) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(leaf: TreemapLeafContext) => string",
+          "optional": true,
+          "description": "",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
           "optional": true,
           "description": "",
           "default": "",

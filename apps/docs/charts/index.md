@@ -3,7 +3,7 @@ title: Charts
 ---
 # Chart catalog
 
-Twelve framework-agnostic charts. Each page has a live example, usage across every framework, and an LLM-context panel.
+Thirteen framework-agnostic charts. Each page has a live example, usage across every framework, and an LLM-context panel.
 
 - [**Line Chart**](/charts/line) - _Trends_ · Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
 - [**Fan Chart**](/charts/fan) - _Trends · Forecast_ · A forecast fan: history, a dashed forecast median, and nested confidence bands that widen with the horizon (composed from Line + Range).
@@ -17,3 +17,4 @@ Twelve framework-agnostic charts. Each page has a live example, usage across eve
 - [**Dual Horizontal Bar (Tornado)**](/charts/dual) - _Comparison_ · Diverging bars from a centre line - value1 right, value2 left (population pyramids, tornado charts).
 - [**Bar-Bell**](/charts/bar-bell) - _Composition_ · Cumulative horizontal segments per row with end-cap circles marking each step.
 - [**Gap Chart**](/charts/gap) - _Comparison_ · Two values per label joined by a gap bar - emphasises the difference between them.
+- [**Treemap**](/charts/treemap) - _Composition_ · Hierarchical tiles sized by value, each optionally split into two parts (e.g. realized vs untapped) - with a mobile-friendly stack layout.

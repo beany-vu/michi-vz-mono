@@ -14,6 +14,7 @@ export { mountRangeChart } from "./engine/rangeChart";
 export { mountRibbonChart } from "./engine/ribbonChart";
 export { mountRadarChart } from "./engine/radarChart";
 export { mountFanChart } from "./engine/fanChart";
+export { mountTreemapChart } from "./engine/treemapChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -34,6 +35,7 @@ export { DEFAULT_COLORS } from "./theme/colors";
 
 // ---- Pure utilities (reused by wrappers, insights, tests) ----
 export { sanitizeForClassName } from "./math/sanitize";
+export { readableTextColor, relativeLuminance } from "./math/contrast";
 export { processGapChartData } from "./gapChart/data";
 export { buildGapColors } from "./gapChart/colors";
 export { buildGapContext } from "./context/buildContext";
@@ -91,6 +93,13 @@ export { buildRadarColors } from "./radarChart/colors";
 export { buildRadarContext } from "./context/buildRadarContext";
 // FanChart (composes Line + Range; forecast fan)
 export { buildFanContext } from "./context/buildFanContext";
+// Treemap pure layer (hierarchical squarified tiling + two-part split)
+export { processTreemapData } from "./treemapChart/data";
+export { buildTreemapColors } from "./treemapChart/colors";
+export { layoutTreemap, layoutStack } from "./treemapChart/layout";
+export { buildTreemapRenderModel } from "./treemapChart/renderModel";
+export { buildTreemapContext } from "./context/buildTreemapContext";
+export { checkTreemapData } from "./validate/treemapWarnings";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -188,4 +197,8 @@ export type {
   FanChartProps,
   FanSeriesContext,
   FanChartContext,
+  TreemapNode,
+  TreemapChartProps,
+  TreemapLeafContext,
+  TreemapChartContext,
 } from "./types";

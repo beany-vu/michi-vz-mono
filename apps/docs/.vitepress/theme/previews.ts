@@ -24,6 +24,7 @@ import {
   mountBarBellChart,
   mountGapChart,
   mountFanChart,
+  mountTreemapChart,
 } from "@michi-vz/core";
 import type {
   ChartInstance,
@@ -39,6 +40,7 @@ import type {
   DualBarChartProps,
   BarBellChartProps,
   GapChartProps,
+  TreemapChartProps,
 } from "@michi-vz/core";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -229,6 +231,23 @@ export const previews: Record<string, Preview> = {
         { label: "d", value1: 13, value2: 8 },
       ],
     } satisfies GapChartProps,
+  },
+
+  "treemap-chart": {
+    mount: mountTreemapChart as Mount,
+    props: {
+      splitOpacity: 0.4,
+      paddingInner: 2,
+      dataSet: [
+        { label: "A", value: 40, partial: 27, color: BLUE },
+        { label: "B", value: 30, partial: 11, color: GOLD },
+        { label: "C", value: 24, partial: 16, color: RED },
+        { label: "D", value: 18, partial: 13, color: GREEN },
+        { label: "E", value: 14, partial: 5, color: PLUM },
+        { label: "F", value: 11, partial: 7, color: BLUE },
+        { label: "G", value: 8, partial: 3, color: RED },
+      ],
+    } satisfies TreemapChartProps,
   },
 
   "fan-chart": {

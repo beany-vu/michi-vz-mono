@@ -12,21 +12,31 @@ export const CORE_CSS = `
 .michi-vz {
   position: relative;
   font-family: var(--michi-vz-font-family, system-ui, -apple-system, sans-serif);
+  /* One global knob for ALL chart text (SVG + canvas). Per-role sizes scale off it. */
+  font-size: var(--michi-vz-font-size, 12px);
 }
 .michi-vz svg { overflow: visible; display: block; }
-.michi-vz .title { font-size: 16px; font-weight: 600; fill: var(--michi-vz-ink, #2a1c15); }
+.michi-vz .title { font-size: calc(var(--michi-vz-font-size, 12px) * 1.33); font-weight: 600; fill: var(--michi-vz-ink, currentColor); }
 .michi-vz .gap-line { stroke-width: 2; fill: none; }
-.michi-vz .mv-axis-label { fill: var(--michi-vz-muted, #666); font-size: 12px; }
+.michi-vz .mv-axis-label { fill: var(--michi-vz-muted, #666); font-size: var(--michi-vz-font-size, 12px); }
 .michi-vz .mv-grid { stroke: var(--michi-vz-grid, lightgray); stroke-dasharray: 1.5; }
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
-  font-size: 12px; color: var(--michi-vz-ink, #2a1c15);
+  font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-ink, #2a1c15);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+/* Treemap / stack / annotation labels: font-size lives in CSS (NOT inline) so this
+   one var controls them; weights stay here too. */
+.michi-vz .tile-label { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); }
+.michi-vz .tile-pct { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 1.08); font-weight: 700; }
+.michi-vz .tile-group-label { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); font-weight: 600; }
+.michi-vz .treemap-legend-label { pointer-events: none; user-select: none; font-size: var(--michi-vz-font-size, 12px); }
+.michi-vz .mv-stack-abbrev { font-size: var(--michi-vz-font-size, 12px); }
+.michi-vz .mv-annotation-label { font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); }
 .michi-vz .tooltip {
   position: absolute; background: #fff; border: 1px solid #ccc; border-radius: 4px;
   padding: 8px; pointer-events: none; box-shadow: 0 2px 4px rgba(0,0,0,.1);
-  font-size: 12px; z-index: 10;
+  font-size: var(--michi-vz-font-size, 12px); z-index: 10;
 }
 .michi-vz .tooltip.sticky { pointer-events: auto; cursor: default; border-color: #666; }
 .michi-vz .mv-a11y {

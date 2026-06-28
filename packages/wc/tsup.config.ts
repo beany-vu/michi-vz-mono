@@ -15,6 +15,7 @@ export default defineConfig({
     "src/ribbon-chart.ts",
     "src/radar-chart.ts",
     "src/fan-chart.ts",
+    "src/treemap-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

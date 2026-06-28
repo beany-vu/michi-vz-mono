@@ -1,0 +1,375 @@
+/* Shared styling for the three embeddings labs (Merge / Find / Sort) + the model picker.
+ * One stylesheet instead of duplicated scoped blocks. Calm Nordic / Scandinavian feel:
+ * airy spacing, hairline borders, soft corners, a muted slate-blue accent, gentle shadow.
+ * Everything is namespaced under .elab / .ep so it never leaks into the rest of the docs. */
+
+.elab,
+.ep {
+  /* Nordic *layout* (airy, calm, hairline) but the Geneva crest-red brand stays the accent. */
+  --ea: var(--vp-c-brand-1);
+  --ea-soft: var(--vp-c-brand-soft);
+  --ea-ink: var(--vp-c-text-1);
+  --ea-muted: var(--vp-c-text-2);
+  --ea-faint: var(--vp-c-text-3);
+  --ea-line: var(--vp-c-divider);
+  /* the charts' canvas/SVG text reads this; bind to the theme ink so the bar labels
+     stay legible in BOTH light and dark mode (they default to a dark colour otherwise). */
+  --michi-vz-ink: var(--vp-c-text-1);
+}
+
+/* ---- card ---- */
+.elab {
+  border: 1px solid var(--ea-line);
+  border-radius: 14px;
+  margin: 24px 0;
+  background: var(--vp-c-bg-soft);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(30, 41, 59, 0.04), 0 12px 32px -22px rgba(30, 41, 59, 0.28);
+}
+.elab-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 18px 32px;
+  background: var(--vp-c-bg);
+  border-bottom: 1px solid var(--ea-line);
+}
+
+/* ---- numbered stepper (Merge lab) ---- */
+.elab-steps {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.elab-steps li {
+  display: flex;
+  align-items: center;
+}
+.elab-steps li + li::before {
+  content: "";
+  width: 22px;
+  height: 1.5px;
+  background: var(--ea-line);
+  margin: 0 4px;
+  border-radius: 2px;
+}
+.elab-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ea-faint);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 9px;
+  border-radius: 999px;
+  transition: color 0.15s ease;
+}
+.elab-step:hover {
+  color: var(--ea-muted);
+}
+.elab-step .n {
+  display: inline-grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ea-line);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ea-faint);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.elab-steps li.on .elab-step {
+  color: var(--ea-ink);
+  font-weight: 600;
+}
+.elab-steps li.on .elab-step .n {
+  background: var(--ea);
+  border-color: var(--ea);
+  color: #fff;
+}
+.elab-steps li.done .elab-step {
+  color: var(--ea-muted);
+}
+.elab-steps li.done .elab-step .n {
+  background: var(--ea-soft);
+  border-color: var(--ea);
+  color: var(--ea);
+}
+
+/* ---- right-hand controls: Instant / Real-model toggle + picker ---- */
+.elab-ctrls {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.elab-modes {
+  display: inline-flex;
+  border: 1px solid var(--ea-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.elab-modes button {
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 13px;
+  border: none;
+  background: var(--vp-c-bg-soft);
+  color: var(--ea-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.elab-modes button.on {
+  background: var(--ea);
+  color: #fff;
+}
+
+/* ---- model picker (EmbedPicker) ---- */
+.ep {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.ep select,
+.elab-llm select {
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 28px 5px 10px;
+  border: 1px solid var(--ea-line);
+  border-radius: 8px;
+  background-color: var(--vp-c-bg-soft);
+  color: var(--ea-ink);
+  cursor: pointer;
+  /* custom chevron so it clearly reads as a dropdown across browsers */
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  background-size: 11px;
+}
+.ep select:hover,
+.elab-llm select:hover {
+  border-color: var(--ea);
+}
+.ep-btn {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 5px 13px;
+  border: 1px solid var(--ea);
+  border-radius: 999px;
+  background: var(--vp-c-bg-soft);
+  color: var(--ea);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.ep-btn.ready {
+  background: var(--ea);
+  color: #fff;
+}
+.ep-btn:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* ---- search box (Find lab) ---- */
+.elab-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--ea-line);
+  border-radius: 999px;
+  padding: 3px 5px 3px 13px;
+  background: var(--vp-c-bg-soft);
+}
+.elab-mag {
+  color: var(--ea-faint);
+  font-size: 15px;
+}
+.elab-search input {
+  font: inherit;
+  font-size: 13px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ea-ink);
+  width: 180px;
+}
+.elab-go {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ea);
+  color: #fff;
+  cursor: pointer;
+}
+.elab-go:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* ---- themes header (Sort lab) ---- */
+.elab-themes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 12.5px;
+}
+.elab-themes-lbl {
+  color: var(--ea-faint);
+}
+.elab-theme {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---- body copy ---- */
+.elab-scenario {
+  margin: 16px 32px 4px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ea-muted);
+}
+.elab-result {
+  margin: 6px 32px 0;
+  font-size: 13.5px;
+  color: var(--ea-muted);
+}
+.elab-hit {
+  color: var(--ea);
+}
+
+/* ---- certify panel (Merge lab) ---- */
+.elab-certify {
+  margin: 14px 32px 0;
+  padding: 16px 20px;
+  border: 1px solid var(--ea-line);
+  border-radius: 11px;
+  background: var(--ea-soft);
+}
+.elab-llm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+.elab-llm-lbl {
+  font-size: 12.5px;
+  color: var(--ea-muted);
+}
+.elab-note {
+  margin: 9px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ea-faint);
+}
+
+/* ---- chips (Find lab) ---- */
+.elab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 32px 2px;
+}
+.elab-chip {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 12px;
+  border: 1px solid var(--ea-line);
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  color: var(--ea-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.elab-chip:hover {
+  border-color: var(--ea);
+}
+.elab-chip.on {
+  border-color: var(--ea);
+  color: var(--ea);
+}
+
+/* ---- chart stage + captions ---- */
+.elab-stage {
+  padding: 14px 32px 6px;
+}
+.elab-cap,
+.elab-legend {
+  margin: 10px 32px 20px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--ea-muted);
+}
+.elab-group {
+  display: inline-block;
+  margin-right: 16px;
+  white-space: nowrap;
+}
+.elab-mem {
+  color: var(--ea-faint);
+  margin-left: 3px;
+}
+.elab-legend code {
+  font-size: 11.5px;
+}
+.elab-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 32px;
+}
+.elab-pill {
+  font-size: 11.5px;
+  padding: 2px 10px;
+  border: 1px solid;
+  border-radius: 999px;
+  background: var(--vp-c-bg);
+  white-space: nowrap;
+}
+.elab-err {
+  margin: 8px 32px 0;
+  font-size: 12.5px;
+  color: var(--ea-faint);
+}
+
+/* ---- one content wrapper owns the body padding (header bar stays full-bleed) ----
+   Easier + consistent than every element carrying its own side margin. Defined last so it
+   wins the cascade; resets each child's horizontal margin and the chart stage's h-padding. */
+.elab-content {
+  padding: 4px 32px 26px;
+}
+.elab-content > * {
+  margin-left: 0;
+  margin-right: 0;
+}
+.elab-content .elab-stage {
+  padding-left: 0;
+  padding-right: 0;
+}
+.elab-content .elab-err {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* ---- subtle AI glow on the lab cards (calm gold pulse over the Nordic shadow) ---- */
+@keyframes ea-glow {
+  0%, 100% { box-shadow: 0 1px 2px rgba(30, 41, 59, 0.04), 0 12px 32px -22px rgba(30, 41, 59, 0.28), 0 0 0 1px rgba(147, 31, 26, 0); }
+  50% { box-shadow: 0 1px 2px rgba(30, 41, 59, 0.04), 0 12px 32px -22px rgba(30, 41, 59, 0.28), 0 0 18px -7px rgba(231, 177, 67, 0.5); }
+}
+.elab { animation: ea-glow 5.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .elab { animation: none; } }

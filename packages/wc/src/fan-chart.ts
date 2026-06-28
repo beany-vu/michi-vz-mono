@@ -9,6 +9,7 @@ import type {
   ChartContext,
   ChartInstance,
   CurveType,
+  DataPoint,
   FanChartProps,
   FanDataItem,
   Margin,
@@ -32,6 +33,7 @@ export class FanChartElement extends LitElement {
     showDataPoints: { type: Boolean, attribute: "show-data-points" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     margin: { attribute: false },
+    tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
   };
@@ -50,6 +52,7 @@ export class FanChartElement extends LitElement {
   showDataPoints = false;
   skipColorMappingDispatch = false;
   margin?: Margin;
+  tooltipFormatter?: (item: FanDataItem, lastPoint: DataPoint | null) => string;
   plugins?: MichiVzPlugin<FanChartProps>[];
   locale?: string;
 
@@ -83,6 +86,7 @@ export class FanChartElement extends LitElement {
       showDataPoints: this.showDataPoints,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       margin: this.margin,
+      tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),

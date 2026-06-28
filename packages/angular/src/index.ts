@@ -18,6 +18,7 @@ import type {
   RangeChartElement,
   RibbonChartElement,
   RadarChartElement,
+  TreemapChartElement,
 } from "@michi-vz/wc";
 import type {
   GapChartProps,
@@ -32,6 +33,7 @@ import type {
   RangeChartProps,
   RibbonChartProps,
   RadarChartProps,
+  TreemapChartProps,
 } from "@michi-vz/core";
 
 export type {
@@ -47,6 +49,7 @@ export type {
   RangeChartProps,
   RibbonChartProps,
   RadarChartProps,
+  TreemapChartProps,
   ChartContext,
 } from "@michi-vz/core";
 export type {
@@ -62,6 +65,7 @@ export type {
   RangeChartElement,
   RibbonChartElement,
   RadarChartElement,
+  TreemapChartElement,
 } from "@michi-vz/wc";
 
 /**
@@ -146,6 +150,7 @@ export function applyFanChartProps(el: FanChartElement, props: FanChartProps): v
   if (props.fillOpacity !== undefined) el.fillOpacity = props.fillOpacity;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
   if (props.locale !== undefined) el.locale = props.locale;
 }
 
@@ -322,5 +327,29 @@ export function applyBarBellChartProps(el: BarBellChartElement, props: BarBellCh
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.locale !== undefined) el.locale = props.locale;
+}
+
+/** Apply engine props onto a <michi-vz-treemap-chart> element. */
+export function applyTreemapChartProps(el: TreemapChartElement, props: TreemapChartProps): void {
+  el.dataSet = props.dataSet;
+  if (props.title !== undefined) el.chartTitle = props.title;
+  if (props.width !== undefined) el.width = props.width;
+  if (props.height !== undefined) el.height = props.height;
+  if (props.renderer !== undefined) el.renderer = props.renderer;
+  if (props.layout !== undefined) el.layout = props.layout;
+  if (props.stackBreakpoint !== undefined) el.stackBreakpoint = props.stackBreakpoint;
+  if (props.splitLabels !== undefined) el.splitLabels = props.splitLabels;
+  if (props.splitOpacity !== undefined) el.splitOpacity = props.splitOpacity;
+  if (props.showSplit !== undefined) el.showSplit = props.showSplit;
+  if (props.showLegend !== undefined) el.showLegend = props.showLegend;
+  if (props.minTileShare !== undefined) el.minTileShare = props.minTileShare;
+  if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
+  if (props.skipColorMappingDispatch !== undefined)
+    el.skipColorMappingDispatch = props.skipColorMappingDispatch;
+  if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.valueFormatter !== undefined) el.valueFormatter = props.valueFormatter;
   if (props.locale !== undefined) el.locale = props.locale;
 }

@@ -62,7 +62,6 @@ export function renderStackSvg(
       x: lbl.x,
       y: lbl.y,
       "text-anchor": "middle",
-      "font-size": 12,
       fill: "#000",
     });
     text.textContent = lbl.text;

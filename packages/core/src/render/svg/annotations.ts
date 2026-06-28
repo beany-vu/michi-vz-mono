@@ -35,7 +35,6 @@ function appendLabel(
     y,
     "text-anchor": anchor,
     fill: color,
-    "font-size": 11,
   });
   t.style.pointerEvents = "none";
   t.textContent = text;

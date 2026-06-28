@@ -4,8 +4,12 @@ import Layout from "./Layout.vue";
 import ChartDemo from "./ChartDemo.vue";
 import InsightsDemo from "./InsightsDemo.vue";
 import EmbeddingsLab from "./EmbeddingsLab.vue";
+import SemanticSearchLab from "./SemanticSearchLab.vue";
+import CategorizeLab from "./CategorizeLab.vue";
+import PluginLab from "./PluginLab.vue";
 import PropsTable from "./PropsTable.vue";
 import "./custom.css";
+import "./embeddings-lab.css";
 
 // `Layout` wraps the default theme to inject the home eyebrow, hero meta chips,
 // and the live "chart atlas" grid (via DefaultTheme home slots). The web-component
@@ -19,6 +23,9 @@ export default {
     app.component("ChartDemo", ChartDemo);
     app.component("InsightsDemo", InsightsDemo);
     app.component("EmbeddingsLab", EmbeddingsLab);
+    app.component("SemanticSearchLab", SemanticSearchLab);
+    app.component("CategorizeLab", CategorizeLab);
+    app.component("PluginLab", PluginLab);
     app.component("PropsTable", PropsTable);
   },
 } satisfies Theme;
