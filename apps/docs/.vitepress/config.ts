@@ -1,4 +1,23 @@
-import { defineConfig } from "vitepress";
+import { defineConfig, type HeadConfig } from "vitepress";
+
+// Google Analytics is injected ONLY from a build-time env var so the tracking
+// ID never lives in this open-source repo. Set GA_MEASUREMENT_ID in the Netlify
+// build environment (Site settings -> Environment variables). When unset - forks,
+// clones, local dev - no GA script is emitted, so nobody pollutes the property.
+const GA_ID = process.env.GA_MEASUREMENT_ID;
+const gaHead: HeadConfig[] = GA_ID
+  ? [
+      ["script", { async: "", src: `https://www.googletagmanager.com/gtag/js?id=${GA_ID}` }],
+      [
+        "script",
+        {},
+        `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`,
+      ],
+    ]
+  : [];
 
 // Charts in catalog order: [slug, display name, family]
 const charts: Array<[string, string, string]> = [
@@ -35,6 +54,7 @@ export default defineConfig({
         href: "https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap",
       },
     ],
+    ...gaHead,
   ],
   themeConfig: {
     nav: [

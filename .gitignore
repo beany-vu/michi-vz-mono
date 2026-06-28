@@ -1,6 +1,10 @@
 node_modules/
 .npmrc
 dist/
+# Local env files (may hold the GA_MEASUREMENT_ID etc.) - never commit
+.env
+.env.*
+!.env.example
 .turbo/
 coverage/
 *.log
