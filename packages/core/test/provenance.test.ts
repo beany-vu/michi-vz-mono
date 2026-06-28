@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { isPredicted, provenanceCounts } from "../src/math/provenance";
 import { buildLineContext } from "../src/context/buildLineContext";
 import { buildFanContext } from "../src/context/buildFanContext";
-import type { DataPoint, FanDataItem, LineDataItem } from "../src/types";
+import { buildAreaContext } from "../src/context/buildAreaContext";
+import type { AreaDataRow, DataPoint, FanDataItem, LineDataItem } from "../src/types";
 
 describe("provenance helpers", () => {
   it("isPredicted prefers explicit `predicted` over `certainty`", () => {
@@ -58,6 +59,44 @@ describe("LineChartContext provenance", () => {
     expect(s.actualCount).toBe(2);
     expect(s.predictedCount).toBe(2);
     expect(s.forecastStart).toBe(2021);
+  });
+});
+
+describe("AreaChartContext provenance (row-level)", () => {
+  it("counts actual vs predicted rows and the forecast boundary", () => {
+    const rows: AreaDataRow[] = [
+      { date: 2020, a: 10, b: 5 },
+      { date: 2021, a: 12, b: 6 },
+      { date: 2022, a: 14, b: 7, predicted: true },
+      { date: 2023, a: 16, b: 8, predicted: true },
+    ];
+    const ctx = buildAreaContext({
+      renderer: "svg",
+      xAxisDataType: "number",
+      xAxisDomain: [2020, 2023],
+      yAxisDomain: [0, 30],
+      series: rows,
+      activeKeys: ["a", "b"],
+      colorsMapping: {},
+    });
+    expect(ctx.stats.actualRows).toBe(2);
+    expect(ctx.stats.predictedRows).toBe(2);
+    expect(ctx.stats.forecastStart).toBe(2022);
+    expect(ctx.summary).toContain("2 forecast rows from 2022");
+  });
+
+  it("reports no forecast when every row is observed", () => {
+    const ctx = buildAreaContext({
+      renderer: "svg",
+      xAxisDataType: "number",
+      xAxisDomain: [2020, 2021],
+      yAxisDomain: [0, 30],
+      series: [{ date: 2020, a: 10 }, { date: 2021, a: 12 }],
+      activeKeys: ["a"],
+      colorsMapping: {},
+    });
+    expect(ctx.stats.predictedRows).toBe(0);
+    expect(ctx.stats.forecastStart).toBeNull();
   });
 });
 

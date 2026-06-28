@@ -74,8 +74,18 @@ const dataSet = [{
 ```
 
 That flows into every chart's `ChartContext` as `actualCount`, `predictedCount`, and `forecastStart`
-(on Line, Fan, and Range series), so the panel - and any AI agent reading the context - can tell the
-past from the projection without guessing at dashes.
+(per series on Line, Fan, and Range), so the panel - and any AI agent reading the context - can tell
+the past from the projection without guessing at dashes.
+
+The stacked **Area** chart shares one x per date, so there `predicted` is set on the whole **row**
+and surfaces at the chart level as `stats.actualRows`, `stats.predictedRows`, and `stats.forecastStart`:
+
+```ts
+const series = [
+  { date: 2022, cloud: 60, onprem: 44 },                  // observed
+  { date: 2023, cloud: 78, onprem: 40, predicted: true }, // forecast row
+];
+```
 
 > [!TIP] Prefer `predicted` over `certainty` to mark a forecast.
 > `certainty` also goes `false` for auto-detected data **gaps** (`detectGaps`), so it cannot tell a

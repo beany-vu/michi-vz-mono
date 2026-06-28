@@ -127,6 +127,7 @@ export interface GapChartProps {
 
 export interface GapSeriesContext {
   label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
   value1: number;
   value2: number;
@@ -288,7 +289,9 @@ export interface LineChartProps {
 
 export interface LineSeriesContext {
   label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   pointCount: number;
   first: { x: number | string; y: number } | null;
@@ -330,7 +333,13 @@ export interface LineChartContext extends BaseChartContext {
 export interface AreaDataRow {
   /** X position of the row: a number, year, or date string parsed per xAxisDataType */
   date: number | string;
-  [key: string]: number | string | undefined;
+  /**
+   * Marks this whole row (date) as a forecast/projection rather than observed data.
+   * Row-level because a stacked area shares one x across every key. Surfaces in the
+   * context as `stats.predictedRows` / `stats.forecastStart`.
+   */
+  predicted?: boolean;
+  [key: string]: number | string | boolean | undefined;
 }
 
 export interface AreaChartProps {
@@ -392,6 +401,7 @@ export interface AreaChartProps {
 
 export interface AreaSeriesContext {
   key: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   /** sum of this key across all rows. */
   total: number;
@@ -411,6 +421,12 @@ export interface AreaChartContext extends BaseChartContext {
     rowCount: number;
     grandTotal: number;
     largestKey: { key: string; total: number } | null;
+    /** count of observed/actual rows (dates). */
+    actualRows: number;
+    /** count of forecast/predicted rows (dates). */
+    predictedRows: number;
+    /** date of the first predicted row (forecast boundary), or null when none. */
+    forecastStart: number | string | null;
   };
 }
 
@@ -541,6 +557,7 @@ export interface StackRectData {
   seriesKeyAbbreviation: string;
   value: number | null;
   date: string | null;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
   /** true only for missing-data marker stubs (the hasOwnProperty guard path). */
   isMissing?: boolean;
@@ -548,6 +565,7 @@ export interface StackRectData {
 
 export interface StackLegendItem {
   label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   order: number;
   disabled?: boolean;
@@ -619,6 +637,7 @@ export interface VerticalStackBarChartProps {
 
 export interface StackSeriesContext {
   key: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   total: number;
   byDate: Array<{ date: string; value: number | null; isMissing: boolean }>;
@@ -711,6 +730,7 @@ export interface ComparableBarChartProps {
 
 export interface ComparableBarSeriesContext {
   label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   valueBased: number;
   valueCompared: number;
@@ -801,6 +821,7 @@ export interface DualBarChartProps {
 
 export interface DualBarSeriesContext {
   label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   value1: number;
   value2: number;
@@ -875,6 +896,7 @@ export interface BarBellChartProps {
 
 export interface BarBellSeriesContext {
   key: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   total: number;
 }
@@ -975,6 +997,7 @@ export interface RangeChartProps {
 
 export interface RangeSeriesContext {
   label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   pointCount: number;
   minValue: number;
@@ -1058,6 +1081,7 @@ export interface RibbonChartProps {
 
 export interface RibbonSeriesContext {
   key: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   total: number;
 }
@@ -1131,6 +1155,7 @@ export interface RadarChartProps {
 
 export interface RadarSeriesContext {
   label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   /** axis label -> value. */
   byAxis: Array<{ axis: string; value: number }>;
@@ -1234,6 +1259,7 @@ export interface FanChartProps {
 
 export interface FanSeriesContext {
   label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   pointCount: number;
   /** count of solid (certainty:true) history points. */
@@ -1345,7 +1371,9 @@ export interface TreemapChartProps {
 
 export interface TreemapLeafContext {
   label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   /** Path from the top-level group to this leaf, e.g. ["Sectors","Coffee"]. */
   path: string[];
@@ -1382,13 +1410,16 @@ export interface TreemapChartContext extends BaseChartContext {
 export interface PieDataItem {
   /** Slice name (drives data-label, the colour, the legend, and the label). */
   label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
   /** Slice size (>= 0; negatives/non-finite are clamped to 0). */
   value: number;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color?: string;
 }
 
 export interface PieChartProps {
+  /** Array of slices; each value becomes a wedge sized by its share of the total */
   dataSet: PieDataItem[];
   /** Optional chart title rendered above the plot */
   title?: string;
@@ -1428,6 +1459,7 @@ export interface PieChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Formats a numeric value for labels and tooltips */
   valueFormatter?: (n: number) => string;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (slice: PieSliceContext) => string;
@@ -1443,7 +1475,9 @@ export interface PieChartProps {
 
 export interface PieSliceContext {
   label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   value: number;
   /** value / total in [0,1]. */
@@ -1474,22 +1508,31 @@ export interface PieChartContext extends BaseChartContext {
 export interface BubbleDataItem {
   /** Bubble name (drives data-label, the colour, the legend, and the label). */
   label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
   /** Bubble size (area ∝ value; >= 0). */
   value: number;
   /** Realized sub-portion in [0,value]; drawn as a solid core inside a lighter
    * veil. Omit for a single-fill bubble. */
   partial?: number;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color?: string;
 }
 
 export interface BubbleChartProps {
+  /** Array of bubbles; each value sets the circle area (bubbles are gravity-packed into a cluster) */
   dataSet: BubbleDataItem[];
+  /** Optional chart title rendered above the plot */
   title?: string;
+  /** Chart width in pixels */
   width?: number;
+  /** Chart height in pixels */
   height?: number;
+  /** Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels */
   margin?: Margin;
+  /** Categorical palette for series/labels without an explicit colour or colorsMapping entry */
   colors?: string[];
+  /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
   colorsMapping?: Record<string, string>;
   /** Strength of the pull toward the centre in [0,1] (default 0.09) — higher =
    * tighter cluster ("suck together"). */
@@ -1514,23 +1557,37 @@ export interface BubbleChartProps {
   showLabels?: boolean;
   /** Keep only the top-N bubbles by value. */
   filter?: { limit: number; sortingDir: "asc" | "desc" };
+  /** Labels to emphasise; all other marks dim */
   highlightItems?: string[];
+  /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
   renderer?: "svg" | "canvas";
+  /** BCP-47 locale used for number and date formatting */
   locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
   skipColorMappingDispatch?: boolean;
+  /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Formats a numeric value for labels and tooltips */
   valueFormatter?: (n: number) => string;
+  /** Returns custom tooltip HTML for a hovered datum/mark (sanitized before it is inserted) */
   tooltipFormatter?: (bubble: BubbleContext) => string;
+  /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
 export interface BubbleContext {
   label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   value: number;
   partial: number | null;
@@ -1563,6 +1620,7 @@ export interface SankeyNodeItem {
   id: string;
   /** Display label (defaults to id). */
   label?: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color?: string;
 }
 
@@ -1576,13 +1634,21 @@ export interface SankeyLinkItem {
 }
 
 export interface SankeyChartProps {
+  /** Flow nodes; each needs a unique id that links reference */
   nodes: SankeyNodeItem[];
+  /** Directed flows between nodes (source -> target); band thickness is proportional to value */
   links: SankeyLinkItem[];
+  /** Optional chart title rendered above the plot */
   title?: string;
+  /** Chart width in pixels */
   width?: number;
+  /** Chart height in pixels */
   height?: number;
+  /** Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels */
   margin?: Margin;
+  /** Categorical palette for series/labels without an explicit colour or colorsMapping entry */
   colors?: string[];
+  /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
   colorsMapping?: Record<string, string>;
   /** Node rect width in px (default 18). */
   nodeWidth?: number;
@@ -1604,15 +1670,25 @@ export interface SankeyChartProps {
   highlightItems?: string[];
   /** Node ids to drop (their links are dropped too). */
   disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
   renderer?: "svg" | "canvas";
+  /** BCP-47 locale used for number and date formatting */
   locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
   skipColorMappingDispatch?: boolean;
+  /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Formats a numeric value for labels and tooltips */
   valueFormatter?: (n: number) => string;
+  /** Returns custom tooltip HTML for a hovered datum/mark (sanitized before it is inserted) */
   tooltipFormatter?: (mark: SankeyNodeContext | SankeyLinkContext) => string;
+  /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -1620,6 +1696,7 @@ export interface SankeyNodeContext {
   kind: "node";
   id: string;
   label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
   /** Total flow through the node (max of its in/out flow). */
   value: number;
@@ -1632,6 +1709,7 @@ export interface SankeyLinkContext {
   source: string;
   target: string;
   value: number;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
 }
 

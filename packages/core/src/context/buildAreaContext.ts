@@ -7,6 +7,7 @@ import type {
   AreaSeriesContext,
   XaxisDataType,
 } from "../types";
+import { provenanceCounts } from "../math/provenance";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -41,12 +42,21 @@ export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext
     if (!largestKey || s.total > largestKey.total) largestKey = { key: s.key, total: s.total };
   }
 
+  // Row-level provenance: a stacked area shares one x per date, so actual-vs-predicted
+  // is counted across rows (not per key).
+  const {
+    actualCount: actualRows,
+    predictedCount: predictedRows,
+    forecastStart,
+  } = provenanceCounts(input.series);
+
   const titlePart = input.title ? `"${input.title}" ` : "";
   let summary = `Stacked area chart ${titlePart}with ${series.length} series over ${input.series.length} row${
     input.series.length === 1 ? "" : "s"
   }.`;
   if (largestKey) summary += ` Largest series: ${largestKey.key} (total ${largestKey.total}).`;
   summary += ` Combined total ${grandTotal}.`;
+  if (predictedRows > 0) summary += ` ${predictedRows} forecast row${predictedRows === 1 ? "" : "s"} from ${String(forecastStart)}.`;
 
   return {
     chartType: "area-chart",
@@ -61,6 +71,9 @@ export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext
       rowCount: input.series.length,
       grandTotal,
       largestKey,
+      actualRows,
+      predictedRows,
+      forecastStart,
     },
     colorsMapping: input.colorsMapping,
     summary,

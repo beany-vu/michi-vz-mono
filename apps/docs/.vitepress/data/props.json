@@ -3025,7 +3025,7 @@
           "name": "dataSet",
           "type": "PieDataItem[]",
           "optional": false,
-          "description": "",
+          "description": "Array of slices; each value becomes a wedge sized by its share of the total",
           "default": "",
           "common": false
         },
@@ -3185,7 +3185,7 @@
           "name": "valueFormatter",
           "type": "(n: number) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a numeric value for labels and tooltips",
           "default": "",
           "common": false
         },
@@ -3241,7 +3241,7 @@
           "name": "dataSet",
           "type": "BubbleDataItem[]",
           "optional": false,
-          "description": "",
+          "description": "Array of bubbles; each value sets the circle area (bubbles are gravity-packed into a cluster)",
           "default": "",
           "common": false
         },
@@ -3249,7 +3249,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -3425,7 +3425,7 @@
           "name": "valueFormatter",
           "type": "(n: number) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a numeric value for labels and tooltips",
           "default": "",
           "common": false
         },
@@ -3433,7 +3433,7 @@
           "name": "tooltipFormatter",
           "type": "(bubble: BubbleContext) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum/mark (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -3441,7 +3441,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
@@ -3481,7 +3481,7 @@
           "name": "nodes",
           "type": "SankeyNodeItem[]",
           "optional": false,
-          "description": "",
+          "description": "Flow nodes; each needs a unique id that links reference",
           "default": "",
           "common": false
         },
@@ -3489,7 +3489,7 @@
           "name": "links",
           "type": "SankeyLinkItem[]",
           "optional": false,
-          "description": "",
+          "description": "Directed flows between nodes (source -> target); band thickness is proportional to value",
           "default": "",
           "common": false
         },
@@ -3497,7 +3497,7 @@
           "name": "title",
           "type": "string",
           "optional": true,
-          "description": "",
+          "description": "Optional chart title rendered above the plot",
           "default": "",
           "common": false
         },
@@ -3649,7 +3649,7 @@
           "name": "valueFormatter",
           "type": "(n: number) => string",
           "optional": true,
-          "description": "",
+          "description": "Formats a numeric value for labels and tooltips",
           "default": "",
           "common": false
         },
@@ -3657,7 +3657,7 @@
           "name": "tooltipFormatter",
           "type": "(mark: SankeyNodeContext | SankeyLinkContext) => string",
           "optional": true,
-          "description": "",
+          "description": "Returns custom tooltip HTML for a hovered datum/mark (sanitized before it is inserted)",
           "default": "",
           "common": false
         },
@@ -3665,7 +3665,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "",
+          "description": "Called when the hovered/highlighted label(s) change",
           "default": "",
           "common": false
         },
