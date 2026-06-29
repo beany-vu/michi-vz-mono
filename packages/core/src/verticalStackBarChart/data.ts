@@ -49,7 +49,10 @@ export function collectDates(
   const set = new Set<string>();
   for (const ds of dataSet) {
     for (const row of ds.series) {
-      if (row.date != null) set.add(row.date);
+      // String()-coerce: consumers (thd) pass numeric dates (date: +year). The band
+      // scale is scaleBand<string> and stack.ts looks up xScale(String(date)), so the
+      // domain MUST hold strings or every bar collapses to one slot (legacy contract).
+      if (row.date != null) set.add(String(row.date));
     }
   }
   return [...set].sort();
@@ -60,7 +63,7 @@ function dateTotal(dataSet: VerticalStackBarDataSet[], keys: string[], date: str
   let t = 0;
   for (const ds of dataSet) {
     for (const row of ds.series) {
-      if (row.date !== date) continue;
+      if (String(row.date) !== date) continue; // dates[] is String()-coerced; match in kind
       for (const k of keys) {
         const v = Number(row[k]);
         if (Number.isFinite(v)) t += v;
@@ -83,6 +86,29 @@ export function applyDateFilter(
     .slice(0, filter.limit);
   const keep = new Set(ranked);
   return dates.filter((d) => keep.has(d));
+}
+
+// Top-N DataSets ranked by grand total across all their rows+keys (asc/desc).
+// Mirrors the legacy VerticalStackBarChart `filteredDataSet`: it ranks the GROUPS
+// (DataSets), NOT the dates. The engine derives keys, dates, legend, y-domain AND
+// bars from the result, so the legend always mirrors exactly the drawn bars (the
+// 0.6.18 "legend === bars" invariant). Only DistributionOfTrade passes `filter`.
+export function applySeriesFilter(
+  dataSet: VerticalStackBarDataSet[],
+  filter: NonNullable<VerticalStackBarChartProps["filter"]>
+): VerticalStackBarDataSet[] {
+  const totalled = dataSet.map((ds) => {
+    let total = 0;
+    for (const row of ds.series) {
+      for (const [k, v] of Object.entries(row)) {
+        if (!RESERVED.has(k)) total += Number(v || 0);
+      }
+    }
+    return { ds, total };
+  });
+  const dir = filter.sortingDir === "asc" ? 1 : -1;
+  totalled.sort((a, b) => dir * (a.total - b.total));
+  return totalled.slice(0, filter.limit).map((t) => t.ds);
 }
 
 // y-domain from per-(DataSet,row) totals: [min(<0)|0, max].

@@ -26,6 +26,11 @@ export interface BuildStackModelOptions {
   height: number;
   margin: Margin;
   highlightItems: string[];
+  /** Order for the legend rows + colour-slot assignment. Defaults to effectiveKeys;
+   * the engine passes the reversed order for keysOrder="bottomToTop" so the colour
+   * authority (which assigns by appearance order) matches the legacy chart. The
+   * stack draw order (stackedData / keys) is unaffected. */
+  legendOrder?: string[];
 }
 
 export function buildStackRenderModel(
@@ -57,7 +62,8 @@ export function buildStackRenderModel(
     }
   }
 
-  const legend: StackLegendItem[] = effectiveKeys.map((key, i) => ({
+  const legendKeys = o.legendOrder ?? effectiveKeys;
+  const legend: StackLegendItem[] = legendKeys.map((key, i) => ({
     label: key,
     color: colors.getColor(key),
     order: i,

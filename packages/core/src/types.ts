@@ -567,8 +567,9 @@ export interface ScatterChartContext extends BaseChartContext {
 // ---- VerticalStackBarChart ----
 
 export interface VerticalStackBarDataPoint {
-  /** The band category for this row (the x-axis tick); may be null */
-  date: string | null;
+  /** The band category for this row (the x-axis tick); may be null. Accepts a
+   * number too — thd consumers pass `date: +year`; the engine String()-coerces it. */
+  date: string | number | null;
   /** Numeric segment values keyed by name (string|number); "code" is reserved
    * and excluded from stack keys. */
   [key: string]: string | number | null | undefined;
@@ -599,10 +600,25 @@ export interface StackRectData {
   seriesKey: string;
   seriesKeyAbbreviation: string;
   value: number | null;
-  date: string | null;
+  date: string | number | null;
   /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
   /** true only for missing-data marker stubs (the hasOwnProperty guard path). */
+  isMissing?: boolean;
+}
+
+/** Argument passed to VerticalStackBar `tooltipFormatter` — the legacy contract
+ * (consumers read `data.item[data.key]` and `data.series`). NOT the flat rect. */
+export interface StackTooltipData {
+  /** The full data row under the cursor. */
+  item: VerticalStackBarDataPoint;
+  /** The hovered stack segment key (e.g. "Land"). */
+  key: string;
+  /** The DataSet group this rect belongs to. */
+  seriesKey: string;
+  /** The hovered segment's rows across dates (same seriesKey), as {label,value,date,code}. */
+  series: Array<{ label: string; value: number | null; date: string | number | null; code?: string }>;
+  /** true for a missing-data marker stub. */
   isMissing?: boolean;
 }
 
@@ -681,7 +697,7 @@ export interface VerticalStackBarChartProps {
   /** Emphasise the y=0 line with a solid stroke (default true). */
   highlightZeroLine?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (rect: StackRectData) => string;
+  tooltipFormatter?: (d: StackTooltipData) => string;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

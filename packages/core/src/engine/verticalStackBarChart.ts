@@ -7,12 +7,14 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisBand, renderYAxisLinear } from "../render/svg";
+import { chooseAxisMode } from "../render/svg/chooseAxisMode";
+import { measureLabelWidth } from "../render/svg/measureLabelWidth";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import {
   extractDataKeys,
   resolveEffectiveKeys,
   collectDates,
-  applyDateFilter,
+  applySeriesFilter,
   computeYDomain,
 } from "../verticalStackBarChart/data";
 import { buildStackColors } from "../verticalStackBarChart/colors";
@@ -108,60 +110,128 @@ export function mountVerticalStackBarChart(
   let model: ReturnType<typeof buildStackRenderModel> | null = null;
 
   const showTooltip = (rect: StackRectData, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
+    // Legacy contract: pass { item, key, seriesKey, series, isMissing } — NOT the flat
+    // rect — so consumers can read data.item[data.key] and data.series. `series` mirrors
+    // the legacy: the hovered segment's rows across dates for the same seriesKey.
+    const series = (model?.stackedRectData[rect.key] ?? [])
+      .filter((s) => s.seriesKey === rect.seriesKey)
+      .map((s) => ({ label: s.key, value: s.value ?? null, date: s.date, code: s.code }));
     const htmlStr = baseProps.tooltipFormatter
-      ? baseProps.tooltipFormatter(rect)
+      ? baseProps.tooltipFormatter({
+          item: rect.data,
+          key: rect.key,
+          seriesKey: rect.seriesKey,
+          series,
+          isMissing: rect.isMissing,
+        })
       : `<strong>${rect.key}</strong> (${rect.seriesKeyAbbreviation})<br/>${String(rect.date)}: ${
           rect.value ?? "—"
         }`;
+    // Set content BEFORE measuring so the box size is known, then position with
+    // edge awareness (mirrors legacy): flip to the LEFT of the cursor when the
+    // tooltip would overflow the host's right edge; drop BELOW when it would clip
+    // the top. Otherwise it gets pushed off-screen on the right-most bars.
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    const r = host.getBoundingClientRect();
+    const x = ev.clientX - r.left;
+    const y = ev.clientY - r.top;
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    tooltip.style.left = `${x + tw + 10 > r.width ? Math.max(0, x - tw - 10) : x + 10}px`;
+    tooltip.style.top = `${y - th - 10 < 0 ? y + 10 : y - th - 10}px`;
   };
   const hideTooltip = (): void => {
     if (sticky) return;
     tooltip.style.visibility = "hidden";
   };
 
-  // Canvas-mode hit-test: topmost segment wins (scan keys last-to-first).
-  const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+  // Shared canvas hit-test: topmost segment under the cursor (scan keys last-to-first).
+  const hitTestAt = (ev: MouseEvent): StackRectData | null => {
+    if (!model) return null;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
-    let hit: StackRectData | null = null;
-    for (let i = model.keys.length - 1; i >= 0 && !hit; i--) {
+    for (let i = model.keys.length - 1; i >= 0; i--) {
       for (const d of model.stackedRectData[model.keys[i]] ?? []) {
-        if (x >= d.x && x <= d.x + d.width && y >= d.y && y <= d.y + d.height) {
-          hit = d;
-          break;
-        }
+        if (x >= d.x && x <= d.x + d.width && y >= d.y && y <= d.y + d.height) return d;
       }
     }
+    return null;
+  };
+  // Same-frame canvas dim: redraw immediately with `keys` highlighted, bypassing the
+  // throttled Redux round-trip so dimming isn't ~50ms late. The Redux path still fires
+  // (cross-chart legend) and later redraws identically.
+  let lastHoverKey: string | null = null;
+  const redrawHighlight = (keys: string[]): void => {
+    if (!canvas || !model) return;
+    const rr = resolve(baseProps);
+    drawStackCanvas(canvas, svg, model, {
+      width: rr.width,
+      height: rr.height,
+      highlightSet: new Set(keys),
+    });
+  };
+  const onHostMove = (ev: MouseEvent): void => {
+    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    const hit = hitTestAt(ev);
     if (hit) {
       showTooltip(hit, ev);
-      baseProps.onHighlightItem?.([hit.key]);
+      if (hit.key !== lastHoverKey) {
+        lastHoverKey = hit.key;
+        redrawHighlight([hit.key]);
+        baseProps.onHighlightItem?.([hit.key]);
+      }
     } else {
       hideTooltip();
-      baseProps.onHighlightItem?.([]);
+      if (lastHoverKey !== null) {
+        lastHoverKey = null;
+        redrawHighlight([]);
+        baseProps.onHighlightItem?.([]);
+      }
     }
   };
-  // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
-  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
-  const onHostClick = (): void => {
+  // Canvas click (marks have no DOM, so the host catches it): hit-test to decide.
+  // hit → (re-)pin; miss while pinned → unpin; miss while unpinned → no-op.
+  const onHostClick = (ev: MouseEvent): void => {
     if (resolve(baseProps).renderer !== "canvas") return;
-    if (sticky) {
+    const hit = hitTestAt(ev);
+    if (hit) {
+      sticky = true;
+      tooltip.classList.add("sticky");
+      showTooltip(hit, ev);
+    } else if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
       tooltip.style.visibility = "hidden";
-    } else if (tooltip.style.visibility === "visible") {
-      sticky = true;
-      tooltip.classList.add("sticky");
     }
   };
+  // Cursor leaves the chart: hide the tooltip and clear the highlight, else the
+  // last-hovered segment stays dimmed at 0.2 opacity (legacy mouseleave parity).
+  const onHostLeave = (): void => {
+    if (sticky) return;
+    hideTooltip();
+    if (lastHoverKey !== null) {
+      lastHoverKey = null;
+      redrawHighlight([]);
+    }
+    baseProps.onHighlightItem?.([]);
+  };
+  // Click outside the chart AND the tooltip unpins a sticky tooltip (legacy parity).
+  const onDocClick = (ev: MouseEvent): void => {
+    if (!sticky) return;
+    const t = ev.target as Node;
+    if (host.contains(t) || tooltip.contains(t)) return;
+    sticky = false;
+    tooltip.classList.remove("sticky");
+    tooltip.style.visibility = "hidden";
+    redrawHighlight([]);
+    baseProps.onHighlightItem?.([]);
+  };
   host.addEventListener("mousemove", onHostMove);
+  host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
+  if (typeof document !== "undefined") document.addEventListener("click", onDocClick);
   tooltip.addEventListener("click", () => {
     sticky = false;
     tooltip.classList.remove("sticky");
@@ -180,11 +250,22 @@ export function mountVerticalStackBarChart(
     // data-mv-state + font var + default loading/no-data overlays (shared chrome).
     const dataState = applyChartChrome(host, props, props.dataSet, chrome);
 
-    const dataKeys = extractDataKeys(props.dataSet);
+    // Top/Bottom filter ranks the DataSets (groups) by grand total and slices to
+    // limit; EVERYTHING downstream (keys, dates, legend, y-domain, bars) derives from
+    // the result so the legend mirrors exactly the drawn bars (legacy invariant).
+    const filteredDataSet = props.filter
+      ? applySeriesFilter(props.dataSet, props.filter)
+      : props.dataSet;
+    const dataKeys = extractDataKeys(filteredDataSet);
     const effectiveKeys = resolveEffectiveKeys(dataKeys, props.keys, props.disabledItems);
-    let dates = collectDates(props.dataSet, props.xAxisDomain);
-    if (props.filter) dates = applyDateFilter(dates, props.dataSet, effectiveKeys, props.filter);
-    const yDomain = computeYDomain(props.dataSet, effectiveKeys, props.yAxisDomain);
+    // keysOrder=bottomToTop reverses the LEGEND / colour-slot order to match the
+    // legacy chart (the consumer colour authority assigns colours by appearance
+    // order in legendData). The stack DRAW order is decided independently in
+    // stack.ts from keysOrder and is NOT affected by this.
+    const legendKeys =
+      r.keysOrder === "bottomToTop" ? [...effectiveKeys].reverse() : effectiveKeys;
+    const dates = collectDates(filteredDataSet, props.xAxisDomain);
+    const yDomain = computeYDomain(filteredDataSet, effectiveKeys, props.yAxisDomain);
 
     const colors = buildStackColors(
       effectiveKeys,
@@ -201,18 +282,47 @@ export function mountVerticalStackBarChart(
       }
     }
 
-    const scales = createStackScales(dates, yDomain, r.width, r.height, r.margin);
-    const prepared = prepareStackedData(props.dataSet, effectiveKeys, scales, colors, {
+    const xFormat = props.xAxisFormat ?? ((d: number | string) => String(d));
+
+    // Band x-axis layout (ported from legacy): fit labels horizontally, else
+    // rotate -45° (all labels), else thin to a readable subset. Reserve bottom
+    // margin for rotated labels so they don't clip. bandWidth = xScale.step() is
+    // independent of margin.bottom, so deciding the mode before the final scales
+    // is safe (no feedback loop).
+    let margin = r.margin;
+    let scales = createStackScales(dates, yDomain, r.width, r.height, margin);
+    const axis = chooseAxisMode({
+      domain: dates,
+      formatter: (d) => xFormat(d),
+      bandWidth: scales.xScale.step(),
+      measure: measureLabelWidth,
+    });
+    if (axis.mode === "rotated") {
+      const maxLabelWidth = axis.tickValues.reduce(
+        (m, v) => Math.max(m, measureLabelWidth(xFormat(v))),
+        0
+      );
+      // 25 (axis offset) + 14 (label translate) + label·sin45 + 12 (descender pad)
+      const required = Math.ceil(25 + 14 + maxLabelWidth * Math.SQRT1_2 + 12);
+      if (required > margin.bottom) {
+        margin = { ...margin, bottom: required };
+        scales = createStackScales(dates, yDomain, r.width, r.height, margin);
+      }
+    }
+
+    const prepared = prepareStackedData(filteredDataSet, effectiveKeys, scales, colors, {
       keysOrder: r.keysOrder,
       minBarWidth: r.minBarWidth,
       minBarHeight: r.minBarHeight,
       minBarHeightZero: r.minBarHeightZero,
       missingDataMarker: props.missingDataMarker,
+      disabledItems: props.disabledItems,
     });
     model = buildStackRenderModel(prepared, effectiveKeys, dates, colors, {
       height: r.height,
-      margin: r.margin,
+      margin,
       highlightItems: props.highlightItems ?? [],
+      legendOrder: legendKeys,
     });
 
     if (props.onLegendDataChange) {
@@ -223,7 +333,6 @@ export function mountVerticalStackBarChart(
       }
     }
 
-    const xFormat = props.xAxisFormat ?? ((d: number | string) => String(d));
     const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
 
     clear(svg);
@@ -233,13 +342,15 @@ export function mountVerticalStackBarChart(
       renderXAxisBand(svg, scales.xScale, {
         width: r.width,
         height: r.height,
-        margin: r.margin,
+        margin,
         format: (label) => xFormat(label),
+        mode: axis.mode,
+        tickValues: axis.tickValues,
       });
       renderYAxisLinear(svg, scales.yScale, {
         width: r.width,
         height: r.height,
-        margin: r.margin,
+        margin,
         format: (v) => yFormat(v),
         ticks: props.yTicks ?? 10,
         showGrid: props.showGridLines !== false,
@@ -340,7 +451,9 @@ export function mountVerticalStackBarChart(
     destroy() {
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
+      host.removeEventListener("mouseleave", onHostLeave);
       host.removeEventListener("click", onHostClick);
+      if (typeof document !== "undefined") document.removeEventListener("click", onDocClick);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-vertical-stack-bar-chart");
     },

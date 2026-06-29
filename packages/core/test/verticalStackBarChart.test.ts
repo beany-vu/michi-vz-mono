@@ -101,4 +101,91 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     expect(host.querySelectorAll("svg").length).toBe(0);
     host.remove();
   });
+
+  it("calls tooltipFormatter with the legacy {item,key,seriesKey,series} object, not a flat rect", () => {
+    // thd consumers do `data.item[data.key]` and read `data.series`. The legacy chart
+    // passed { item, key, seriesKey, series, isMissing }; the engine must match, or the
+    // formatter throws on `undefined.item[...]` and no tooltip renders.
+    let received: unknown = null;
+    const { host, chart } = mount({
+      renderer: "svg",
+      tooltipFormatter: (d) => {
+        received = d;
+        return "ok";
+      },
+    });
+    const bar = host.querySelector<SVGRectElement>("rect.bar")!;
+    bar.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+    expect(received).toBeTruthy();
+    const d = received as {
+      item: Record<string, unknown>;
+      key: string;
+      seriesKey: string;
+      series: unknown[];
+    };
+    expect(d.item).toBeDefined(); // the data row, not undefined
+    expect(typeof d.key).toBe("string"); // the hovered segment key
+    expect(d.seriesKey).toBeDefined();
+    expect(Array.isArray(d.series)).toBe(true);
+    // the exact access the consumer makes — must resolve, not throw
+    expect(d.item[d.key]).toBeDefined();
+
+    chart.destroy();
+    host.remove();
+  });
+
+  it("reverses legend/colour order for keysOrder=bottomToTop, leaving stack key order forward", () => {
+    // Legacy colour parity: the consumer colour authority assigns colours by
+    // appearance order in legendData, and the legacy reversed it for bottomToTop.
+    const ds: VerticalStackBarDataSet[] = [
+      { seriesKey: "trade", seriesKeyAbbreviation: "T", series: [{ date: "2001", A: 5, B: 3, C: 1 }] },
+    ];
+    const top = mount({ keys: ["A", "B", "C"], keysOrder: "topToBottom", dataSet: ds });
+    const bot = mount({ keys: ["A", "B", "C"], keysOrder: "bottomToTop", dataSet: ds });
+    const topCtx = top.chart.getContext()!;
+    const botCtx = bot.chart.getContext()!;
+    if (topCtx.chartType === "vertical-stack-bar-chart") {
+      expect(topCtx.legendData.map((l) => l.label)).toEqual(["A", "B", "C"]);
+    }
+    if (botCtx.chartType === "vertical-stack-bar-chart") {
+      // legendData (colour order) reversed...
+      expect(botCtx.legendData.map((l) => l.label)).toEqual(["C", "B", "A"]);
+      // ...but keys (stack order) stays forward so A is still anchored at the bottom.
+      expect(botCtx.keys).toEqual(["A", "B", "C"]);
+    }
+    top.chart.destroy();
+    top.host.remove();
+    bot.chart.destroy();
+    bot.host.remove();
+  });
+
+  it("rotates dense x-axis labels (-45) instead of overlapping them horizontally", () => {
+    // 14 wide monthly labels in a 600px chart: don't fit horizontally, so the
+    // band axis must tilt them -45 (the legacy behaviour) rather than smear them.
+    const dates = Array.from({ length: 14 }, (_, i) => `2020-${String(i + 1).padStart(2, "0")}`);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountVerticalStackBarChart(host, {
+      dataSet: [
+        {
+          seriesKey: "trade",
+          seriesKeyAbbreviation: "T",
+          series: dates.map((d, i) => ({ date: d, Land: 10 + i })),
+        },
+      ],
+      width: 600,
+      height: 360,
+      renderer: "svg",
+      keys: ["Land"],
+    });
+    const labels = host.querySelectorAll<SVGTextElement>(".mv-x-axis-band .mv-axis-label");
+    expect(labels.length).toBeGreaterThan(0);
+    const rotated = Array.from(labels).some((t) =>
+      (t.getAttribute("transform") || "").includes("rotate(-45)")
+    );
+    expect(rotated).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
 });

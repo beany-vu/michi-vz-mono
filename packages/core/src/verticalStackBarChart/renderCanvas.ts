@@ -10,6 +10,9 @@ import type { StackRenderModel } from "./renderModel";
 export interface StackCanvasOptions {
   width: number;
   height: number;
+  /** Override the dim set for same-frame hover (bypasses the throttled Redux path).
+   * Defaults to model.highlightSet. */
+  highlightSet?: Set<string>;
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
@@ -42,12 +45,13 @@ export function drawStackCanvas(
     "fill"
   );
 
-  const anyHighlight = model.highlightSet.size > 0;
+  const hl = o.highlightSet ?? model.highlightSet;
+  const anyHighlight = hl.size > 0;
   for (const key of model.keys) {
     const rects = model.stackedRectData[key];
     if (!rects || rects.length === 0) continue;
     const fill = fillColors.get(key) || rects[0].fill;
-    ctx.globalAlpha = anyHighlight && !model.highlightSet.has(key) ? 0.2 : 1;
+    ctx.globalAlpha = anyHighlight && !hl.has(key) ? 0.2 : 1;
     ctx.fillStyle = fill;
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 1;

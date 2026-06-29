@@ -6,6 +6,7 @@ import {
   resolveEffectiveKeys,
   collectDates,
   computeYDomain,
+  applySeriesFilter,
 } from "../src/verticalStackBarChart/data";
 import { createStackScales } from "../src/verticalStackBarChart/scales";
 import { buildStackColors } from "../src/verticalStackBarChart/colors";
@@ -14,10 +15,15 @@ import type { VerticalStackBarDataSet } from "../src/types";
 
 function prep(
   dataSet: VerticalStackBarDataSet[],
-  opts: { keys?: string[]; missingDataMarker?: { height: number }; minBarHeight?: number } = {}
+  opts: {
+    keys?: string[];
+    missingDataMarker?: { height: number };
+    minBarHeight?: number;
+    disabledItems?: string[];
+  } = {}
 ) {
   const dataKeys = extractDataKeys(dataSet);
-  const effectiveKeys = resolveEffectiveKeys(dataKeys, opts.keys);
+  const effectiveKeys = resolveEffectiveKeys(dataKeys, opts.keys, opts.disabledItems);
   const dates = collectDates(dataSet);
   const yDomain = computeYDomain(dataSet, effectiveKeys);
   const scales = createStackScales(dates, yDomain, 600, 400, { top: 20, right: 20, bottom: 40, left: 40 });
@@ -28,6 +34,7 @@ function prep(
     minBarHeight: opts.minBarHeight ?? 15,
     minBarHeightZero: 0,
     missingDataMarker: opts.missingDataMarker,
+    disabledItems: opts.disabledItems,
   });
   return { effectiveKeys, prepared };
 }
@@ -105,5 +112,71 @@ describe("VerticalStackBar flooring", () => {
     // `a` is a real bar; `b` is a stub on the zero line (does not stack on top of a)
     expect(prepared.stackedData.a[0].isMissing).toBeUndefined();
     expect(prepared.stackedData.b[0].isMissing).toBe(true);
+  });
+});
+
+describe("VerticalStackBar filter = DataSet ranking (legacy parity)", () => {
+  const ds: VerticalStackBarDataSet[] = [
+    { seriesKey: "A", seriesKeyAbbreviation: "A", series: [{ date: "2001", v: 10 }] },
+    { seriesKey: "B", seriesKeyAbbreviation: "B", series: [{ date: "2001", v: 30 }] },
+    { seriesKey: "C", seriesKeyAbbreviation: "C", series: [{ date: "2001", v: 20 }] },
+  ];
+  it("keeps the top-N DataSets by grand total (desc)", () => {
+    expect(applySeriesFilter(ds, { limit: 2, sortingDir: "desc" }).map((d) => d.seriesKey)).toEqual([
+      "B",
+      "C",
+    ]); // 30, 20
+  });
+  it("keeps the bottom-N DataSets (asc)", () => {
+    expect(applySeriesFilter(ds, { limit: 2, sortingDir: "asc" }).map((d) => d.seriesKey)).toEqual([
+      "A",
+      "C",
+    ]); // 10, 20
+  });
+});
+
+describe("VerticalStackBar disabled DataSet widens remaining bars (legacy parity)", () => {
+  // seriesKey (group) distinct from the segment key, so disabledItems targets the GROUP.
+  const ds: VerticalStackBarDataSet[] = [
+    { seriesKey: "grpA", seriesKeyAbbreviation: "A", series: [{ date: "2001", seg: 10 }] },
+    { seriesKey: "grpB", seriesKeyAbbreviation: "B", series: [{ date: "2001", seg: 20 }] },
+  ];
+  it("a visible group splits the band among fewer groups when another is disabled", () => {
+    const full = prep(ds, { keys: ["seg"] });
+    const disabled = prep(ds, { keys: ["seg"], disabledItems: ["grpB"] });
+    expect(disabled.prepared.groupWidth).toBeGreaterThan(full.prepared.groupWidth);
+    expect(disabled.prepared.stackedData.seg[0].width).toBeGreaterThan(
+      full.prepared.stackedData.seg[0].width
+    );
+  });
+});
+
+describe("VerticalStackBar numeric dates (thd consumer contract)", () => {
+  // The thd consumers build each row as { date: +year, Land, Air, Sea } — date is a
+  // NUMBER (e.g. 202208). The legacy chart String()-coerced dates everywhere; the new
+  // engine must too. Otherwise collectDates seeds the scaleBand<string> domain with
+  // NUMBERS while stack.ts looks up xScale(String(date)) -> InternMap miss -> every bar
+  // collapses to x=margin.left and renderXAxisBand hands xAxisFormat a raw number.
+  const numericDataSet: VerticalStackBarDataSet[] = [
+    {
+      seriesKey: "trade",
+      seriesKeyAbbreviation: "T",
+      series: [
+        { date: 202208, Land: 5, Air: 2 },
+        { date: 202209, Land: 7, Air: 1 },
+        { date: 202210, Land: 3, Air: 4 },
+      ],
+    },
+  ];
+
+  it("collectDates coerces numeric dates to strings (band domain must be strings)", () => {
+    expect(collectDates(numericDataSet)).toEqual(["202208", "202209", "202210"]);
+  });
+
+  it("places bars at distinct x per numeric date (no collapse to one slot)", () => {
+    const { prepared } = prep(numericDataSet, { keys: ["Land", "Air"] });
+    const xs = prepared.stackedData.Land.map((r) => r.x);
+    expect(xs.length).toBe(3);
+    expect(new Set(xs).size).toBe(3); // 3 distinct x positions, not all at margin.left
   });
 });

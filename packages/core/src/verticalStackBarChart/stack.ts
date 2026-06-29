@@ -15,6 +15,9 @@ export interface PrepareStackOptions {
   minBarHeight: number;
   minBarHeightZero: number;
   missingDataMarker?: { height: number };
+  /** DataSet groups (by seriesKey) to drop before drawing; the remaining (visible)
+   * groups split the band, so disabling a series WIDENS the rest (legacy parity). */
+  disabledItems?: string[];
 }
 
 export interface PreparedStack {
@@ -34,15 +37,20 @@ export function prepareStackedData(
   const stackedData: Record<string, StackRectData[]> = {};
   for (const k of effectiveKeys) stackedData[k] = [];
 
+  // Drop disabled DataSet groups so the visible groups split the band between them
+  // (a disabled series widens the rest), mirroring the legacy chart.
+  const disabled = new Set(o.disabledItems ?? []);
+  const visibleDataSet = dataSet.filter((ds) => !disabled.has(ds.seriesKey ?? ""));
+
   const bandwidth = scales.xScale.bandwidth();
-  const groupWidth = dataSet.length > 0 ? bandwidth / dataSet.length : bandwidth;
+  const groupWidth = visibleDataSet.length > 0 ? bandwidth / visibleDataSet.length : bandwidth;
 
   // topToBottom: keys[0] renders at the TOP, so stack keys[last] first at the
   // bottom -> iterate reversed. bottomToTop anchors keys[0] at the bottom.
   const orderedKeys =
     o.keysOrder === "bottomToTop" ? effectiveKeys : [...effectiveKeys].reverse();
 
-  dataSet.forEach((dataItem, groupIndex) => {
+  visibleDataSet.forEach((dataItem, groupIndex) => {
     for (const yearData of dataItem.series) {
       let y0 = 0;
       let pixelBottom = scales.yScale(0);

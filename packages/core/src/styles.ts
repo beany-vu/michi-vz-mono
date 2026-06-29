@@ -20,9 +20,9 @@ export const CORE_CSS = `
 .michi-vz .gap-line { stroke-width: 2; fill: none; }
 .michi-vz .mv-axis-label { fill: var(--michi-vz-muted, #666); font-size: var(--michi-vz-font-size, 12px); }
 .michi-vz .mv-grid { stroke: var(--michi-vz-grid, lightgray); stroke-dasharray: 2 2; }
-/* y=0 baseline: SOLID (not dashed) but the gridline colour by default; override
-   --michi-vz-zero-line for a darker emphasised baseline. */
-.michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-dasharray: none; }
+/* y=0 baseline: SOLID (not dashed) but GRAY by default (matches the previous
+   version — user preference); override --michi-vz-zero-line for emphasis. */
+.michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-width: 1; stroke-dasharray: none; }
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
   font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-ink, #2a1c15);
