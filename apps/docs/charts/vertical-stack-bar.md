@@ -76,3 +76,35 @@ chart.destroy();
 ## API
 
 Props are typed as `VerticalStackBarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+
+## Behaviour notes
+
+These behaviours are automatic (no extra wiring) and match the legacy `michi-vz` chart for drop-in parity.
+
+### Dense x-axis — auto rotate / thin
+
+The band axis measures its labels and adapts: **horizontal** when they fit, **rotated −45°** (all labels still shown) when they don't, and **thinned** to an evenly-spaced subset only at extreme density. The bottom margin is reserved automatically so rotated labels never clip. No prop needed — pass `xAxisFormat` to format the tick text (e.g. `202401` → `01-2024`).
+
+### `date` accepts numbers
+
+A row's `date` may be a `number` (e.g. `date: 2024`) or a string; the engine `String()`-coerces it. The band scale is `scaleBand<string>`, so mixed types are normalised consistently.
+
+### `keysOrder` and colour order
+
+`keysOrder` (`"topToBottom"` default | `"bottomToTop"`) chooses which end of the stack `keys[0]` sits at. With `"bottomToTop"` the **legend / colour order is reversed** relative to the stack draw order — a consumer colour authority that assigns colours by appearance order in `legendData` therefore binds slot 0 to the *top* key, not the bottom one. The stack draw (pixel) order is decided independently and is unaffected.
+
+### `filter` — Top/Bottom-N groups
+
+`filter = { limit, sortingDir }` ranks the **DataSets** (groups) by their grand total across all rows + keys and keeps the top (`"desc"`) or bottom (`"asc"`) `limit`. Everything downstream (keys, dates, y-domain, bars and legend) derives from the filtered set, so the legend always mirrors exactly the drawn bars.
+
+### `disabledItems`
+
+Names in `disabledItems` drop matching **segment keys** *and* **DataSet groups**. Disabling a group makes the remaining bars **widen** to split the band between the visible groups.
+
+### `tooltipFormatter`
+
+Receives `{ item, key, seriesKey, series, isMissing }` — `item` is the full data row, `key` the hovered segment, `series` the hovered segment's rows across dates. The built-in tooltip is **edge-aware**: it flips to the left of the cursor near the right edge and drops below the cursor near the top, so it never spills off-screen.
+
+### Interaction (canvas)
+
+Hovering a segment dims the others **same-frame** (no input lag); leaving the chart clears the dim. **Click** a bar to pin the tooltip, click it again to re-pin, and click outside the chart to unpin.

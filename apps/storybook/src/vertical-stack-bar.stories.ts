@@ -35,3 +35,45 @@ export const GroupedStacked: Story = {
 export const Canvas: Story = {
   args: { ...grouped, width: 820, height: 480, renderer: "canvas" },
 };
+
+// Self-contained dense series so the auto axis layout has something to react to.
+const dense = {
+  title: "Dense monthly axis (auto-rotated)",
+  keys: ["Land", "Air", "Sea"],
+  dataSet: [
+    {
+      seriesKey: "trade",
+      seriesKeyAbbreviation: "T",
+      series: Array.from({ length: 18 }, (_, i) => {
+        const m = (i % 12) + 1;
+        const y = 2023 + Math.floor(i / 12);
+        return { date: Number(`${y}${String(m).padStart(2, "0")}`), Land: 40 + i, Air: 12, Sea: 8 };
+      }),
+    },
+  ],
+};
+
+/**
+ * Dense x-axis: 18 monthly labels don't fit horizontally, so the band axis tilts
+ * them −45° (all labels still shown) and reserves bottom margin so they don't clip.
+ * Note `date` is a number here — the engine String()-coerces it.
+ */
+export const RotatedAxis: Story = {
+  args: { ...dense, width: 760, height: 460, renderer: "canvas" },
+};
+
+/**
+ * `filter` ranks the DataSets (groups) by grand total and keeps the top-N — here
+ * the single largest of the two grouped series. The legend mirrors the kept bars.
+ */
+export const TopNGroups: Story = {
+  args: { ...grouped, filter: { limit: 1, sortingDir: "desc" }, width: 820, height: 480, renderer: "svg" },
+};
+
+/**
+ * `keysOrder: "bottomToTop"` anchors keys[0] at the bottom AND reverses the
+ * legend / colour-slot order (a colour authority binds slot 0 to the top key).
+ */
+export const BottomToTop: Story = {
+  args: { ...single, keysOrder: "bottomToTop", width: 760, height: 460, renderer: "svg" },
+};
