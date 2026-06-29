@@ -19,6 +19,8 @@ export type { XAxisBandOptions } from "./xAxisBand";
 export { renderLoadingIndicator, toggleLoadingIndicator } from "./loadingIndicator";
 export type { LoadingIndicatorOptions } from "./loadingIndicator";
 
+export { toggleNodataIndicator } from "./nodataIndicator";
+
 export { renderOverlay } from "./overlay";
 export type { OverlayOptions } from "./overlay";
 

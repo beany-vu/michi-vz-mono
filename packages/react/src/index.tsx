@@ -1,6 +1,15 @@
 // React wrapper over the @michi-vz/core engine. SSR-safe: renders a sized
 // placeholder on the server and mounts the engine on the client in an effect.
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  createContext,
+  forwardRef,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import {
   mountGapChart,
   mountLineChart,
@@ -19,6 +28,9 @@ import {
   mountBubbleChart,
   mountSankeyChart,
   mountFountainChart,
+  createMichiVzStore,
+  resolveEffectiveProps,
+  evaluateDataState,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -40,6 +52,9 @@ import type {
   FountainChartProps,
   ChartInstance,
   ChartContext,
+  MichiVzStore,
+  MichiVzState,
+  SinglePointLineConfig,
 } from "@michi-vz/core";
 
 export type {
@@ -62,6 +77,95 @@ export type {
   FountainChartProps,
   ChartContext,
 } from "@michi-vz/core";
+
+// ---------------------------------------------------------------------------
+// Shared-state provider + hook — parity with the legacy michi-vz MichiVzProvider
+// / useChartContext, backed by the framework-agnostic createMichiVzStore. The
+// hook subscribes via useSyncExternalStore so charts re-render on shared-state
+// changes (tear-free under concurrent rendering). A future CustomEvent
+// coordinator can layer on the same store for cross-framework / web-component use.
+// ---------------------------------------------------------------------------
+
+export type { MichiVzState } from "@michi-vz/core";
+
+const DEFAULT_CONTEXT_STATE: MichiVzState = {
+  colorsMapping: {},
+  highlightItems: [],
+  disabledItems: [],
+  hiddenItems: [],
+  visibleItems: [],
+};
+
+const MichiVzContext = createContext<MichiVzStore | null>(null);
+const noopSubscribe = (): (() => void) => () => {};
+
+export interface MichiVzProviderProps {
+  children?: ReactNode;
+  colorsMapping?: Record<string, string>;
+  highlightItems?: string[];
+  disabledItems?: string[];
+  hiddenItems?: string[];
+  visibleItems?: string[];
+  fontFamily?: string;
+  singlePointLine?: boolean | SinglePointLineConfig;
+  categoryMetadata?: Record<string, { color?: string; label?: string }>;
+  colorsBasedMapping?: Record<string, string>;
+  locale?: string;
+  dir?: "ltr" | "rtl";
+}
+
+function stateFromProps(p: MichiVzProviderProps): MichiVzState {
+  return {
+    colorsMapping: p.colorsMapping ?? {},
+    highlightItems: p.highlightItems ?? [],
+    disabledItems: p.disabledItems ?? [],
+    hiddenItems: p.hiddenItems ?? [],
+    visibleItems: p.visibleItems ?? [],
+    fontFamily: p.fontFamily,
+    singlePointLine: p.singlePointLine,
+    categoryMetadata: p.categoryMetadata,
+    colorsBasedMapping: p.colorsBasedMapping,
+    locale: p.locale,
+    dir: p.dir,
+  };
+}
+
+export function MichiVzProvider(props: MichiVzProviderProps) {
+  const storeRef = useRef<MichiVzStore | null>(null);
+  if (storeRef.current === null) storeRef.current = createMichiVzStore(stateFromProps(props));
+
+  // Re-sync props → store on change. Identity-stable selector outputs (e.g.
+  // react-redux shallowEqual) keep this from firing every render.
+  useEffect(() => {
+    storeRef.current?.set(stateFromProps(props));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    props.colorsMapping,
+    props.highlightItems,
+    props.disabledItems,
+    props.hiddenItems,
+    props.visibleItems,
+    props.fontFamily,
+    props.singlePointLine,
+    props.categoryMetadata,
+    props.colorsBasedMapping,
+    props.locale,
+    props.dir,
+  ]);
+
+  return <MichiVzContext.Provider value={storeRef.current}>{props.children}</MichiVzContext.Provider>;
+}
+
+/**
+ * Read the shared MichiVz state (colorsMapping / highlightItems / disabledItems /
+ * hiddenItems / visibleItems / fontFamily / singlePointLine). Returns empty
+ * defaults when no MichiVzProvider is mounted, so consumers never read undefined.
+ */
+export function useChartContext(): MichiVzState {
+  const store = useContext(MichiVzContext);
+  const getSnapshot = store ? store.get : () => DEFAULT_CONTEXT_STATE;
+  return useSyncExternalStore(store ? store.subscribe : noopSubscribe, getSnapshot, getSnapshot);
+}
 
 export interface GapChartHandle {
   getContext(): ChartContext | null;
@@ -156,13 +260,29 @@ export const GapChart = forwardRef<GapChartHandle, GapChartProps>(function GapCh
   return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
 });
 
-export const LineChart = forwardRef<LineChartHandle, LineChartProps>(function LineChart(props, ref) {
+/** React-only overlay nodes layered over the chart when loading / no-data. */
+export type LineChartReactProps = LineChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+};
+
+export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(function LineChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ChartInstance<LineChartProps> | null>(null);
+  // Subscribe to shared state → re-render (and re-merge) when colours/highlight change.
+  const shared = useChartContext();
+
+  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+  // Merge shared state into props (faithful to the legacy context merge), then
+  // suppress the engine's vanilla overlay — React renders the overlay node below.
+  const engineProps: LineChartProps = {
+    ...resolveEffectiveProps(coreProps, shared),
+    suppressDefaultOverlay: true,
+  };
 
   useEffect(() => {
     if (!hostRef.current) return;
-    chartRef.current = mountLineChart(hostRef.current, props);
+    chartRef.current = mountLineChart(hostRef.current, engineProps);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
@@ -171,12 +291,34 @@ export const LineChart = forwardRef<LineChartHandle, LineChartProps>(function Li
   }, []);
 
   useEffect(() => {
-    chartRef.current?.update(props);
+    chartRef.current?.update(engineProps);
   });
 
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
-  return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
+  // Same decision the engine makes (so they agree on skip-marks vs overlay).
+  const dataState = evaluateDataState({
+    isLoading: coreProps.isLoading,
+    isNodata: coreProps.isNodata,
+    dataSet: coreProps.dataSet,
+  });
+  const overlay =
+    dataState === "loading"
+      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+      : dataState === "nodata"
+        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        : null;
+
+  const width = props.width ?? 1000;
+  const height = props.height ?? 500;
+  // Outer carries `michi-vz` so the default `.mv-loading` / `.mv-nodata` CSS reaches
+  // the overlay (the engine's own `.michi-vz` is on the inner host).
+  return (
+    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+      <div ref={hostRef} style={{ width, height }} />
+      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+    </div>
+  );
 });
 
 export const FanChart = forwardRef<FanChartHandle, FanChartProps>(function FanChart(props, ref) {
@@ -248,14 +390,26 @@ export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartProps>(fu
   return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
 });
 
-export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, VerticalStackBarChartProps>(
+export type VerticalStackBarChartReactProps = VerticalStackBarChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+};
+
+export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, VerticalStackBarChartReactProps>(
   function VerticalStackBarChart(props, ref) {
     const hostRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<ChartInstance<VerticalStackBarChartProps> | null>(null);
+    const shared = useChartContext();
+
+    const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+    const engineProps: VerticalStackBarChartProps = {
+      ...resolveEffectiveProps(coreProps, shared),
+      suppressDefaultOverlay: true,
+    };
 
     useEffect(() => {
       if (!hostRef.current) return;
-      chartRef.current = mountVerticalStackBarChart(hostRef.current, props);
+      chartRef.current = mountVerticalStackBarChart(hostRef.current, engineProps);
       return () => {
         chartRef.current?.destroy();
         chartRef.current = null;
@@ -264,12 +418,31 @@ export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, Ver
     }, []);
 
     useEffect(() => {
-      chartRef.current?.update(props);
+      chartRef.current?.update(engineProps);
     });
 
     useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
-    return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.dataSet,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+          : null;
+
+    const width = props.width ?? 900;
+    const height = props.height ?? 480;
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
   }
 );
 
@@ -532,3 +705,10 @@ export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>
 
   return <div ref={hostRef} style={{ width: props.width ?? 800, height: props.height ?? 500 }} />;
 });
+
+// Legacy-name parity: thd imports `ScatterPlotChart` (renamed `ScatterChart` in the
+// mono). This alias keeps the consumer swap mechanical; the scatter crosshair /
+// dScale / pinIcon feature parity for thd's usage lands in Phase 2.
+export const ScatterPlotChart = ScatterChart;
+export type ScatterPlotChartProps = ScatterChartProps;
+export type ScatterPlotChartHandle = ScatterChartHandle;

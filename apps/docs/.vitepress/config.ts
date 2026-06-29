@@ -103,6 +103,7 @@ export default defineConfig({
         items: [
           { text: "Installation", link: "/guide/installation" },
           { text: "Getting started", link: "/guide/getting-started" },
+          { text: "Provider & shared state", link: "/guide/provider" },
           { text: "LLM context", link: "/guide/llm-context" },
           { text: "Insights (AI boost)", link: "/guide/insights" },
           { text: "DevTools", link: "/guide/devtools" },

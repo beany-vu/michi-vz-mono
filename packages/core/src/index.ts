@@ -24,6 +24,21 @@ export { mountFountainChart } from "./engine/fountainChart";
 export { createMichiVzStore } from "./state/store";
 export type { MichiVzStore, MichiVzState } from "./state/store";
 
+// ---- Data state (loading / no-data decision; reused by wrappers) ----
+export { evaluateDataState, resolveIsNodata } from "./state/dataState";
+export type { DataState } from "./state/dataState";
+
+// ---- Shared engine chrome (data-mv-state + font var + default overlays) ----
+export { applyChartChrome, createChromeRefs } from "./render/chrome";
+export type { ChromeRefs, ChromeProps } from "./render/chrome";
+
+// ---- Shared-state → props merge (reused by every wrapper/coordinator) ----
+export { resolveEffectiveProps } from "./state/effectiveProps";
+
+// ---- Legend payload builder (flat colour-contract rows) ----
+export { buildLegendData } from "./context/legend";
+export type { LegendInput } from "./context/legend";
+
 // ---- Plugin contract (consumed by @michi-vz/insights; interfaces only) ----
 export type { MichiVzPlugin, PluginContext, AgentTool, Annotation } from "./plugins/types";
 export type { MountOptions } from "./types";
@@ -148,6 +163,7 @@ export {
   renderYAxisLinear,
   renderLoadingIndicator,
   toggleLoadingIndicator,
+  toggleNodataIndicator,
   renderOverlay,
   renderAnnotationsSvg,
 } from "./render/svg";
@@ -179,6 +195,7 @@ export type {
   GapChartProps,
   GapSeriesContext,
   ChartA11yTable,
+  LegendItem,
   BaseChartContext,
   GapChartContext,
   ChartContext,

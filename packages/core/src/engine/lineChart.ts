@@ -7,7 +7,13 @@ import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
-import { renderTitle, renderXAxisLinear, renderYAxisLinear, renderAnnotationsSvg } from "../render/svg";
+import {
+  renderTitle,
+  renderXAxisLinear,
+  renderYAxisLinear,
+  renderAnnotationsSvg,
+} from "../render/svg";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processLineChartData } from "../lineChart/data";
 import { buildLineColors } from "../lineChart/colors";
 import { createLineScales } from "../lineChart/scales";
@@ -18,6 +24,7 @@ import { parseXValue } from "../lineChart/lineUtils";
 import { renderLineSvg } from "../lineChart/renderSvg";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
 import { buildLineContext } from "../context/buildLineContext";
+import { buildLegendData } from "../context/legend";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkLineData } from "../validate/lineWarnings";
 import {
@@ -88,6 +95,7 @@ export function mountLineChart(
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
   let mouseLine: SVGLineElement | null = null;
+  const chrome = createChromeRefs();
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -206,6 +214,8 @@ export function mountLineChart(
     const r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
     const highlightItems = props.highlightItems ?? [];
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    const dataState = applyChartChrome(host, props, props.dataSet, chrome);
 
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -279,25 +289,32 @@ export function mountLineChart(
     // ----- SVG layer (axes + title always; marks only in svg mode) -----
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
-    renderXAxisLinear(svg, scales.xScale, {
-      width: r.width,
-      height: r.height,
-      margin: r.margin,
-      xAxisDataType,
-      format: (v) => xFormat(v),
-      ticks: r.ticks,
-      tickValues: props.tickValues,
-      enableExplicitTickValues: true,
-    });
-    renderYAxisLinear(svg, scales.yScale, {
-      width: r.width,
-      height: r.height,
-      margin: r.margin,
-      format: (v) => yFormat(v),
-      ticks: r.ticks,
-    });
+    // No-data: render only the title (axes + marks hidden, matching legacy
+    // `!displayIsNodata && filteredDataSet.length > 0` gating); the overlay covers it.
+    if (dataState !== "nodata") {
+      renderXAxisLinear(svg, scales.xScale, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        xAxisDataType,
+        format: (v) => xFormat(v),
+        ticks: r.ticks,
+        tickValues: props.tickValues,
+        enableExplicitTickValues: true,
+        showGrid: props.showVerticalGridLines === true,
+      });
+      renderYAxisLinear(svg, scales.yScale, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        format: (v) => yFormat(v),
+        ticks: props.yTicks ?? 10,
+        showGrid: props.showGridLines !== false,
+        highlightZeroLine: props.highlightZeroLine !== false,
+      });
+    }
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer !== "canvas" && dataState !== "nodata") {
       renderLineSvg(
         svg,
         model,
@@ -328,7 +345,7 @@ export function mountLineChart(
     }
 
     // Mouse crosshair line (drawn above marks, below tooltip).
-    if (r.enableMouseLine) {
+    if (r.enableMouseLine && dataState !== "nodata") {
       mouseLine = svgEl("line", { class: "mv-mouse-line" }) as SVGLineElement;
       mouseLine.setAttribute("stroke", "#999");
       mouseLine.setAttribute("stroke-width", "1");
@@ -341,7 +358,7 @@ export function mountLineChart(
     }
 
     // ----- Canvas layer -----
-    if (r.renderer === "canvas") {
+    if (r.renderer === "canvas" && dataState !== "nodata") {
       if (!canvas) {
         canvas = htmlEl("canvas", { class: "line-chart-canvas" });
         canvas.style.position = "absolute";
@@ -362,6 +379,21 @@ export function mountLineChart(
       canvas = null;
     }
 
+    // ----- Legend rows (flat colour-contract payload) -----
+    // Mirrors legacy useLineChartMetadataExpose: with a filter, the legend is the
+    // visible/filtered set (= processedDataSet); without one, every series with
+    // data (disabled included, flagged) so a consumer legend can re-enable them.
+    const skipDispatch = props.skipColorMappingDispatch ?? false;
+    const legendLabels = props.filter
+      ? processedDataSet.map((d) => d.label)
+      : props.dataSet.filter((d) => (d.series?.length ?? 0) > 0).map((d) => d.label);
+    const legendData = buildLegendData({
+      labels: legendLabels,
+      colorsMapping: skipDispatch ? props.colorsMapping ?? {} : colors.generatedColorsMapping,
+      disabledItems: props.disabledItems,
+      palette: props.colors,
+    });
+
     // ----- Context (renderer-agnostic) + a11y + warnings -----
     context = buildLineContext({
       title: props.title,
@@ -371,6 +403,7 @@ export function mountLineChart(
       yAxisDomain,
       processedDataSet,
       colorsMapping: colors.generatedColorsMapping,
+      legendData,
     });
     // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.

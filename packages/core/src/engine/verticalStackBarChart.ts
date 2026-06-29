@@ -7,6 +7,7 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisBand, renderYAxisLinear } from "../render/svg";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import {
   extractDataKeys,
   resolveEffectiveKeys,
@@ -83,6 +84,7 @@ export function mountVerticalStackBarChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  const chrome = createChromeRefs();
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -175,6 +177,9 @@ export function mountVerticalStackBarChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    const dataState = applyChartChrome(host, props, props.dataSet, chrome);
+
     const dataKeys = extractDataKeys(props.dataSet);
     const effectiveKeys = resolveEffectiveKeys(dataKeys, props.keys, props.disabledItems);
     let dates = collectDates(props.dataSet, props.xAxisDomain);
@@ -223,54 +228,62 @@ export function mountVerticalStackBarChart(
 
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
-    renderXAxisBand(svg, scales.xScale, {
-      width: r.width,
-      height: r.height,
-      margin: r.margin,
-      format: (label) => xFormat(label),
-    });
-    renderYAxisLinear(svg, scales.yScale, {
-      width: r.width,
-      height: r.height,
-      margin: r.margin,
-      format: (v) => yFormat(v),
-      ticks: 5,
-    });
+    // No-data: render only the title; the overlay covers the rest.
+    if (dataState !== "nodata") {
+      renderXAxisBand(svg, scales.xScale, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        format: (label) => xFormat(label),
+      });
+      renderYAxisLinear(svg, scales.yScale, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        format: (v) => yFormat(v),
+        ticks: props.yTicks ?? 10,
+        showGrid: props.showGridLines !== false,
+        highlightZeroLine: props.highlightZeroLine !== false,
+      });
 
-    if (r.renderer !== "canvas") {
-      renderStackSvg(
-        svg,
-        model,
-        { enableTransitions: r.enableTransitions },
-        {
-          onEnter: (rect, ev) => {
-            if (sticky) return;
-            showTooltip(rect, ev);
-            props.onHighlightItem?.([rect.key]);
-          },
-          onLeave: () => {
-            hideTooltip();
-            if (!sticky) props.onHighlightItem?.([]);
-          },
-          onClick: (rect, ev) => {
-            sticky = true;
-            tooltip.classList.add("sticky");
-            showTooltip(rect, ev);
-          },
-        }
-      );
-    }
-
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "stack-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+      if (r.renderer !== "canvas") {
+        renderStackSvg(
+          svg,
+          model,
+          { enableTransitions: r.enableTransitions },
+          {
+            onEnter: (rect, ev) => {
+              if (sticky) return;
+              showTooltip(rect, ev);
+              props.onHighlightItem?.([rect.key]);
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.([]);
+            },
+            onClick: (rect, ev) => {
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(rect, ev);
+            },
+          }
+        );
       }
-      drawStackCanvas(canvas, svg, model, { width: r.width, height: r.height });
+
+      if (r.renderer === "canvas") {
+        if (!canvas) {
+          canvas = htmlEl("canvas", { class: "stack-chart-canvas" });
+          canvas.style.position = "absolute";
+          canvas.style.top = getComputedStyle(host).paddingTop;
+          canvas.style.left = getComputedStyle(host).paddingLeft;
+          canvas.style.pointerEvents = "none";
+          host.insertBefore(canvas, tooltip);
+        }
+        drawStackCanvas(canvas, svg, model, { width: r.width, height: r.height });
+      } else if (canvas) {
+        canvas.remove();
+        canvas = null;
+      }
     } else if (canvas) {
       canvas.remove();
       canvas = null;

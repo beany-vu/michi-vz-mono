@@ -2,6 +2,7 @@
 // data model (NOT the DOM), so it is identical in SVG and canvas mode. Produces
 // per-series stats, a chart-agnostic a11yTable, and a deterministic NL summary.
 import type {
+  LegendItem,
   LineChartContext,
   LineDataItem,
   LineSeriesContext,
@@ -19,6 +20,8 @@ export interface BuildLineContextInput {
   yAxisDomain: [number, number];
   processedDataSet: LineDataItem[];
   colorsMapping: Record<string, string>;
+  /** Flat legend rows (label/dataLabelSafe/color/disabled) for the colour contract. */
+  legendData?: LegendItem[];
 }
 
 function seriesContext(item: LineDataItem): LineSeriesContext {
@@ -93,6 +96,7 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
       valueRange: [round(input.yAxisDomain[0]), round(input.yAxisDomain[1])],
     },
     colorsMapping: input.colorsMapping,
+    legendData: input.legendData,
     summary,
     a11yTable: {
       headers: ["Series", "Points", "First", "Last", "Change", "Trend"],

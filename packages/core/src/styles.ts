@@ -19,7 +19,10 @@ export const CORE_CSS = `
 .michi-vz .title { font-size: calc(var(--michi-vz-font-size, 12px) * 1.33); font-weight: 600; fill: var(--michi-vz-ink, currentColor); }
 .michi-vz .gap-line { stroke-width: 2; fill: none; }
 .michi-vz .mv-axis-label { fill: var(--michi-vz-muted, #666); font-size: var(--michi-vz-font-size, 12px); }
-.michi-vz .mv-grid { stroke: var(--michi-vz-grid, lightgray); stroke-dasharray: 1.5; }
+.michi-vz .mv-grid { stroke: var(--michi-vz-grid, lightgray); stroke-dasharray: 2 2; }
+/* y=0 baseline: SOLID (not dashed) but the gridline colour by default; override
+   --michi-vz-zero-line for a darker emphasised baseline. */
+.michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-dasharray: none; }
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
   font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-ink, #2a1c15);
@@ -58,6 +61,15 @@ export const CORE_CSS = `
 }
 @keyframes mv-fade-in-out {
   0% { opacity: 0; } 50% { opacity: 0.2; } 100% { opacity: 0; }
+}
+.michi-vz .mv-nodata {
+  position: absolute; inset: 0;
+  display: flex; justify-content: center; align-items: center; text-align: center;
+  padding: 8px; box-sizing: border-box;
+  background: var(--michi-vz-surface, #fff);
+  color: var(--michi-vz-muted, #666);
+  font-size: var(--michi-vz-font-size, 12px);
+  pointer-events: none;
 }
 `;
 

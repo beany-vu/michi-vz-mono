@@ -13,6 +13,8 @@ export interface YAxisLinearOptions {
   format: (d: number) => string;
   ticks?: number;
   showGrid?: boolean;
+  /** Emphasise the y=0 grid line with a darker solid stroke (default false). */
+  highlightZeroLine?: boolean;
 }
 
 export function renderYAxisLinear(
@@ -30,8 +32,15 @@ export function renderYAxisLinear(
     if (!Number.isFinite(py)) continue;
 
     if (showGrid) {
+      const isZero = v === 0 && o.highlightZeroLine;
       g.appendChild(
-        svgEl("line", { class: "mv-grid", x1: left, x2: right, y1: py, y2: py })
+        svgEl("line", {
+          class: isZero ? "mv-grid mv-zero-line" : "mv-grid",
+          x1: left,
+          x2: right,
+          y1: py,
+          y2: py,
+        })
       );
     }
 

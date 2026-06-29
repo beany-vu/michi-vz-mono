@@ -147,6 +147,26 @@ export interface ChartA11yTable {
  * depend ONLY on this base; per-chart specifics live on the union members below.
  * `chartType` is `string` here but a literal on each member, so the union
  * narrows on it (see TS discriminated-union rules). */
+/**
+ * Flat legend row carried on every ChartContext as `legendData`. This is the
+ * consumer colour-contract payload (label + sanitized data-label-safe + order +
+ * disabled), distinct from the richer per-series `series`/`legend` shapes. A
+ * consumer that drives its own colour authority off `onChartDataProcessed`
+ * (e.g. thd MonitorV2) reads `legendData[].{label,dataLabelSafe,color,disabled}`
+ * to emit per-label CSS — so `dataLabelSafe` MUST equal sanitizeForClassName(label).
+ */
+export interface LegendItem {
+  label: string;
+  /** Resolved colour; a consumer colour authority may overwrite this. */
+  color: string;
+  /** Appearance order (legend slot). */
+  order: number;
+  /** True when the label is currently hidden/disabled by the consumer. */
+  disabled?: boolean;
+  /** sanitizeForClassName(label) — the CSS hook the canvas probe matches. */
+  dataLabelSafe?: string;
+}
+
 export interface BaseChartContext {
   chartType: string;
   /** Optional chart title rendered above the plot */
@@ -155,6 +175,11 @@ export interface BaseChartContext {
   renderer: "svg" | "canvas";
   /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
   colorsMapping: Record<string, string>;
+  /**
+   * Flat per-label legend rows for the consumer colour contract. Optional while
+   * charts are migrated to populate it; consumers should treat absence as [].
+   */
+  legendData?: LegendItem[];
   /** Deterministic, rule-based natural-language summary. No model required;
    * doubles as accessibility alt text. */
   summary: string;
@@ -245,8 +270,16 @@ export interface LineChartProps {
   xAxisFormat?: (d: number | string) => string;
   /** Formats a y tick value into its display label */
   yAxisFormat?: (d: number | string) => string;
-  /** Approximate number of axis ticks to generate */
+  /** Approximate number of x-axis ticks to generate */
   ticks?: number;
+  /** Number of y-axis ticks (default 10, matching the legacy denser value axis). */
+  yTicks?: number;
+  /** Draw horizontal dashed grid lines at each y tick (default true). */
+  showGridLines?: boolean;
+  /** Draw vertical dashed grid lines at each x tick (default false — the legacy chart drew none). */
+  showVerticalGridLines?: boolean;
+  /** Emphasise the y=0 grid line with a darker solid stroke (default true). */
+  highlightZeroLine?: boolean;
   /** Explicit tick values, overriding the generated ones */
   tickValues?: Array<number | Date>;
   /** Default interpolation for every series (per-series `curve` wins). */
@@ -261,6 +294,8 @@ export interface LineChartProps {
   enableMouseLine?: boolean;
   /** true / config draws a horizontal guide line for single-point series. */
   singlePointLine?: boolean | SinglePointLineConfig;
+  /** Font family for axis/title/tooltip text (SVG + canvas). Sets the --michi-vz-font-family CSS var so both renderers resolve it. */
+  fontFamily?: string;
   /** Labels to emphasise; all other marks dim */
   highlightItems?: string[];
   /** Labels to hide and exclude from scales/stacks */
@@ -275,6 +310,14 @@ export interface LineChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series. */
+  isNodata?: boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;
   /** Called when the hovered/highlighted label(s) change */
@@ -621,6 +664,22 @@ export interface VerticalStackBarChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Show the loading overlay and skip the no-data check. */
+  isLoading?: boolean;
+  /** No-data override: boolean or predicate; default = empty / all-empty-series. */
+  isNodata?: boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay. */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node. */
+  suppressDefaultOverlay?: boolean;
+  /** Font family for axis/label text (SVG + canvas) via --michi-vz-font-family. */
+  fontFamily?: string;
+  /** Number of y-axis ticks (default 10). */
+  yTicks?: number;
+  /** Draw horizontal dashed y grid lines (default true). */
+  showGridLines?: boolean;
+  /** Emphasise the y=0 line with a solid stroke (default true). */
+  highlightZeroLine?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (rect: StackRectData) => string;
   /** Called when the hovered/highlighted label(s) change */

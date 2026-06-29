@@ -75,6 +75,93 @@ chart.destroy();
 
 :::
 
+## Loading and no-data states
+
+Pass `isLoading` while your data fetch is in-flight; the engine shows a `.mv-loading` overlay and sets `data-mv-state="loading"` on the host.
+
+When the fetch resolves to nothing, `isNodata` takes over. The default predicate treats an empty `dataSet` (or every series being empty) as no-data — you can override it with a boolean or a function:
+
+```tsx [React]
+// boolean shortcut
+<LineChart isLoading={query.isPending} isNodata={query.data?.length === 0} noDataLabel="No data available" />
+
+// function predicate
+<LineChart isNodata={(ds) => ds.every(s => s.data.length === 0)} />
+```
+
+In React the `isNodataComponent` and `isLoadingComponent` props accept any `ReactNode`. The engine stays mounted (so `onChartDataProcessed` still fires); your node is rendered as an overlay on top of the chart host, and `suppressDefaultOverlay` is set automatically so the built-in `.mv-nodata` message is hidden:
+
+```tsx [React]
+<LineChart
+  isLoading={isPending}
+  isLoadingComponent={<Spinner />}
+  isNodata={isEmpty}
+  isNodataComponent={<p className="no-data">No results for this selection.</p>}
+/>
+```
+
+For vanilla JS / other frameworks the built-in overlay is shown by default. Suppress it and render your own node alongside the chart host:
+
+```ts [Vanilla JS]
+const chart = mountLineChart(el, { ...props, suppressDefaultOverlay: true });
+// render your overlay next to el when data-mv-state === "nodata"
+```
+
+## Axis configuration
+
+| Prop | Default | Effect |
+|---|---|---|
+| `yTicks` | `10` | Number of y-axis tick intervals |
+| `showGridLines` | `true` | Horizontal (y) dashed gridlines |
+| `showVerticalGridLines` | `false` | Vertical (x) dashed gridlines |
+| `highlightZeroLine` | `true` | Draws y = 0 as a solid line |
+
+The zero line colour defaults to the grid colour (`--michi-vz-grid`). Override it independently:
+
+```css
+.my-chart-host {
+  --michi-vz-zero-line: #e53935; /* solid red zero line */
+  --michi-vz-grid: #e0e0e0;      /* dashed gridlines stay grey */
+}
+```
+
+```tsx [React]
+<LineChart
+  yTicks={5}
+  showGridLines={true}
+  showVerticalGridLines={false}
+  highlightZeroLine={true}
+/>
+```
+
+## Font family
+
+Pass `fontFamily` to keep SVG labels and canvas text in sync. The engine writes `--michi-vz-font-family` on the chart host; both the SVG `<text>` elements and the canvas `ctx.font` path read that computed style, so no font embedding is required — the family just needs to be loaded by the page already.
+
+```tsx [React]
+<LineChart fontFamily="Inter, sans-serif" />
+```
+
+```ts [Vanilla JS]
+mountLineChart(el, { ...props, fontFamily: "Inter, sans-serif" });
+```
+
+## Colours and legend data
+
+Line colours follow the **`data-label-safe` CSS contract**. Each series element carries a `data-label-safe` attribute (the sanitized series label); you target it in CSS to set the stroke colour. The canvas renderer probes those computed styles at render time, so the same CSS rules drive both renderers.
+
+`onChartDataProcessed` (and `getContext()`) emit a `legendData` array on the [ChartContext](/guide/llm-context). Each entry has `{ label, color, order, disabled?, dataLabelSafe }`. A colour authority (e.g. a provider component) can read these entries and emit the matching CSS:
+
+```tsx [React]
+<LineChart
+  onChartDataProcessed={(ctx) => {
+    ctx.legendData?.forEach(({ dataLabelSafe, color }) => {
+      // write `.line[data-label-safe="${dataLabelSafe}"] { stroke: ${color} }` into a <style> tag
+    });
+  }}
+/>
+```
+
 ## API
 
 Props are typed as `LineChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

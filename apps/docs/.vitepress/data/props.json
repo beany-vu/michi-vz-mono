@@ -190,6 +190,38 @@
           "common": false
         },
         {
+          "name": "yTicks",
+          "type": "number",
+          "optional": true,
+          "description": "Number of y-axis ticks (default 10, matching the legacy denser value axis).",
+          "default": "10",
+          "common": false
+        },
+        {
+          "name": "showGridLines",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw horizontal dashed grid lines at each y tick (default true).",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "showVerticalGridLines",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw vertical dashed grid lines at each x tick (default false \u2014 the legacy chart drew none).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "highlightZeroLine",
+          "type": "boolean",
+          "optional": true,
+          "description": "Emphasise the y=0 grid line with a darker solid stroke (default true).",
+          "default": "true",
+          "common": false
+        },
+        {
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
@@ -242,6 +274,14 @@
           "type": "boolean | SinglePointLineConfig",
           "optional": true,
           "description": "true / config draws a horizontal guide line for single-point series.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "fontFamily",
+          "type": "string",
+          "optional": true,
+          "description": "Font family for axis/title/tooltip text (SVG + canvas). Sets --michi-vz-font-family so both renderers resolve it; the family must already be loaded by the page.",
           "default": "",
           "common": false
         },
@@ -300,6 +340,38 @@
           "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check.",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on dataSet. Default predicate = empty dataSet or all-series-empty.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressDefaultOverlay is true).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "Suppress the built-in loading/no-data overlay so a framework wrapper can render its own node instead.",
+          "default": "false",
+          "common": false
         },
         {
           "name": "tooltipFormatter",
@@ -3297,7 +3369,7 @@
           "name": "gravity",
           "type": "number",
           "optional": true,
-          "description": "Strength of the pull toward the centre in [0,1] (default 0.09) — higher = tighter cluster (\"suck together\").",
+          "description": "Strength of the pull toward the centre in [0,1] (default 0.09) \u2014 higher = tighter cluster (\"suck together\").",
           "default": "0.09",
           "common": false
         },

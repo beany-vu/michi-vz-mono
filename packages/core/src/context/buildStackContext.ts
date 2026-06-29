@@ -75,6 +75,9 @@ export function buildStackContext(input: BuildStackContextInput): VerticalStackB
     visibleItems: input.visibleItems,
     series,
     legend: input.legend,
+    // Flat colour-contract payload (same rows as `legend`) read by consumer
+    // colour authorities via onChartDataProcessed(ctx).legendData.
+    legendData: input.legend,
     stats: {
       seriesCount: keys.length,
       dateCount: dates.length,

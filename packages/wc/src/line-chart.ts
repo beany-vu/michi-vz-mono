@@ -38,6 +38,14 @@ export class LineChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    yTicks: { type: Number, attribute: "y-ticks" },
+    showGridLines: { type: Boolean, attribute: "show-grid-lines" },
+    showVerticalGridLines: { type: Boolean, attribute: "show-vertical-grid-lines" },
+    highlightZeroLine: { type: Boolean, attribute: "highlight-zero-line" },
+    fontFamily: { type: String, attribute: "font-family" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
   };
 
   dataSet: LineDataItem[] = [];
@@ -59,6 +67,14 @@ export class LineChartElement extends LitElement {
   tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;
   plugins?: MichiVzPlugin<LineChartProps>[];
   locale?: string;
+  yTicks?: number;
+  showGridLines?: boolean;
+  showVerticalGridLines?: boolean;
+  highlightZeroLine?: boolean;
+  fontFamily?: string;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean);
+  noDataLabel?: string;
 
   private chart?: ChartInstance<LineChartProps>;
 
@@ -94,6 +110,14 @@ export class LineChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      yTicks: this.yTicks,
+      showGridLines: this.showGridLines,
+      showVerticalGridLines: this.showVerticalGridLines,
+      highlightZeroLine: this.highlightZeroLine,
+      fontFamily: this.fontFamily,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
