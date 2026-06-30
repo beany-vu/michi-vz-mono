@@ -447,7 +447,7 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 <style scoped>
 .insights-demo { border: 1px solid var(--vp-c-divider); border-radius: 8px; margin: 18px 0; background: var(--vp-c-bg-soft); overflow: hidden; --michi-vz-ink: var(--vp-c-text-1); }
 .insights-demo-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--vp-c-divider); background: var(--vp-c-bg); }
-.insights-demo-title { font-family: "Spectral", Georgia, serif; font-weight: 600; text-transform: capitalize; }
+.insights-demo-title { font-family: "Josefin Sans", system-ui, sans-serif; font-weight: 600; text-transform: capitalize; }
 .insights-demo-tag { font-family: var(--vp-font-family-mono); font-size: 11px; color: var(--vp-c-text-3); }
 .insights-demo-toggles { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .idemo-chip { font: inherit; font-size: 12.5px; padding: 3px 10px; border: 1px solid var(--vp-c-divider); border-radius: 999px; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }

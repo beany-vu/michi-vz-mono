@@ -345,7 +345,7 @@ const pct = (x: number) => Math.round(x * 100);
    y-axis labels) stays legible in BOTH light and dark mode - it defaults to dark otherwise. */
 .plab { border: 1px solid var(--vp-c-divider); border-radius: 10px; margin: 18px 0; background: var(--vp-c-bg-soft); overflow: hidden; --michi-vz-ink: var(--vp-c-text-1); }
 .plab-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--vp-c-divider); background: var(--vp-c-bg); }
-.plab-title { font-family: "Spectral", Georgia, serif; font-weight: 600; }
+.plab-title { font-family: "Josefin Sans", system-ui, sans-serif; font-weight: 600; }
 .plab-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .plab-rtoggle { display: inline-flex; border: 1px solid var(--vp-c-divider); border-radius: 999px; overflow: hidden; }
 .plab-rtoggle button { font: inherit; font-size: 12px; padding: 3px 11px; border: none; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
@@ -392,7 +392,7 @@ const pct = (x: number) => Math.round(x * 100);
 .plab-stat { flex: 1; min-width: 110px; text-align: center; padding: 12px 8px; border: 1px solid var(--vp-c-divider); border-radius: 8px; background: var(--vp-c-bg); }
 .plab-stat.ok { border-color: rgba(22, 163, 74, 0.4); }
 .plab-stat.bad { border-color: rgba(231, 177, 67, 0.5); }
-.plab-statnum { display: block; font-family: "Spectral", Georgia, serif; font-size: 26px; font-weight: 700; color: var(--vp-c-text-1); line-height: 1.1; }
+.plab-statnum { display: block; font-family: "Josefin Sans", system-ui, sans-serif; font-size: 26px; font-weight: 700; color: var(--vp-c-text-1); line-height: 1.1; }
 .plab-stat.ok .plab-statnum { color: #16a34a; }
 .plab-stat.bad .plab-statnum { color: #b8860b; }
 .plab-statlbl { display: block; font-size: 11.5px; color: var(--vp-c-text-3); margin-top: 3px; }

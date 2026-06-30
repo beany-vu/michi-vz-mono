@@ -111,7 +111,7 @@ function toggleContext() {
   border-bottom: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg);
 }
-.chart-demo-title { font-family: "Spectral", Georgia, serif; font-weight: 600; }
+.chart-demo-title { font-family: "Josefin Sans", system-ui, sans-serif; font-weight: 600; }
 /* Renderer toggle - a small segmented control; Canvas is the promoted default. */
 .chart-demo-rtoggle { display: inline-flex; border: 1px solid var(--vp-c-divider); border-radius: 999px; overflow: hidden; }
 .chart-demo-rtoggle button { font: inherit; font-size: 12px; padding: 3px 12px; border: none; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
