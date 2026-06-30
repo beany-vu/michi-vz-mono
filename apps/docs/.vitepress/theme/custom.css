@@ -135,13 +135,6 @@
   padding: 0;
   letter-spacing: -0.01em;
 }
-.mv-section-head .mv-rule {
-  flex: 1;
-  height: 1px;
-  background: var(--mv-line);
-  align-self: center;
-  margin-left: 4px;
-}
 .mv-section-head .mv-section-roman {
   font-family: var(--mv-mono);
   font-size: 12px;

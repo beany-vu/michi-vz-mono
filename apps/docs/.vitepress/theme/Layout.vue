@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DefaultTheme from "vitepress/theme";
+import CatBand from "./CatBand.vue";
 import ChartAtlas from "./ChartAtlas.vue";
 
 const { Layout } = DefaultTheme;
@@ -29,8 +30,9 @@ const META = [
       </div>
     </template>
 
-    <!-- The returning live chart catalog, below the feature row -->
+    <!-- "Four charts of Michi" replaces the stock feature grid, then the atlas -->
     <template #home-features-after>
+      <CatBand />
       <ChartAtlas />
     </template>
   </Layout>

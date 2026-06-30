@@ -36,7 +36,6 @@ const visible = (family: string) => active.value === "All" || active.value === f
     <div class="mv-section-head">
       <span class="mv-mark">&#10022;</span>
       <h2>Chart atlas</h2>
-      <span class="mv-rule"></span>
     </div>
     <p class="mv-lede">
       Pick a chart by the question you are asking. Every card is a component on real data:
