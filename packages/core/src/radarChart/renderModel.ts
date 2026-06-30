@@ -8,6 +8,8 @@ export interface RadarPole {
   x: number;
   y: number;
   value: number;
+  /** the axis (pole) index this point sits on (poles may be sparse — absent axes skipped). */
+  axisIndex: number;
 }
 
 export interface RadarSeriesModel {
@@ -24,8 +26,8 @@ export interface RadarGrid {
   cx: number;
   cy: number;
   radius: number;
-  /** concentric ring polygon point strings, inner→outer. */
-  rings: string[];
+  /** concentric ring radii (pixels), inner→outer — drawn as dashed circles. */
+  rings: number[];
   spokes: Array<{ x: number; y: number }>; // outer vertex per axis
   axisLabels: Array<{ x: number; y: number; text: string; anchor: "start" | "middle" | "end" }>;
   /** one value label per ring, placed along the top (axis 0) spoke. */
@@ -68,15 +70,16 @@ export function buildRadarRenderModel(
     y: cy + r * Math.sin(angleOf(i)),
   });
 
-  // Grid
-  const rings: string[] = [];
+  // Grid — concentric ring RADII (drawn as dashed circles, legacy parity).
+  const rings: number[] = [];
   for (let ring = 1; ring <= o.rings; ring++) {
-    const rr = (ring / o.rings) * radius;
-    rings.push(o.axes.map((_, i) => { const p = pt(rr, i); return `${p.x},${p.y}`; }).join(" "));
+    rings.push((ring / o.rings) * radius);
   }
   const spokes = o.axes.map((_, i) => pt(radius, i));
   const axisLabels = o.axes.map((axis, i) => {
-    const p = pt(radius + 14, i);
+    // Labels sit near the plot edge (legacy placed them ~5px inside the SVG edge,
+    // i.e. radius+25 here) — relies on the SVG being overflow:visible so they don't clip.
+    const p = pt(radius + 25, i);
     const cos = Math.cos(angleOf(i));
     const anchor: "start" | "middle" | "end" = cos > 0.3 ? "start" : cos < -0.3 ? "end" : "middle";
     return { x: p.x, y: p.y, text: o.poleLabelFormatter ? o.poleLabelFormatter(axis) : axis, anchor };
@@ -98,10 +101,16 @@ export function buildRadarRenderModel(
   const anyHighlight = highlightSet.size > 0;
 
   const series: RadarSeriesModel[] = items.map((it) => {
-    const poles: RadarPole[] = o.axes.map((_, i) => {
-      const value = Number(it.values[i]) || 0;
+    // Skip axes whose value is null (the month is ABSENT from the data) so the polygon
+    // doesn't spike to the centre — mirrors the legacy projectSeries skip. A present 0
+    // still plots at the centre (genuine zero).
+    const poles: RadarPole[] = [];
+    o.axes.forEach((_, i) => {
+      const raw = it.values[i];
+      if (raw == null) return;
+      const value = Number(raw) || 0;
       const p = pt(rOf(value), i);
-      return { x: p.x, y: p.y, value };
+      poles.push({ x: p.x, y: p.y, value, axisIndex: i });
     });
     return {
       label: it.label,

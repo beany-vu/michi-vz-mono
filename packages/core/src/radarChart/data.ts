@@ -16,7 +16,7 @@ export function processRadarData(
 
   let max = 0;
   for (const it of items) {
-    for (const v of it.values) if (Number.isFinite(v) && v > max) max = v;
+    for (const v of it.values) if (v != null && Number.isFinite(v) && v > max) max = v;
   }
 
   return { items, maxValue: maxValue ?? (max || 1) };

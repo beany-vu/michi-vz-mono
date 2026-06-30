@@ -31,7 +31,7 @@ describe("mountRadarChart (jsdom)", () => {
 
   it("renders a polar grid (rings + spokes + axis labels)", () => {
     const { host, chart } = mount({ rings: 4 });
-    expect(host.querySelectorAll(".mv-radar-grid polygon").length).toBe(4); // 4 rings
+    expect(host.querySelectorAll(".mv-radar-grid circle").length).toBe(4); // 4 rings (dashed circles)
     expect(host.querySelectorAll(".mv-radar-grid line").length).toBe(5); // 5 spokes
     expect(host.querySelectorAll(".mv-radar-grid .pole-label").length).toBe(5); // 5 axis (pole) labels
     expect(host.querySelectorAll(".mv-radar-grid .radial-label").length).toBe(4); // 4 ring-value labels
@@ -191,9 +191,9 @@ describe("mountRadarChart — drop-in features (data shape, colours, hover)", ()
           points: "",
           dimmed: false,
           poles: [
-            { x: 175, y: 75, value: 100 },
-            { x: 242, y: 218, value: 80 },
-            { x: 108, y: 218, value: 60 },
+            { x: 175, y: 75, value: 100, axisIndex: 0 },
+            { x: 242, y: 218, value: 80, axisIndex: 1 },
+            { x: 108, y: 218, value: 60, axisIndex: 2 },
           ],
         },
         {
@@ -203,9 +203,9 @@ describe("mountRadarChart — drop-in features (data shape, colours, hover)", ()
           points: "",
           dimmed: true,
           poles: [
-            { x: 175, y: 100, value: 70 },
-            { x: 225, y: 200, value: 50 },
-            { x: 125, y: 200, value: 40 },
+            { x: 175, y: 100, value: 70, axisIndex: 0 },
+            { x: 225, y: 200, value: 50, axisIndex: 1 },
+            { x: 125, y: 200, value: 40, axisIndex: 2 },
           ],
         },
       ],

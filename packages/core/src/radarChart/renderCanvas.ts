@@ -9,6 +9,8 @@ export interface RadarCanvasOptions {
   width: number;
   height: number;
   fillOpacity: number;
+  /** Fill dimmed polygons as a soft background (default true). */
+  dimmedFill?: boolean;
 }
 
 function polyPath(points: string): Path2D {
@@ -33,10 +35,16 @@ export function drawRadarCanvas(
   const { ctx } = setup;
   const g = model.grid;
 
-  // Grid.
+  // Grid: dashed concentric circles + solid spokes (legacy parity).
   ctx.strokeStyle = "lightgray";
   ctx.lineWidth = 1;
-  for (const ring of g.rings) ctx.stroke(polyPath(ring));
+  ctx.setLineDash([2, 2]);
+  for (const rr of g.rings) {
+    ctx.beginPath();
+    ctx.arc(g.cx, g.cy, rr, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
   for (const sp of g.spokes) {
     ctx.beginPath();
     ctx.moveTo(g.cx, g.cy);
@@ -61,19 +69,25 @@ export function drawRadarCanvas(
     const color = fillColors.get(s.label) || s.color;
     const path = polyPath(s.points);
     ctx.save();
-    ctx.globalAlpha = s.dimmed ? 0.15 : 1;
+    // Dimmed (e.g. non-current-year) series stay visible as a soft background — a bit
+    // more opaque than a bare hint, closer to the legacy seriesAlpha ~0.2.
     ctx.fillStyle = color;
-    ctx.globalAlpha = s.dimmed ? 0.05 : o.fillOpacity;
+    ctx.globalAlpha = s.dimmed ? (o.dimmedFill === false ? 0 : 0.12) : o.fillOpacity;
     ctx.fill(path);
-    ctx.globalAlpha = s.dimmed ? 0.15 : 1;
+    ctx.globalAlpha = s.dimmed ? 0.3 : 1;
     ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
+    // The active (current) path is drawn thicker so it stands out over the dimmed ones.
+    ctx.lineWidth = s.dimmed ? 2 : 3;
     ctx.stroke(path);
-    ctx.fillStyle = color;
-    for (const p of s.poles) {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fill();
+    // Pole dots only on the active series — dimmed years are non-interactive
+    // background context (no dots, and not hit-tested; see setupRadarCanvasHover).
+    if (!s.dimmed) {
+      ctx.fillStyle = color;
+      for (const p of s.poles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     ctx.restore();
   }
@@ -198,12 +212,13 @@ export function setupRadarCanvasHover(
   const hits: SeriesHit[] = model.series.map((s) => ({
     label: s.label,
     dimmed: s.dimmed,
-    points: s.poles.map((p, i) => ({ x: p.x, y: p.y, axisIndex: i })),
+    points: s.poles.map((p) => ({ x: p.x, y: p.y, axisIndex: p.axisIndex })),
   }));
   const pick = (mx: number, my: number): Hit | null => {
+    // Only the active (non-dimmed) series is interactive — dimmed years are
+    // de-emphasised background context, so they are not hit-tested (no hover/tooltip).
     const active = hits.filter((h) => !h.dimmed);
-    const dimmed = hits.filter((h) => h.dimmed);
-    return hitSubset(active, mx, my, true) ?? hitSubset(dimmed, mx, my, false);
+    return hitSubset(active, mx, my, true);
   };
   const at = (ev: MouseEvent): { mx: number; my: number } => {
     const rect = svg.getBoundingClientRect();

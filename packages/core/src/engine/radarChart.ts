@@ -31,6 +31,7 @@ interface Resolved {
   margin: Margin;
   rings: number;
   fillOpacity: number;
+  dimmedFill: boolean;
   renderer: "svg" | "canvas";
   enableTransitions: boolean;
 }
@@ -43,6 +44,7 @@ function resolve(p: RadarChartProps): Resolved {
     rings: p.rings ?? 4,
     // showFilled=false → stroke-only (fill opacity 0).
     fillOpacity: p.showFilled === false ? 0 : (p.fillOpacity ?? 0.2),
+    dimmedFill: p.showDimmedFill ?? true,
     renderer: p.renderer ?? "svg",
     enableTransitions: p.enableTransitions ?? true,
   };
@@ -61,7 +63,9 @@ function normalizeSeries(series: RadarDataItem[], axes: string[]): RadarDataItem
     const data = s.data ?? [];
     const values = axes.map((a) => {
       const pt = data.find((d) => d.date === a);
-      return pt && Number.isFinite(Number(pt.value)) ? Number(pt.value) : 0;
+      if (!pt) return null; // month ABSENT from the data → null → pole skipped (legacy parity)
+      const n = Number(pt.value);
+      return Number.isFinite(n) ? n : 0; // present (null/NaN → 0, plotted at the centre)
     });
     return { ...s, values };
   });
@@ -160,6 +164,9 @@ export function mountRadarChart(
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
+    // Let axis labels sit at / spill past the plot edge without clipping (legacy parity)
+    // — this is what lets the radar use a larger radius with labels right up to the edge.
+    svg.style.overflow = "visible";
 
     // Resolve axes (axes prop or legacy poles.labels) + normalise the series shape
     // (derive `values` from a legacy data:[{date,value}] array). Stored on module vars
@@ -244,7 +251,12 @@ export function mountRadarChart(
         canvas.style.pointerEvents = "none";
         host.insertBefore(canvas, tooltip);
       }
-      drawRadarCanvas(canvas, svg, model, { width: r.width, height: r.height, fillOpacity: r.fillOpacity });
+      drawRadarCanvas(canvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        fillOpacity: r.fillOpacity,
+        dimmedFill: r.dimmedFill,
+      });
       // Forgiving hover lives on the SVG above the canvas; rebind every render since
       // the model (and its vertex geometry) changes (canvas listener-rebind pattern).
       if (canvasHoverTeardown) canvasHoverTeardown();

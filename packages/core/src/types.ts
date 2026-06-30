@@ -1396,8 +1396,9 @@ export interface RadarDataItem {
   label: string;
   /** Optional explicit colour for this series; otherwise resolved from colorsMapping or the palette */
   color?: string;
-  /** one value per axis, aligned to `axes` by index. */
-  values: number[];
+  /** one value per axis, aligned to `axes` by index. `null` = the axis is absent from
+   *  the data → its pole is SKIPPED (legacy parity), not drawn at the centre. */
+  values: Array<number | null>;
   /** Visually dim this series (e.g. a non-current period); composes with highlightItems. */
   dimmed?: boolean;
   /** Legacy input shape: {date,value} per pole. When `values` is absent the engine
@@ -1414,6 +1415,9 @@ export interface RadarChartProps {
   poles?: { labels: string[]; domain?: number[]; range?: number[] };
   /** Stroke-only when false (no polygon fill); default true (fill at fillOpacity). */
   showFilled?: boolean;
+  /** Fill the DIMMED (e.g. non-current) polygons as a soft background; default true.
+   *  Set false for stroke-only dimmed paths when the fill obscures the active path. */
+  showDimmedFill?: boolean;
   /** Formats each ring's value label (the radial scale). */
   radialLabelFormatter?: (value: number) => string;
   /** Formats each spoke (pole) label. */

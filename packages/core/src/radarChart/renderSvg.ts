@@ -27,9 +27,17 @@ export function renderRadarSvg(
 
   // Grid rings + spokes + labels.
   const grid = svgEl("g", { class: "mv-radar-grid" });
-  for (const ring of g.rings) {
+  for (const rr of g.rings) {
     grid.appendChild(
-      svgEl("polygon", { points: ring, fill: "none", stroke: "var(--michi-vz-grid, lightgray)", "stroke-width": 1 })
+      svgEl("circle", {
+        cx: g.cx,
+        cy: g.cy,
+        r: rr,
+        fill: "none",
+        stroke: "var(--michi-vz-grid, lightgray)",
+        "stroke-width": 1,
+        "stroke-dasharray": "2 2",
+      })
     );
   }
   for (const sp of g.spokes) {
@@ -72,10 +80,13 @@ export function renderRadarSvg(
     poly.addEventListener("click", (e) => ia.onClick(s, e));
     sg.appendChild(poly);
 
-    for (const p of s.poles) {
-      sg.appendChild(
-        svgEl("circle", { class: "radar-pole", "data-label": s.label, "data-label-safe": s.safe, cx: p.x, cy: p.y, r: 3, fill: s.color })
-      );
+    // Pole dots only on the active series — dimmed series are background context.
+    if (!s.dimmed) {
+      for (const p of s.poles) {
+        sg.appendChild(
+          svgEl("circle", { class: "radar-pole", "data-label": s.label, "data-label-safe": s.safe, cx: p.x, cy: p.y, r: 3, fill: s.color })
+        );
+      }
     }
     root.appendChild(sg);
   }
