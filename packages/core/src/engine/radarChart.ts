@@ -5,6 +5,7 @@ import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { renderTitle } from "../render/svg";
+import { placeTooltip } from "../render/placeTooltip";
 import { processRadarData } from "../radarChart/data";
 import { buildRadarColors } from "../radarChart/colors";
 import { buildRadarRenderModel } from "../radarChart/renderModel";
@@ -128,9 +129,6 @@ export function mountRadarChart(
   let resolvedAxes: string[] = [];
 
   const showTooltip = (label: string, ev: MouseEvent, axisIndex?: number): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     const item = normalizedSeries.find((it) => it.label === label);
     // Canvas hover resolves a specific pole → pass its axis label as `date` so a
     // per-pole consumer tooltip (e.g. Seasonality by month) can read item.date.
@@ -145,6 +143,7 @@ export function mountRadarChart(
           (item ? `<br/>${resolvedAxes.map((a, i) => `${a}: ${item.values[i] ?? 0}`).join("<br/>")}` : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

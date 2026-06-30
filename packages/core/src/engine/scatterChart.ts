@@ -10,6 +10,7 @@ import { renderTitle, renderXAxisLinear, renderXAxisBand, renderYAxisLinear } fr
 import { renderDScaleLegend } from "../render/svg/dScaleLegend";
 import { drawCrosshair, clearCrosshair } from "../render/svg/scatterCrosshair";
 import { makeSvgGroupDraggable } from "../render/svg/draggable";
+import { placeTooltip } from "../render/placeTooltip";
 import type { ScaleBand, ScaleLinear, ScaleTime } from "d3-scale";
 import { processScatterData } from "../scatterChart/data";
 import { buildScatterColors } from "../scatterChart/colors";
@@ -147,14 +148,12 @@ export function mountScatterChart(
   let legendDragging = false;
 
   const showTooltip = (p: ScatterDataPoint, ev: MouseEvent): void => {
-    const rect = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(p)
       : `<strong>${p.label}</strong><br/>x: ${p.x}, y: ${p.y}${p.d !== undefined ? `<br/>size: ${p.d}` : ""}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;
