@@ -11,9 +11,9 @@ export interface ComparableSvgOptions {
 }
 
 export interface ComparableInteractions {
-  onEnter: (bar: ComparableBarModel, ev: MouseEvent) => void;
+  onEnter: (bar: ComparableBarModel, ev: MouseEvent, type: "based" | "compared") => void;
   onLeave: (ev: MouseEvent) => void;
-  onClick: (bar: ComparableBarModel, ev: MouseEvent) => void;
+  onClick: (bar: ComparableBarModel, ev: MouseEvent, type: "based" | "compared") => void;
 }
 
 export function renderComparableSvg(
@@ -34,6 +34,7 @@ export function renderComparableSvg(
       { seg: bar.based, opacity: o.valueBasedOpacity, cls: "value-based" },
       { seg: bar.compared, opacity: o.valueComparedOpacity, cls: "value-compared" },
     ]) {
+      const type = part.cls === "value-based" ? "based" : "compared";
       const rect = svgEl("rect", {
         class: `bar ${part.cls}`,
         "data-label": bar.label,
@@ -44,13 +45,14 @@ export function renderComparableSvg(
         height: bar.height,
         fill: bar.color,
         opacity: part.opacity,
-        rx: 2,
-        ry: 2,
+        rx: 5,
+        ry: 5,
+        "stroke-width": 1,
       });
       rect.style.cursor = "pointer";
-      rect.addEventListener("mouseenter", (e) => ia.onEnter(bar, e));
+      rect.addEventListener("mouseenter", (e) => ia.onEnter(bar, e, type));
       rect.addEventListener("mouseleave", (e) => ia.onLeave(e));
-      rect.addEventListener("click", (e) => ia.onClick(bar, e));
+      rect.addEventListener("click", (e) => ia.onClick(bar, e, type));
       g.appendChild(rect);
     }
     root.appendChild(g);

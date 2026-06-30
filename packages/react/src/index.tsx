@@ -9,7 +9,9 @@ import {
   useRef,
   useSyncExternalStore,
   type ReactNode,
+  type ReactElement,
 } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   mountGapChart,
   mountLineChart,
@@ -40,6 +42,7 @@ import type {
   ScatterChartProps,
   VerticalStackBarChartProps,
   ComparableBarChartProps,
+  ComparableBarDataPoint,
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
@@ -65,6 +68,7 @@ export type {
   ScatterChartProps,
   VerticalStackBarChartProps,
   ComparableBarChartProps,
+  ComparableBarDataPoint,
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
@@ -77,6 +81,11 @@ export type {
   FountainChartProps,
   ChartContext,
 } from "@michi-vz/core";
+
+// Hatch-pattern helper (for the `patternsMapping` prop) — re-exported so consumers
+// import it from @michi-vz/react like the legacy michi-vz did.
+export { createHatchPattern } from "@michi-vz/core";
+export type { HatchPatternOptions } from "@michi-vz/core";
 
 // ---------------------------------------------------------------------------
 // Shared-state provider + hook — parity with the legacy michi-vz MichiVzProvider
@@ -446,16 +455,44 @@ export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, Ver
   }
 );
 
+export type ComparableHorizontalBarChartReactProps = Omit<ComparableBarChartProps, "tooltipFormatter"> & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+  /** May return a string OR a React node (converted to static HTML for the canvas tooltip). */
+  tooltipFormatter?: (
+    d: ComparableBarDataPoint,
+    dataSet?: ComparableBarDataPoint[],
+    type?: "based" | "compared"
+  ) => string | ReactNode;
+};
+
 export const ComparableHorizontalBarChart = forwardRef<
   ComparableHorizontalBarChartHandle,
-  ComparableBarChartProps
+  ComparableHorizontalBarChartReactProps
 >(function ComparableHorizontalBarChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ChartInstance<ComparableBarChartProps> | null>(null);
+  const shared = useChartContext();
+
+  const { isLoadingComponent, isNodataComponent, tooltipFormatter, ...coreProps } = props;
+  // Consumers return JSX from tooltipFormatter; the core sanitizes a STRING, so
+  // convert any React-node result to static HTML here (else it stringifies to
+  // "[object Object]").
+  const wrappedFormatter = tooltipFormatter
+    ? (d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: "based" | "compared") => {
+        const out = tooltipFormatter(d, dataSet, type);
+        return typeof out === "string" ? out : renderToStaticMarkup(out as ReactElement);
+      }
+    : undefined;
+  const engineProps: ComparableBarChartProps = {
+    ...resolveEffectiveProps(coreProps, shared),
+    tooltipFormatter: wrappedFormatter,
+    suppressDefaultOverlay: true,
+  };
 
   useEffect(() => {
     if (!hostRef.current) return;
-    chartRef.current = mountComparableHorizontalBarChart(hostRef.current, props);
+    chartRef.current = mountComparableHorizontalBarChart(hostRef.current, engineProps);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
@@ -464,12 +501,31 @@ export const ComparableHorizontalBarChart = forwardRef<
   }, []);
 
   useEffect(() => {
-    chartRef.current?.update(props);
+    chartRef.current?.update(engineProps);
   });
 
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
-  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+  const dataState = evaluateDataState({
+    isLoading: coreProps.isLoading,
+    isNodata: coreProps.isNodata,
+    dataSet: coreProps.dataSet,
+  });
+  const overlay =
+    dataState === "loading"
+      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+      : dataState === "nodata"
+        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        : null;
+
+  const width = props.width ?? 900;
+  const height = props.height ?? 480;
+  return (
+    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+      <div ref={hostRef} style={{ width, height }} />
+      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+    </div>
+  );
 });
 
 export const DualHorizontalBarChart = forwardRef<DualHorizontalBarChartHandle, DualBarChartProps>(

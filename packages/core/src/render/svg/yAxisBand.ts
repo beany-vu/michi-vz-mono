@@ -17,6 +17,8 @@ export interface YAxisBandOptions {
   tickHtmlWidth?: number;
   showGrid?: boolean;
   hideTickLabels?: boolean;
+  /** Offset (px) added to each label's foreignObject x/y (consumer alignment). */
+  tickLabelOffset?: { x: number; y: number };
   /** Hover callbacks (e.g. cross-highlight). Omit to disable. */
   onHover?: (label: string | null) => void;
   /** Currently hovered band; null = no hover (all labels full opacity). */
@@ -53,8 +55,8 @@ export function renderYAxisBand(
 
     const fo = svgEl("foreignObject", {
       class: "mv-ylabel-fo",
-      x: o.margin.left - tickHtmlWidth,
-      y: center - 10,
+      x: o.margin.left - tickHtmlWidth + (o.tickLabelOffset?.x ?? 0),
+      y: center - 10 + (o.tickLabelOffset?.y ?? 0),
       width: tickHtmlWidth,
       height: 20,
     });

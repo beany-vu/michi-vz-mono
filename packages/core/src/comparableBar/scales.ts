@@ -8,16 +8,26 @@ export interface ComparableScales {
   yScale: ScaleBand<string>;
 }
 
+export interface ComparablePadding {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
 export function createComparableBarScales(
   xDomain: [number, number],
   labels: string[],
   width: number,
   height: number,
-  margin: Margin
+  margin: Margin,
+  padding: ComparablePadding = { top: 0, right: 0, bottom: 0, left: 0 }
 ): ComparableScales {
+  // padding.left/right inset the PLOT (bars + value axis) without moving the y-axis
+  // labels (anchored to margin.left) — opens a left column for the label chips.
   const xScale = scaleLinear()
     .domain(xDomain)
-    .range([margin.left, width - margin.right])
+    .range([margin.left + padding.left, width - margin.right - padding.right])
     .nice();
 
   const yScale = scaleBand<string>()

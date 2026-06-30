@@ -104,4 +104,48 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     expect(host.querySelectorAll("svg").length).toBe(0);
     host.remove();
   });
+
+  it("emits legendData (label/color/dataLabelSafe) on the context — the colour-authority hook", () => {
+    // Without legendData, thd's setMetadata early-returns and every bar resolves
+    // transparent. dataLabelSafe must equal sanitizeForClassName(label).
+    const { host, chart } = mount({ colorsMapping: { Beta: "#abcdef" } });
+    const ctx = chart.getContext()!;
+    expect(Array.isArray(ctx.legendData)).toBe(true);
+    expect(ctx.legendData!.map((l) => l.label)).toEqual(["Alpha One", "Beta", "Gamma"]);
+    const beta = ctx.legendData!.find((l) => l.label === "Beta")!;
+    expect(beta.color).toBe("#abcdef");
+    expect(beta.dataLabelSafe).toBe(sanitizeForClassName("Beta"));
+    const alpha = ctx.legendData!.find((l) => l.label === "Alpha One")!;
+    expect(alpha.dataLabelSafe).toBe(sanitizeForClassName("Alpha One")); // "Alpha_One"
+    chart.destroy();
+    host.remove();
+  });
+
+  it("onChartDataProcessed is idempotent — fires once per distinct context (no dispatch loop)", () => {
+    // A consumer colour authority dispatches into redux on every call; re-firing an
+    // unchanged context every render is the "Maximum update depth" loop.
+    let calls = 0;
+    const onChartDataProcessed = () => {
+      calls++;
+    };
+    const { host, chart } = mount({ onChartDataProcessed });
+    expect(calls).toBe(1); // initial
+    chart.update({ dataSet, title: "Demo", width: 600, height: 300, onChartDataProcessed }); // same data
+    expect(calls).toBe(1); // unchanged context → NOT re-emitted
+    chart.update({ dataSet: dataSet.slice(0, 2), title: "Demo", width: 600, height: 300, onChartDataProcessed });
+    expect(calls).toBe(2); // changed → emitted
+    chart.destroy();
+    host.remove();
+  });
+
+  it("xAxisPredefinedDomain (legacy alias) overrides the derived x-axis domain", () => {
+    const { host, chart } = mount({ xAxisPredefinedDomain: [-50, 50] });
+    const ctx = chart.getContext()!;
+    expect(ctx.chartType).toBe("comparable-horizontal-bar-chart");
+    if (ctx.chartType === "comparable-horizontal-bar-chart") {
+      expect(ctx.xAxis.domain).toEqual([-50, 50]);
+    }
+    chart.destroy();
+    host.remove();
+  });
 });

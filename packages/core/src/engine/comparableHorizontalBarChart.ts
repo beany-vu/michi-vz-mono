@@ -6,6 +6,7 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processComparableBarData } from "../comparableBar/data";
 import { buildComparableBarColors } from "../comparableBar/colors";
 import { createComparableBarScales } from "../comparableBar/scales";
@@ -35,6 +36,8 @@ import type {
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 120 };
 
+const ZERO_PADDING = { top: 0, right: 0, bottom: 0, left: 0 };
+
 interface Resolved {
   width: number;
   height: number;
@@ -45,6 +48,12 @@ interface Resolved {
   valueBasedOpacity: number;
   valueComparedOpacity: number;
   enableTransitions: boolean;
+  padding: { top: number; right: number; bottom: number; left: number };
+  showZeroLineForXAxis: boolean;
+  showGrid: boolean;
+  minBarWidth: number;
+  hideTickLabels: boolean;
+  horizontalTickPosition?: { x: number; y: number };
 }
 
 function resolve(p: ComparableBarChartProps): Resolved {
@@ -58,6 +67,12 @@ function resolve(p: ComparableBarChartProps): Resolved {
     valueBasedOpacity: p.valueBasedOpacity ?? 0.45,
     valueComparedOpacity: p.valueComparedOpacity ?? 0.9,
     enableTransitions: p.enableTransitions ?? true,
+    padding: p.padding ?? ZERO_PADDING,
+    showZeroLineForXAxis: p.showZeroLineForXAxis ?? false,
+    showGrid: p.showGrid ?? false,
+    minBarWidth: p.minBarWidth ?? 5,
+    hideTickLabels: p.hideTickLabels ?? false,
+    horizontalTickPosition: p.horizontalTickPosition,
   };
 }
 
@@ -92,6 +107,7 @@ export function mountComparableHorizontalBarChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  const chrome = createChromeRefs();
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -111,17 +127,39 @@ export function mountComparableHorizontalBarChart(
   };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
+  // Signature of the last context emitted, so onChartDataProcessed only fires when
+  // the context actually changes. A consumer colour authority (thd setMetadata)
+  // dispatches into redux on every call; re-firing an unchanged context every
+  // render creates an infinite render→dispatch→render loop ("Maximum update depth"),
+  // especially where a second colour writer (Tariff Structure useColorV2) is active.
+  let lastContextSig = "";
   let model: ReturnType<typeof buildComparableRenderModel> | null = null;
 
-  const showTooltip = (d: ComparableBarDataPoint, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
+  const showTooltip = (
+    d: ComparableBarDataPoint,
+    ev: MouseEvent,
+    type?: "based" | "compared"
+  ): void => {
+    // Legacy 3-arg contract: (datum, dataSet, hovered sub-bar type).
     const htmlStr = baseProps.tooltipFormatter
-      ? baseProps.tooltipFormatter(d)
+      ? baseProps.tooltipFormatter(d, baseProps.dataSet, type)
       : `<strong>${d.label}</strong><br/>Based: ${d.valueBased}<br/>Compared: ${d.valueCompared}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    // Edge-aware position (mirror VSB): flip left near the right edge, below near top.
+    const r = host.getBoundingClientRect();
+    const x = ev.clientX - r.left;
+    const y = ev.clientY - r.top;
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    tooltip.style.left = `${x + tw + 10 > r.width ? Math.max(0, x - tw - 10) : x + 10}px`;
+    tooltip.style.top = `${y - th - 10 < 0 ? y + 10 : y - th - 10}px`;
+  };
+  const subBarTypeAt = (bar: ComparableBarModel, x: number): "based" | "compared" | undefined => {
+    // compared is drawn in front; prefer it when the two overlap.
+    if (x >= bar.compared.x && x <= bar.compared.x + bar.compared.width) return "compared";
+    if (x >= bar.based.x && x <= bar.based.x + bar.based.width) return "based";
+    return undefined;
   };
   const hideTooltip = (): void => {
     if (sticky) return;
@@ -145,7 +183,7 @@ export function mountComparableHorizontalBarChart(
       }
     }
     if (hit) {
-      showTooltip(hit.raw, ev);
+      showTooltip(hit.raw, ev, subBarTypeAt(hit, x));
       baseProps.onHighlightItem?.([hit.label]);
     } else {
       hideTooltip();
@@ -165,7 +203,15 @@ export function mountComparableHorizontalBarChart(
       tooltip.classList.add("sticky");
     }
   };
+  // Cursor leaves the chart: hide the tooltip and clear the highlight, else the
+  // last-hovered bar stays highlighted (others dimmed) after the cursor exits.
+  const onHostLeave = (): void => {
+    if (sticky) return;
+    hideTooltip();
+    baseProps.onHighlightItem?.([]);
+  };
   host.addEventListener("mousemove", onHostMove);
+  host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
   tooltip.addEventListener("click", () => {
     sticky = false;
@@ -182,10 +228,19 @@ export function mountComparableHorizontalBarChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    applyChartChrome(host, props, props.dataSet, chrome);
+
+    // xAxisPredefinedDomain is the legacy alias the consumers pass; it wins over
+    // xAxisDomain when it's a [min,max] pair.
+    const predefined =
+      props.xAxisPredefinedDomain && props.xAxisPredefinedDomain.length === 2
+        ? ([props.xAxisPredefinedDomain[0], props.xAxisPredefinedDomain[1]] as [number, number])
+        : undefined;
     const { points, labels, xAxisDomain } = processComparableBarData(props.dataSet, {
       disabledItems: props.disabledItems,
       filter: props.filter,
-      xAxisDomain: props.xAxisDomain,
+      xAxisDomain: predefined ?? props.xAxisDomain,
     });
 
     const colors = buildComparableBarColors(
@@ -203,9 +258,10 @@ export function mountComparableHorizontalBarChart(
       }
     }
 
-    const scales = createComparableBarScales(xAxisDomain, labels, r.width, r.height, r.margin);
+    const scales = createComparableBarScales(xAxisDomain, labels, r.width, r.height, r.margin, r.padding);
     model = buildComparableRenderModel(points, scales, colors, {
       highlightItems: props.highlightItems ?? [],
+      minBarWidth: r.minBarWidth,
     });
 
     const xFormat = props.xAxisFormat ?? defaultNumberFormatter(props.locale);
@@ -221,6 +277,8 @@ export function mountComparableHorizontalBarChart(
       format: (v) => xFormat(v),
       ticks: r.ticks,
       enableExplicitTickValues: false,
+      showGrid: r.showGrid,
+      showZeroLine: r.showZeroLineForXAxis,
     });
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
@@ -228,6 +286,8 @@ export function mountComparableHorizontalBarChart(
       format: (label) => yFormat(label),
       tickHtmlWidth: r.tickHtmlWidth,
       showGrid: false,
+      hideTickLabels: r.hideTickLabels,
+      tickLabelOffset: r.horizontalTickPosition,
     });
 
     if (r.renderer !== "canvas") {
@@ -240,19 +300,19 @@ export function mountComparableHorizontalBarChart(
           enableTransitions: r.enableTransitions,
         },
         {
-          onEnter: (bar, ev) => {
+          onEnter: (bar, ev, type) => {
             if (sticky) return;
-            showTooltip(bar.raw, ev);
+            showTooltip(bar.raw, ev, type);
             props.onHighlightItem?.([bar.label]);
           },
           onLeave: () => {
             hideTooltip();
             if (!sticky) props.onHighlightItem?.([]);
           },
-          onClick: (bar, ev) => {
+          onClick: (bar, ev, type) => {
             sticky = true;
             tooltip.classList.add("sticky");
-            showTooltip(bar.raw, ev);
+            showTooltip(bar.raw, ev, type);
           },
         }
       );
@@ -267,12 +327,20 @@ export function mountComparableHorizontalBarChart(
         canvas.style.pointerEvents = "none";
         host.insertBefore(canvas, tooltip);
       }
-      drawComparableCanvas(canvas, svg, model, {
-        width: r.width,
-        height: r.height,
-        valueBasedOpacity: r.valueBasedOpacity,
-        valueComparedOpacity: r.valueComparedOpacity,
-      });
+      drawComparableCanvas(
+        canvas,
+        svg,
+        model,
+        {
+          width: r.width,
+          height: r.height,
+          valueBasedOpacity: r.valueBasedOpacity,
+          valueComparedOpacity: r.valueComparedOpacity,
+          patternsMapping: props.patternsMapping,
+        },
+        // Re-render once a hatch pattern image finishes loading so it paints.
+        () => render()
+      );
     } else if (canvas) {
       canvas.remove();
       canvas = null;
@@ -284,12 +352,18 @@ export function mountComparableHorizontalBarChart(
       xAxisDomain,
       points,
       colorsMapping: colors.generatedColorsMapping,
+      disabledItems: props.disabledItems,
     });
     // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    props.onChartDataProcessed?.(context);
+    // Idempotent: only emit when the context changed (breaks the dispatch loop).
+    const sig = JSON.stringify(context);
+    if (sig !== lastContextSig) {
+      lastContextSig = sig;
+      props.onChartDataProcessed?.(context);
+    }
 
     // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
@@ -325,6 +399,7 @@ export function mountComparableHorizontalBarChart(
     destroy() {
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
+      host.removeEventListener("mouseleave", onHostLeave);
       host.removeEventListener("click", onHostClick);
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-comparable-bar-chart");

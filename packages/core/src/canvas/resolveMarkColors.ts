@@ -67,3 +67,25 @@ export const makeSimpleProbe =
     node.setAttribute("visibility", "hidden");
     return { root: node, target: node };
   };
+
+// Nested probe for sub-bar charts (ComparableHorizontalBar): the root is
+// `<g class="bar" data-label data-label-safe>` and the target is a child
+// `<rect class="value-based|value-compared">`, so DESCENDANT consumer CSS like
+// `.bar[data-label-safe="X"] .value-based { fill: ... }` resolves on the target.
+// Read with colorProp ['fill','stroke'] so a `url(#pattern)` fill falls through
+// to the stroke colour. Mirrors the legacy makeSubBarProbe.
+export const makeSubBarProbe =
+  (subBarClass: "value-based" | "value-compared") =>
+  (label: string, labelSafe: string, fallback: string): ColorProbe => {
+    const NS = "http://www.w3.org/2000/svg";
+    const g = document.createElementNS(NS, "g") as SVGGElement;
+    g.setAttribute("class", "bar");
+    g.setAttribute("data-label", label);
+    g.setAttribute("data-label-safe", labelSafe);
+    const rect = document.createElementNS(NS, "rect") as SVGRectElement;
+    rect.setAttribute("class", subBarClass);
+    rect.setAttribute("fill", fallback);
+    rect.setAttribute("visibility", "hidden");
+    g.appendChild(rect);
+    return { root: g, target: rect };
+  };

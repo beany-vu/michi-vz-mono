@@ -23,6 +23,8 @@ export interface ComparableRenderModel {
 
 export interface BuildComparableModelOptions {
   highlightItems: string[];
+  /** Floor a sub-bar's pixel width so near-zero values stay visible (default 5). */
+  minBarWidth?: number;
 }
 
 export function buildComparableRenderModel(
@@ -35,10 +37,14 @@ export function buildComparableRenderModel(
   const anyHighlight = highlightSet.size > 0;
   const zero = scales.xScale(0);
   const bandHeight = scales.yScale.bandwidth();
+  const minW = o.minBarWidth ?? 5;
 
   const seg = (v: number): { x: number; width: number } => {
     const px = scales.xScale(v);
-    return { x: Math.min(zero, px), width: Math.abs(px - zero) };
+    const width = Math.abs(px - zero);
+    // Floor non-zero widths so a near-zero value isn't a sub-pixel invisible bar;
+    // a literal zero stays zero (no phantom bar at the origin).
+    return { x: Math.min(zero, px), width: width === 0 ? 0 : Math.max(width, minW) };
   };
 
   const bars: ComparableBarModel[] = points.map((d) => ({

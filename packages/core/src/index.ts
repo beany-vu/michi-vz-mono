@@ -183,6 +183,8 @@ export type {
 export { setupCanvas } from "./canvas/setupCanvas";
 export { resolveMarkColors, makeSimpleProbe } from "./canvas/resolveMarkColors";
 export type { ColorProbe, ColorProp } from "./canvas/resolveMarkColors";
+export { createHatchPattern } from "./canvas/createHatchPattern";
+export type { HatchPatternOptions } from "./canvas/createHatchPattern";
 
 // ---- Types ----
 export type {

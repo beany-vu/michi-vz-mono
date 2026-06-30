@@ -777,6 +777,32 @@ export interface ComparableBarChartProps {
   valueBasedOpacity?: number;
   /** Fill opacity of the front valueCompared sub-bar (default 0.9) */
   valueComparedOpacity?: number;
+  /** Legacy alias for xAxisDomain (consumers pass [min,max]); wins over xAxisDomain when length===2 */
+  xAxisPredefinedDomain?: number[];
+  /** Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based
+   * sub-bar — the canvas tiles it via ctx.createPattern, an SVG renderer via <pattern>/<image> */
+  patternsMapping?: Record<string, string>;
+  /** Draw a solid vertical line at x=0 on the value axis (diverging charts) */
+  showZeroLineForXAxis?: boolean;
+  /** Draw vertical gridlines on the value axis (default false, legacy parity) */
+  showGrid?: boolean;
+  /** Hide the y-axis category labels (consumers control them via the legend column) */
+  hideTickLabels?: boolean;
+  /** Floor for a sub-bar's pixel width so near-zero values stay visible (default 5) */
+  minBarWidth?: number;
+  /** Extra plot-area inset (px); padding.left opens a left column for the y-axis label chips
+   * without moving the labels themselves (which stay anchored to margin.left) */
+  padding?: { top: number; right: number; bottom: number; left: number };
+  /** Offset (px) applied to the y-axis category labels so they align with the legend column */
+  horizontalTickPosition?: { x: number; y: number };
+  /** Loading overlay (stale bars hidden while true) */
+  isLoading?: boolean;
+  /** No-data predicate/flag; default = empty dataSet */
+  isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
+  /** Text for the built-in no-data overlay */
+  noDataLabel?: string;
+  /** Set by a framework wrapper passing its own overlay node — suppresses the default overlay */
+  suppressDefaultOverlay?: boolean;
   /** Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc) */
   filter?: { limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc" };
   /** Labels to emphasise; all other marks dim */
@@ -791,8 +817,13 @@ export interface ComparableBarChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
-  /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (d: ComparableBarDataPoint) => string;
+  /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted).
+   * `type` is the hovered sub-bar ("based" | "compared"); `dataSet` is all rows. */
+  tooltipFormatter?: (
+    d: ComparableBarDataPoint,
+    dataSet?: ComparableBarDataPoint[],
+    type?: "based" | "compared"
+  ) => string;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

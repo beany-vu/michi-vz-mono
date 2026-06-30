@@ -1,4 +1,5 @@
 // Renderer-agnostic semantic context for ComparableHorizontalBar.
+import { buildLegendData } from "./legend";
 import type {
   ComparableBarChartContext,
   ComparableBarDataPoint,
@@ -13,6 +14,7 @@ export interface BuildComparableContextInput {
   xAxisDomain: [number, number];
   points: ComparableBarDataPoint[];
   colorsMapping: Record<string, string>;
+  disabledItems?: string[];
 }
 
 export function buildComparableBarContext(
@@ -44,6 +46,15 @@ export function buildComparableBarContext(
     summary += ` ${largestMover.label} ${dir} the most (${largestMover.difference}).`;
   }
 
+  // The flat colour-contract payload the consumer colour authority reads via
+  // onChartDataProcessed(ctx).legendData. Without it, thd's setMetadata
+  // early-returns and colorsMapping stays {} → every bar resolves transparent.
+  const legendData = buildLegendData({
+    labels: input.points.map((p) => p.label),
+    colorsMapping: input.colorsMapping,
+    disabledItems: input.disabledItems,
+  });
+
   return {
     chartType: "comparable-horizontal-bar-chart",
     title: input.title,
@@ -53,6 +64,7 @@ export function buildComparableBarContext(
     series,
     stats: { count: series.length, totalBased, totalCompared, largestMover },
     colorsMapping: input.colorsMapping,
+    legendData,
     summary,
     a11yTable: {
       headers: ["Label", "Based", "Compared", "Difference"],
