@@ -28,6 +28,8 @@ export interface RadarGrid {
   rings: string[];
   spokes: Array<{ x: number; y: number }>; // outer vertex per axis
   axisLabels: Array<{ x: number; y: number; text: string; anchor: "start" | "middle" | "end" }>;
+  /** one value label per ring, placed along the top (axis 0) spoke. */
+  radialLabels: Array<{ x: number; y: number; text: string }>;
 }
 
 export interface RadarRenderModel {
@@ -43,6 +45,8 @@ export interface BuildRadarModelOptions {
   height: number;
   margin: Margin;
   highlightItems: string[];
+  poleLabelFormatter?: (axis: string) => string;
+  radialLabelFormatter?: (value: number) => string;
 }
 
 export function buildRadarRenderModel(
@@ -75,8 +79,20 @@ export function buildRadarRenderModel(
     const p = pt(radius + 14, i);
     const cos = Math.cos(angleOf(i));
     const anchor: "start" | "middle" | "end" = cos > 0.3 ? "start" : cos < -0.3 ? "end" : "middle";
-    return { x: p.x, y: p.y, text: axis, anchor };
+    return { x: p.x, y: p.y, text: o.poleLabelFormatter ? o.poleLabelFormatter(axis) : axis, anchor };
   });
+  // Radial (ring-value) labels along the top spoke (axis 0 points straight up).
+  const radialLabels: Array<{ x: number; y: number; text: string }> = [];
+  for (let ring = 1; ring <= o.rings; ring++) {
+    const rr = (ring / o.rings) * radius;
+    const value = (ring / o.rings) * o.maxValue;
+    const p = pt(rr, 0);
+    radialLabels.push({
+      x: p.x,
+      y: p.y,
+      text: o.radialLabelFormatter ? o.radialLabelFormatter(value) : String(Math.round(value)),
+    });
+  }
 
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
@@ -93,9 +109,11 @@ export function buildRadarRenderModel(
       color: colors.getColor(it.label),
       points: poles.map((p) => `${p.x},${p.y}`).join(" "),
       poles,
-      dimmed: anyHighlight && !highlightSet.has(it.label),
+      // Highlight takes precedence: when something is highlighted, dim the rest;
+      // otherwise honour the per-series `dimmed` flag (e.g. a non-current year).
+      dimmed: anyHighlight ? !highlightSet.has(it.label) : Boolean(it.dimmed),
     };
   });
 
-  return { grid: { cx, cy, radius, rings, spokes, axisLabels }, series };
+  return { grid: { cx, cy, radius, rings, spokes, axisLabels, radialLabels }, series };
 }

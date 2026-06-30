@@ -2,11 +2,15 @@
 // placeholder on the server and mounts the engine on the client in an effect.
 import {
   createContext,
+  Fragment,
   forwardRef,
+  useCallback,
   useContext,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
   type ReactNode,
   type ReactElement,
@@ -768,6 +772,121 @@ export const RadarChart = forwardRef<RadarChartHandle, RadarChartProps>(function
 
   return <div ref={hostRef} style={{ width: props.width ?? 600, height: props.height ?? 600 }} />;
 });
+
+// ─── RadarChartSet ────────────────────────────────────────────────────────────
+// Orchestrates N independent RadarChart instances side-by-side and exposes a single
+// merged onChartDataProcessed surface (fires once every child has reported). Ported
+// from the legacy michi-vz RadarChartSet; types adapted to the mono RadarChart API.
+type RadarChartSetSharedProps = Omit<RadarChartProps, "series" | "onChartDataProcessed">;
+
+export interface RadarChartSetItem {
+  key: string;
+  series: RadarChartProps["series"];
+  /** Per-item prop overrides; spread AFTER the shared props so the item wins. */
+  props?: Partial<RadarChartSetSharedProps>;
+}
+
+export interface RadarChartSetProps extends Partial<RadarChartSetSharedProps> {
+  items: RadarChartSetItem[];
+  onChartDataProcessed?: (metadata: ChartContext) => void;
+  onLegendDataChange?: (legendData: NonNullable<ChartContext["legendData"]>) => void;
+  renderItem?: (params: { item: RadarChartSetItem; index: number; chart: ReactNode }) => ReactNode;
+}
+
+type LegendRows = NonNullable<ChartContext["legendData"]>;
+
+const buildMergedLegendData = (
+  orderedKeys: string[],
+  byItem: Record<string, ChartContext>
+): LegendRows => {
+  const map = new Map<string, LegendRows[number]>();
+  let cursor = 0;
+  for (const key of orderedKeys) {
+    for (const entry of byItem[key]?.legendData ?? []) {
+      const ex = map.get(entry.label);
+      // First occurrence wins the order; color updates to the latest; disabled is AND'd.
+      if (!ex) map.set(entry.label, { ...entry, order: cursor++ });
+      else
+        map.set(entry.label, {
+          ...ex,
+          color: entry.color,
+          disabled: Boolean(ex.disabled) && Boolean(entry.disabled),
+        });
+    }
+  }
+  return Array.from(map.values());
+};
+
+const mergeRadarMetadata = (
+  orderedKeys: string[],
+  byItem: Record<string, ChartContext>
+): ChartContext | null => {
+  if (orderedKeys.length === 0) return null;
+  // Gate: fire only when EVERY current child has reported its context.
+  if (!orderedKeys.every((k) => Boolean(byItem[k]))) return null;
+  const all = orderedKeys.map((k) => byItem[k]);
+  const colorsMapping = Object.assign({}, ...all.map((m) => m.colorsMapping ?? {}));
+  const legendData = buildMergedLegendData(orderedKeys, byItem);
+  // Use the first child's context as the base shape, overwrite the merged surfaces.
+  return { ...all[0], colorsMapping, legendData };
+};
+
+export function RadarChartSet({
+  items,
+  onChartDataProcessed,
+  onLegendDataChange,
+  renderItem,
+  ...sharedProps
+}: RadarChartSetProps): ReactElement {
+  const [byItem, setByItem] = useState<Record<string, ChartContext>>({});
+  const prevMerged = useRef<string>("");
+  const orderedKeys = useMemo(() => items.map((it) => it.key), [items]);
+
+  // Prune stale keys when items change so a removed chart can't hold the "all ready" gate.
+  useEffect(() => {
+    const active = new Set(orderedKeys);
+    setByItem((prev) => {
+      const next = Object.fromEntries(Object.entries(prev).filter(([k]) => active.has(k)));
+      return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+    });
+  }, [orderedKeys]);
+
+  const handleChild = useCallback((key: string, ctx: ChartContext): void => {
+    setByItem((prev) => {
+      if (prev[key] && JSON.stringify(prev[key]) === JSON.stringify(ctx)) return prev;
+      return { ...prev, [key]: ctx };
+    });
+  }, []);
+
+  const merged = useMemo(() => mergeRadarMetadata(orderedKeys, byItem), [orderedKeys, byItem]);
+
+  useEffect(() => {
+    if (!merged) return;
+    const sig = JSON.stringify(merged);
+    if (sig === prevMerged.current) return;
+    prevMerged.current = sig;
+    onChartDataProcessed?.(merged);
+    if (merged.legendData) onLegendDataChange?.(merged.legendData);
+  }, [merged, onChartDataProcessed, onLegendDataChange]);
+
+  return (
+    <>
+      {items.map((item, index) => {
+        const chart = (
+          <RadarChart
+            key={item.key}
+            {...(sharedProps as RadarChartSetSharedProps)}
+            {...(item.props as RadarChartSetSharedProps)}
+            series={item.series}
+            onChartDataProcessed={(ctx) => handleChild(item.key, ctx)}
+          />
+        );
+        if (renderItem) return <Fragment key={item.key}>{renderItem({ item, index, chart })}</Fragment>;
+        return chart;
+      })}
+    </>
+  );
+}
 
 export const TreemapChart = forwardRef<TreemapChartHandle, TreemapChartProps>(function TreemapChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);

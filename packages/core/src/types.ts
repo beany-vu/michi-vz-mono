@@ -1398,13 +1398,30 @@ export interface RadarDataItem {
   color?: string;
   /** one value per axis, aligned to `axes` by index. */
   values: number[];
+  /** Visually dim this series (e.g. a non-current period); composes with highlightItems. */
+  dimmed?: boolean;
+  /** Legacy input shape: {date,value} per pole. When `values` is absent the engine
+   *  derives it by matching each axis label to a `data[].date`. */
+  data?: Array<{ date: string; value: number | null }>;
 }
 
 export interface RadarChartProps {
   /** Array of polygon series to plot, one closed shape per item drawn over the shared polar grid */
   series: RadarDataItem[];
-  /** spoke labels (the radial axes). */
-  axes: string[];
+  /** spoke labels (the radial axes). Optional when `poles.labels` is supplied (legacy compat). */
+  axes?: string[];
+  /** Legacy pole config; `poles.labels` are used as the axes when `axes` is omitted. */
+  poles?: { labels: string[]; domain?: number[]; range?: number[] };
+  /** Stroke-only when false (no polygon fill); default true (fill at fillOpacity). */
+  showFilled?: boolean;
+  /** Formats each ring's value label (the radial scale). */
+  radialLabelFormatter?: (value: number) => string;
+  /** Formats each spoke (pole) label. */
+  poleLabelFormatter?: (axis: string) => string;
+  /** Inline style merged onto the tooltip container div. */
+  tooltipContainerStyle?: Record<string, string | number>;
+  /** Show a loading state (adds the mv-loading class to the host). */
+  isLoading?: boolean;
   /** Optional chart title rendered above the plot */
   title?: string;
   /** Chart width in pixels */
@@ -1435,8 +1452,9 @@ export interface RadarChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
-  /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (item: RadarDataItem) => string;
+  /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted).
+   *  In canvas mode the datum also carries `date` (the hovered pole's axis label). */
+  tooltipFormatter?: (item: RadarDataItem & { date?: string }) => string;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

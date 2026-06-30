@@ -38,8 +38,14 @@ export function renderRadarSvg(
     );
   }
   for (const lbl of g.axisLabels) {
-    const t = svgEl("text", { class: "mv-axis-label", x: lbl.x, y: lbl.y, "text-anchor": lbl.anchor, "dominant-baseline": "middle" });
+    const t = svgEl("text", { class: "mv-axis-label pole-label", x: lbl.x, y: lbl.y, "text-anchor": lbl.anchor, "dominant-baseline": "middle" });
     t.textContent = lbl.text;
+    grid.appendChild(t);
+  }
+  // Radial (ring-value) labels along the top spoke.
+  for (const rl of g.radialLabels) {
+    const t = svgEl("text", { class: "radial-label", x: rl.x, y: rl.y, "text-anchor": "middle", "dominant-baseline": "middle" });
+    t.textContent = rl.text;
     grid.appendChild(t);
   }
   root.appendChild(grid);

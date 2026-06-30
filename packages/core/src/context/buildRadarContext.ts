@@ -1,4 +1,5 @@
 // Renderer-agnostic semantic context for RadarChart.
+import { sanitizeForClassName } from "../math/sanitize";
 import type { RadarChartContext, RadarDataItem, RadarSeriesContext } from "../types";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
@@ -43,6 +44,14 @@ export function buildRadarContext(input: BuildRadarContextInput): RadarChartCont
     series,
     stats: { seriesCount: series.length, axisCount: input.axes.length },
     colorsMapping: input.colorsMapping,
+    // Flat legend rows so consumers that key off legendData (and the RadarChartSet
+    // metadata merge) get a populated array; the colour authority still owns colours.
+    legendData: Object.entries(input.colorsMapping).map(([label, color], i) => ({
+      label,
+      color,
+      order: i,
+      dataLabelSafe: sanitizeForClassName(label),
+    })),
     summary,
     a11yTable: {
       headers: ["Series", ...input.axes],

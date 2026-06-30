@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mountRadarChart } from "../src/engine/radarChart";
 import { sanitizeForClassName } from "../src/math/sanitize";
 import type { RadarChartProps, RadarDataItem } from "../src/types";
@@ -33,7 +33,8 @@ describe("mountRadarChart (jsdom)", () => {
     const { host, chart } = mount({ rings: 4 });
     expect(host.querySelectorAll(".mv-radar-grid polygon").length).toBe(4); // 4 rings
     expect(host.querySelectorAll(".mv-radar-grid line").length).toBe(5); // 5 spokes
-    expect(host.querySelectorAll(".mv-radar-grid text").length).toBe(5); // 5 axis labels
+    expect(host.querySelectorAll(".mv-radar-grid .pole-label").length).toBe(5); // 5 axis (pole) labels
+    expect(host.querySelectorAll(".mv-radar-grid .radial-label").length).toBe(4); // 4 ring-value labels
     chart.destroy();
     host.remove();
   });
@@ -87,5 +88,137 @@ describe("mountRadarChart (jsdom)", () => {
     m.chart.destroy();
     expect(m.host.querySelectorAll("svg").length).toBe(0);
     m.host.remove();
+  });
+});
+
+describe("mountRadarChart — drop-in features (data shape, colours, hover)", () => {
+  it("derives values[] from a legacy data:[{date,value}] series aligned to axes", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountRadarChart(host, {
+      series: [
+        {
+          label: "Legacy",
+          data: [
+            { date: "Power", value: 9 },
+            { date: "Speed", value: 3 },
+          ],
+        } as RadarDataItem,
+      ],
+      axes,
+      width: 500,
+      height: 500,
+      renderer: "svg",
+    });
+    const ctx = chart.getContext()!;
+    if (ctx.chartType === "radar-chart") {
+      const s = ctx.series.find((x) => x.label === "Legacy")!;
+      expect(s.byAxis.find((b) => b.axis === "Power")!.value).toBe(9);
+      expect(s.byAxis.find((b) => b.axis === "Speed")!.value).toBe(3);
+      expect(s.byAxis.find((b) => b.axis === "Range")!.value).toBe(0); // missing date → 0
+    }
+    chart.destroy();
+    host.remove();
+  });
+
+  it("resolves a year-suffixed series colour from the base label in colorsMapping", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountRadarChart(host, {
+      series: [{ label: "China-2024", values: [1, 2, 3, 4, 5] }],
+      axes,
+      width: 500,
+      height: 500,
+      colorsMapping: { China: "#abcdef" },
+      renderer: "svg",
+    });
+    const poly = host.querySelector<SVGPolygonElement>("polygon.radar-area")!;
+    expect(poly.getAttribute("stroke")).toBe("#abcdef");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("emits legendData on the context (one row per colour-mapped label)", () => {
+    const { host, chart } = mount({ colorsMapping: { "Model A": "#f00", "Model B": "#00f" } });
+    const ctx = chart.getContext()!;
+    expect(ctx.legendData!.map((l) => l.label)).toEqual(
+      expect.arrayContaining(["Model A", "Model B"])
+    );
+    chart.destroy();
+    host.remove();
+  });
+
+  it("derives axes from legacy poles.labels when axes is omitted", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountRadarChart(host, {
+      series,
+      poles: { labels: axes },
+      width: 500,
+      height: 500,
+    } as RadarChartProps);
+    const ctx = chart.getContext()!;
+    if (ctx.chartType === "radar-chart") expect(ctx.axes).toEqual(axes);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("canvas hover: setupRadarCanvasHover fires onEnter near a vertex of the active series", async () => {
+    const { setupRadarCanvasHover } = await import("../src/radarChart/renderCanvas");
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as SVGSVGElement;
+    svg.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 350,
+        bottom: 350,
+        width: 350,
+        height: 350,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+    document.body.appendChild(svg);
+    const onEnter = vi.fn();
+    const onLeave = vi.fn();
+    const model = {
+      grid: { cx: 175, cy: 175, radius: 100, rings: [], spokes: [], axisLabels: [], radialLabels: [] },
+      series: [
+        {
+          label: "Active",
+          safe: "Active",
+          color: "#f00",
+          points: "",
+          dimmed: false,
+          poles: [
+            { x: 175, y: 75, value: 100 },
+            { x: 242, y: 218, value: 80 },
+            { x: 108, y: 218, value: 60 },
+          ],
+        },
+        {
+          label: "Dim",
+          safe: "Dim",
+          color: "#00f",
+          points: "",
+          dimmed: true,
+          poles: [
+            { x: 175, y: 100, value: 70 },
+            { x: 225, y: 200, value: 50 },
+            { x: 125, y: 200, value: 40 },
+          ],
+        },
+      ],
+    };
+    const teardown = setupRadarCanvasHover(svg, model as never, { onEnter, onLeave, onClick: vi.fn() });
+    // Exactly on the Active series' top vertex (175,75).
+    svg.dispatchEvent(new MouseEvent("mousemove", { clientX: 175, clientY: 75, bubbles: true }));
+    expect(onEnter).toHaveBeenCalledWith("Active", 0, expect.any(MouseEvent));
+    // Far from every vertex/polygon → onLeave.
+    onLeave.mockClear();
+    svg.dispatchEvent(new MouseEvent("mousemove", { clientX: 5, clientY: 5, bubbles: true }));
+    expect(onLeave).toHaveBeenCalled();
+    teardown();
+    document.body.removeChild(svg);
   });
 });
