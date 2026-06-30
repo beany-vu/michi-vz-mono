@@ -185,7 +185,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "Approximate number of axis ticks to generate",
+          "description": "Approximate number of x-axis ticks to generate",
           "default": "5",
           "common": false
         },
@@ -194,7 +194,7 @@
           "type": "number",
           "optional": true,
           "description": "Number of y-axis ticks (default 10, matching the legacy denser value axis).",
-          "default": "10",
+          "default": "",
           "common": false
         },
         {
@@ -202,15 +202,15 @@
           "type": "boolean",
           "optional": true,
           "description": "Draw horizontal dashed grid lines at each y tick (default true).",
-          "default": "true",
+          "default": "",
           "common": false
         },
         {
           "name": "showVerticalGridLines",
           "type": "boolean",
           "optional": true,
-          "description": "Draw vertical dashed grid lines at each x tick (default false \u2014 the legacy chart drew none).",
-          "default": "false",
+          "description": "Draw vertical dashed grid lines at each x tick (default false — the legacy chart drew none).",
+          "default": "",
           "common": false
         },
         {
@@ -218,7 +218,7 @@
           "type": "boolean",
           "optional": true,
           "description": "Emphasise the y=0 grid line with a darker solid stroke (default true).",
-          "default": "true",
+          "default": "",
           "common": false
         },
         {
@@ -281,7 +281,7 @@
           "name": "fontFamily",
           "type": "string",
           "optional": true,
-          "description": "Font family for axis/title/tooltip text (SVG + canvas). Sets --michi-vz-font-family so both renderers resolve it; the family must already be loaded by the page.",
+          "description": "Font family for axis/title/tooltip text (SVG + canvas). Sets the --michi-vz-font-family CSS var so both renderers resolve it.",
           "default": "",
           "common": false
         },
@@ -345,15 +345,15 @@
           "name": "isLoading",
           "type": "boolean",
           "optional": true,
-          "description": "Show the loading overlay and skip the no-data check.",
-          "default": "false",
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
           "common": false
         },
         {
           "name": "isNodata",
           "type": "boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)",
           "optional": true,
-          "description": "No-data override: boolean, or a predicate on dataSet. Default predicate = empty dataSet or all-series-empty.",
+          "description": "No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series.",
           "default": "",
           "common": false
         },
@@ -361,7 +361,7 @@
           "name": "noDataLabel",
           "type": "string",
           "optional": true,
-          "description": "Text for the vanilla default no-data overlay (ignored when suppressDefaultOverlay is true).",
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
           "default": "",
           "common": false
         },
@@ -369,8 +369,8 @@
           "name": "suppressDefaultOverlay",
           "type": "boolean",
           "optional": true,
-          "description": "Suppress the built-in loading/no-data overlay so a framework wrapper can render its own node instead.",
-          "default": "false",
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
+          "default": "",
           "common": false
         },
         {
@@ -762,7 +762,7 @@
           "type": "number",
           "optional": true,
           "description": "Approximate number of axis ticks to generate",
-          "default": "5",
+          "default": "10",
           "common": false
         },
         {
@@ -831,9 +831,41 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(row: AreaDataRow, key: string, series: AreaDataRow[]) => string",
+          "type": "(row: AreaDataRow, series: AreaDataRow[], key: string) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: AreaDataRow[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on the data; default = empty data.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
           "default": "",
           "common": false
         },
@@ -937,7 +969,7 @@
           "name": "xAxisDataType",
           "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
           "optional": true,
-          "description": "number / date for x (band x deferred). y is always linear.",
+          "description": "number / date / band (categorical) for x. y is always linear.",
           "default": "\"number\"",
           "common": false
         },
@@ -959,9 +991,9 @@
         },
         {
           "name": "xAxisDomain",
-          "type": "[number, number]",
+          "type": "[number, number] | string[]",
           "optional": true,
-          "description": "Fix the x-axis range instead of deriving it from the data",
+          "description": "Fix the x-axis range ([min,max]); for band x, the ordered category labels (string[]).",
           "default": "",
           "common": false
         },
@@ -1062,6 +1094,38 @@
           "common": false
         },
         {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on the data; default = empty data.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
@@ -1092,6 +1156,86 @@
           "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
+        },
+        {
+          "name": "showCrosshair",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show a crosshair overlay tracking the hovered point. Default false.",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "crosshairLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Render axis-badge value readouts at the crosshair intersection. Default false.",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "crosshairLineStyle",
+          "type": "\"solid\" | \"dashed\"",
+          "optional": true,
+          "description": "\"dashed\" → both hover+pinned dashed; \"solid\" → both solid; undefined → hover dashed.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "crosshairSpan",
+          "type": "\"full\" | \"half\"",
+          "optional": true,
+          "description": "\"full\" → full +through the plot; \"half\" → L-arm from bubble to the two axes. Default \"full\".",
+          "default": "\"full\"",
+          "common": false
+        },
+        {
+          "name": "crosshairLabelPlacement",
+          "type": "\"auto\" | \"fixed\"",
+          "optional": true,
+          "description": "\"auto\" → collision-flip badges; \"fixed\" → anchor to bottom-left. Default \"auto\".",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "dScaleLegend",
+          "type": "{ title?: string; valueFormatter?: (d: number) => string }",
+          "optional": true,
+          "description": "Bubble-size reference legend (half-arc trio + domain labels).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yTicksQty",
+          "type": "number",
+          "optional": true,
+          "description": "Override the y-axis tick count (scale.ticks(n)); falls back to `ticks`.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showGrid",
+          "type": "boolean | { x?: boolean; y?: boolean }",
+          "optional": true,
+          "description": "Grid lines per axis: boolean → both; { x?, y? } → per-axis (each defaults true). Default both on.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "pinIcon",
+          "type": "boolean",
+          "optional": true,
+          "description": "Pass false to suppress the sticky-tooltip pin icon. Default: shown (no-op until an icon exists).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "svgChildren",
+          "type": "string",
+          "optional": true,
+          "description": "Pre-serialised SVG markup injected as direct <svg> children (the React wrapper fills this from `children`).",
+          "default": "",
+          "common": false
         }
       ]
     },
@@ -1528,8 +1672,64 @@
         {
           "name": "axes",
           "type": "string[]",
-          "optional": false,
-          "description": "spoke labels (the radial axes).",
+          "optional": true,
+          "description": "spoke labels (the radial axes). Optional when `poles.labels` is supplied (legacy compat).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "poles",
+          "type": "{ labels: string[]; domain?: number[]; range?: number[] }",
+          "optional": true,
+          "description": "Legacy pole config; `poles.labels` are used as the axes when `axes` is omitted.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showFilled",
+          "type": "boolean",
+          "optional": true,
+          "description": "Stroke-only when false (no polygon fill); default true (fill at fillOpacity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showDimmedFill",
+          "type": "boolean",
+          "optional": true,
+          "description": "Fill the DIMMED (e.g. non-current) polygons as a soft background; default true. Set false for stroke-only dimmed paths when the fill obscures the active path.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "radialLabelFormatter",
+          "type": "(value: number) => string",
+          "optional": true,
+          "description": "Formats each ring's value label (the radial scale).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "poleLabelFormatter",
+          "type": "(axis: string) => string",
+          "optional": true,
+          "description": "Formats each spoke (pole) label.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipContainerStyle",
+          "type": "Record<string, string | number>",
+          "optional": true,
+          "description": "Inline style merged onto the tooltip container div.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show a loading state (adds the mv-loading class to the host).",
           "default": "",
           "common": false
         },
@@ -1602,7 +1802,7 @@
           "type": "number",
           "optional": true,
           "description": "polygon fill opacity (default 0.2).",
-          "default": "0.2",
+          "default": "",
           "common": false
         },
         {
@@ -1655,9 +1855,9 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(item: RadarDataItem) => string",
+          "type": "(item: RadarDataItem & { date?: string }) => string",
           "optional": true,
-          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted). In canvas mode the datum also carries `date` (the hovered pole's axis label).",
           "default": "",
           "common": false
         },
@@ -1894,8 +2094,72 @@
           "common": true
         },
         {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean or predicate; default = empty / all-empty-series.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "fontFamily",
+          "type": "string",
+          "optional": true,
+          "description": "Font family for axis/label text (SVG + canvas) via --michi-vz-font-family.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yTicks",
+          "type": "number",
+          "optional": true,
+          "description": "Number of y-axis ticks (default 10).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showGridLines",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw horizontal dashed y grid lines (default true).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightZeroLine",
+          "type": "boolean",
+          "optional": true,
+          "description": "Emphasise the y=0 line with a solid stroke (default true).",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "tooltipFormatter",
-          "type": "(rect: StackRectData) => string",
+          "type": "(d: StackTooltipData) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
@@ -2062,6 +2326,102 @@
           "common": false
         },
         {
+          "name": "xAxisPredefinedDomain",
+          "type": "number[]",
+          "optional": true,
+          "description": "Legacy alias for xAxisDomain (consumers pass [min,max]); wins over xAxisDomain when length===2",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "patternsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based sub-bar — the canvas tiles it via ctx.createPattern, an SVG renderer via <pattern>/<image>",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showZeroLineForXAxis",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw a solid vertical line at x=0 on the value axis (diverging charts)",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "showGrid",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw vertical gridlines on the value axis (default false, legacy parity)",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "hideTickLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Hide the y-axis category labels (consumers control them via the legend column)",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "minBarWidth",
+          "type": "number",
+          "optional": true,
+          "description": "Floor for a sub-bar's pixel width so near-zero values stay visible (default 5)",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "padding",
+          "type": "{ top: number; right: number; bottom: number; left: number }",
+          "optional": true,
+          "description": "Extra plot-area inset (px); padding.left opens a left column for the y-axis label chips without moving the labels themselves (which stay anchored to margin.left)",
+          "default": "ZERO_PADDING",
+          "common": false
+        },
+        {
+          "name": "horizontalTickPosition",
+          "type": "{ x: number; y: number }",
+          "optional": true,
+          "description": "Offset (px) applied to the y-axis category labels so they align with the legend column",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Loading overlay (stale bars hidden while true)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data predicate/flag; default = empty dataSet",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the built-in no-data overlay",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "Set by a framework wrapper passing its own overlay node — suppresses the default overlay",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "filter",
           "type": "{ limit: number; criteria: \"valueBased\" | \"valueCompared\"; sortingDir: \"asc\" | \"desc\" }",
           "optional": true,
@@ -2119,9 +2479,9 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(d: ComparableBarDataPoint) => string",
+          "type": "( d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: \"based\" | \"compared\" ) => string",
           "optional": true,
-          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted). `type` is the hovered sub-bar (\"based\" | \"compared\"); `dataSet` is all rows.",
           "default": "",
           "common": false
         },
@@ -2542,6 +2902,46 @@
           "common": false
         },
         {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on the data; default = empty data.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "dodgeOverlappingCaps",
+          "type": "boolean",
+          "optional": true,
+          "description": "Spread overlapping end-caps vertically, centred on the row line (default ON, legacy parity); pass false to keep them stacked.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
@@ -2810,6 +3210,38 @@
           "type": "(d: GapDataItem) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: GapDataItem[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on the data; default = empty data.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
           "default": "",
           "common": false
         },
@@ -3369,7 +3801,7 @@
           "name": "gravity",
           "type": "number",
           "optional": true,
-          "description": "Strength of the pull toward the centre in [0,1] (default 0.09) \u2014 higher = tighter cluster (\"suck together\").",
+          "description": "Strength of the pull toward the centre in [0,1] (default 0.09) — higher = tighter cluster (\"suck together\").",
           "default": "0.09",
           "common": false
         },
