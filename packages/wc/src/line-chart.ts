@@ -15,6 +15,8 @@ import type {
   MichiVzPlugin,
   XaxisDataType,
   SinglePointLineConfig,
+  Margin,
+  Filter,
 } from "@michi-vz/core";
 
 export class LineChartElement extends LitElement {
@@ -46,6 +48,16 @@ export class LineChartElement extends LitElement {
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    yAxisDomain: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    ticks: { type: Number },
+    tickValues: { attribute: false },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    svgChildren: { type: String, attribute: "svg-children" },
   };
 
   dataSet: LineDataItem[] = [];
@@ -75,6 +87,16 @@ export class LineChartElement extends LitElement {
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean);
   noDataLabel?: string;
+  margin?: Margin;
+  colors?: string[];
+  yAxisDomain?: [number, number];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  filter?: Filter;
+  enableTransitions?: boolean;
+  svgChildren?: string;
 
   private chart?: ChartInstance<LineChartProps>;
 
@@ -118,6 +140,16 @@ export class LineChartElement extends LitElement {
       isLoading: this.isLoading,
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
+      margin: this.margin,
+      colors: this.colors,
+      yAxisDomain: this.yAxisDomain,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      ticks: this.ticks,
+      tickValues: this.tickValues,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
+      svgChildren: this.svgChildren,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

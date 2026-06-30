@@ -12,6 +12,7 @@ import type {
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
+  Margin,
 } from "@michi-vz/core";
 
 export class TreemapChartElement extends LitElement {
@@ -36,6 +37,12 @@ export class TreemapChartElement extends LitElement {
     valueFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    paddingInner: { type: Number, attribute: "padding-inner" },
+    paddingTop: { type: Number, attribute: "padding-top" },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
   dataSet: TreemapNode[] = [];
@@ -58,6 +65,12 @@ export class TreemapChartElement extends LitElement {
   valueFormatter?: (n: number) => string;
   plugins?: MichiVzPlugin<TreemapChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  paddingInner?: number;
+  paddingTop?: number;
+  filter?: { limit: number; sortingDir: "asc" | "desc" };
+  enableTransitions?: boolean;
 
   private chart?: ChartInstance<TreemapChartProps>;
 
@@ -94,6 +107,12 @@ export class TreemapChartElement extends LitElement {
       tooltipFormatter: this.tooltipFormatter,
       valueFormatter: this.valueFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      paddingInner: this.paddingInner,
+      paddingTop: this.paddingTop,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

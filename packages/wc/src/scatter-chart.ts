@@ -10,6 +10,8 @@ import type {
   ChartInstance,
   MichiVzPlugin,
   XaxisDataType,
+  Margin,
+  Filter,
 } from "@michi-vz/core";
 
 export class ScatterChartElement extends LitElement {
@@ -28,6 +30,29 @@ export class ScatterChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    xAxisDomain: { attribute: false },
+    yAxisDomain: { attribute: false },
+    ticks: { type: Number },
+    tickValues: { attribute: false },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
+    showCrosshair: { type: Boolean, attribute: "show-crosshair" },
+    crosshairLabels: { type: Boolean, attribute: "crosshair-labels" },
+    crosshairLineStyle: { type: String, attribute: "crosshair-line-style" },
+    crosshairSpan: { type: String, attribute: "crosshair-span" },
+    crosshairLabelPlacement: { type: String, attribute: "crosshair-label-placement" },
+    dScaleLegend: { attribute: false },
+    yTicksQty: { type: Number, attribute: "y-ticks-qty" },
+    showGrid: { attribute: false },
+    pinIcon: { type: Boolean, attribute: "pin-icon" },
+    svgChildren: { type: String, attribute: "svg-children" },
   };
 
   dataSet: ScatterDataPoint[] = [];
@@ -44,6 +69,29 @@ export class ScatterChartElement extends LitElement {
   tooltipFormatter?: (d: ScatterDataPoint) => string;
   plugins?: MichiVzPlugin<ScatterChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: [number, number] | string[];
+  yAxisDomain?: [number, number];
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  filter?: Filter;
+  enableTransitions?: boolean;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean);
+  noDataLabel?: string;
+  showCrosshair?: boolean;
+  crosshairLabels?: boolean;
+  crosshairLineStyle?: "solid" | "dashed";
+  crosshairSpan?: "full" | "half";
+  crosshairLabelPlacement?: "auto" | "fixed";
+  dScaleLegend?: { title?: string; valueFormatter?: (d: number) => string };
+  yTicksQty?: number;
+  showGrid?: boolean | { x?: boolean; y?: boolean };
+  pinIcon?: boolean;
+  svgChildren?: string;
 
   private chart?: ChartInstance<ScatterChartProps>;
 
@@ -74,6 +122,29 @@ export class ScatterChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      xAxisDomain: this.xAxisDomain,
+      yAxisDomain: this.yAxisDomain,
+      ticks: this.ticks,
+      tickValues: this.tickValues,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
+      showCrosshair: this.showCrosshair,
+      crosshairLabels: this.crosshairLabels,
+      crosshairLineStyle: this.crosshairLineStyle,
+      crosshairSpan: this.crosshairSpan,
+      crosshairLabelPlacement: this.crosshairLabelPlacement,
+      dScaleLegend: this.dScaleLegend,
+      yTicksQty: this.yTicksQty,
+      showGrid: this.showGrid,
+      pinIcon: this.pinIcon,
+      svgChildren: this.svgChildren,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

@@ -8,6 +8,7 @@ import type {
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
+  Margin,
 } from "@michi-vz/core";
 
 export class RadarChartElement extends LitElement {
@@ -28,6 +29,16 @@ export class RadarChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    poles: { attribute: false },
+    showFilled: { type: Boolean, attribute: "show-filled" },
+    showDimmedFill: { type: Boolean, attribute: "show-dimmed-fill" },
+    radialLabelFormatter: { attribute: false },
+    poleLabelFormatter: { attribute: false },
+    tooltipContainerStyle: { attribute: false },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
   series: RadarDataItem[] = [];
@@ -46,6 +57,16 @@ export class RadarChartElement extends LitElement {
   tooltipFormatter?: (item: RadarDataItem) => string;
   plugins?: MichiVzPlugin<RadarChartProps>[];
   locale?: string;
+  poles?: { labels: string[]; domain?: number[]; range?: number[] };
+  showFilled?: boolean;
+  showDimmedFill?: boolean;
+  radialLabelFormatter?: (value: number) => string;
+  poleLabelFormatter?: (axis: string) => string;
+  tooltipContainerStyle?: Record<string, string | number>;
+  isLoading?: boolean;
+  margin?: Margin;
+  colors?: string[];
+  enableTransitions?: boolean;
 
   private chart?: ChartInstance<RadarChartProps>;
 
@@ -78,6 +99,16 @@ export class RadarChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      poles: this.poles,
+      showFilled: this.showFilled,
+      showDimmedFill: this.showDimmedFill,
+      radialLabelFormatter: this.radialLabelFormatter,
+      poleLabelFormatter: this.poleLabelFormatter,
+      tooltipContainerStyle: this.tooltipContainerStyle,
+      isLoading: this.isLoading,
+      margin: this.margin,
+      colors: this.colors,
+      enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

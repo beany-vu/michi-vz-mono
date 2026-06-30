@@ -15,6 +15,9 @@ import type {
   MichiVzPlugin,
   Shape,
   XaxisDataType,
+  Margin,
+  ShapeMapping,
+  Filter,
 } from "@michi-vz/core";
 
 export class GapChartElement extends LitElement {
@@ -34,6 +37,25 @@ export class GapChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    colorMode: { type: String, attribute: "color-mode" },
+    shapeColorsMapping: { attribute: false },
+    shapesLabelsMapping: { attribute: false },
+    filter: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    ticks: { type: Number },
+    tickValues: { attribute: false },
+    enableExplicitTickValues: { type: Boolean, attribute: "enable-explicit-tick-values" },
+    tickHtmlWidth: { type: Number, attribute: "tick-html-width" },
+    squareRadius: { type: Number, attribute: "square-radius" },
+    showLegend: { type: Boolean, attribute: "show-legend" },
+    legendAlign: { type: String, attribute: "legend-align" },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
   };
 
   dataSet: GapDataItem[] = [];
@@ -51,6 +73,25 @@ export class GapChartElement extends LitElement {
   tooltipFormatter?: (d: GapDataItem) => string;
   plugins?: MichiVzPlugin<GapChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  colorMode?: "label" | "shape";
+  shapeColorsMapping?: ShapeMapping;
+  shapesLabelsMapping?: ShapeMapping;
+  filter?: Filter;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  enableExplicitTickValues?: boolean;
+  tickHtmlWidth?: number;
+  squareRadius?: number;
+  showLegend?: boolean;
+  legendAlign?: "left" | "center" | "right";
+  enableTransitions?: boolean;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: GapDataItem[] | null | undefined) => boolean);
+  noDataLabel?: string;
 
   private chart?: ChartInstance<GapChartProps>;
 
@@ -83,6 +124,25 @@ export class GapChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      colorMode: this.colorMode,
+      shapeColorsMapping: this.shapeColorsMapping,
+      shapesLabelsMapping: this.shapesLabelsMapping,
+      filter: this.filter,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      ticks: this.ticks,
+      tickValues: this.tickValues,
+      enableExplicitTickValues: this.enableExplicitTickValues,
+      tickHtmlWidth: this.tickHtmlWidth,
+      squareRadius: this.squareRadius,
+      showLegend: this.showLegend,
+      legendAlign: this.legendAlign,
+      enableTransitions: this.enableTransitions,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
       onHighlightItem: (item) => this.emit("michi-vz:highlight", item),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

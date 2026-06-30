@@ -9,6 +9,7 @@ import type {
   CurveType,
   ChartContext,
   ChartInstance,
+  Margin,
   MichiVzPlugin,
   XaxisDataType,
 } from "@michi-vz/core";
@@ -31,6 +32,17 @@ export class AreaChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    yAxisDomain: { attribute: false },
+    ticks: { type: Number },
+    tickValues: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
   };
 
   series: AreaDataRow[] = [];
@@ -49,6 +61,17 @@ export class AreaChartElement extends LitElement {
   tooltipFormatter?: (row: AreaDataRow, series: AreaDataRow[], key: string) => string;
   plugins?: MichiVzPlugin<AreaChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  enableTransitions?: boolean;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: AreaDataRow[] | null | undefined) => boolean);
+  noDataLabel?: string;
 
   private chart?: ChartInstance<AreaChartProps>;
 
@@ -81,6 +104,17 @@ export class AreaChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      yAxisDomain: this.yAxisDomain,
+      ticks: this.ticks,
+      tickValues: this.tickValues,
+      enableTransitions: this.enableTransitions,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

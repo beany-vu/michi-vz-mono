@@ -36,6 +36,14 @@ export class FanChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    colors: { attribute: false },
+    yAxisDomain: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    ticks: { type: Number },
+    tickValues: { attribute: false },
+    forecastZone: { type: Boolean, attribute: "forecast-zone" },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
   dataSet: FanDataItem[] = [];
@@ -55,6 +63,14 @@ export class FanChartElement extends LitElement {
   tooltipFormatter?: (item: FanDataItem, lastPoint: DataPoint | null) => string;
   plugins?: MichiVzPlugin<FanChartProps>[];
   locale?: string;
+  colors?: string[];
+  yAxisDomain?: [number, number];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  forecastZone?: boolean;
+  enableTransitions?: boolean;
 
   private chart?: ChartInstance<FanChartProps>;
 
@@ -88,6 +104,14 @@ export class FanChartElement extends LitElement {
       margin: this.margin,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      colors: this.colors,
+      yAxisDomain: this.yAxisDomain,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      ticks: this.ticks,
+      tickValues: this.tickValues,
+      forecastZone: this.forecastZone,
+      enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

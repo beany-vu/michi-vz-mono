@@ -11,6 +11,7 @@ import type {
   ChartInstance,
   MichiVzPlugin,
   XaxisDataType,
+  Margin,
 } from "@michi-vz/core";
 
 export class RangeChartElement extends LitElement {
@@ -30,6 +31,14 @@ export class RangeChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    yAxisDomain: { attribute: false },
+    ticks: { type: Number },
+    tickValues: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
   dataSet: RangeDataItem[] = [];
@@ -47,6 +56,14 @@ export class RangeChartElement extends LitElement {
   tooltipFormatter?: (d: RangeDataPoint, item: RangeDataItem) => string;
   plugins?: MichiVzPlugin<RangeChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  enableTransitions?: boolean;
 
   private chart?: ChartInstance<RangeChartProps>;
 
@@ -78,6 +95,14 @@ export class RangeChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      yAxisDomain: this.yAxisDomain,
+      ticks: this.ticks,
+      tickValues: this.tickValues,
+      enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

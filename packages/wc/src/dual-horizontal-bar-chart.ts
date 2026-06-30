@@ -8,6 +8,7 @@ import type {
   DualBarDataPoint,
   ChartContext,
   ChartInstance,
+  Margin,
   MichiVzPlugin,
 } from "@michi-vz/core";
 
@@ -27,6 +28,15 @@ export class DualHorizontalBarChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    xAxisDomain: { attribute: false },
+    ticks: { type: Number },
+    tickHtmlWidth: { type: Number, attribute: "tick-html-width" },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
   dataSet: DualBarDataPoint[] = [];
@@ -43,6 +53,15 @@ export class DualHorizontalBarChartElement extends LitElement {
   tooltipFormatter?: (d: DualBarDataPoint) => string;
   plugins?: MichiVzPlugin<DualBarChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: [number, number];
+  ticks?: number;
+  tickHtmlWidth?: number;
+  filter?: { limit: number; criteria: "value1" | "value2"; sortingDir: "asc" | "desc" };
+  enableTransitions?: boolean;
 
   private chart?: ChartInstance<DualBarChartProps>;
 
@@ -73,6 +92,15 @@ export class DualHorizontalBarChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      xAxisDomain: this.xAxisDomain,
+      ticks: this.ticks,
+      tickHtmlWidth: this.tickHtmlWidth,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

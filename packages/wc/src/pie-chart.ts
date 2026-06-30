@@ -11,6 +11,7 @@ import type {
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
+  Margin,
 } from "@michi-vz/core";
 
 export class PieChartElement extends LitElement {
@@ -29,6 +30,10 @@ export class PieChartElement extends LitElement {
     colorsMapping: { attribute: false },
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
     valueFormatter: { attribute: false },
@@ -47,6 +52,10 @@ export class PieChartElement extends LitElement {
   sortByValue?: boolean;
   showLabels?: boolean;
   showLegend = false;
+  margin?: Margin;
+  colors?: string[];
+  filter?: { limit: number; sortingDir: "asc" | "desc" };
+  enableTransitions?: boolean;
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];
   disabledItems?: string[];
@@ -83,6 +92,10 @@ export class PieChartElement extends LitElement {
       sortByValue: this.sortByValue,
       showLabels: this.showLabels,
       showLegend: this.showLegend,
+      margin: this.margin,
+      colors: this.colors,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
       colorsMapping: this.colorsMapping,
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,

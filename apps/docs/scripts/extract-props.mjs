@@ -75,6 +75,15 @@ function engineDefaults(engineFile) {
     const val = oneLine(m[2].replace(/\/\/.*$/, "")).replace(/,\s*$/, "").trim();
     if (val) out[m[1]] = val;
   }
+  // Also capture defaults wrapped in a ternary, e.g.
+  // `fillOpacity: p.showFilled === false ? 0 : (p.fillOpacity ?? 0.2)` — read the
+  // `?? <default>` from the fallback branch. Additive: only fills props the simple
+  // pattern above missed, so it can't disturb a straight `p.x ?? d` extraction.
+  for (const m of text.matchAll(/(\w+):\s*[^\n]*?\?\s*[^\n:]*:\s*\(?\s*p\.\w+\s*\?\?\s*([^\n)]+)/g)) {
+    if (out[m[1]]) continue;
+    const val = oneLine(m[2].replace(/\/\/.*$/, "")).replace(/[,)\s]*$/, "").trim();
+    if (val) out[m[1]] = val;
+  }
   const margin = text.match(/DEFAULT_MARGIN[^=]*=\s*({[^}]*})/);
   if (margin) out.margin = oneLine(margin[1]);
   return out;

@@ -7,6 +7,7 @@ import type {
   BarBellDataRow,
   ChartContext,
   ChartInstance,
+  Margin,
   MichiVzPlugin,
 } from "@michi-vz/core";
 
@@ -25,6 +26,18 @@ export class BarBellChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    yAxisDomain: { attribute: false },
+    ticks: { type: Number },
+    tickHtmlWidth: { type: Number },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
+    dodgeOverlappingCaps: { type: Boolean, attribute: "dodge-overlapping-caps" },
   };
 
   dataSet: BarBellDataRow[] = [];
@@ -40,6 +53,18 @@ export class BarBellChartElement extends LitElement {
   tooltipFormatter?: (row: BarBellDataRow, key: string, value: number) => string;
   plugins?: MichiVzPlugin<BarBellChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  ticks?: number;
+  tickHtmlWidth?: number;
+  enableTransitions?: boolean;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
+  noDataLabel?: string;
+  dodgeOverlappingCaps?: boolean;
 
   private chart?: ChartInstance<BarBellChartProps>;
 
@@ -69,6 +94,18 @@ export class BarBellChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      yAxisDomain: this.yAxisDomain,
+      ticks: this.ticks,
+      tickHtmlWidth: this.tickHtmlWidth,
+      enableTransitions: this.enableTransitions,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
+      dodgeOverlappingCaps: this.dodgeOverlappingCaps,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

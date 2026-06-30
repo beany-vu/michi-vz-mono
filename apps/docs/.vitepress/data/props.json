@@ -1810,7 +1810,7 @@
           "type": "number",
           "optional": true,
           "description": "polygon fill opacity (default 0.2).",
-          "default": "",
+          "default": "0.2",
           "common": false
         },
         {

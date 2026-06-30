@@ -4,6 +4,7 @@ import { LitElement, html, type PropertyValues } from "lit";
 import { mountSankeyChart } from "@michi-vz/core";
 import type {
   AgentTool,
+  Margin,
   SankeyChartProps,
   SankeyNodeItem,
   SankeyLinkItem,
@@ -33,6 +34,9 @@ export class SankeyChartElement extends LitElement {
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     tooltipFormatter: { attribute: false },
     valueFormatter: { attribute: false },
     plugins: { attribute: false },
@@ -56,6 +60,9 @@ export class SankeyChartElement extends LitElement {
   highlightItems?: string[];
   disabledItems?: string[];
   skipColorMappingDispatch = false;
+  margin?: Margin;
+  colors?: string[];
+  enableTransitions?: boolean;
   tooltipFormatter?: (mark: SankeyNodeContext | SankeyLinkContext) => string;
   valueFormatter?: (n: number) => string;
   plugins?: MichiVzPlugin<SankeyChartProps>[];
@@ -94,6 +101,9 @@ export class SankeyChartElement extends LitElement {
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
+      margin: this.margin,
+      colors: this.colors,
+      enableTransitions: this.enableTransitions,
       tooltipFormatter: this.tooltipFormatter,
       valueFormatter: this.valueFormatter,
       locale: this.locale,

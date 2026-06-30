@@ -10,6 +10,7 @@ import type {
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
+  Margin,
 } from "@michi-vz/core";
 
 export class VerticalStackBarChartElement extends LitElement {
@@ -29,6 +30,25 @@ export class VerticalStackBarChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    xAxisLabelPadding: { type: Number, attribute: "x-axis-label-padding" },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    xAxisDomain: { attribute: false },
+    yAxisDomain: { attribute: false },
+    colors: { attribute: false },
+    minBarWidth: { type: Number, attribute: "min-bar-width" },
+    minBarHeight: { type: Number, attribute: "min-bar-height" },
+    minBarHeightZero: { type: Number, attribute: "min-bar-height-zero" },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
+    fontFamily: { type: String, attribute: "font-family" },
+    yTicks: { type: Number, attribute: "y-ticks" },
+    showGridLines: { type: Boolean, attribute: "show-grid-lines" },
+    highlightZeroLine: { type: Boolean, attribute: "highlight-zero-line" },
   };
 
   dataSet: VerticalStackBarDataSet[] = [];
@@ -46,6 +66,25 @@ export class VerticalStackBarChartElement extends LitElement {
   tooltipFormatter?: (d: StackTooltipData) => string;
   plugins?: MichiVzPlugin<VerticalStackBarChartProps>[];
   locale?: string;
+  margin?: Margin;
+  xAxisLabelPadding?: number;
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: string[];
+  yAxisDomain?: [number, number];
+  colors?: string[];
+  minBarWidth?: number;
+  minBarHeight?: number;
+  minBarHeightZero?: number;
+  filter?: { limit: number; sortingDir: "asc" | "desc"; date?: string };
+  enableTransitions?: boolean;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean);
+  noDataLabel?: string;
+  fontFamily?: string;
+  yTicks?: number;
+  showGridLines?: boolean;
+  highlightZeroLine?: boolean;
 
   private chart?: ChartInstance<VerticalStackBarChartProps>;
 
@@ -77,6 +116,25 @@ export class VerticalStackBarChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      xAxisLabelPadding: this.xAxisLabelPadding,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      xAxisDomain: this.xAxisDomain,
+      yAxisDomain: this.yAxisDomain,
+      colors: this.colors,
+      minBarWidth: this.minBarWidth,
+      minBarHeight: this.minBarHeight,
+      minBarHeightZero: this.minBarHeightZero,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
+      fontFamily: this.fontFamily,
+      yTicks: this.yTicks,
+      showGridLines: this.showGridLines,
+      highlightZeroLine: this.highlightZeroLine,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onLegendDataChange: (l) => this.emit("michi-vz:legend", l),

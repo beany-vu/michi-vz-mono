@@ -10,6 +10,7 @@ import type {
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
+  Margin,
 } from "@michi-vz/core";
 
 export class FountainChartElement extends LitElement {
@@ -34,6 +35,14 @@ export class FountainChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    yAxisDomain: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    ticks: { type: Number },
+    tickValues: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
   dataSet: FountainDataItem[] = [];
@@ -56,6 +65,14 @@ export class FountainChartElement extends LitElement {
   tooltipFormatter?: (d: FountainDataItem) => string;
   plugins?: MichiVzPlugin<FountainChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  yAxisDomain?: [number, number];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  ticks?: number;
+  tickValues?: Array<number | Date>;
+  enableTransitions?: boolean;
 
   private chart?: ChartInstance<FountainChartProps>;
 
@@ -92,6 +109,14 @@ export class FountainChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      yAxisDomain: this.yAxisDomain,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      ticks: this.ticks,
+      tickValues: this.tickValues,
+      enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

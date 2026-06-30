@@ -44,7 +44,9 @@ test("required data prop is detected (not optional)", () => {
   assert.equal(ds.type, "LineDataItem[]");
   // series/keys charts use `series`/`keys`
   assert.equal(prop("area-chart", "series").optional, false);
-  assert.equal(prop("radar-chart", "axes").optional, false);
+  // radar's required data prop is `series`; `axes` became optional in the radar
+  // drop-in (the engine derives the spokes from `poles.labels` when axes is omitted).
+  assert.equal(prop("radar-chart", "series").optional, false);
 });
 
 test("defaults are read from the engine resolve()/DEFAULT_MARGIN", () => {

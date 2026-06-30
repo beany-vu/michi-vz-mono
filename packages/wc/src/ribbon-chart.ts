@@ -3,6 +3,7 @@ import { LitElement, html, type PropertyValues } from "lit";
 import { mountRibbonChart } from "@michi-vz/core";
 import type {
   AgentTool,
+  Margin,
   RibbonChartProps,
   RibbonDataRow,
   ChartContext,
@@ -22,6 +23,13 @@ export class RibbonChartElement extends LitElement {
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
     columnWidth: { type: Number, attribute: "column-width" },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    yAxisDomain: { attribute: false },
+    ticks: { type: Number },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
@@ -38,6 +46,13 @@ export class RibbonChartElement extends LitElement {
   highlightItems?: string[];
   disabledItems?: string[];
   columnWidth?: number;
+  margin?: Margin;
+  colors?: string[];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  yAxisDomain?: [number, number];
+  ticks?: number;
+  enableTransitions?: boolean;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (row: RibbonDataRow, key: string, value: number) => string;
   plugins?: MichiVzPlugin<RibbonChartProps>[];
@@ -69,6 +84,13 @@ export class RibbonChartElement extends LitElement {
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,
       columnWidth: this.columnWidth,
+      margin: this.margin,
+      colors: this.colors,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      yAxisDomain: this.yAxisDomain,
+      ticks: this.ticks,
+      enableTransitions: this.enableTransitions,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,

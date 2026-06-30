@@ -13,6 +13,10 @@ const meta: Meta = {
   argTypes: {
     renderer: { control: "inline-radio", options: ["svg", "canvas"] },
     keysOrder: { control: "inline-radio", options: ["bottomToTop", "topToBottom"] },
+    xAxisLabelPadding: { control: { type: "range", min: 0, max: 60, step: 2 } },
+    yTicks: { control: { type: "range", min: 2, max: 12, step: 1 } },
+    showGridLines: { control: "boolean" },
+    highlightZeroLine: { control: "boolean" },
     width: { control: { type: "range", min: 320, max: 1100, step: 20 } },
     height: { control: { type: "range", min: 280, max: 760, step: 20 } },
   },
@@ -76,4 +80,14 @@ export const TopNGroups: Story = {
  */
 export const BottomToTop: Story = {
   args: { ...single, keysOrder: "bottomToTop", width: 760, height: 460, renderer: "svg" },
+};
+
+/**
+ * `xAxisLabelPadding` raises the min-gap the band axis needs before it tilts labels
+ * −45°. Horizontal label positions are geometric (gap = step − labelWidth), so
+ * rotation/thinning is the only way to add breathing room — bumping this padding
+ * makes crowded date labels tilt sooner than the default of 8.
+ */
+export const LabelPadding: Story = {
+  args: { ...dense, xAxisLabelPadding: 40, width: 760, height: 460, renderer: "canvas" },
 };

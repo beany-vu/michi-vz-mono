@@ -10,6 +10,7 @@ import type {
   BubbleContext,
   ChartContext,
   ChartInstance,
+  Margin,
   MichiVzPlugin,
 } from "@michi-vz/core";
 
@@ -33,6 +34,10 @@ export class BubbleChartElement extends LitElement {
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     tooltipFormatter: { attribute: false },
     valueFormatter: { attribute: false },
     plugins: { attribute: false },
@@ -57,6 +62,10 @@ export class BubbleChartElement extends LitElement {
   highlightItems?: string[];
   disabledItems?: string[];
   skipColorMappingDispatch = false;
+  margin?: Margin;
+  colors?: string[];
+  filter?: { limit: number; sortingDir: "asc" | "desc" };
+  enableTransitions?: boolean;
   tooltipFormatter?: (bubble: BubbleContext) => string;
   valueFormatter?: (n: number) => string;
   plugins?: MichiVzPlugin<BubbleChartProps>[];
@@ -96,6 +105,10 @@ export class BubbleChartElement extends LitElement {
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
+      margin: this.margin,
+      colors: this.colors,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
       tooltipFormatter: this.tooltipFormatter,
       valueFormatter: this.valueFormatter,
       locale: this.locale,

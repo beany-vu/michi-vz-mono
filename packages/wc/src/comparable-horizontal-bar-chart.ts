@@ -8,6 +8,7 @@ import type {
   ComparableBarDataPoint,
   ChartContext,
   ChartInstance,
+  Margin,
   MichiVzPlugin,
 } from "@michi-vz/core";
 
@@ -27,6 +28,28 @@ export class ComparableHorizontalBarChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    margin: { attribute: false },
+    colors: { attribute: false },
+    xAxisFormat: { attribute: false },
+    yAxisFormat: { attribute: false },
+    xAxisDomain: { attribute: false },
+    ticks: { type: Number },
+    tickHtmlWidth: { type: Number, attribute: "tick-html-width" },
+    xAxisPredefinedDomain: { attribute: false },
+    patternsMapping: { attribute: false },
+    showZeroLineForXAxis: { type: Boolean, attribute: "show-zero-line-for-x-axis" },
+    showGrid: { type: Boolean, attribute: "show-grid" },
+    hideTickLabels: { type: Boolean, attribute: "hide-tick-labels" },
+    minBarWidth: { type: Number, attribute: "min-bar-width" },
+    padding: { attribute: false },
+    horizontalTickPosition: { attribute: false },
+    maxBarHeight: { type: Number, attribute: "max-bar-height" },
+    symmetricXDomain: { type: Boolean, attribute: "symmetric-x-domain" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
+    filter: { attribute: false },
+    enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
   dataSet: ComparableBarDataPoint[] = [];
@@ -43,6 +66,28 @@ export class ComparableHorizontalBarChartElement extends LitElement {
   tooltipFormatter?: (d: ComparableBarDataPoint) => string;
   plugins?: MichiVzPlugin<ComparableBarChartProps>[];
   locale?: string;
+  margin?: Margin;
+  colors?: string[];
+  xAxisFormat?: (d: number | string) => string;
+  yAxisFormat?: (d: number | string) => string;
+  xAxisDomain?: [number, number];
+  ticks?: number;
+  tickHtmlWidth?: number;
+  xAxisPredefinedDomain?: number[];
+  patternsMapping?: Record<string, string>;
+  showZeroLineForXAxis?: boolean;
+  showGrid?: boolean;
+  hideTickLabels?: boolean;
+  minBarWidth?: number;
+  padding?: { top: number; right: number; bottom: number; left: number };
+  horizontalTickPosition?: { x: number; y: number };
+  maxBarHeight?: number;
+  symmetricXDomain?: boolean;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
+  noDataLabel?: string;
+  filter?: { limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc" };
+  enableTransitions?: boolean;
 
   private chart?: ChartInstance<ComparableBarChartProps>;
 
@@ -73,6 +118,28 @@ export class ComparableHorizontalBarChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      margin: this.margin,
+      colors: this.colors,
+      xAxisFormat: this.xAxisFormat,
+      yAxisFormat: this.yAxisFormat,
+      xAxisDomain: this.xAxisDomain,
+      ticks: this.ticks,
+      tickHtmlWidth: this.tickHtmlWidth,
+      xAxisPredefinedDomain: this.xAxisPredefinedDomain,
+      patternsMapping: this.patternsMapping,
+      showZeroLineForXAxis: this.showZeroLineForXAxis,
+      showGrid: this.showGrid,
+      hideTickLabels: this.hideTickLabels,
+      minBarWidth: this.minBarWidth,
+      padding: this.padding,
+      horizontalTickPosition: this.horizontalTickPosition,
+      maxBarHeight: this.maxBarHeight,
+      symmetricXDomain: this.symmetricXDomain,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
+      filter: this.filter,
+      enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
