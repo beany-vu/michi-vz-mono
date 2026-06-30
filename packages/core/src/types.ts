@@ -113,6 +113,14 @@ export interface GapChartProps {
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (d: GapDataItem) => string;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on the data; default = empty data. */
+  isNodata?: boolean | ((dataSet: GapDataItem[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (item: GapDataItem | null) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */
@@ -432,6 +440,14 @@ export interface AreaChartProps {
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (row: AreaDataRow, key: string, series: AreaDataRow[]) => string;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on the data; default = empty data. */
+  isNodata?: boolean | ((dataSet: AreaDataRow[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */
@@ -541,6 +557,14 @@ export interface ScatterChartProps {
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (d: ScatterDataPoint) => string;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on the data; default = empty data. */
+  isNodata?: boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */
@@ -990,6 +1014,14 @@ export interface BarBellChartProps {
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (row: BarBellDataRow, key: string, value: number) => string;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on the data; default = empty data. */
+  isNodata?: boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

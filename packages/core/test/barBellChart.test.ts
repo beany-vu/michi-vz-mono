@@ -18,6 +18,17 @@ function mount(extra: Partial<BarBellChartProps> = {}) {
 }
 
 describe("mountBarBellChart (jsdom)", () => {
+  it("emits legendData (label/dataLabelSafe) on the context — the colour-authority hook", () => {
+    // Without legendData, thd's setMetadata early-returns and every mark resolves transparent.
+    const { host, chart } = mount();
+    const ctx = chart.getContext()!;
+    expect(ctx.legendData!.map((l) => l.label)).toEqual(keys);
+    const fruit = ctx.legendData!.find((l) => l.label === "Fruit Sales")!;
+    expect(fruit.dataLabelSafe).toBe(sanitizeForClassName("Fruit Sales")); // "Fruit_Sales"
+    chart.destroy();
+    host.remove();
+  });
+
   it("renders an end-cap circle per (row,key) with data-label-safe", () => {
     const { host, chart } = mount();
     const caps = host.querySelectorAll(".bar-bell-cap");

@@ -39,6 +39,20 @@ describe("buildScatterContext", () => {
     expect(ctx.stats.correlation).toBe(1);
     expect(ctx.summary).toContain("correlation");
   });
+
+  it("emits legendData (one row per unique point label, with dataLabelSafe) — colour-authority hook", () => {
+    const ctx = buildScatterContext({
+      renderer: "svg",
+      xAxisDataType: "number",
+      xAxisDomain: [0, 7],
+      yAxisDomain: [0, 14],
+      points: dataSet,
+      colorsMapping: {},
+    });
+    expect(ctx.legendData!.map((l) => l.label)).toEqual(["Point A", "Beta", "Gamma", "Delta"]);
+    const a = ctx.legendData!.find((l) => l.label === "Point A")!;
+    expect(a.dataLabelSafe).toBe(sanitizeForClassName("Point A")); // "Point_A"
+  });
 });
 
 describe("mountScatterChart (jsdom)", () => {

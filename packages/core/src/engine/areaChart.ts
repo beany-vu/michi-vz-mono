@@ -98,6 +98,10 @@ export function mountAreaChart(
   };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
+  // Idempotency guard: only fire onChartDataProcessed when the serialized context
+  // changes. Both Area consumers (ByEndUses/ByLevelOfProcessing) call setMetadata
+  // inside it; an unconditional re-fire loops "Maximum update depth". Mirrors VSB.
+  let lastContextSig = "";
   let hitRows: HitRow[] = [];
   let hoverLine: SVGLineElement | null = null;
 
@@ -301,12 +305,17 @@ export function mountAreaChart(
       series: props.series,
       activeKeys,
       colorsMapping: colors.generatedColorsMapping,
+      disabledItems: props.disabledItems,
     });
     // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    props.onChartDataProcessed?.(context);
+    const contextSig = JSON.stringify(context);
+    if (contextSig !== lastContextSig) {
+      lastContextSig = contextSig;
+      props.onChartDataProcessed?.(context);
+    }
 
     // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.

@@ -45,6 +45,17 @@ describe("processAreaChartData (stack)", () => {
 });
 
 describe("mountAreaChart (jsdom)", () => {
+  it("emits legendData (label/dataLabelSafe) on the context — the colour-authority hook", () => {
+    // Without legendData, thd's setMetadata early-returns and stacked fills resolve transparent.
+    const { host, chart } = mount();
+    const ctx = chart.getContext()!;
+    expect(ctx.legendData!.map((l) => l.label)).toEqual(keys);
+    const fruit = ctx.legendData!.find((l) => l.label === "Fruit Sales")!;
+    expect(fruit.dataLabelSafe).toBe(sanitizeForClassName("Fruit Sales")); // "Fruit_Sales"
+    chart.destroy();
+    host.remove();
+  });
+
   it("renders one area path per key carrying data-label-safe", () => {
     const { host, chart } = mount();
     const areas = host.querySelectorAll<SVGPathElement>("path.area");

@@ -244,14 +244,22 @@ export interface FountainChartHandle {
   getContext(): ChartContext | null;
 }
 
-export const GapChart = forwardRef<GapChartHandle, GapChartProps>(function GapChart(props, ref) {
+export type GapChartReactProps = GapChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+};
+
+export const GapChart = forwardRef<GapChartHandle, GapChartReactProps>(function GapChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ChartInstance<GapChartProps> | null>(null);
 
-  // Mount once on the client.
+  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+  // The wrapper renders its OWN loading/no-data node below, so suppress the engine's vanilla overlay.
+  const engineProps: GapChartProps = { ...coreProps, suppressDefaultOverlay: true };
+
   useEffect(() => {
     if (!hostRef.current) return;
-    chartRef.current = mountGapChart(hostRef.current, props);
+    chartRef.current = mountGapChart(hostRef.current, engineProps);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
@@ -259,14 +267,32 @@ export const GapChart = forwardRef<GapChartHandle, GapChartProps>(function GapCh
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Push latest props on every render.
   useEffect(() => {
-    chartRef.current?.update(props);
+    chartRef.current?.update(engineProps);
   });
 
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
-  return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
+  const dataState = evaluateDataState({
+    isLoading: coreProps.isLoading,
+    isNodata: coreProps.isNodata,
+    dataSet: coreProps.dataSet,
+  });
+  const overlay =
+    dataState === "loading"
+      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+      : dataState === "nodata"
+        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        : null;
+
+  const width = props.width ?? 1000;
+  const height = props.height ?? 500;
+  return (
+    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+      <div ref={hostRef} style={{ width, height }} />
+      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+    </div>
+  );
 });
 
 /** React-only overlay nodes layered over the chart when loading / no-data. */
@@ -353,13 +379,21 @@ export const FanChart = forwardRef<FanChartHandle, FanChartProps>(function FanCh
   return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
 });
 
-export const AreaChart = forwardRef<AreaChartHandle, AreaChartProps>(function AreaChart(props, ref) {
+export type AreaChartReactProps = AreaChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+};
+
+export const AreaChart = forwardRef<AreaChartHandle, AreaChartReactProps>(function AreaChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ChartInstance<AreaChartProps> | null>(null);
 
+  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+  const engineProps: AreaChartProps = { ...coreProps, suppressDefaultOverlay: true };
+
   useEffect(() => {
     if (!hostRef.current) return;
-    chartRef.current = mountAreaChart(hostRef.current, props);
+    chartRef.current = mountAreaChart(hostRef.current, engineProps);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
@@ -368,21 +402,49 @@ export const AreaChart = forwardRef<AreaChartHandle, AreaChartProps>(function Ar
   }, []);
 
   useEffect(() => {
-    chartRef.current?.update(props);
+    chartRef.current?.update(engineProps);
   });
 
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
-  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+  // Area's data prop is `series`, not `dataSet`.
+  const dataState = evaluateDataState({
+    isLoading: coreProps.isLoading,
+    isNodata: coreProps.isNodata,
+    dataSet: coreProps.series,
+  });
+  const overlay =
+    dataState === "loading"
+      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+      : dataState === "nodata"
+        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        : null;
+
+  const width = props.width ?? 900;
+  const height = props.height ?? 480;
+  return (
+    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+      <div ref={hostRef} style={{ width, height }} />
+      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+    </div>
+  );
 });
 
-export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartProps>(function ScatterChart(props, ref) {
+export type ScatterChartReactProps = ScatterChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+};
+
+export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartReactProps>(function ScatterChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ChartInstance<ScatterChartProps> | null>(null);
 
+  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+  const engineProps: ScatterChartProps = { ...coreProps, suppressDefaultOverlay: true };
+
   useEffect(() => {
     if (!hostRef.current) return;
-    chartRef.current = mountScatterChart(hostRef.current, props);
+    chartRef.current = mountScatterChart(hostRef.current, engineProps);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
@@ -391,12 +453,31 @@ export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartProps>(fu
   }, []);
 
   useEffect(() => {
-    chartRef.current?.update(props);
+    chartRef.current?.update(engineProps);
   });
 
   useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
-  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+  const dataState = evaluateDataState({
+    isLoading: coreProps.isLoading,
+    isNodata: coreProps.isNodata,
+    dataSet: coreProps.dataSet,
+  });
+  const overlay =
+    dataState === "loading"
+      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+      : dataState === "nodata"
+        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        : null;
+
+  const width = props.width ?? 900;
+  const height = props.height ?? 480;
+  return (
+    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+      <div ref={hostRef} style={{ width, height }} />
+      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+    </div>
+  );
 });
 
 export type VerticalStackBarChartReactProps = VerticalStackBarChartProps & {
@@ -553,14 +634,22 @@ export const DualHorizontalBarChart = forwardRef<DualHorizontalBarChartHandle, D
   }
 );
 
-export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartProps>(
+export type BarBellChartReactProps = BarBellChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+};
+
+export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProps>(
   function BarBellChart(props, ref) {
     const hostRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<ChartInstance<BarBellChartProps> | null>(null);
 
+    const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+    const engineProps: BarBellChartProps = { ...coreProps, suppressDefaultOverlay: true };
+
     useEffect(() => {
       if (!hostRef.current) return;
-      chartRef.current = mountBarBellChart(hostRef.current, props);
+      chartRef.current = mountBarBellChart(hostRef.current, engineProps);
       return () => {
         chartRef.current?.destroy();
         chartRef.current = null;
@@ -569,12 +658,31 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartProps>(
     }, []);
 
     useEffect(() => {
-      chartRef.current?.update(props);
+      chartRef.current?.update(engineProps);
     });
 
     useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
 
-    return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.dataSet,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+          : null;
+
+    const width = props.width ?? 900;
+    const height = props.height ?? 480;
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
   }
 );
 

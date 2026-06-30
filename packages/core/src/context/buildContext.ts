@@ -4,6 +4,7 @@
 // for the a11y mirror. `summary` is a deterministic, model-free NL string that
 // doubles as alt text.
 import type { GapChartContext, GapDataItem, GapSeriesContext, XaxisDataType } from "../types";
+import { buildLegendData } from "./legend";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -14,6 +15,7 @@ export interface BuildContextInput {
   xAxisDomain: [number, number];
   processedDataSet: GapDataItem[];
   colorsMapping: Record<string, string>;
+  disabledItems?: string[];
 }
 
 export function buildGapContext(input: BuildContextInput): GapChartContext {
@@ -54,6 +56,15 @@ export function buildGapContext(input: BuildContextInput): GapChartContext {
   if (minGap && series.length > 1) summary += ` Smallest gap: ${minGap.label} (${minGap.value}).`;
   if (series.length > 0) summary += ` Average gap ${meanGap}.`;
 
+  // Flat colour-contract payload the consumer colour authority reads via
+  // onChartDataProcessed(ctx).legendData. Without it thd's setMetadata
+  // early-returns → colorsMapping stays {} → marks resolve transparent.
+  const legendData = buildLegendData({
+    labels: series.map((s) => s.label),
+    colorsMapping: input.colorsMapping,
+    disabledItems: input.disabledItems,
+  });
+
   return {
     chartType: "gap-chart",
     title: input.title,
@@ -63,6 +74,7 @@ export function buildGapContext(input: BuildContextInput): GapChartContext {
     series,
     stats: { count: series.length, maxGap, minGap, meanGap, totalValue1, totalValue2 },
     colorsMapping: input.colorsMapping,
+    legendData,
     summary,
     a11yTable: {
       headers: ["Label", "Value 1", "Value 2", "Difference", "Gap"],

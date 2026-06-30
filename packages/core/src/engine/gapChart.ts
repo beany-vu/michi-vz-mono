@@ -100,6 +100,10 @@ export function mountGapChart(
   };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
+  // Idempotency guard: only fire onChartDataProcessed when the serialized context
+  // changes — an unconditional re-fire loops "Maximum update depth" in any consumer
+  // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
+  let lastContextSig = "";
 
   const showTooltip = (d: GapDataItem, ev: MouseEvent): void => {
     const rect = host.getBoundingClientRect();
@@ -310,12 +314,17 @@ export function mountGapChart(
       xAxisDomain,
       processedDataSet,
       colorsMapping: colors.generatedColorsMapping,
+      disabledItems: props.disabledItems,
     });
     // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    props.onChartDataProcessed?.(context);
+    const contextSig = JSON.stringify(context);
+    if (contextSig !== lastContextSig) {
+      lastContextSig = contextSig;
+      props.onChartDataProcessed?.(context);
+    }
 
     // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.

@@ -8,6 +8,7 @@ import type {
   XaxisDataType,
 } from "../types";
 import { provenanceCounts } from "../math/provenance";
+import { buildLegendData } from "./legend";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -20,6 +21,7 @@ export interface BuildAreaContextInput {
   series: AreaDataRow[];
   activeKeys: string[];
   colorsMapping: Record<string, string>;
+  disabledItems?: string[];
 }
 
 function keyContext(key: string, series: AreaDataRow[], color: string): AreaSeriesContext {
@@ -58,6 +60,15 @@ export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext
   summary += ` Combined total ${grandTotal}.`;
   if (predictedRows > 0) summary += ` ${predictedRows} forecast row${predictedRows === 1 ? "" : "s"} from ${String(forecastStart)}.`;
 
+  // Flat colour-contract payload the consumer colour authority reads via
+  // onChartDataProcessed(ctx).legendData. Without it thd's setMetadata
+  // early-returns → colorsMapping stays {} → stacked fills resolve transparent.
+  const legendData = buildLegendData({
+    labels: input.activeKeys,
+    colorsMapping: input.colorsMapping,
+    disabledItems: input.disabledItems,
+  });
+
   return {
     chartType: "area-chart",
     title: input.title,
@@ -76,6 +87,7 @@ export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext
       forecastStart,
     },
     colorsMapping: input.colorsMapping,
+    legendData,
     summary,
     a11yTable: {
       headers: ["Series", "Total", "Min", "Max", "Mean"],

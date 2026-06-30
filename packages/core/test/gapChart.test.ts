@@ -70,6 +70,24 @@ describe("buildGapContext", () => {
     expect(ctx.series.find((s) => s.label === "Beta")!.gap).toBe(30);
     expect(ctx.summary).toContain("Largest gap: Beta (30)");
   });
+
+  it("emits legendData (label/dataLabelSafe/disabled) — the colour-authority hook", () => {
+    const r = processGapChartData(sample, undefined, []);
+    const ctx = buildGapContext({
+      title: "Demo",
+      renderer: "svg",
+      xAxisDataType: "number",
+      xAxisDomain: r.xAxisDomain,
+      processedDataSet: r.processedDataSet,
+      colorsMapping: {},
+      disabledItems: ["Beta"],
+    });
+    expect(Array.isArray(ctx.legendData)).toBe(true);
+    expect(ctx.legendData!.length).toBe(ctx.series.length);
+    const beta = ctx.legendData!.find((l) => l.label === "Beta")!;
+    expect(beta.disabled).toBe(true);
+    expect(beta.dataLabelSafe).toBe("Beta");
+  });
 });
 
 describe("checkGapData", () => {

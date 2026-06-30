@@ -1,6 +1,7 @@
 // Renderer-agnostic semantic context for ScatterPlot. x/y means + Pearson
 // correlation + a chart-agnostic a11yTable (one row per point) + NL summary.
 import type { ScatterChartContext, ScatterDataPoint, XaxisDataType } from "../types";
+import { buildLegendData } from "./legend";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -12,6 +13,7 @@ export interface BuildScatterContextInput {
   yAxisDomain: [number, number];
   points: ScatterDataPoint[];
   colorsMapping: Record<string, string>;
+  disabledItems?: string[];
 }
 
 function pearson(points: ScatterDataPoint[]): number | null {
@@ -54,6 +56,15 @@ export function buildScatterContext(input: BuildScatterContextInput): ScatterCha
     summary += ` ${strength} ${dir} correlation (r=${correlation}).`;
   }
 
+  // Flat colour-contract payload the consumer colour authority reads via
+  // onChartDataProcessed(ctx).legendData. Without it thd's setMetadata
+  // early-returns → colorsMapping stays {} → points resolve transparent.
+  const legendData = buildLegendData({
+    labels: input.points.map((p) => p.label),
+    colorsMapping: input.colorsMapping,
+    disabledItems: input.disabledItems,
+  });
+
   return {
     chartType: "scatter-plot-chart",
     title: input.title,
@@ -63,6 +74,7 @@ export function buildScatterContext(input: BuildScatterContextInput): ScatterCha
     pointCount: n,
     stats: { xMean, yMean, correlation },
     colorsMapping: input.colorsMapping,
+    legendData,
     summary,
     a11yTable: {
       headers: ["Label", "X", "Y", "Size"],
