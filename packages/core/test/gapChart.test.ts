@@ -151,6 +151,24 @@ describe("mountGapChart (jsdom)", () => {
     host.remove();
   });
 
+  it("enriches the <svg> with SEO semantics: title/desc/metadata (JSON-LD) + aria-hidden", () => {
+    const { host, chart } = mount();
+    const svg = host.querySelector("svg")!;
+    expect(svg.querySelector(":scope > title.mv-title")?.textContent).toBe("Demo");
+    expect(svg.querySelector(":scope > desc.mv-desc")?.textContent).toContain("Gap chart");
+    const meta = JSON.parse(svg.querySelector(":scope > metadata.mv-metadata")!.textContent!);
+    expect(meta["@type"]).toBe("ImageObject");
+    expect(meta.creator.name).toBe("michi-vz");
+    expect(meta.description).toContain("Gap chart");
+    // SVG hidden from AT (the .mv-a11y table is the screen-reader rep); still crawlable.
+    expect(svg.getAttribute("aria-hidden")).toBe("true");
+    // re-render does not duplicate the semantic nodes
+    chart.update({ dataSet: sample, title: "Demo", width: 600, height: 300 });
+    expect(svg.querySelectorAll(":scope > title.mv-title").length).toBe(1);
+    chart.destroy();
+    host.remove();
+  });
+
   it("produces an identical ChartContext in SVG and canvas mode (renderer aside)", () => {
     const a = mount({ renderer: "svg" });
     const b = mount({ renderer: "canvas" });

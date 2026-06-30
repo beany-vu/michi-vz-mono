@@ -85,9 +85,34 @@ export const CORE_CSS = `
 }
 `;
 
+let greeted = false;
+
+/**
+ * A friendly once-per-page console hello — hidden from end users, found by curious devs.
+ * Opt out with `globalThis.__MICHI_VZ_NO_GREETING__ = true`. SSR-safe.
+ */
+function greetOnce(): void {
+  if (greeted) return;
+  greeted = true;
+  if (typeof window === "undefined") return; // browser-only (no SSR/Node log spam)
+  if (typeof console === "undefined" || typeof console.log !== "function") return;
+  if ((globalThis as Record<string, unknown>).__MICHI_VZ_NO_GREETING__) return;
+  console.log(
+    "%c📊 michi-vz%c  made with love 💛\n" +
+      "%cThis chart is drawn with michi-vz.\n" +
+      "→ Docs:   https://michi-vz.netlify.app\n" +
+      "→ Source: https://github.com/beany-vu/michi-vz-mono\n" +
+      "Spotted a bug, have an idea, or just curious? Issues & feedback are very welcome — come say hi! 🌻",
+    "font-weight:700;font-size:13px;color:#fff;background:#2e7ebb;padding:2px 8px;border-radius:6px;",
+    "font-weight:600;color:#e8833a;",
+    "color:#6b5b4f;line-height:1.6;"
+  );
+}
+
 let injected = false;
 
 export function ensureStyles(): void {
+  greetOnce();
   if (injected) return;
   if (typeof document === "undefined") return; // SSR-safe: no-op on the server
   if ((globalThis as Record<string, unknown>).__MICHI_VZ_NO_AUTO_STYLE__) return;
