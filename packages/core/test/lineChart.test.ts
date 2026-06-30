@@ -108,6 +108,21 @@ describe("mountLineChart (jsdom)", () => {
     b.host.remove();
   });
 
+  it("emits visibleItems (not-disabled + has-data) — legacy useLineChartMetadataExpose parity", () => {
+    // Market/ProductDiversification read this off onChartDataProcessed for master/slave colour sync.
+    const { host, chart } = mount();
+    const ctx = chart.getContext()!;
+    if (ctx.chartType === "line-chart") expect(ctx.visibleItems).toEqual(["Alpha One", "Beta"]);
+    chart.destroy();
+    host.remove();
+
+    const off = mount({ disabledItems: ["Beta"] });
+    const ctx2 = off.chart.getContext()!;
+    if (ctx2.chartType === "line-chart") expect(ctx2.visibleItems).toEqual(["Alpha One"]);
+    off.chart.destroy();
+    off.host.remove();
+  });
+
   it("reports the largest mover in the summary", () => {
     const { host, chart } = mount();
     const ctx = chart.getContext()!;

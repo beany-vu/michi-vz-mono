@@ -22,6 +22,8 @@ export interface BuildLineContextInput {
   colorsMapping: Record<string, string>;
   /** Flat legend rows (label/dataLabelSafe/color/disabled) for the colour contract. */
   legendData?: LegendItem[];
+  /** Labels the consumer has hidden — excluded from visibleItems (legacy parity). */
+  disabledItems?: string[];
 }
 
 function seriesContext(item: LineDataItem): LineSeriesContext {
@@ -65,6 +67,14 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
   const series = input.processedDataSet.map(seriesContext);
   const pointCount = series.reduce((n, s) => n + s.pointCount, 0);
 
+  // Legacy useLineChartMetadataExpose parity: labels that are NOT disabled AND carry
+  // ≥1 point. thd's Market/ProductDiversification read this off onChartDataProcessed to
+  // sync their master/slave colour set; absent → the slave chart never syncs.
+  const disabled = new Set(input.disabledItems ?? []);
+  const visibleItems = input.processedDataSet
+    .filter((d) => !disabled.has(d.label) && d.series.length > 0)
+    .map((d) => d.label);
+
   let largestMover: { label: string; change: number } | null = null;
   for (const s of series) {
     if (!largestMover || Math.abs(s.change) > Math.abs(largestMover.change)) {
@@ -97,6 +107,7 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
     },
     colorsMapping: input.colorsMapping,
     legendData: input.legendData,
+    visibleItems,
     summary,
     a11yTable: {
       headers: ["Series", "Points", "First", "Last", "Change", "Trend"],

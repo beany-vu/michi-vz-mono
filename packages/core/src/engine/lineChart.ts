@@ -429,6 +429,7 @@ export function mountLineChart(
       processedDataSet,
       colorsMapping: colors.generatedColorsMapping,
       legendData,
+      disabledItems: props.disabledItems,
     });
     // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.

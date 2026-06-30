@@ -387,6 +387,9 @@ export interface LineChartContext extends BaseChartContext {
     largestMover: { label: string; change: number } | null;
     valueRange: [number, number];
   };
+  /** Legacy-parity (useLineChartMetadataExpose): labels currently rendered — not
+   * disabled AND carrying ≥1 point. Consumers read it off onChartDataProcessed. */
+  visibleItems: string[];
 }
 
 // ---- AreaChart (stacked) ----
