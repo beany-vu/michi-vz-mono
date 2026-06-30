@@ -6,7 +6,7 @@ import type {
   AgentTool,
   VerticalStackBarChartProps,
   VerticalStackBarDataSet,
-  StackRectData,
+  StackTooltipData,
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
@@ -43,7 +43,7 @@ export class VerticalStackBarChartElement extends LitElement {
   disabledItems?: string[];
   missingDataMarker?: { height: number };
   skipColorMappingDispatch = false;
-  tooltipFormatter?: (rect: StackRectData) => string;
+  tooltipFormatter?: (d: StackTooltipData) => string;
   plugins?: MichiVzPlugin<VerticalStackBarChartProps>[];
   locale?: string;
 

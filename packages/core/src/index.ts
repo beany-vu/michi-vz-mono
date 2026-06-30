@@ -220,6 +220,7 @@ export type {
   VerticalStackBarDataPoint,
   VerticalStackBarDataSet,
   StackRectData,
+  StackTooltipData,
   StackLegendItem,
   StackSeriesContext,
   VerticalStackBarChartProps,

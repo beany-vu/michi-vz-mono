@@ -46,7 +46,7 @@ export class AreaChartElement extends LitElement {
   curve?: CurveType;
   forcePercentageScale = false;
   skipColorMappingDispatch = false;
-  tooltipFormatter?: (row: AreaDataRow, key: string, series: AreaDataRow[]) => string;
+  tooltipFormatter?: (row: AreaDataRow, series: AreaDataRow[], key: string) => string;
   plugins?: MichiVzPlugin<AreaChartProps>[];
   locale?: string;
 
