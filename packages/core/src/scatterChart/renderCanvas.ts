@@ -2,8 +2,28 @@
 // resolved via the SVG colour probe (resolveMarkColors `scatter-point`/fill) so
 // consumer CSS reaches canvas pixels. jsdom → setupCanvas null → no-op.
 import { setupCanvas } from "../canvas/setupCanvas";
-import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
+import { resolveMarkColors } from "../canvas/resolveMarkColors";
+import type { ColorProbe } from "../canvas/resolveMarkColors";
 import type { ScatterPointModel, ScatterRenderModel } from "./renderModel";
+
+// The MonitorV2 consumer colours scatter marks via CSS keyed `g[data-label-safe] > *`
+// (the legacy <g>-wrapped structure). The canvas colour probe must therefore be a
+// `<g data-label-safe>` wrapping the mark, so getComputedStyle on the inner element
+// picks up that fill. A FLAT probe (bare <circle>) would NOT match the descendant
+// selector → every label resolves to the transparent skip-mode fallback → an
+// invisible chart. Mirrors makeSubBarProbe's nested-probe pattern.
+const makeGroupedScatterProbe = (label: string, labelSafe: string, fallback: string): ColorProbe => {
+  const NS = "http://www.w3.org/2000/svg";
+  const g = document.createElementNS(NS, "g") as SVGGElement;
+  g.setAttribute("data-label", label);
+  g.setAttribute("data-label-safe", labelSafe);
+  const node = document.createElementNS(NS, "circle") as SVGCircleElement;
+  node.setAttribute("class", "scatter-point");
+  node.setAttribute("fill", fallback);
+  node.setAttribute("visibility", "hidden");
+  g.appendChild(node);
+  return { root: g, target: node };
+};
 
 export interface ScatterCanvasOptions {
   width: number;
@@ -45,7 +65,7 @@ export function drawScatterCanvas(
     svg,
     labels,
     (l) => fallback.get(l) || "transparent",
-    makeSimpleProbe("circle", "scatter-point", "fill"),
+    makeGroupedScatterProbe,
     "fill"
   );
 

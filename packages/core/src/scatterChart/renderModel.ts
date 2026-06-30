@@ -2,6 +2,7 @@
 // sorted largest-first so smaller bubbles draw on top (matching the legacy).
 import { sanitizeForClassName } from "../math/sanitize";
 import { parseXValue } from "../lineChart/lineUtils";
+import type { ScaleBand } from "d3-scale";
 import type { ScatterScales } from "./scales";
 import type { ScatterColorResolver } from "./colors";
 import type { ScatterDataPoint, Shape, XaxisDataType } from "../types";
@@ -39,8 +40,15 @@ export function buildScatterRenderModel(
   const anyHighlight = highlightSet.size > 0;
 
   const models: ScatterPointModel[] = points.map((p) => {
-    const xv = parseXValue(p.x, o.xAxisDataType);
-    const cx = (scales.xScale as (x: number | Date) => number)(xv);
+    let cx: number;
+    if (o.xAxisDataType === "band" && "bandwidth" in scales.xScale) {
+      // Band: position by `label` (not the numeric `x`), centred in the band slot.
+      const bandScale = scales.xScale as ScaleBand<string>;
+      cx = (bandScale(p.label) ?? 0) + bandScale.bandwidth() / 2;
+    } else {
+      const xv = parseXValue(p.x, o.xAxisDataType);
+      cx = (scales.xScale as (x: number | Date) => number)(xv);
+    }
     const cy = scales.yScale(p.y);
     const r = p.d === undefined ? o.defaultRadius : scales.sizeScale(p.d);
     return {

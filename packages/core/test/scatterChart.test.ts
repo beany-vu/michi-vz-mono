@@ -130,3 +130,88 @@ describe("mountScatterChart (jsdom)", () => {
     host.remove();
   });
 });
+
+describe("mountScatterChart — band x-axis (ByPattern contract)", () => {
+  // Two points per label (TMax square + TMin triangle) sharing a band slot, exactly
+  // like ByPattern's filteredData. Marks are positioned by `label`, not `x`.
+  const bandDataSet: ScatterDataPoint[] = [
+    { label: "Alpha", x: 0, y: 12.5, d: 32, shape: "square", color: "#e63946", label2: "Max" },
+    { label: "Alpha", x: 0, y: 8.3, d: 32, shape: "triangle", color: "#e63946", label2: "Min" },
+    { label: "Beta", x: 1, y: 15.0, d: 32, shape: "square", color: "#457b9d", label2: "Max" },
+    { label: "Beta", x: 1, y: 10.2, d: 32, shape: "triangle", color: "#457b9d", label2: "Min" },
+  ];
+
+  function mountBand(extra: Partial<ScatterChartProps> = {}) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountScatterChart(host, {
+      dataSet: bandDataSet,
+      width: 600,
+      height: 300,
+      xAxisDataType: "band",
+      // ByPattern passes Object.keys(labelsMapping); the engine derives the domain from
+      // the visible points' labels (legacy parity), so this is accepted but not required.
+      xAxisDomain: ["Alpha", "Beta"],
+      yAxisDomain: [0, 20],
+      renderer: "svg",
+      ...extra,
+    });
+    return { host, chart };
+  }
+
+  it("draws a <rect> for square + a <path> for triangle (no <circle>)", () => {
+    const { host, chart } = mountBand();
+    expect(host.querySelectorAll("rect.scatter-point").length).toBe(2);
+    expect(host.querySelectorAll("path.scatter-point").length).toBe(2);
+    expect(host.querySelectorAll("circle.scatter-point").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("centres each label in its band slot — Beta sits to the right of Alpha", () => {
+    const { host, chart } = mountBand();
+    const rectX = (label: string): number =>
+      Number(
+        Array.from(host.querySelectorAll<SVGRectElement>("rect.scatter-point"))
+          .find((r) => r.getAttribute("data-label") === label)!
+          .getAttribute("x")
+      );
+    expect(rectX("Beta")).toBeGreaterThan(rectX("Alpha"));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("renders one band tick label per category", () => {
+    const { host, chart } = mountBand();
+    const labels = Array.from(host.querySelectorAll(".mv-x-axis-band .mv-axis-label")).map(
+      (t) => t.textContent
+    );
+    expect(labels).toContain("Alpha");
+    expect(labels).toContain("Beta");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("marks carry data-label-safe (the canvas colour-probe hook)", () => {
+    const { host, chart } = mountBand();
+    const safes = Array.from(host.querySelectorAll(".scatter-point")).map((m) =>
+      m.getAttribute("data-label-safe")
+    );
+    expect(safes).toContain(sanitizeForClassName("Alpha"));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("band context: no Pearson correlation, category domain, category summary", () => {
+    const { host, chart } = mountBand();
+    const ctx = chart.getContext()!;
+    expect(ctx.chartType).toBe("scatter-plot-chart");
+    if (ctx.chartType === "scatter-plot-chart") {
+      expect(ctx.stats.correlation).toBeNull();
+      expect(ctx.xAxis.domain).toEqual(["Alpha", "Beta"]);
+      expect(ctx.summary).toContain("categories");
+    }
+    chart.destroy();
+    host.remove();
+  });
+});

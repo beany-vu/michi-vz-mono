@@ -1,6 +1,6 @@
 // Public, framework-agnostic types for the engine.
 
-export type XaxisDataType = "date_annual" | "date_monthly" | "number";
+export type XaxisDataType = "date_annual" | "date_monthly" | "number" | "band";
 export type Shape = "circle" | "square" | "triangle";
 
 export interface Margin {
@@ -508,6 +508,8 @@ export interface ScatterDataPoint {
   code?: string;
   /** Optional period tag used to select points when `filter.date` is provided */
   date?: string;
+  /** Optional secondary label surfaced only by a consumer tooltipFormatter; no engine semantics. */
+  label2?: string;
 }
 
 export interface ScatterChartProps {
@@ -525,14 +527,14 @@ export interface ScatterChartProps {
   colors?: string[];
   /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
   colorsMapping?: Record<string, string>;
-  /** number / date for x (band x deferred). y is always linear. */
+  /** number / date / band (categorical) for x. y is always linear. */
   xAxisDataType?: XaxisDataType;
   /** Formats an x tick value into its display label */
   xAxisFormat?: (d: number | string) => string;
   /** Formats a y tick value into its display label */
   yAxisFormat?: (d: number | string) => string;
-  /** Fix the x-axis range instead of deriving it from the data */
-  xAxisDomain?: [number, number];
+  /** Fix the x-axis range ([min,max]); for band x, the ordered category labels (string[]). */
+  xAxisDomain?: [number, number] | string[];
   /** Fix the y-axis range as [min, max] instead of deriving it from the data */
   yAxisDomain?: [number, number];
   /** [minRadius, maxRadius] px for the size scale (default [4, 20]). */
@@ -577,7 +579,7 @@ export interface ScatterChartProps {
 
 export interface ScatterChartContext extends BaseChartContext {
   chartType: "scatter-plot-chart";
-  xAxis: { type: XaxisDataType; domain: [number, number] };
+  xAxis: { type: XaxisDataType; domain: [number, number] | string[] };
   yAxis: { domain: [number, number] };
   pointCount: number;
   stats: {

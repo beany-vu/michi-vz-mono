@@ -6,7 +6,8 @@ import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
-import { renderTitle, renderXAxisLinear, renderYAxisLinear } from "../render/svg";
+import { renderTitle, renderXAxisLinear, renderXAxisBand, renderYAxisLinear } from "../render/svg";
+import type { ScaleBand, ScaleLinear, ScaleTime } from "d3-scale";
 import { processScatterData } from "../scatterChart/data";
 import { buildScatterColors } from "../scatterChart/colors";
 import { createScatterScales } from "../scatterChart/scales";
@@ -212,16 +213,31 @@ export function mountScatterChart(
 
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
-    renderXAxisLinear(svg, scales.xScale, {
-      width: r.width,
-      height: r.height,
-      margin: r.margin,
-      xAxisDataType,
-      format: (v) => xFormat(v),
-      ticks: r.ticks,
-      tickValues: props.tickValues,
-      enableExplicitTickValues: true,
-    });
+    if (xAxisDataType === "band" && "bandwidth" in scales.xScale) {
+      // Categorical axis: one centred label per band (band categories are few, so no
+      // thinning/rotation). xAxisFormat, if given, maps the raw category label.
+      renderXAxisBand(svg, scales.xScale as ScaleBand<string>, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        format: props.xAxisFormat as ((label: string) => string) | undefined,
+      });
+    } else {
+      renderXAxisLinear(
+        svg,
+        scales.xScale as ScaleLinear<number, number> | ScaleTime<number, number>,
+        {
+          width: r.width,
+          height: r.height,
+          margin: r.margin,
+          xAxisDataType,
+          format: (v) => xFormat(v),
+          ticks: r.ticks,
+          tickValues: props.tickValues,
+          enableExplicitTickValues: true,
+        }
+      );
+    }
     renderYAxisLinear(svg, scales.yScale, {
       width: r.width,
       height: r.height,

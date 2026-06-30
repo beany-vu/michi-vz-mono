@@ -1,9 +1,12 @@
 // ScatterPlot scales: x linear/time, y linear, plus a size (radius) scale.
-import { scaleLinear, scaleTime } from "d3-scale";
-import type { ScaleLinear, ScaleTime } from "d3-scale";
+import { scaleLinear, scaleTime, scaleBand } from "d3-scale";
+import type { ScaleLinear, ScaleTime, ScaleBand } from "d3-scale";
 import type { Margin, XaxisDataType } from "../types";
 
-export type ScatterXScale = ScaleLinear<number, number> | ScaleTime<number, number>;
+export type ScatterXScale =
+  | ScaleLinear<number, number>
+  | ScaleTime<number, number>
+  | ScaleBand<string>;
 
 export interface ScatterScales {
   xScale: ScatterXScale;
@@ -13,7 +16,7 @@ export interface ScatterScales {
 }
 
 export function createScatterScales(
-  xDomain: [number, number],
+  xDomain: [number, number] | string[],
   yDomain: [number, number],
   dDomain: [number, number],
   width: number,
@@ -22,19 +25,28 @@ export function createScatterScales(
   xAxisDataType: XaxisDataType,
   sizeRange: [number, number]
 ): ScatterScales {
-  const [xlo, xhi] = xDomain;
   let xScale: ScatterXScale;
-  if (xAxisDataType === "number") {
-    xScale = scaleLinear()
-      .domain([xlo, xhi || 1])
+  if (xAxisDataType === "band") {
+    // Categorical x: one band slot per label; marks are centred via bandwidth()/2
+    // in renderModel. padding 0.1 mirrors the legacy ScatterPlotChart band path.
+    xScale = scaleBand<string>()
+      .domain(xDomain as string[])
       .range([margin.left, width - margin.right])
-      .nice()
-      .clamp(true);
+      .padding(0.1);
   } else {
-    xScale = scaleTime()
-      .domain([new Date(xlo), new Date(xhi)])
-      .range([margin.left, width - margin.right])
-      .clamp(true);
+    const [xlo, xhi] = xDomain as [number, number];
+    if (xAxisDataType === "number") {
+      xScale = scaleLinear()
+        .domain([xlo, xhi || 1])
+        .range([margin.left, width - margin.right])
+        .nice()
+        .clamp(true);
+    } else {
+      xScale = scaleTime()
+        .domain([new Date(xlo), new Date(xhi)])
+        .range([margin.left, width - margin.right])
+        .clamp(true);
+    }
   }
 
   const yScale = scaleLinear()

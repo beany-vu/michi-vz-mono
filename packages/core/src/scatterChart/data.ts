@@ -7,13 +7,13 @@ export interface ProcessScatterOptions {
   disabledItems?: string[];
   filter?: Filter;
   xAxisDataType: XaxisDataType;
-  xAxisDomain?: [number, number];
+  xAxisDomain?: [number, number] | string[];
   yAxisDomain?: [number, number];
 }
 
 export interface ProcessedScatter {
   points: ScatterDataPoint[];
-  xAxisDomain: [number, number];
+  xAxisDomain: [number, number] | string[];
   yAxisDomain: [number, number];
   dDomain: [number, number];
 }
@@ -33,6 +33,42 @@ export function processScatterData(
     if (date !== undefined && date !== "") arr = arr.filter((p) => String(p.date) === String(date));
     const dir = sortingDir === "asc" ? 1 : -1;
     points = [...arr].sort((a, b) => dir * (pick(a) - pick(b))).slice(0, limit);
+  }
+
+  // Band (categorical) x: the domain is the ordered unique category labels of the
+  // visible points — mirroring legacy ScatterPlotChart (scaleBand domain = dataSet
+  // labels). The numeric `x` field is ignored for placement; marks are positioned by
+  // `label` (see renderModel). y/size domains are still numeric.
+  if (opts.xAxisDataType === "band") {
+    const bandDomain: string[] = [];
+    const seenLabels = new Set<string>();
+    for (const p of points) {
+      if (!seenLabels.has(p.label)) {
+        seenLabels.add(p.label);
+        bandDomain.push(p.label);
+      }
+    }
+    let yhiB = -Infinity;
+    let dloB = Infinity;
+    let dhiB = -Infinity;
+    for (const p of points) {
+      if (p.y > yhiB) yhiB = p.y;
+      const d = p.d ?? 0;
+      if (d < dloB) dloB = d;
+      if (d > dhiB) dhiB = d;
+    }
+    if (!Number.isFinite(yhiB)) yhiB = 1;
+    if (!Number.isFinite(dloB)) {
+      dloB = 0;
+      dhiB = 1;
+    }
+    const dDomainB: [number, number] = dloB === dhiB ? [0, dhiB || 1] : [dloB, dhiB];
+    return {
+      points,
+      xAxisDomain: bandDomain,
+      yAxisDomain: opts.yAxisDomain ?? [0, yhiB],
+      dDomain: dDomainB,
+    };
   }
 
   // x domain: number -> [0, maxX]; date -> [minTs, maxTs].

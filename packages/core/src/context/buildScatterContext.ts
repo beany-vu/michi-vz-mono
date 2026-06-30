@@ -9,7 +9,7 @@ export interface BuildScatterContextInput {
   title?: string;
   renderer: "svg" | "canvas";
   xAxisDataType: XaxisDataType;
-  xAxisDomain: [number, number];
+  xAxisDomain: [number, number] | string[];
   yAxisDomain: [number, number];
   points: ScatterDataPoint[];
   colorsMapping: Record<string, string>;
@@ -40,15 +40,21 @@ function pearson(points: ScatterDataPoint[]): number | null {
 export function buildScatterContext(input: BuildScatterContextInput): ScatterChartContext {
   const pts = input.points;
   const n = pts.length;
-  const xMean = n ? round(pts.reduce((a, p) => a + p.x, 0) / n) : 0;
+  // Band x is categorical: the numeric mean / Pearson over `x` (a band index) are
+  // meaningless, so suppress them and describe the category list in the summary.
+  const isBand = input.xAxisDataType === "band";
+  const xMean = !isBand && n ? round(pts.reduce((a, p) => a + p.x, 0) / n) : 0;
   const yMean = n ? round(pts.reduce((a, p) => a + p.y, 0) / n) : 0;
-  const correlation = pearson(pts);
+  const correlation = isBand ? null : pearson(pts);
 
   const titlePart = input.title ? `"${input.title}" ` : "";
   let summary = `Scatter plot ${titlePart}with ${n} point${n === 1 ? "" : "s"}.`;
-  summary += ` x ranges ${round(input.xAxisDomain[0])}–${round(input.xAxisDomain[1])}, y ${round(
-    input.yAxisDomain[0]
-  )}–${round(input.yAxisDomain[1])}.`;
+  const xPart = isBand
+    ? `x categories ${(input.xAxisDomain as string[]).join(", ")}`
+    : `x ranges ${round((input.xAxisDomain as [number, number])[0])}–${round(
+        (input.xAxisDomain as [number, number])[1]
+      )}`;
+  summary += ` ${xPart}, y ${round(input.yAxisDomain[0])}–${round(input.yAxisDomain[1])}.`;
   if (correlation !== null) {
     const strength =
       Math.abs(correlation) > 0.7 ? "strong" : Math.abs(correlation) > 0.4 ? "moderate" : "weak";
