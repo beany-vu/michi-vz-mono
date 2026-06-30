@@ -433,14 +433,22 @@ export const AreaChart = forwardRef<AreaChartHandle, AreaChartReactProps>(functi
 export type ScatterChartReactProps = ScatterChartProps & {
   isLoadingComponent?: ReactNode;
   isNodataComponent?: ReactNode;
+  /** SVG children (axis labels, reference lines) rendered inside the chart <svg>. */
+  children?: ReactNode;
 };
 
 export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartReactProps>(function ScatterChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ChartInstance<ScatterChartProps> | null>(null);
 
-  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-  const engineProps: ScatterChartProps = { ...coreProps, suppressDefaultOverlay: true };
+  const { isLoadingComponent, isNodataComponent, children, ...coreProps } = props;
+  // Serialise JSX children → SVG markup so the engine can inject them into the <svg>
+  // without a React context (matches the legacy <ScatterPlotChart>'s {children} slot).
+  const engineProps: ScatterChartProps = {
+    ...coreProps,
+    suppressDefaultOverlay: true,
+    svgChildren: children ? renderToStaticMarkup(<>{children}</>) : undefined,
+  };
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -880,5 +888,5 @@ export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>
 // mono). This alias keeps the consumer swap mechanical; the scatter crosshair /
 // dScale / pinIcon feature parity for thd's usage lands in Phase 2.
 export const ScatterPlotChart = ScatterChart;
-export type ScatterPlotChartProps = ScatterChartProps;
+export type ScatterPlotChartProps = ScatterChartReactProps;
 export type ScatterPlotChartHandle = ScatterChartHandle;

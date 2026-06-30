@@ -575,6 +575,26 @@ export interface ScatterChartProps {
   onChartDataProcessed?: (context: ChartContext) => void;
   /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
+  /** Show a crosshair overlay tracking the hovered point. Default false. */
+  showCrosshair?: boolean;
+  /** Render axis-badge value readouts at the crosshair intersection. Default false. */
+  crosshairLabels?: boolean;
+  /** "dashed" → both hover+pinned dashed; "solid" → both solid; undefined → hover dashed. */
+  crosshairLineStyle?: "solid" | "dashed";
+  /** "full" → full +through the plot; "half" → L-arm from bubble to the two axes. Default "full". */
+  crosshairSpan?: "full" | "half";
+  /** "auto" → collision-flip badges; "fixed" → anchor to bottom-left. Default "auto". */
+  crosshairLabelPlacement?: "auto" | "fixed";
+  /** Bubble-size reference legend (half-arc trio + domain labels). */
+  dScaleLegend?: { title?: string; valueFormatter?: (d: number) => string };
+  /** Override the y-axis tick count (scale.ticks(n)); falls back to `ticks`. */
+  yTicksQty?: number;
+  /** Grid lines per axis: boolean → both; { x?, y? } → per-axis (each defaults true). Default both on. */
+  showGrid?: boolean | { x?: boolean; y?: boolean };
+  /** Pass false to suppress the sticky-tooltip pin icon. Default: shown (no-op until an icon exists). */
+  pinIcon?: boolean;
+  /** Pre-serialised SVG markup injected as direct <svg> children (the React wrapper fills this from `children`). */
+  svgChildren?: string;
 }
 
 export interface ScatterChartContext extends BaseChartContext {

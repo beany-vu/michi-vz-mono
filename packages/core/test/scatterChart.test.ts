@@ -215,3 +215,55 @@ describe("mountScatterChart — band x-axis (ByPattern contract)", () => {
     host.remove();
   });
 });
+
+describe("mountScatterChart — URP features (crosshair / dScaleLegend / grid / ticks / children)", () => {
+  it("renders a .michi-vz-legend group when dScaleLegend is provided, none otherwise", () => {
+    const a = mount({ dScaleLegend: { title: "Trade", valueFormatter: (d) => `${Math.round(d)}` } });
+    expect(a.host.querySelector(".michi-vz-legend")).not.toBeNull();
+    a.chart.destroy();
+    a.host.remove();
+    const b = mount();
+    expect(b.host.querySelector(".michi-vz-legend")).toBeNull();
+    b.chart.destroy();
+    b.host.remove();
+  });
+
+  it("suppresses y grid lines when showGrid.y=false", () => {
+    const { host, chart } = mount({ showGrid: { x: true, y: false } });
+    const yAxis = host.querySelector(".mv-y-axis")!;
+    expect(yAxis.querySelectorAll(".mv-grid").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("honours yTicksQty for the y-axis tick count (fewer < more)", () => {
+    const few = mount({ yTicksQty: 2 });
+    const many = mount({ yTicksQty: 10 });
+    const count = (h: HTMLElement): number => h.querySelectorAll(".mv-y-axis .mv-axis-label").length;
+    expect(count(few.host)).toBeLessThan(count(many.host));
+    few.chart.destroy();
+    few.host.remove();
+    many.chart.destroy();
+    many.host.remove();
+  });
+
+  it("injects svgChildren into a .mv-svg-children group", () => {
+    const { host, chart } = mount({ svgChildren: '<text x="10" y="20">Hello</text>' });
+    const g = host.querySelector(".mv-svg-children")!;
+    expect(g).not.toBeNull();
+    expect(g.querySelector("text")!.textContent).toBe("Hello");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("creates a .mv-crosshair overlay in canvas mode when showCrosshair=true, none otherwise", () => {
+    const on = mount({ renderer: "canvas", showCrosshair: true });
+    expect(on.host.querySelector(".mv-crosshair")).not.toBeNull();
+    on.chart.destroy();
+    on.host.remove();
+    const off = mount({ renderer: "canvas" });
+    expect(off.host.querySelector(".mv-crosshair")).toBeNull();
+    off.chart.destroy();
+    off.host.remove();
+  });
+});

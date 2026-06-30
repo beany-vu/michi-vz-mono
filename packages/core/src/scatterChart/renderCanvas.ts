@@ -54,9 +54,9 @@ export function drawScatterCanvas(
   svg: SVGSVGElement | null,
   model: ScatterRenderModel,
   o: ScatterCanvasOptions
-): void {
+): Map<string, string> {
   const setup = setupCanvas(canvas, o.width, o.height);
-  if (!setup) return;
+  if (!setup) return new Map();
   const { ctx } = setup;
 
   const labels = [...new Set(model.points.map((p) => p.label))];
@@ -75,4 +75,6 @@ export function drawScatterCanvas(
     drawMark(ctx, p, fillColors.get(p.label) || p.color);
     ctx.restore();
   }
+  // Returned so the engine can colour the canvas-mode crosshair to match the bubble.
+  return fillColors;
 }
