@@ -113,12 +113,6 @@ pnpm verify:playground   # headless-browser self-tests (expect "N/N checks passe
 
 Monorepo: pnpm workspaces + Turborepo + Changesets + tsup. Run apps/docs via Docker.
 
-## Acknowledgments
-
-Huge thanks to [Claude](https://claude.ai) (Anthropic) for the help building out
-the drop-in compatibility layer. It tidied up the docs, pushed the test coverage
-way up, and stuck with me through a fair few stubborn chart-rendering bugs. 💛
-
 ## License
 
 MIT.
