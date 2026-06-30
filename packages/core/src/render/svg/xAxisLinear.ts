@@ -7,6 +7,7 @@
 // Generalized from the GapChart-local axis so LineChart/AreaChart (Phase 3) and
 // every later chart share ONE x-axis builder.
 import { svgEl } from "../../dom";
+import { measureLabelWidth } from "./measureLabelWidth";
 import type { ScaleLinear, ScaleTime } from "d3-scale";
 import type { Margin, XaxisDataType } from "../../types";
 
@@ -30,6 +31,32 @@ export interface XAxisLinearOptions {
   /** Render a solid (non-dashed) grid line at x=0 when 0 is in the domain. */
   showZeroLine?: boolean;
   position?: "top" | "bottom";
+  /**
+   * Measure the rendered labels and, when they would overlap horizontally, tilt
+   * them -45° (then thin to a fitting subset if still colliding). Opt-in so charts
+   * that already lay out cleanly are unaffected. Mirrors the band-axis chooseAxisMode.
+   */
+  autoRotate?: boolean;
+  /**
+   * Hard cap on labels shown. When more candidate ticks than this exist, thin to an
+   * even sample that ALWAYS keeps the first + last tick (the axis endpoints). Lets a
+   * dense series (e.g. 48 months) collapse to a clean 3–5 labels without losing the ends.
+   */
+  maxTicks?: number;
+}
+
+/** Even index sample keeping first + last; used to thin overcrowded rotated ticks. */
+function sampleEvenlyIdx<T>(arr: T[], maxCount: number): T[] {
+  if (maxCount < 2) return arr.length ? [arr[0]] : [];
+  if (arr.length <= maxCount) return arr;
+  const out: T[] = [arr[0]];
+  const step = (arr.length - 1) / (maxCount - 1);
+  for (let i = 1; i < maxCount - 1; i++) {
+    const idx = Math.round(i * step);
+    if (idx > 0 && idx < arr.length - 1) out.push(arr[idx]);
+  }
+  out.push(arr[arr.length - 1]);
+  return out;
 }
 
 // Numeric values handed to the formatter (the number itself, or epoch ms for dates).
@@ -65,14 +92,58 @@ export function renderXAxisLinear(
   const showGrid = o.showGrid !== false;
   const top = o.margin.top;
   const bottom = o.height - o.margin.bottom;
-  const values = numericTickValues(scale, o);
-  const last = values.length - 1;
 
-  values.forEach((v, i) => {
-    const px =
-      o.xAxisDataType === "number" ? (scale(v) as number) : (scale(new Date(v)) as number);
-    if (!Number.isFinite(px)) return;
-    const isZero = o.xAxisDataType === "number" && v === 0;
+  // Project each tick to a pixel x + its label up front, so autoRotate can measure
+  // widths and gaps before committing to a layout.
+  let pts = numericTickValues(scale, o)
+    .map((v) => ({
+      v,
+      px: o.xAxisDataType === "number" ? (scale(v) as number) : (scale(new Date(v)) as number),
+      label: o.format(v),
+    }))
+    .filter((p) => Number.isFinite(p.px));
+
+  // Adaptive density (opt-in via autoRotate): show ALL candidate labels while they
+  // fit — horizontal first, then tilted -45° (which packs much denser) — and only
+  // thin to a small set (keeping the first + last tick) once even the rotated labels
+  // would collide. A spacious axis therefore keeps every label; a crammed one (e.g.
+  // 48 months) drops to ~maxTicks.
+  let rotated = false;
+  if (o.autoRotate && pts.length > 1) {
+    // Min horizontal spacing two -45° labels need before their text overlaps. A
+    // rotated label's neighbours stack diagonally, so this is ~text-height-driven
+    // and far smaller than a horizontal label's full width.
+    const ROTATED_MIN_SPACING = 18;
+    const pad = 6;
+    const measure = (): { maxW: number; minGap: number } => {
+      let maxW = 0;
+      let minGap = Infinity;
+      for (let i = 0; i < pts.length; i++) {
+        maxW = Math.max(maxW, measureLabelWidth(pts[i].label));
+        if (i > 0) minGap = Math.min(minGap, Math.abs(pts[i].px - pts[i - 1].px));
+      }
+      return { maxW, minGap };
+    };
+    let { maxW, minGap } = measure();
+    if (maxW + pad <= minGap) {
+      rotated = false; // every label fits horizontally — show them all
+    } else if (minGap >= ROTATED_MIN_SPACING) {
+      rotated = true; // every label fits once tilted -45° — show them all, rotated
+    } else {
+      // Too dense even rotated → thin to a small set (first + last preserved), then
+      // re-measure: the surviving few usually fit horizontally.
+      pts = sampleEvenlyIdx(pts, Math.max(2, o.maxTicks ?? 5));
+      ({ maxW, minGap } = measure());
+      rotated = maxW + pad > minGap;
+    }
+  } else if (o.maxTicks && o.maxTicks >= 2 && pts.length > o.maxTicks) {
+    // autoRotate off but an explicit hard cap was requested: thin, keep first+last.
+    pts = sampleEvenlyIdx(pts, o.maxTicks);
+  }
+
+  const last = pts.length - 1;
+  pts.forEach((p, i) => {
+    const isZero = o.xAxisDataType === "number" && p.v === 0;
     const tickClass =
       "mv-tick" +
       (i === 0 ? " mv-tick-first" : "") +
@@ -82,8 +153,8 @@ export function renderXAxisLinear(
     if (showGrid) {
       const grid = svgEl("line", {
         class: `mv-grid ${tickClass}`,
-        x1: px,
-        x2: px,
+        x1: p.px,
+        x2: p.px,
         y1: top,
         y2: bottom,
       });
@@ -93,17 +164,30 @@ export function renderXAxisLinear(
     }
 
     g.appendChild(
-      svgEl("circle", { class: "mv-tick-dot", cx: px, cy: bottom + 8, r: 2, fill: "lightgray" })
+      svgEl("circle", { class: "mv-tick-dot", cx: p.px, cy: bottom + 8, r: 2, fill: "lightgray" })
     );
 
-    const label = svgEl("text", {
-      class: "mv-axis-label",
-      x: px,
-      y: bottom + 26,
-      "text-anchor": "middle",
-    });
-    label.textContent = o.format(v);
-    g.appendChild(label);
+    if (rotated) {
+      // Tilt -45° trailing down-left from the tick (matches the band axis).
+      const tickG = svgEl("g", { class: "mv-tick", transform: `translate(${p.px}, ${bottom})` });
+      const label = svgEl("text", {
+        class: "mv-axis-label",
+        transform: "translate(0, 18) rotate(-45)",
+        "text-anchor": "end",
+      });
+      label.textContent = p.label;
+      tickG.appendChild(label);
+      g.appendChild(tickG);
+    } else {
+      const label = svgEl("text", {
+        class: "mv-axis-label",
+        x: p.px,
+        y: bottom + 26,
+        "text-anchor": "middle",
+      });
+      label.textContent = p.label;
+      g.appendChild(label);
+    }
   });
 
   parent.appendChild(g);

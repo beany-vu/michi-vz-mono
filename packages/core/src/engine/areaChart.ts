@@ -12,6 +12,7 @@ import { processAreaChartData } from "../areaChart/data";
 import { buildAreaColors } from "../areaChart/colors";
 import { createAreaScales } from "../areaChart/scales";
 import { areaProjectX } from "../areaChart/geometry";
+import { parseXValue } from "../lineChart/lineUtils";
 import { buildAreaRenderModel } from "../areaChart/renderModel";
 import { renderAreaSvg } from "../areaChart/renderSvg";
 import { drawAreaCanvas } from "../areaChart/renderCanvas";
@@ -52,7 +53,7 @@ function resolve(p: AreaChartProps): Resolved {
     width: p.width ?? 900,
     height: p.height ?? 480,
     margin: p.margin ?? DEFAULT_MARGIN,
-    ticks: p.ticks ?? 5,
+    ticks: p.ticks ?? 10,
     renderer: p.renderer ?? "svg",
     enableTransitions: p.enableTransitions ?? true,
     forcePercentageScale: p.forcePercentageScale ?? false,
@@ -110,7 +111,8 @@ export function mountAreaChart(
     tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
     tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
     const htmlStr = baseProps.tooltipFormatter
-      ? baseProps.tooltipFormatter(row, key, baseProps.series)
+      ? // Legacy arg order: (datum, fullSeries, key) — consumers read d[key] + series.
+        baseProps.tooltipFormatter(row, baseProps.series, key)
       : `<strong>${key}</strong><br/>${String(row.date)}: ${Number(row[key]) || 0}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
@@ -232,6 +234,21 @@ export function mountAreaChart(
     // ----- SVG layer -----
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
+    // Legacy parity: NO vertical grid lines, and a clean SMALL set of date labels
+    // that always includes the FIRST and LAST period (axis endpoints). Feed every
+    // period as a candidate; maxTicks thins a dense monthly series (e.g. 48) down to
+    // ~3–5 evenly-spaced labels keeping both ends; autoRotate tilts only if the kept
+    // labels still collide. A short yearly series (≤ maxTicks) shows every year.
+    const periodTicks =
+      xAxisDataType === "date_annual" || xAxisDataType === "date_monthly"
+        ? Array.from(new Set(props.series.map((s) => String(s.date)))).map((d) =>
+            parseXValue(d, xAxisDataType)
+          )
+        : undefined;
+    const plotW = r.width - r.margin.left - r.margin.right;
+    // ~5 labels (first + last + 3 interior) on a normal-width chart; drop to 3 only
+    // when the plot is genuinely narrow. autoRotate handles any residual overlap.
+    const xMaxTicks = plotW < 480 ? 3 : 5;
     renderXAxisLinear(svg, scales.xScale, {
       width: r.width,
       height: r.height,
@@ -239,8 +256,11 @@ export function mountAreaChart(
       xAxisDataType,
       format: (v) => xFormat(v),
       ticks: r.ticks,
-      tickValues: props.tickValues,
+      tickValues: props.tickValues ?? periodTicks,
       enableExplicitTickValues: true,
+      showGrid: false,
+      autoRotate: true,
+      maxTicks: xMaxTicks,
     });
     renderYAxisLinear(svg, scales.yScale, {
       width: r.width,

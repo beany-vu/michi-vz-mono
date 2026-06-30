@@ -439,7 +439,7 @@ export interface AreaChartProps {
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (row: AreaDataRow, key: string, series: AreaDataRow[]) => string;
+  tooltipFormatter?: (row: AreaDataRow, series: AreaDataRow[], key: string) => string;
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on the data; default = empty data. */
