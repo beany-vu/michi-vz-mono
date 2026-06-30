@@ -9,6 +9,7 @@ import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatter
 import { renderTitle, renderXAxisLinear, renderXAxisBand, renderYAxisLinear } from "../render/svg";
 import { renderDScaleLegend } from "../render/svg/dScaleLegend";
 import { drawCrosshair, clearCrosshair } from "../render/svg/scatterCrosshair";
+import { makeSvgGroupDraggable } from "../render/svg/draggable";
 import type { ScaleBand, ScaleLinear, ScaleTime } from "d3-scale";
 import { processScatterData } from "../scatterChart/data";
 import { buildScatterColors } from "../scatterChart/colors";
@@ -140,6 +141,10 @@ export function mountScatterChart(
   // Probe-resolved canvas fill colours (label → colour), so the crosshair matches
   // the hovered bubble's actual displayed colour (set by the consumer's CSS).
   let lastFillColors: Map<string, string> = new Map();
+  // Draggable dScaleLegend: the offset persists across re-renders; the flag suppresses
+  // the canvas hover hit-test while the legend is being dragged.
+  let legendOffset = { x: 0, y: 0 };
+  let legendDragging = false;
 
   const showTooltip = (p: ScatterDataPoint, ev: MouseEvent): void => {
     const rect = host.getBoundingClientRect();
@@ -158,7 +163,7 @@ export function mountScatterChart(
 
   // Canvas-mode hit-test (topmost = smallest, model is largest-first → scan reverse).
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (resolve(baseProps).renderer !== "canvas" || !model || sticky || legendDragging) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -329,10 +334,20 @@ export function mountScatterChart(
     }
 
     // Bubble-size reference legend (top-right). Renders in both SVG and canvas modes.
+    // Draggable so it can be moved off the bubbles; the offset persists across renders.
     if (props.dScaleLegend && points.length > 0 && !props.isLoading) {
-      renderDScaleLegend(svg, scales.sizeScale, r.sizeRange, props.dScaleLegend, {
+      const legendG = renderDScaleLegend(svg, scales.sizeScale, r.sizeRange, props.dScaleLegend, {
         width: r.width,
         height: r.height,
+      });
+      makeSvgGroupDraggable(legendG, {
+        offset: legendOffset,
+        onMove: (o) => {
+          legendOffset = o;
+        },
+        onDragStateChange: (d) => {
+          legendDragging = d;
+        },
       });
     }
 

@@ -266,4 +266,16 @@ describe("mountScatterChart — URP features (crosshair / dScaleLegend / grid / 
     off.chart.destroy();
     off.host.remove();
   });
+
+  it("makes the dScaleLegend draggable (grab cursor + inline transform)", () => {
+    const { host, chart } = mount({
+      dScaleLegend: { title: "T", valueFormatter: (d) => `${Math.round(d)}` },
+    });
+    const legend = host.querySelector(".michi-vz-legend") as SVGGElement;
+    expect(legend).not.toBeNull();
+    expect(legend.style.cursor).toBe("grab");
+    expect(legend.style.transform).toContain("translate");
+    chart.destroy();
+    host.remove();
+  });
 });

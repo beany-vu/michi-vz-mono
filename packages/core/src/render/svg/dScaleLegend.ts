@@ -33,7 +33,7 @@ export function renderDScaleLegend(
   sizeRange: [number, number],
   cfg: DScaleLegendConfig,
   o: DScaleLegendOptions
-): void {
+): SVGGElement {
   const px = o.width - 100;
   const py = o.height / 3;
   const [rMin, rMax] = sizeRange;
@@ -65,4 +65,5 @@ export function renderDScaleLegend(
   });
 
   parent.appendChild(g);
+  return g;
 }
