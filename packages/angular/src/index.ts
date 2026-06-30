@@ -312,7 +312,9 @@ export function applyRibbonChartProps(el: RibbonChartElement, props: RibbonChart
 /** Apply engine props onto a <michi-vz-radar-chart> element. */
 export function applyRadarChartProps(el: RadarChartElement, props: RadarChartProps): void {
   el.series = props.series;
-  el.axes = props.axes;
+  // `axes` became optional in the radar drop-in (the engine derives it from
+  // poles.labels when absent), so guard the assignment like every other optional prop.
+  if (props.axes !== undefined) el.axes = props.axes;
   if (props.title !== undefined) el.chartTitle = props.title;
   if (props.width !== undefined) el.width = props.width;
   if (props.height !== undefined) el.height = props.height;

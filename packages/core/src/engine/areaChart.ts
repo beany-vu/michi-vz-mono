@@ -15,6 +15,7 @@ import { areaProjectX } from "../areaChart/geometry";
 import { parseXValue } from "../lineChart/lineUtils";
 import { buildAreaRenderModel } from "../areaChart/renderModel";
 import { renderAreaSvg } from "../areaChart/renderSvg";
+import { placeTooltip } from "../render/placeTooltip";
 import { drawAreaCanvas } from "../areaChart/renderCanvas";
 import { buildAreaContext } from "../context/buildAreaContext";
 import { renderA11yMirror } from "../context/a11yMirror";
@@ -107,15 +108,15 @@ export function mountAreaChart(
   let hoverLine: SVGLineElement | null = null;
 
   const showTooltip = (row: AreaDataRow, key: string, ev: MouseEvent): void => {
-    const rect = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
     const htmlStr = baseProps.tooltipFormatter
       ? // Legacy arg order: (datum, fullSeries, key) — consumers read d[key] + series.
         baseProps.tooltipFormatter(row, baseProps.series, key)
       : `<strong>${key}</strong><br/>${String(row.date)}: ${Number(row[key]) || 0}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    // Position AFTER content+visible so placeTooltip can measure offsetWidth/Height
+    // and flip left near the host's right edge (avoid sliding under the sidebar).
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

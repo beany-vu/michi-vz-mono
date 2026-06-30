@@ -22,6 +22,7 @@ import { lttb } from "../lineChart/lttb";
 import { projectX } from "../lineChart/geometry";
 import { parseXValue } from "../lineChart/lineUtils";
 import { renderLineSvg } from "../lineChart/renderSvg";
+import { placeTooltip } from "../render/placeTooltip";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
 import { buildLineContext } from "../context/buildLineContext";
 import { buildLegendData } from "../context/legend";
@@ -131,12 +132,9 @@ export function mountLineChart(
   };
 
   const showTooltip = (label: string, ev: MouseEvent): void => {
-    const rect = host.getBoundingClientRect();
     const svgRect = svg.getBoundingClientRect();
     const hit = findPoint(label, ev.clientX - svgRect.left);
     if (!hit) return;
-    tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
     const item = baseProps.dataSet.find((s) => s.label === label);
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(hit.d, hit.series, baseProps.dataSet)
@@ -144,6 +142,9 @@ export function mountLineChart(
     void item;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    // Position AFTER content+visible so placeTooltip can measure offsetWidth/Height
+    // and flip left near the host's right edge (avoid sliding under the sidebar).
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;
@@ -316,6 +317,26 @@ export function mountLineChart(
         showGrid: props.showGridLines !== false,
         highlightZeroLine: props.highlightZeroLine !== false,
       });
+    }
+
+    // Consumer-supplied SVG children (axis-title text, reference lines) — rendered
+    // after the axes, mirroring the legacy <LineChart>'s `{children}` slot. The source
+    // is the React wrapper's renderToStaticMarkup(children). DOMPurify strips a bare
+    // <text> (mXSS guard) unless it sits under an <svg> root, so sanitise the markup
+    // wrapped in one, then lift the children into the chart's <svg>. (Same as scatter.)
+    if (props.svgChildren) {
+      const childG = svgEl("g", { class: "mv-svg-children" });
+      const clean = DOMPurify.sanitize(
+        `<svg xmlns="http://www.w3.org/2000/svg">${props.svgChildren}</svg>`,
+        { USE_PROFILES: { svg: true } }
+      );
+      const tmp = svgEl("g");
+      tmp.innerHTML = clean;
+      const inner = tmp.querySelector("svg");
+      if (inner) {
+        while (inner.firstChild) childG.appendChild(inner.firstChild);
+      }
+      svg.appendChild(childG);
     }
 
     if (r.renderer !== "canvas" && dataState !== "nodata") {

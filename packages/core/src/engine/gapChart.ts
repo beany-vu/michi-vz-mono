@@ -12,7 +12,8 @@ import { buildGapColors } from "../gapChart/colors";
 import { createGapScales } from "../gapChart/scales";
 import { buildGapRenderModel } from "../gapChart/renderModel";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
-import { renderGapSvg } from "../gapChart/renderSvg";
+import { renderGapSvg, buildGapLegendItems, renderGapLegend } from "../gapChart/renderSvg";
+import { placeTooltip } from "../render/placeTooltip";
 import { drawGapCanvas } from "../gapChart/renderCanvas";
 import { buildGapContext } from "../context/buildContext";
 import { renderA11yMirror } from "../context/a11yMirror";
@@ -106,9 +107,6 @@ export function mountGapChart(
   let lastContextSig = "";
 
   const showTooltip = (d: GapDataItem, ev: MouseEvent): void => {
-    const rect = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(d)
       : `<strong>${d.label}</strong><br/>Value 1: ${d.value1}<br/>Value 2: ${d.value2}<br/>Difference: ${
@@ -116,6 +114,9 @@ export function mountGapChart(
         }`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    // Position AFTER content+visible so placeTooltip can measure offsetWidth/Height
+    // and flip left near the host's right edge (avoid sliding under the sidebar).
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;
@@ -245,7 +246,7 @@ export function mountGapChart(
       format: (v) => xFormat(v),
       ticks: r.ticks,
       tickValues: props.tickValues,
-      enableExplicitTickValues: true,
+      enableExplicitTickValues: props.enableExplicitTickValues ?? true,
     });
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
@@ -304,6 +305,26 @@ export function mountGapChart(
     } else if (canvas) {
       canvas.remove();
       canvas = null;
+    }
+
+    // ----- Built-in legend (SVG layer, both renderers) -----
+    // Legacy parity: render only when opted in AND shape labels are supplied. thd's
+    // TradeSimulationSnapshot keeps it off on screen (its own legend sits above the
+    // chart) and re-shows it during PDF capture via showLegend={isDownloadingChart}.
+    if (props.showLegend && props.shapesLabelsMapping) {
+      const legendItems = buildGapLegendItems(
+        props.shapesLabelsMapping,
+        r.shapeValue1,
+        r.shapeValue2,
+        r.colorMode,
+        props.shapeColorsMapping
+      );
+      renderGapLegend(svg, legendItems, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        legendAlign: props.legendAlign ?? "left",
+      });
     }
 
     // ----- Context (renderer-agnostic) + a11y + warnings -----

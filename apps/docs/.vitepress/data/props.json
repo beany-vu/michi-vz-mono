@@ -412,6 +412,14 @@
           "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
           "default": "",
           "common": true
+        },
+        {
+          "name": "svgChildren",
+          "type": "string",
+          "optional": true,
+          "description": "Pre-serialised SVG markup injected as direct <svg> children (axis-title text, reference lines). The React wrapper fills this from `children`; mirrors the legacy <LineChart>'s `{children}` slot.",
+          "default": "",
+          "common": false
         }
       ]
     },
@@ -3138,6 +3146,14 @@
           "type": "Array<number | Date>",
           "optional": true,
           "description": "Explicit tick values, overriding the generated ones",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "enableExplicitTickValues",
+          "type": "boolean",
+          "optional": true,
+          "description": "When false, ignore `tickValues` for tick PLACEMENT and let d3 pick nice ticks (the explicit values still feed the scale domain). Default true. Legacy parity.",
           "default": "",
           "common": false
         },

@@ -36,6 +36,15 @@ describe("mountLineChart (jsdom)", () => {
     host.remove();
   });
 
+  it("injects svgChildren (axis-title text) into a .mv-svg-children group", () => {
+    const { host, chart } = mount({ svgChildren: '<text x="50" y="25">Trade after policy change</text>' });
+    const g = host.querySelector(".mv-svg-children")!;
+    expect(g).not.toBeNull();
+    expect(g.querySelector("text")!.textContent).toBe("Trade after policy change");
+    chart.destroy();
+    host.remove();
+  });
+
   it("draws a dashed run when detectGaps flags a gap", () => {
     const { host, chart } = mount({
       dataSet: [{ label: "Gappy", color: "#00f", series: [

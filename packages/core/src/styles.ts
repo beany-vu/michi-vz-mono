@@ -27,10 +27,14 @@ export const CORE_CSS = `
 .michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-width: 1; stroke-dasharray: none; }
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
-  font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-ink, #2a1c15);
+  /* Same configurable colour as the x-axis tick labels (.mv-axis-label uses
+     --michi-vz-muted) so both axes read identically — NOT the darker --michi-vz-ink. */
+  font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-muted, #666);
   /* Wrap long category labels (legacy behaviour) instead of single-line ellipsis;
-     the foreignObject spans the band height so wrapped lines fit the row. */
-  white-space: normal; overflow: hidden; line-height: 1.15;
+     overflow:visible (the foreignObject is also overflow:visible) lets a centred
+     multi-line label spill into the empty inter-band gaps instead of clipping at the
+     band height — worst case the TOP band, whose label was cut off. */
+  white-space: normal; overflow: visible; line-height: 1.15;
 }
 /* Treemap / stack / annotation labels: font-size lives in CSS (NOT inline) so this
    one var controls them; weights stay here too. */

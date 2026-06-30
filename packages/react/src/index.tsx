@@ -303,6 +303,8 @@ export const GapChart = forwardRef<GapChartHandle, GapChartReactProps>(function 
 export type LineChartReactProps = LineChartProps & {
   isLoadingComponent?: ReactNode;
   isNodataComponent?: ReactNode;
+  /** SVG children (axis-title text, reference lines) rendered inside the chart <svg>. */
+  children?: ReactNode;
 };
 
 export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(function LineChart(props, ref) {
@@ -311,12 +313,15 @@ export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(functi
   // Subscribe to shared state → re-render (and re-merge) when colours/highlight change.
   const shared = useChartContext();
 
-  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+  const { isLoadingComponent, isNodataComponent, children, ...coreProps } = props;
   // Merge shared state into props (faithful to the legacy context merge), then
   // suppress the engine's vanilla overlay — React renders the overlay node below.
+  // Serialise JSX children → SVG markup so the engine can inject them into the <svg>
+  // without a React context (matches the legacy <LineChart>'s {children} slot).
   const engineProps: LineChartProps = {
     ...resolveEffectiveProps(coreProps, shared),
     suppressDefaultOverlay: true,
+    svgChildren: children ? renderToStaticMarkup(<>{children}</>) : undefined,
   };
 
   useEffect(() => {

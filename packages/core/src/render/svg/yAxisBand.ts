@@ -58,13 +58,17 @@ export function renderYAxisBand(
 
     // Span the full band height so a wrapped multi-line label fits the row; the
     // flex-centered div keeps the text at the band centre (same as before), so any
-    // tickLabelOffset still nudges from centre.
+    // tickLabelOffset still nudges from centre. overflow:visible (paired with the
+    // .mv-ylabel div + the overflow:visible svg) lets a label taller than the band
+    // spill into the empty inter-band gaps rather than clip — the foreignObject would
+    // otherwise clip to its viewport, cutting off long labels (worst at the top band).
     const fo = svgEl("foreignObject", {
       class: "mv-ylabel-fo",
       x: o.margin.left - tickHtmlWidth + (o.tickLabelOffset?.x ?? 0),
       y: (scale(label) ?? center - bandwidth / 2) + (o.tickLabelOffset?.y ?? 0),
       width: tickHtmlWidth,
       height: bandwidth,
+      style: "overflow: visible",
     });
     const div = htmlEl("div", { class: "mv-ylabel", title: label });
     // Text in a <span> so a consumer's legacy `.tick-html span` rules (nowrap +

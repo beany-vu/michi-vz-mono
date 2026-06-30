@@ -12,6 +12,7 @@ import { createBarBellScales } from "../barBell/scales";
 import { buildBarBellRenderModel } from "../barBell/renderModel";
 import type { BarBellSegment } from "../barBell/renderModel";
 import { renderBarBellSvg } from "../barBell/renderSvg";
+import { placeTooltip } from "../render/placeTooltip";
 import { drawBarBellCanvas } from "../barBell/renderCanvas";
 import { buildBarBellContext } from "../context/buildBarBellContext";
 import { renderA11yMirror } from "../context/a11yMirror";
@@ -108,15 +109,15 @@ export function mountBarBellChart(
   let model: ReturnType<typeof buildBarBellRenderModel> | null = null;
 
   const showTooltip = (seg: BarBellSegment, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     const row = baseProps.dataSet.find((d) => String(d.date) === seg.date) ?? baseProps.dataSet[0];
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(row, seg.key, seg.value)
       : `<strong>${seg.key}</strong><br/>${seg.date}: ${seg.value}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    // Position AFTER content+visible so placeTooltip can measure offsetWidth/Height
+    // and flip left near the host's right edge (avoid sliding under the sidebar).
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

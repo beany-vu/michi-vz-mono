@@ -5,6 +5,7 @@ import { buildGapContext } from "../src/context/buildContext";
 import { checkGapData } from "../src/validate/dataWarnings";
 import { sanitizeForClassName } from "../src/math/sanitize";
 import { mountGapChart } from "../src/engine/gapChart";
+import { buildGapLegendItems } from "../src/gapChart/renderSvg";
 import type { GapChartProps, GapDataItem } from "../src/types";
 
 const sample: GapDataItem[] = [
@@ -88,6 +89,24 @@ describe("buildGapContext", () => {
     expect(beta.disabled).toBe(true);
     expect(beta.dataLabelSafe).toBe("Beta");
   });
+
+  it("emits renderedData keyed by label (legacy useGapChartMetadata parity)", () => {
+    // thd's TradeSimulationSnapshot reads value1/value2 off renderedData to size its
+    // x-axis ticks. Shape must be { [label]: [item] } — a single-element array per row.
+    const r = processGapChartData(sample, undefined, []);
+    const ctx = buildGapContext({
+      title: "Demo",
+      renderer: "svg",
+      xAxisDataType: "number",
+      xAxisDomain: r.xAxisDomain,
+      processedDataSet: r.processedDataSet,
+      colorsMapping: {},
+    });
+    expect(Object.keys(ctx.renderedData).sort()).toEqual(["Alpha One", "Beta", "Gamma"]);
+    expect(ctx.renderedData["Beta"]).toHaveLength(1);
+    expect(ctx.renderedData["Beta"][0].value1).toBe(50);
+    expect(ctx.renderedData["Beta"][0].value2).toBe(20);
+  });
 });
 
 describe("checkGapData", () => {
@@ -169,5 +188,107 @@ describe("mountGapChart (jsdom)", () => {
     chart.destroy();
     expect(host.querySelectorAll("svg").length).toBe(0);
     host.remove();
+  });
+});
+
+describe("buildGapLegendItems (port of useGapChartLegend)", () => {
+  it("builds value1/gap/value2 in order, colouring from shapeColorsMapping in shape mode", () => {
+    const items = buildGapLegendItems(
+      { value1: "Baseline", gap: "Change", value2: "After" },
+      "circle",
+      "square",
+      "shape",
+      { value1: "#17becf", gap: "#d2d7dd", value2: "#673ab7" }
+    );
+    expect(items.map((i) => i.type)).toEqual(["value1", "gap", "value2"]);
+    expect(items.map((i) => i.color)).toEqual(["#17becf", "#d2d7dd", "#673ab7"]);
+    expect(items[0].shape).toBe("circle");
+    expect(items[2].shape).toBe("square");
+  });
+
+  it("falls back to legacy defaults in label mode (#666 markers, #999 gap)", () => {
+    const items = buildGapLegendItems(
+      { value1: "A", gap: "G", value2: "B" },
+      "circle",
+      "circle",
+      "label"
+    );
+    expect(items.map((i) => i.color)).toEqual(["#666", "#999", "#666"]);
+  });
+
+  it("skips roles with a falsy label (e.g. value2:'' in percentage mode) and returns [] when no mapping", () => {
+    const items = buildGapLegendItems({ value1: "Only", value2: "" }, "circle", "square", "shape", {
+      value1: "#abc",
+    });
+    expect(items.map((i) => i.type)).toEqual(["value1"]);
+    expect(buildGapLegendItems(undefined, "circle", "circle", "shape")).toEqual([]);
+  });
+});
+
+describe("mountGapChart legend (showLegend)", () => {
+  function mountLegend(extra: Partial<GapChartProps> = {}) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGapChart(host, {
+      dataSet: sample,
+      width: 600,
+      height: 300,
+      colorMode: "shape",
+      shapeColorsMapping: { value1: "#17becf", value2: "#673ab7" },
+      shapesLabelsMapping: { value1: "Baseline trade", value2: "Trade after policy change" },
+      shapeValue1: "circle",
+      shapeValue2: "square",
+      ...extra,
+    });
+    return { host, chart };
+  }
+
+  it("renders the legend with shape colours + labels when showLegend=true", () => {
+    const { host, chart } = mountLegend({ showLegend: true });
+    const legend = host.querySelector(".gap-legend")!;
+    expect(legend).not.toBeNull();
+    const labels = Array.from(legend.querySelectorAll("foreignObject div")).map((d) => d.textContent);
+    expect(labels).toEqual(["Baseline trade", "Trade after policy change"]);
+    // value1 = circle path in its mapped colour; value2 = square rect in its mapped colour
+    expect(legend.querySelector('path[fill="#17becf"]')).not.toBeNull();
+    expect(legend.querySelector('rect[fill="#673ab7"]')).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("renders no legend by default / when showLegend is false", () => {
+    const a = mountLegend();
+    expect(a.host.querySelector(".gap-legend")).toBeNull();
+    a.chart.destroy();
+    a.host.remove();
+    const b = mountLegend({ showLegend: false });
+    expect(b.host.querySelector(".gap-legend")).toBeNull();
+    b.chart.destroy();
+    b.host.remove();
+  });
+});
+
+describe("mountGapChart enableExplicitTickValues threading", () => {
+  function labelCount(enableExplicitTickValues?: boolean) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGapChart(host, {
+      dataSet: sample,
+      width: 600,
+      height: 300,
+      xAxisDataType: "number",
+      tickValues: [7, 23, 41],
+      enableExplicitTickValues,
+    });
+    const n = host.querySelectorAll(".mv-x-axis .mv-axis-label").length;
+    chart.destroy();
+    host.remove();
+    return n;
+  }
+
+  it("honours explicit tickValues by default (true); lets d3 choose ticks when false", () => {
+    expect(labelCount(true)).toBe(3); // exactly the 3 supplied ticks
+    expect(labelCount()).toBe(3); // default true
+    expect(labelCount(false)).not.toBe(3); // d3-computed, ignores the explicit values
   });
 });

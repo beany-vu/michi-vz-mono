@@ -73,6 +73,10 @@ export function buildGapContext(input: BuildContextInput): GapChartContext {
     yAxis: { labels: series.map((s) => s.label) },
     series,
     stats: { count: series.length, maxGap, minGap, meanGap, totalValue1, totalValue2 },
+    // Legacy-parity (useGapChartMetadata): rows keyed by label, each a single-element
+    // array of the rendered datum. thd's TradeSimulationSnapshot reads value1/value2
+    // off this to size its x-axis ticks; omitting it collapsed the axis to [0,0].
+    renderedData: Object.fromEntries(input.processedDataSet.map((d) => [d.label, [d]])),
     colorsMapping: input.colorsMapping,
     legendData,
     summary,

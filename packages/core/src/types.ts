@@ -93,6 +93,9 @@ export interface GapChartProps {
   ticks?: number;
   /** Explicit tick values, overriding the generated ones */
   tickValues?: Array<number | Date>;
+  /** When false, ignore `tickValues` for tick PLACEMENT and let d3 pick nice ticks
+   * (the explicit values still feed the scale domain). Default true. Legacy parity. */
+  enableExplicitTickValues?: boolean;
   /** Width in px of the HTML y-axis label box, which ellipsizes longer labels (default 100) */
   tickHtmlWidth?: number;
   /** Corner radius in px for square markers (default 2) */
@@ -207,6 +210,10 @@ export interface GapChartContext extends BaseChartContext {
     totalValue1: number;
     totalValue2: number;
   };
+  /** Legacy-parity (useGapChartMetadata): the rendered rows keyed by label
+   * ({ [label]: [item] }). thd's TradeSimulationSnapshot reads this off
+   * onChartDataProcessed(ctx) to compute its x-axis tick values. */
+  renderedData: Record<string, GapDataItem[]>;
 }
 
 // ---- LineChart ----
@@ -336,6 +343,10 @@ export interface LineChartProps {
   onChartDataProcessed?: (context: ChartContext) => void;
   /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
+  /** Pre-serialised SVG markup injected as direct <svg> children (axis-title text,
+   * reference lines). The React wrapper fills this from `children`; mirrors the
+   * legacy <LineChart>'s `{children}` slot. */
+  svgChildren?: string;
 }
 
 export interface LineSeriesContext {
