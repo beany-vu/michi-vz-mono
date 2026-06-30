@@ -107,6 +107,12 @@ export function mountVerticalStackBarChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let lastLegendSent = "";
+  // Idempotency guard for onChartDataProcessed: re-firing an unchanged context
+  // every render loops "Maximum update depth" in any consumer that dispatches on
+  // each call — fatal under Tariff Structure, where ByTrend runs TWO colour
+  // writers (useColorV2 for the fixed buckets + onChartDataProcessed=setMetadata)
+  // so the second writer never converges. Mirrors comparableHorizontalBarChart.
+  let lastContextSig = "";
   let model: ReturnType<typeof buildStackRenderModel> | null = null;
 
   const showTooltip = (rect: StackRectData, ev: MouseEvent): void => {
@@ -415,7 +421,11 @@ export function mountVerticalStackBarChart(
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    props.onChartDataProcessed?.(context);
+    const contextSig = JSON.stringify(context);
+    if (contextSig !== lastContextSig) {
+      lastContextSig = contextSig;
+      props.onChartDataProcessed?.(context);
+    }
 
     // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.

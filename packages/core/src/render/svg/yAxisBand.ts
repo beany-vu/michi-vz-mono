@@ -53,12 +53,15 @@ export function renderYAxisBand(
 
     if (o.hideTickLabels) continue;
 
+    // Span the full band height so a wrapped multi-line label fits the row; the
+    // flex-centered div keeps the text at the band centre (same as before), so any
+    // tickLabelOffset still nudges from centre.
     const fo = svgEl("foreignObject", {
       class: "mv-ylabel-fo",
       x: o.margin.left - tickHtmlWidth + (o.tickLabelOffset?.x ?? 0),
-      y: center - 10 + (o.tickLabelOffset?.y ?? 0),
+      y: (scale(label) ?? center - bandwidth / 2) + (o.tickLabelOffset?.y ?? 0),
       width: tickHtmlWidth,
-      height: 20,
+      height: bandwidth,
     });
     const div = htmlEl("div", { class: "mv-ylabel", title: label });
     div.textContent = format(label);

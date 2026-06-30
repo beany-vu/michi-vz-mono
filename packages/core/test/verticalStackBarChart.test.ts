@@ -34,6 +34,26 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     host.remove();
   });
 
+  it("onChartDataProcessed is idempotent — fires once per distinct context (no dispatch loop)", () => {
+    // ByTrend (Tariff Structure) runs TWO colour writers — useColorV2 for the
+    // fixed buckets AND onChartDataProcessed=setMetadata. If the engine re-emits
+    // an unchanged context every render, the second writer never converges →
+    // "Maximum update depth exceeded". The guard emits only when the serialized
+    // context actually changes. Mirrors comparableHorizontalBarChart.
+    let calls = 0;
+    const onChartDataProcessed = () => {
+      calls++;
+    };
+    const { host, chart } = mount({ onChartDataProcessed });
+    expect(calls).toBe(1); // initial render
+    chart.update({ dataSet: sample, title: "Demo", width: 600, height: 360, onChartDataProcessed });
+    expect(calls).toBe(1); // unchanged context → NOT re-emitted
+    chart.update({ dataSet: sample.slice(0, 1), title: "Demo", width: 600, height: 360, onChartDataProcessed });
+    expect(calls).toBe(2); // changed data → emitted once more
+    chart.destroy();
+    host.remove();
+  });
+
   it("does NOT paint cross-DataSet stub rects even with missingDataMarker (the guard)", () => {
     const { host, chart } = mount({ missingDataMarker: { height: 2 } });
     // Without the hasOwnProperty guard this would be 8 (4 real + 4 phantom stubs).

@@ -11,7 +11,9 @@
 export const CORE_CSS = `
 .michi-vz {
   position: relative;
-  font-family: var(--michi-vz-font-family, system-ui, -apple-system, sans-serif);
+  /* Default to INHERIT the host/page font (e.g. an app's Museo) when no fontFamily
+     prop is set — the canvas reads the computed family too. Pass fontFamily to pin it. */
+  font-family: var(--michi-vz-font-family, inherit);
   /* One global knob for ALL chart text (SVG + canvas). Per-role sizes scale off it. */
   font-size: var(--michi-vz-font-size, 12px);
 }
@@ -26,7 +28,9 @@ export const CORE_CSS = `
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
   font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-ink, #2a1c15);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  /* Wrap long category labels (legacy behaviour) instead of single-line ellipsis;
+     the foreignObject spans the band height so wrapped lines fit the row. */
+  white-space: normal; overflow: hidden; line-height: 1.15;
 }
 /* Treemap / stack / annotation labels: font-size lives in CSS (NOT inline) so this
    one var controls them; weights stay here too. */
