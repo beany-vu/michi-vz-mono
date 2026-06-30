@@ -43,16 +43,21 @@ export function renderYAxisBand(
   for (const label of scale.domain()) {
     const center = (scale(label) || 0) + bandwidth / 2;
 
-    g.appendChild(
-      svgEl("line", {
-        class: "mv-grid",
-        x1: o.margin.left,
-        x2: gridRight,
-        y1: center,
-        y2: center,
-        stroke: o.showGrid ? undefined : "transparent",
-      })
-    );
+    // Only emit the line when grid is on. The old `stroke="transparent"` fallback did
+    // NOT hide it: the `.mv-grid` CSS rule (stroke: lightgray) overrides a presentation
+    // attribute, so showGrid:false still drew a dashed line under each band. Match the
+    // x-axis (which appends the line only inside `if (showGrid)`) — showGrid is now authoritative.
+    if (o.showGrid) {
+      g.appendChild(
+        svgEl("line", {
+          class: "mv-grid",
+          x1: o.margin.left,
+          x2: gridRight,
+          y1: center,
+          y2: center,
+        })
+      );
+    }
 
     if (o.hideTickLabels) continue;
 

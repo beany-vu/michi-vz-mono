@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mountComparableHorizontalBarChart } from "../src/engine/comparableHorizontalBarChart";
+import { createComparableBarScales } from "../src/comparableBar/scales";
+import { processComparableBarData } from "../src/comparableBar/data";
 import { sanitizeForClassName } from "../src/math/sanitize";
 import type { ComparableBarChartProps, ComparableBarDataPoint } from "../src/types";
 
@@ -147,5 +149,55 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     }
     chart.destroy();
     host.remove();
+  });
+});
+
+describe("y-band gridlines respect showGrid (no phantom horizontal lines)", () => {
+  it("draws NO .mv-y-axis .mv-grid line (the engine passes y-band showGrid:false)", () => {
+    // Regression: the old `stroke=transparent` fallback was overridden by the
+    // `.mv-grid { stroke }` CSS, so a dashed line drew under every bar despite showGrid:false.
+    const { host, chart } = mount();
+    expect(host.querySelectorAll(".mv-y-axis .mv-grid").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+});
+
+describe("createComparableBarScales — maxBarHeight cap", () => {
+  const margin = { top: 50, right: 10, bottom: 50, left: 20 };
+
+  it("caps the band thickness and centres the bands when few rows would balloon", () => {
+    const labels = ["Africa", "Rest of the World"];
+    const uncapped = createComparableBarScales([0, 100], labels, 600, 500, margin);
+    expect(uncapped.yScale.bandwidth()).toBeGreaterThan(120); // 2 rows over ~400px = huge
+
+    const capped = createComparableBarScales([0, 100], labels, 600, 500, margin, undefined, 60);
+    expect(capped.yScale.bandwidth()).toBeLessThanOrEqual(60 + 0.5);
+    // centred: equal whitespace above the first band and below the last
+    const top = capped.yScale(labels[0])!;
+    const bottom = capped.yScale(labels[1])! + capped.yScale.bandwidth();
+    const plotMid = (margin.top + (500 - margin.bottom)) / 2;
+    expect((top + bottom) / 2).toBeCloseTo(plotMid, 1);
+  });
+
+  it("is a no-op for dense charts whose natural bandwidth is already below the cap", () => {
+    const labels = Array.from({ length: 20 }, (_, i) => `row${i}`);
+    const plain = createComparableBarScales([0, 100], labels, 600, 500, margin);
+    const withCap = createComparableBarScales([0, 100], labels, 600, 500, margin, undefined, 60);
+    expect(withCap.yScale.bandwidth()).toBeCloseTo(plain.yScale.bandwidth(), 5);
+  });
+});
+
+describe("processComparableBarData — symmetricXDomain", () => {
+  it("forces a symmetric domain [-M, M] with M = max(|min|, |max|)", () => {
+    const data: ComparableBarDataPoint[] = [
+      { label: "a", valueBased: -25, valueCompared: -25 },
+      { label: "b", valueBased: 32, valueCompared: 32 },
+    ];
+    const sym = processComparableBarData(data, { symmetric: true });
+    expect(sym.xAxisDomain).toEqual([-32, 32]); // 0 centred, sides mirror
+    // asymmetric (default) keeps the raw [min, max] spanning zero
+    const asym = processComparableBarData(data, {});
+    expect(asym.xAxisDomain).toEqual([-25, 32]);
   });
 });

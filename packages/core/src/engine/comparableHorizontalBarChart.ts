@@ -54,6 +54,7 @@ interface Resolved {
   minBarWidth: number;
   hideTickLabels: boolean;
   horizontalTickPosition?: { x: number; y: number };
+  maxBarHeight?: number;
 }
 
 function resolve(p: ComparableBarChartProps): Resolved {
@@ -73,6 +74,7 @@ function resolve(p: ComparableBarChartProps): Resolved {
     minBarWidth: p.minBarWidth ?? 5,
     hideTickLabels: p.hideTickLabels ?? false,
     horizontalTickPosition: p.horizontalTickPosition,
+    maxBarHeight: p.maxBarHeight,
   };
 }
 
@@ -241,6 +243,7 @@ export function mountComparableHorizontalBarChart(
       disabledItems: props.disabledItems,
       filter: props.filter,
       xAxisDomain: predefined ?? props.xAxisDomain,
+      symmetric: props.symmetricXDomain,
     });
 
     const colors = buildComparableBarColors(
@@ -258,7 +261,15 @@ export function mountComparableHorizontalBarChart(
       }
     }
 
-    const scales = createComparableBarScales(xAxisDomain, labels, r.width, r.height, r.margin, r.padding);
+    const scales = createComparableBarScales(
+      xAxisDomain,
+      labels,
+      r.width,
+      r.height,
+      r.margin,
+      r.padding,
+      r.maxBarHeight
+    );
     model = buildComparableRenderModel(points, scales, colors, {
       highlightItems: props.highlightItems ?? [],
       minBarWidth: r.minBarWidth,

@@ -302,6 +302,10 @@ export function mountVerticalStackBarChart(
       formatter: (d) => xFormat(d),
       bandWidth: scales.xScale.step(),
       measure: measureLabelWidth,
+      // Min gap (px) a horizontal label needs before it tilts -45°. Bump it to give
+      // crowded date labels (e.g. "MM-YYYY") more breathing room — they rotate sooner
+      // instead of sitting flush against each other. Default 8 (legacy parity).
+      padding: props.xAxisLabelPadding,
     });
     if (axis.mode === "rotated") {
       const maxLabelWidth = axis.tickValues.reduce(

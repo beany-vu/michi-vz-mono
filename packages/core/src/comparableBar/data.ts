@@ -6,6 +6,9 @@ export interface ProcessComparableOptions {
   disabledItems?: string[];
   filter?: ComparableBarChartProps["filter"];
   xAxisDomain?: [number, number];
+  /** Force a symmetric domain [-M, M], M = max(|min|, |max|), so 0 sits centred and
+   * the negative/positive sides mirror (e.g. growth ±%). Wins over xAxisDomain. */
+  symmetric?: boolean;
 }
 
 export interface ProcessedComparable {
@@ -38,9 +41,17 @@ export function processComparableBarData(
     }
   }
 
+  let xAxisDomain: [number, number];
+  if (opts.symmetric) {
+    const m = Math.max(Math.abs(lo), Math.abs(hi)) || 1;
+    xAxisDomain = [-m, m];
+  } else {
+    xAxisDomain = opts.xAxisDomain ?? [lo, hi || 1];
+  }
+
   return {
     points,
     labels: points.map((d) => d.label),
-    xAxisDomain: opts.xAxisDomain ?? [lo, hi || 1],
+    xAxisDomain,
   };
 }

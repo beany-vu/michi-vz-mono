@@ -1966,6 +1966,14 @@
           "common": true
         },
         {
+          "name": "xAxisLabelPadding",
+          "type": "number",
+          "optional": true,
+          "description": "Min gap (px) a horizontal x-axis label needs before it tilts -45°. Raise it to give crowded date labels more breathing room (they rotate sooner instead of sitting flush). Default 8 (legacy parity).",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "xAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
@@ -2394,6 +2402,22 @@
           "type": "{ x: number; y: number }",
           "optional": true,
           "description": "Offset (px) applied to the y-axis category labels so they align with the legend column",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "maxBarHeight",
+          "type": "number",
+          "optional": true,
+          "description": "Cap each bar's thickness (px). When few rows would otherwise balloon the bandwidth, the band range shrinks to yield exactly this thickness and is centred in the plot. No-op for dense charts whose natural bandwidth is already below the cap.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "symmetricXDomain",
+          "type": "boolean",
+          "optional": true,
+          "description": "Force a symmetric x-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits centred and the negative/positive sides mirror (e.g. ± growth %). Wins over xAxisDomain / xAxisPredefinedDomain.",
           "default": "",
           "common": false
         },

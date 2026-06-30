@@ -27,9 +27,13 @@ export const CORE_CSS = `
 .michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-width: 1; stroke-dasharray: none; }
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
-  /* Same configurable colour as the x-axis tick labels (.mv-axis-label uses
-     --michi-vz-muted) so both axes read identically — NOT the darker --michi-vz-ink. */
+  /* Match the x-axis tick labels (.mv-axis-label) EXACTLY — same configurable colour
+     (--michi-vz-muted, NOT the darker --michi-vz-ink), font family + normal weight. The
+     y-label is an HTML <div> in a <foreignObject>, so set these explicitly: it can
+     otherwise inherit a different family/weight from the app cascade than the SVG <text>
+     x-labels, making the two axes read in visibly different fonts. */
   font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-muted, #666);
+  font-family: var(--michi-vz-font-family, inherit); font-weight: 400;
   /* Wrap long category labels (legacy behaviour) instead of single-line ellipsis;
      overflow:visible (the foreignObject is also overflow:visible) lets a centred
      multi-line label spill into the empty inter-band gaps instead of clipping at the

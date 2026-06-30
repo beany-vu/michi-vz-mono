@@ -703,6 +703,10 @@ export interface VerticalStackBarChartProps {
   height?: number;
   /** Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels */
   margin?: Margin;
+  /** Min gap (px) a horizontal x-axis label needs before it tilts -45°. Raise it to give
+   * crowded date labels more breathing room (they rotate sooner instead of sitting flush).
+   * Default 8 (legacy parity). */
+  xAxisLabelPadding?: number;
   /** Formats an x tick value into its display label */
   xAxisFormat?: (d: number | string) => string;
   /** Formats a y tick value into its display label */
@@ -852,6 +856,14 @@ export interface ComparableBarChartProps {
   padding?: { top: number; right: number; bottom: number; left: number };
   /** Offset (px) applied to the y-axis category labels so they align with the legend column */
   horizontalTickPosition?: { x: number; y: number };
+  /** Cap each bar's thickness (px). When few rows would otherwise balloon the bandwidth,
+   * the band range shrinks to yield exactly this thickness and is centred in the plot.
+   * No-op for dense charts whose natural bandwidth is already below the cap. */
+  maxBarHeight?: number;
+  /** Force a symmetric x-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits
+   * centred and the negative/positive sides mirror (e.g. ± growth %). Wins over
+   * xAxisDomain / xAxisPredefinedDomain. */
+  symmetricXDomain?: boolean;
   /** Loading overlay (stale bars hidden while true) */
   isLoading?: boolean;
   /** No-data predicate/flag; default = empty dataSet */
