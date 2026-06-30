@@ -92,6 +92,12 @@ export function renderXAxisLinear(
   const showGrid = o.showGrid !== false;
   const top = o.margin.top;
   const bottom = o.height - o.margin.bottom;
+  // Axis dots + labels sit below the plot by default, or ABOVE it (position:"top",
+  // e.g. BarBell where the value axis is a header over the date rows). Grid lines
+  // always span top→bottom regardless.
+  const isTop = o.position === "top";
+  const dotCy = isTop ? top - 8 : bottom + 8;
+  const labelY = isTop ? top - 16 : bottom + 26;
 
   // Project each tick to a pixel x + its label up front, so autoRotate can measure
   // widths and gaps before committing to a layout.
@@ -164,7 +170,7 @@ export function renderXAxisLinear(
     }
 
     g.appendChild(
-      svgEl("circle", { class: "mv-tick-dot", cx: p.px, cy: bottom + 8, r: 2, fill: "lightgray" })
+      svgEl("circle", { class: "mv-tick-dot", cx: p.px, cy: dotCy, r: 2, fill: "lightgray" })
     );
 
     if (rotated) {
@@ -182,7 +188,7 @@ export function renderXAxisLinear(
       const label = svgEl("text", {
         class: "mv-axis-label",
         x: p.px,
-        y: bottom + 26,
+        y: labelY,
         "text-anchor": "middle",
       });
       label.textContent = p.label;

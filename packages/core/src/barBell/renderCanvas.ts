@@ -33,17 +33,17 @@ export function drawBarBellCanvas(
   // later bar would otherwise cover the previous segment's cap).
   for (const seg of model.segments) {
     if (seg.width <= 0) continue;
-    ctx.globalAlpha = seg.dimmed ? 0.15 : 1;
+    ctx.globalAlpha = seg.dimmed ? 0.3 : 0.9;
     ctx.fillStyle = fillColors.get(seg.key) || seg.color;
     ctx.beginPath();
     ctx.rect(seg.x, seg.cy - model.barHeight / 2, seg.width, model.barHeight);
     ctx.fill();
   }
   for (const seg of model.segments) {
-    ctx.globalAlpha = seg.dimmed ? 0.15 : 1;
+    ctx.globalAlpha = seg.dimmed ? 0.3 : 0.9;
     ctx.fillStyle = fillColors.get(seg.key) || seg.color;
     ctx.beginPath();
-    ctx.arc(seg.cx, seg.cy, model.capRadius, 0, Math.PI * 2);
+    ctx.arc(seg.cx, seg.capCy, model.capRadius, 0, Math.PI * 2);
     ctx.fill();
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = "#fff";

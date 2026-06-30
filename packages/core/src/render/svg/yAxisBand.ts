@@ -32,7 +32,10 @@ export function renderYAxisBand(
 ): SVGGElement {
   const g = svgEl("g", { class: "mv-y-axis" });
   const format = o.format ?? ((l: string) => l);
-  const tickHtmlWidth = o.tickHtmlWidth ?? 100;
+  // Default the label gutter to the chart's left margin (min 100), so a chart that
+  // reserves a wide left margin (e.g. BarBell's 180 for "MM-YYYY | label" rows) gets
+  // a label box wide enough to fit its labels instead of clipping at a fixed 100.
+  const tickHtmlWidth = o.tickHtmlWidth ?? Math.max(100, o.margin.left);
   const bandwidth = scale.bandwidth();
   const gridRight = o.width - o.margin.right;
   const hovered = o.hoveredItem ?? null;
@@ -64,7 +67,11 @@ export function renderYAxisBand(
       height: bandwidth,
     });
     const div = htmlEl("div", { class: "mv-ylabel", title: label });
-    div.textContent = format(label);
+    // Text in a <span> so a consumer's legacy `.tick-html span` rules (nowrap +
+    // ellipsis) can reattach; charts without that CSS render the span transparently.
+    const span = htmlEl("span");
+    span.textContent = format(label);
+    div.appendChild(span);
     // Dim non-hovered labels (legacy: 0.3 when another band is hovered).
     div.style.opacity = hovered === null || hovered === label ? "1" : "0.3";
     if (o.onHover) {

@@ -1022,6 +1022,8 @@ export interface BarBellChartProps {
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
   suppressDefaultOverlay?: boolean;
+  /** Spread overlapping end-caps vertically, centred on the row line (default ON, legacy parity); pass false to keep them stacked. */
+  dodgeOverlappingCaps?: boolean;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

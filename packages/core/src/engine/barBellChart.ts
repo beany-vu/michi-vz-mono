@@ -130,7 +130,7 @@ export function mountBarBellChart(
     const y = ev.clientY - svgRect.top;
     let hit: BarBellSegment | null = null;
     for (const seg of model.segments) {
-      const inCap = Math.hypot(x - seg.cx, y - seg.cy) <= model.capRadius + 1;
+      const inCap = Math.hypot(x - seg.cx, y - seg.capCy) <= model.capRadius + 1;
       const inBar =
         seg.width > 0 &&
         x >= seg.x &&
@@ -205,6 +205,10 @@ export function mountBarBellChart(
     model = buildBarBellRenderModel(props.dataSet, scales, colors, {
       activeKeys,
       highlightItems: props.highlightItems ?? [],
+      // Default ON (legacy parity): end-caps that pile at the same x spread
+      // vertically, centred on the row line, so none hide behind another. A consumer
+      // can pass false to keep them stacked.
+      dodgeOverlappingCaps: props.dodgeOverlappingCaps ?? true,
     });
 
     const xFormat = props.xAxisFormat ?? defaultNumberFormatter(props.locale);
@@ -220,12 +224,17 @@ export function mountBarBellChart(
       format: (v) => xFormat(v),
       ticks: r.ticks,
       enableExplicitTickValues: false,
+      // Legacy BarBell renders the value axis as a header ABOVE the date rows.
+      position: "top",
     });
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
       margin: r.margin,
       format: (label) => yFormat(label),
-      tickHtmlWidth: r.tickHtmlWidth,
+      // Pass the RAW prop (undefined when unset) so renderYAxisBand sizes the label
+      // box to the left margin — the full gutter — instead of a fixed 100px box that
+      // strands free space on the left and truncates long "MM-YYYY | step" labels.
+      tickHtmlWidth: props.tickHtmlWidth,
       showGrid: false,
     });
 

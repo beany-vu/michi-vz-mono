@@ -37,7 +37,7 @@ export function renderBarBellSvg(
       width: seg.width,
       height: model.barHeight,
       fill: seg.color,
-      opacity: seg.dimmed ? 0.15 : 1,
+      opacity: seg.dimmed ? 0.3 : 0.9,
       rx: model.barHeight / 2,
       ry: model.barHeight / 2,
     });
@@ -55,12 +55,12 @@ export function renderBarBellSvg(
       "data-label": seg.key,
       "data-label-safe": seg.safe,
       cx: seg.cx,
-      cy: seg.cy,
+      cy: seg.capCy,
       r: model.capRadius,
       fill: seg.color,
       stroke: "#fff",
       "stroke-width": 1.5,
-      opacity: seg.dimmed ? 0.15 : 1,
+      opacity: seg.dimmed ? 0.3 : 0.9,
     });
     cap.style.cursor = "pointer";
     cap.style.transition = transition;

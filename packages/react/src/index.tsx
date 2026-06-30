@@ -637,6 +637,8 @@ export const DualHorizontalBarChart = forwardRef<DualHorizontalBarChartHandle, D
 export type BarBellChartReactProps = BarBellChartProps & {
   isLoadingComponent?: ReactNode;
   isNodataComponent?: ReactNode;
+  /** Legacy alias for tooltipFormatter (BorderCrossingTime passes `tooltipFormat`). */
+  tooltipFormat?: BarBellChartProps["tooltipFormatter"];
 };
 
 export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProps>(
@@ -644,8 +646,12 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProp
     const hostRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<ChartInstance<BarBellChartProps> | null>(null);
 
-    const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-    const engineProps: BarBellChartProps = { ...coreProps, suppressDefaultOverlay: true };
+    const { isLoadingComponent, isNodataComponent, tooltipFormat, ...coreProps } = props;
+    const engineProps: BarBellChartProps = {
+      ...coreProps,
+      tooltipFormatter: coreProps.tooltipFormatter ?? tooltipFormat,
+      suppressDefaultOverlay: true,
+    };
 
     useEffect(() => {
       if (!hostRef.current) return;
