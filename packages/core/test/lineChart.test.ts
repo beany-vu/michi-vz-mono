@@ -257,4 +257,29 @@ describe("mountLineChart fillPeriodTicks (Layer 2)", () => {
     chart.destroy();
     host.remove();
   });
+
+  it("canvas renderer: the no-data tooltip survives the host mousemove hit-test", () => {
+    // Regression: in canvas mode onHostMove runs a data hit-test on every mousemove and
+    // hides the tooltip when no mark is near - which was stealing the no-data tick tooltip
+    // the moment the cursor moved over the (below-plot) faded label. SVG mode returns early
+    // so it never showed there.
+    const { host, chart } = mount({
+      ...withGap,
+      renderer: "canvas",
+      noDataTickTooltip: () => "No data for this year",
+    });
+    const faded = host.querySelector<SVGTextElement>("text.mv-tick-nodata")!;
+    const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
+    faded.dispatchEvent(new MouseEvent("mouseenter"));
+    expect(tooltip.style.visibility).toBe("visible");
+    // a host mousemove away from any data mark must NOT steal the no-data tooltip
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 0, clientY: 0 }));
+    expect(tooltip.style.visibility).toBe("visible");
+    expect(tooltip.innerHTML).toContain("No data for this year");
+    // leaving the tick clears it
+    faded.dispatchEvent(new MouseEvent("mouseleave"));
+    expect(tooltip.style.visibility).toBe("hidden");
+    chart.destroy();
+    host.remove();
+  });
 });

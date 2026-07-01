@@ -127,6 +127,9 @@ export function mountLineChart(
     },
   };
   let sticky = false;
+  // True while the cursor is over a faded no-data tick label; makes onHostMove's canvas
+  // hit-test stand down so it doesn't hide the no-data tooltip (see wireNoDataTickTooltips).
+  let overNoDataTick = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
   // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
@@ -178,7 +181,7 @@ export function mountLineChart(
         mouseLine.style.visibility = "hidden";
       }
     }
-    if (!isPainted(r.renderer) || sticky || hitData.length === 0) return;
+    if (!isPainted(r.renderer) || sticky || hitData.length === 0 || overNoDataTick) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -365,7 +368,9 @@ export function mountLineChart(
         noDataValues,
       });
       if (noDataValues && noDataValues.size > 0) {
-        wireNoDataTickTooltips(xAxisG, tooltip, host, props.noDataTickTooltip);
+        wireNoDataTickTooltips(xAxisG, tooltip, host, props.noDataTickTooltip, undefined, (h) => {
+          overNoDataTick = h;
+        });
       }
       renderYAxisLinear(svg, scales.yScale, {
         width: r.width,

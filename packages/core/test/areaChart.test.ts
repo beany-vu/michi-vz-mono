@@ -156,4 +156,38 @@ describe("mountAreaChart fillPeriodTicks (Layer 2)", () => {
     chart.destroy();
     host.remove();
   });
+
+  it("no-data tick hover works THROUGH the topmost overlay (overlay mousemove, not mouseenter)", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountAreaChart(host, {
+      series: [
+        { date: 2020, "Fruit Sales": 10, Veg: 5, Dairy: 3 },
+        { date: 2021, "Fruit Sales": 12, Veg: 6, Dairy: 4 },
+        { date: 2023, "Fruit Sales": 9, Veg: 8, Dairy: 6 },
+      ],
+      keys,
+      width: 900,
+      height: 300,
+      xAxisDataType: "date_annual",
+      xAxisFormat: (d) => String(new Date(Number(d)).getUTCFullYear()),
+      fillPeriodTicks: true,
+      noDataTickTooltip: () => "No area data here",
+    });
+    const faded = host.querySelector<SVGTextElement>("text.mv-tick-nodata")!;
+    // jsdom returns a zero rect; give the faded label a real box to hit-test against.
+    faded.getBoundingClientRect = () =>
+      ({ left: 100, right: 140, top: 400, bottom: 420, width: 40, height: 20, x: 100, y: 400, toJSON() {} }) as DOMRect;
+    const overlay = host.querySelector<SVGRectElement>(".tpRef")!;
+    const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
+    // The overlay (topmost) captures the move; onOverlayMove must detect the faded label.
+    overlay.dispatchEvent(new MouseEvent("mousemove", { clientX: 120, clientY: 410 }));
+    expect(tooltip.style.visibility).toBe("visible");
+    expect(tooltip.innerHTML).toContain("No area data here");
+    // moving onto the empty plot clears it (normal hit-test finds no row)
+    overlay.dispatchEvent(new MouseEvent("mousemove", { clientX: 5, clientY: 5 }));
+    expect(tooltip.style.visibility).toBe("hidden");
+    chart.destroy();
+    host.remove();
+  });
 });

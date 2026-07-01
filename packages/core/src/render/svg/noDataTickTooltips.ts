@@ -11,17 +11,22 @@ export function wireNoDataTickTooltips(
   tooltipEl: HTMLElement,
   host: HTMLElement,
   formatter: ((v: number) => string) | undefined,
-  defaultLabel = "Data not available"
+  defaultLabel = "Data not available",
+  // Notifies the engine while the cursor is over a no-data tick, so its host-level
+  // `mousemove` hit-test (canvas mode) can stand down instead of hiding this tooltip.
+  onHoverChange?: (hovering: boolean) => void
 ): void {
   const nodes = axisG.querySelectorAll<SVGTextElement>(".mv-tick-nodata");
   nodes.forEach((node) => {
     const v = Number(node.getAttribute("data-mv-value"));
     node.addEventListener("mouseenter", (ev) => {
+      onHoverChange?.(true);
       tooltipEl.innerHTML = DOMPurify.sanitize(formatter ? formatter(v) : defaultLabel);
       tooltipEl.style.visibility = "visible";
       placeTooltip(host, tooltipEl, ev);
     });
     node.addEventListener("mouseleave", () => {
+      onHoverChange?.(false);
       tooltipEl.style.visibility = "hidden";
     });
   });

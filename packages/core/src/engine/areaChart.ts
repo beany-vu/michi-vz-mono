@@ -7,13 +7,7 @@ import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
-import {
-  renderTitle,
-  renderXAxisLinear,
-  renderYAxisLinear,
-  renderOverlay,
-  wireNoDataTickTooltips,
-} from "../render/svg";
+import { renderTitle, renderXAxisLinear, renderYAxisLinear, renderOverlay } from "../render/svg";
 import { processAreaChartData } from "../areaChart/data";
 import { buildAreaColors } from "../areaChart/colors";
 import { createAreaScales } from "../areaChart/scales";
@@ -120,6 +114,9 @@ export function mountAreaChart(
     },
   };
   let sticky = false;
+  // Faded no-data tick labels (fillPeriodTicks). The topmost capture overlay swallows
+  // their mouseenter, so onOverlayMove hit-tests these nodes' rects by geometry instead.
+  let noDataTickNodes: SVGTextElement[] = [];
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
   // changes. Both Area consumers (ByEndUses/ByLevelOfProcessing) call setMetadata
@@ -158,6 +155,26 @@ export function mountAreaChart(
 
   const onOverlayMove = (ev: MouseEvent): void => {
     if (sticky) return;
+    // No-data tick hover: the overlay sits above the (below-plot) faded labels, so detect
+    // them by geometry here rather than via a per-label mouseenter it would swallow.
+    if (noDataTickNodes.length) {
+      const overTick = noDataTickNodes.find((n) => {
+        const b = n.getBoundingClientRect();
+        return (
+          ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom
+        );
+      });
+      if (overTick) {
+        const v = Number(overTick.getAttribute("data-mv-value"));
+        tooltip.innerHTML = DOMPurify.sanitize(
+          baseProps.noDataTickTooltip ? baseProps.noDataTickTooltip(v) : "Data not available"
+        );
+        tooltip.style.visibility = "visible";
+        placeTooltip(host, tooltip, ev);
+        if (hoverLine) hoverLine.style.visibility = "hidden";
+        return;
+      }
+    }
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -309,9 +326,12 @@ export function mountAreaChart(
       maxTicks: xMaxTicks,
       noDataValues,
     });
-    if (noDataValues && noDataValues.size > 0) {
-      wireNoDataTickTooltips(xAxisG, tooltip, host, props.noDataTickTooltip);
-    }
+    // Capture the faded tick nodes for onOverlayMove's geometry hit-test (the overlay
+    // would swallow their own mouseenter). Cleared when fillPeriodTicks yields no gaps.
+    noDataTickNodes =
+      noDataValues && noDataValues.size > 0
+        ? Array.from(xAxisG.querySelectorAll<SVGTextElement>(".mv-tick-nodata"))
+        : [];
     renderYAxisLinear(svg, scales.yScale, {
       width: r.width,
       height: r.height,
