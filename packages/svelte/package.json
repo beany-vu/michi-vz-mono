@@ -1,7 +1,7 @@
 {
   "name": "@michi-vz/svelte",
   "version": "1.3.0",
-  "description": "Svelte wrapper for michi-vz charts. The multi-framework fork of the original React-only michi-vz (github.com/beany-vu/michi-vz).",
+  "description": "Svelte charts - SVG, canvas & WebGPU rendering, accessible by default, with an LLM-ready data context. Thin wrapper over the framework-agnostic @michi-vz engine.",
   "type": "module",
   "files": [
     "dist"
@@ -33,10 +33,29 @@
   "author": "Beany Vu",
   "keywords": [
     "charts",
-    "svelte",
+    "charting",
+    "charting-library",
     "dataviz",
+    "data-visualization",
+    "visualization",
+    "graph",
     "svg",
-    "canvas"
+    "canvas",
+    "webgpu",
+    "responsive",
+    "typescript",
+    "accessibility",
+    "a11y",
+    "d3",
+    "framework-agnostic",
+    "llm",
+    "ai",
+    "llm-ready",
+    "mcp",
+    "michi-vz",
+    "svelte",
+    "sveltejs",
+    "svelte-charts"
   ],
   "sideEffects": false,
   "repository": {

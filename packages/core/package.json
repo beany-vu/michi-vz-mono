@@ -1,7 +1,7 @@
 {
   "name": "@michi-vz/core",
   "version": "1.3.0",
-  "description": "Framework-agnostic chart rendering engine + LLM-ready ChartContext. The multi-framework fork of the original React-only michi-vz (github.com/beany-vu/michi-vz).",
+  "description": "Framework-agnostic chart engine - SVG, canvas & WebGPU renderers, accessible by default, emitting an LLM-ready ChartContext. No framework dependencies.",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -49,16 +49,29 @@
   "author": "Beany Vu",
   "keywords": [
     "charts",
-    "chart",
+    "charting",
+    "charting-library",
     "dataviz",
     "data-visualization",
+    "visualization",
+    "graph",
     "svg",
     "canvas",
+    "webgpu",
+    "responsive",
+    "typescript",
+    "accessibility",
+    "a11y",
     "d3",
     "framework-agnostic",
-    "web-components",
     "llm",
-    "accessibility"
+    "ai",
+    "llm-ready",
+    "mcp",
+    "michi-vz",
+    "engine",
+    "vanilla-js",
+    "headless"
   ],
   "repository": {
     "type": "git",

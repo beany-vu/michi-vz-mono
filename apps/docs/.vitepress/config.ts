@@ -4,6 +4,16 @@ import { defineConfig, type HeadConfig } from "vitepress";
 // ID never lives in this open-source repo. Set GA_MEASUREMENT_ID in the Netlify
 // build environment (Site settings -> Environment variables). When unset - forks,
 // clones, local dev - no GA script is emitted, so nobody pollutes the property.
+// Google Search Console site-verification, injected from a build-time env var
+// (Netlify: Site settings -> Environment variables -> GOOGLE_SITE_VERIFICATION)
+// so the token stays out of this open-source repo. Verify a URL-prefix property
+// (https://michi-vz.netlify.app/); the DNS/Domain method cannot work on a
+// .netlify.app subdomain whose DNS you do not control.
+const GSC_TOKEN = process.env.GOOGLE_SITE_VERIFICATION;
+const gscHead: HeadConfig[] = GSC_TOKEN
+  ? [["meta", { name: "google-site-verification", content: GSC_TOKEN }]]
+  : [];
+
 const GA_ID = process.env.GA_MEASUREMENT_ID;
 const gaHead: HeadConfig[] = GA_ID
   ? [
@@ -46,6 +56,38 @@ export default defineConfig({
     "Framework-agnostic charts - a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.",
   lang: "en-US",
   cleanUrls: true,
+  sitemap: { hostname: "https://michi-vz.netlify.app" },
+  // Per-page SEO: a unique <meta description>, canonical URL, and Open Graph +
+  // Twitter card on every page (VitePress otherwise repeats the site description
+  // everywhere and emits no social tags). A page can override the description via
+  // its own `description:` frontmatter.
+  transformPageData(pageData) {
+    const base = "https://michi-vz.netlify.app";
+    const path = pageData.relativePath.replace(/\.md$/, "").replace(/(^|\/)index$/, "$1");
+    const url = (base + "/" + path).replace(/\/+$/, "") || base;
+    const isHome = pageData.relativePath === "index.md";
+    const title = pageData.frontmatter.title || pageData.title || "michi-vz";
+    const desc =
+      pageData.frontmatter.description ||
+      (!isHome && pageData.title
+        ? `${pageData.title} - framework-agnostic charts (SVG, canvas, WebGPU) with an LLM-ready ChartContext, for React, Vue, Svelte, Angular, or web components.`
+        : "Framework-agnostic charts: a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.");
+    pageData.description = desc;
+    const image = base + "/michi-shield.png";
+    (pageData.frontmatter.head ??= []).push(
+      ["link", { rel: "canonical", href: url }],
+      ["meta", { property: "og:type", content: isHome ? "website" : "article" }],
+      ["meta", { property: "og:site_name", content: "michi-vz" }],
+      ["meta", { property: "og:title", content: title }],
+      ["meta", { property: "og:description", content: desc }],
+      ["meta", { property: "og:url", content: url }],
+      ["meta", { property: "og:image", content: image }],
+      ["meta", { name: "twitter:card", content: "summary_large_image" }],
+      ["meta", { name: "twitter:title", content: title }],
+      ["meta", { name: "twitter:description", content: desc }],
+      ["meta", { name: "twitter:image", content: image }],
+    );
+  },
   head: [
     ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
     ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
@@ -56,6 +98,7 @@ export default defineConfig({
         href: "https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap",
       },
     ],
+    ...gscHead,
     ...gaHead,
   ],
   themeConfig: {

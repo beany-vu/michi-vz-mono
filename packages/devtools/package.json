@@ -40,7 +40,11 @@
     "debug",
     "inspector",
     "michi-vz",
-    "dataviz"
+    "dataviz",
+    "chart-context",
+    "llm",
+    "ai",
+    "web-components"
   ],
   "private": true,
   "repository": {

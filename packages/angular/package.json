@@ -1,7 +1,7 @@
 {
   "name": "@michi-vz/angular",
   "version": "1.3.0",
-  "description": "Angular wrapper for michi-vz charts. The multi-framework fork of the original React-only michi-vz (github.com/beany-vu/michi-vz).",
+  "description": "Angular charts - SVG, canvas & WebGPU rendering, accessible by default, with an LLM-ready data context. Thin wrapper over the framework-agnostic @michi-vz engine.",
   "type": "module",
   "files": [
     "dist"
@@ -38,9 +38,30 @@
   "author": "Beany Vu",
   "keywords": [
     "charts",
-    "angular",
+    "charting",
+    "charting-library",
     "dataviz",
-    "web-components"
+    "data-visualization",
+    "visualization",
+    "graph",
+    "svg",
+    "canvas",
+    "webgpu",
+    "responsive",
+    "typescript",
+    "accessibility",
+    "a11y",
+    "d3",
+    "framework-agnostic",
+    "llm",
+    "ai",
+    "llm-ready",
+    "mcp",
+    "michi-vz",
+    "angular",
+    "angular-charts",
+    "ngx",
+    "ng-charts"
   ],
   "repository": {
     "type": "git",
