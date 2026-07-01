@@ -1,7 +1,7 @@
-// EXPERIMENTAL opt-in WebGPU renderer for BubbleChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for BubbleChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME BubbleRenderModel and the
 // SHARED gpu mark layer (webgpu/marks.ts). Every bubble reduces to instanced
-// CIRCLES: the base disc, and — when split is on — a white veil disc plus the
+// CIRCLES: the base disc, and - when split is on - a white veil disc plus the
 // solid realized-core disc drawn on top (mirrors renderCanvas.ts's `disc` calls).
 // Fill colours are resolved through the SAME light-DOM probe as canvas mode, so
 // consumer CSS still reaches GPU pixels. Labels stay off the GPU layer (text is an

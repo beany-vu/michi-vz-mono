@@ -1,4 +1,4 @@
-// Svelte wrappers as actions (plain TS — no .svelte compiler needed to build the
+// Svelte wrappers as actions (plain TS - no .svelte compiler needed to build the
 // library). Usage:  <div use:gapChart={props}></div> / <div use:lineChart={props}></div>
 import {
   mountGapChart,

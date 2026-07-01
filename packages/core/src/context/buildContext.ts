@@ -1,6 +1,6 @@
 // Renderer-agnostic semantic context. Derived purely from the data model +
 // domains (NOT the DOM), so it is byte-identical whether the chart is rendered
-// as SVG or canvas — the bridge for LLM tool-use / RAG / agents and the source
+// as SVG or canvas - the bridge for LLM tool-use / RAG / agents and the source
 // for the a11y mirror. `summary` is a deterministic, model-free NL string that
 // doubles as alt text.
 import type {

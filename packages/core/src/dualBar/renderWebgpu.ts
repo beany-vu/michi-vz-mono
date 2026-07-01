@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for DualHorizontalBar — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for DualHorizontalBar - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME DualRenderModel. Bars are
 // drawn as GPU triangles via the shared marks.ts layer (pushRect per side). Fill
 // resolved through the SAME light-DOM colour probe canvas mode uses, so consumer

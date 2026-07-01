@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for AreaChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for AreaChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME AreaRenderModel (plus the
 // scales used to build it, since the shared marks layer needs pixel-space
 // polylines rather than the SVG path string canvas mode fills via Path2D). Each
@@ -7,7 +7,7 @@
 // MarkBatch and drawn via webgpu/marks.ts. Fill colours are resolved through the
 // SAME light-DOM probe canvas mode uses, so consumer CSS still reaches GPU
 // pixels. Curve interpolation (curveMonotoneX/curveBumpX) is not expressed on
-// the GPU band — segments are straight, matching curveLinear; use
+// the GPU band - segments are straight, matching curveLinear; use
 // renderer="canvas"/"svg" for exact curved shapes. Device acquisition is async;
 // while not ready this returns false and the engine paints the canvas-2D
 // stopgap, then re-renders on onReady.

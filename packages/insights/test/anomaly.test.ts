@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { mountLineChart, type LineChartProps, type LineChartContext } from "@michi-vz/core";
 import { detectAnomalies, anomaly } from "../src/anomaly";
 
-describe("detectAnomalies — zscore", () => {
+describe("detectAnomalies - zscore", () => {
   it("flags the spike at index 4 in [10,11,9,10,50,11,10]", () => {
-    // population std here is ~13.95 so |z| for 50 is ~2.45 — above 2, below 3.
+    // population std here is ~13.95 so |z| for 50 is ~2.45 - above 2, below 3.
     const res = detectAnomalies([10, 11, 9, 10, 50, 11, 10], { method: "zscore", threshold: 2 });
     expect(res.method).toBe("zscore");
     expect(res.threshold).toBe(2);
@@ -40,7 +40,7 @@ describe("detectAnomalies — zscore", () => {
     expect(res.anomalies[0].kind).toBe("low");
   });
 
-  it("flags nothing for a perfectly clean (constant) series — std is 0", () => {
+  it("flags nothing for a perfectly clean (constant) series - std is 0", () => {
     const res = detectAnomalies([5, 5, 5, 5, 5]);
     expect(res.anomalies).toHaveLength(0);
   });
@@ -57,7 +57,7 @@ describe("detectAnomalies — zscore", () => {
   });
 });
 
-describe("detectAnomalies — iqr", () => {
+describe("detectAnomalies - iqr", () => {
   it("flags the high outlier outside Tukey's fences", () => {
     // sorted [1..8,100]: Q1=3, Q3=7, IQR=4, high fence = 7 + 1.5*4 = 13
     const res = detectAnomalies([1, 2, 3, 4, 5, 6, 7, 8, 100], { method: "iqr" });
@@ -91,7 +91,7 @@ describe("detectAnomalies — iqr", () => {
   });
 });
 
-describe("detectAnomalies — forecast", () => {
+describe("detectAnomalies - forecast", () => {
   it("flags a level break the one-step-ahead band cannot absorb", () => {
     // a flat ramp that suddenly jumps; the Holt band is tight before the jump.
     const res = detectAnomalies([10, 11, 12, 13, 14, 15, 200, 17], { method: "forecast" });
@@ -172,7 +172,7 @@ describe("anomaly plugin (engine integration)", () => {
       plugins: [anomaly({ threshold: 2 })],
     });
     const ctx = chart.getContext() as LineChartContext;
-    expect(ctx.series[0].pointCount).toBe(7); // same as input — detection only
+    expect(ctx.series[0].pointCount).toBe(7); // same as input - detection only
     chart.destroy();
   });
 

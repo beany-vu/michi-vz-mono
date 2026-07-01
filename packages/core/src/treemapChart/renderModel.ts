@@ -1,4 +1,4 @@
-// Renderer-agnostic Treemap model — consumed by SVG, canvas, hit-test, and
+// Renderer-agnostic Treemap model - consumed by SVG, canvas, hit-test, and
 // context. One leaf mark per tile (with split geometry baked as `realizedWidth`),
 // plus parent containers and a split legend. Highlight dimming is applied at draw
 // time (not baked here) so highlight changes don't rebuild geometry.
@@ -12,9 +12,9 @@ export interface TreemapLeafMark {
   code?: string;
   /** Colour-group key (top-level ancestor, or own label when flat). */
   colorKey: string;
-  /** sanitizeForClassName(colorKey) — the colour contract. */
+  /** sanitizeForClassName(colorKey) - the colour contract. */
   dataLabelSafe: string;
-  /** sanitizeForClassName(label) — per-leaf hook for CSS/tests. */
+  /** sanitizeForClassName(label) - per-leaf hook for CSS/tests. */
   leafSafe: string;
   x: number;
   y: number;
@@ -42,7 +42,7 @@ export interface TreemapContainerMark {
 
 export interface TreemapLegendItem {
   label: string;
-  /** Swatch opacity — primary = 1, remainder = splitOpacity. */
+  /** Swatch opacity - primary = 1, remainder = splitOpacity. */
   opacity: number;
 }
 

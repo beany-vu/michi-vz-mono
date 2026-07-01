@@ -204,7 +204,7 @@ export function mountFanChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData.
+    // Plugin hook #1 - transformData.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
@@ -330,7 +330,7 @@ export function mountFanChart(
     });
 
     if (r.renderer === "svg") {
-      // Bands underneath, then the line on top — both on the SVG layer.
+      // Bands underneath, then the line on top - both on the SVG layer.
       const bandsLayer = svgEl("g", { class: "mv-fan-bands" });
       for (const b of bandPaths) {
         bandsLayer.appendChild(
@@ -403,7 +403,7 @@ export function mountFanChart(
         }
       );
       if (painted) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         if (canvas) {
           canvas.remove();
           canvas = null;

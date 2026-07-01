@@ -1,13 +1,13 @@
 /* ==========================================================================
-   michi-vz docs theme — Nordic / lagom.
+   michi-vz docs theme - Nordic / lagom.
    A calm, muted grey surface with ONE accent (Geneva red, plus a whisper of
    gold) spent almost entirely on the cat-band signature. Everything else on
-   the homepage — hero, chips, atlas cards — stays quiet so that single red
+   the homepage - hero, chips, atlas cards - stays quiet so that single red
    moment is the thing the eye lands on. Works in light AND dark mode.
    ========================================================================== */
 
 :root {
-  /* VitePress brand hooks (links, buttons, search) — desaturated crest red,
+  /* VitePress brand hooks (links, buttons, search) - desaturated crest red,
      used thinly (links, one CTA) rather than as a wash. */
   --vp-c-brand-1: #a3271f;
   --vp-c-brand-2: #a3271f;
@@ -31,7 +31,7 @@
   --vp-button-brand-hover-border: #841f19;
 
   /* Nordic tokens: muted stone/paper surfaces, one reserved accent pair. */
-  --mv-brick: #a3271f; /* the single accent — spend it sparingly */
+  --mv-brick: #a3271f; /* the single accent - spend it sparingly */
   --mv-crest-red: #a3271f;
   --mv-brick-ink: #841f19;
   --mv-gold: #b8863b; /* secondary highlight only, never a wash */
@@ -81,7 +81,7 @@
   line-height: 1.3;
 }
 /* Hero layout (desktop): give the copy a longer measure so it stops wrapping early,
-   and push the michi-vz crest to the container's right edge — the hero container is
+   and push the michi-vz crest to the container's right edge - the hero container is
    already the same 1152px width as the section heads below, so this keeps them aligned. */
 @media (min-width: 960px) {
   /* !important: VitePress's own .main/.tagline max-widths otherwise win. */
@@ -234,7 +234,7 @@
    Pinned to its OWN local tokens (not the shared --mv-* page tokens above) so
    the card's look is frozen exactly as-is, independent of any future changes
    to the surrounding Nordic layout tokens. The user likes these cards as they
-   are — do not restyle them when adjusting the rest of the homepage. */
+   are - do not restyle them when adjusting the rest of the homepage. */
 .mv-card {
   --mvc-brick: #b23a2e;
   --mvc-crest-red: #931f1a;
@@ -402,7 +402,7 @@
   width: 100%;
 }
 /* Minimal left + bottom "axes": a subtle L-frame around the sparkline (the
-   charts themselves draw no axis spine — only gridlines/labels, which are
+   charts themselves draw no axis spine - only gridlines/labels, which are
    hidden above). Radar opts out via data-frame="false" (it has its own rings). */
 .mv-card-preview[data-frame="true"] .mv-card-stage {
   border-left: 1px solid var(--vp-c-divider);

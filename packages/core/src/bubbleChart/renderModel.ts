@@ -1,4 +1,4 @@
-// Renderer-agnostic Bubble model — consumed by SVG, canvas, hit-test, and
+// Renderer-agnostic Bubble model - consumed by SVG, canvas, hit-test, and
 // context. One mark per bubble (centre + radius, with the realized-core radius
 // baked for the split), plus a split legend. Highlight dimming is applied at draw
 // time (not baked here).
@@ -12,7 +12,7 @@ export interface BubbleMark {
   code?: string;
   /** Colour-group key (the bubble label). */
   colorKey: string;
-  /** sanitizeForClassName(label) — the colour contract. */
+  /** sanitizeForClassName(label) - the colour contract. */
   dataLabelSafe: string;
   x: number;
   y: number;
@@ -28,7 +28,7 @@ export interface BubbleMark {
 
 export interface BubbleLegendItem {
   label: string;
-  /** Swatch opacity — primary = 1, remainder = splitOpacity. */
+  /** Swatch opacity - primary = 1, remainder = splitOpacity. */
   opacity: number;
 }
 

@@ -1,4 +1,4 @@
-// <michi-vz-vertical-stack-bar-chart> — native web component (Lit, LIGHT DOM)
+// <michi-vz-vertical-stack-bar-chart> - native web component (Lit, LIGHT DOM)
 // over the @michi-vz/core VerticalStackBar engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountVerticalStackBarChart } from "@michi-vz/core";

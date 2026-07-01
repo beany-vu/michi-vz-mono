@@ -1,5 +1,5 @@
 // Pure-layer tests ported from the legacy michi-vz suite (detectGaps.test.ts +
-// lttb.test.ts) — the regression net for the verbatim-moved LineChart logic.
+// lttb.test.ts) - the regression net for the verbatim-moved LineChart logic.
 import { describe, it, test, expect } from "vitest";
 import { applyGapDetection, parseAxisUnit } from "../src/lineChart/detectGaps";
 import { lttb } from "../src/lineChart/lttb";

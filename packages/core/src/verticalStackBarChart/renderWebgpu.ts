@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for VerticalStackBar — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for VerticalStackBar - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME StackRenderModel. Segments
 // are drawn as filled RECTS via the shared marks.ts triangle pipeline. Fill colour
 // is resolved through the SAME light-DOM colour probe as canvas mode, so consumer
@@ -16,7 +16,7 @@ export interface StackWebgpuOptions {
 
 /**
  * Draw the stacked bar segments to `canvas` via WebGPU. Returns false when the
- * device/context is not (yet) available — the caller then paints its canvas-2D
+ * device/context is not (yet) available - the caller then paints its canvas-2D
  * fallback and, if a device is still resolving, re-renders on onReady to upgrade
  * to GPU.
  */

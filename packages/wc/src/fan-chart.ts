@@ -1,4 +1,4 @@
-// <michi-vz-fan-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-fan-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core FanChart engine (history line + dashed forecast median + nested
 // confidence bands). Same shape as the other elements; light DOM preserves the
 // consumer colour contract. Also forwards an opt-in `plugins` array.

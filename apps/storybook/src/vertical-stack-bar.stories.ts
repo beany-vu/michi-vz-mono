@@ -35,7 +35,7 @@ export const GroupedStacked: Story = {
   args: { ...grouped, width: 820, height: 480, renderer: "svg" },
 };
 
-/** Canvas renderer — same grouped layout, painted to a <canvas>. */
+/** Canvas renderer - same grouped layout, painted to a <canvas>. */
 export const Canvas: Story = {
   args: { ...grouped, width: 820, height: 480, renderer: "canvas" },
 };
@@ -60,14 +60,14 @@ const dense = {
 /**
  * Dense x-axis: 18 monthly labels don't fit horizontally, so the band axis tilts
  * them −45° (all labels still shown) and reserves bottom margin so they don't clip.
- * Note `date` is a number here — the engine String()-coerces it.
+ * Note `date` is a number here - the engine String()-coerces it.
  */
 export const RotatedAxis: Story = {
   args: { ...dense, width: 760, height: 460, renderer: "canvas" },
 };
 
 /**
- * `filter` ranks the DataSets (groups) by grand total and keeps the top-N — here
+ * `filter` ranks the DataSets (groups) by grand total and keeps the top-N - here
  * the single largest of the two grouped series. The legend mirrors the kept bars.
  */
 export const TopNGroups: Story = {
@@ -85,7 +85,7 @@ export const BottomToTop: Story = {
 /**
  * `xAxisLabelPadding` raises the min-gap the band axis needs before it tilts labels
  * −45°. Horizontal label positions are geometric (gap = step − labelWidth), so
- * rotation/thinning is the only way to add breathing room — bumping this padding
+ * rotation/thinning is the only way to add breathing room - bumping this padding
  * makes crowded date labels tilt sooner than the default of 8.
  */
 export const LabelPadding: Story = {

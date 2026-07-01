@@ -40,14 +40,14 @@ Four props control the y-axis tick density and grid line rendering:
 
 ## Loading and no-data state
 
-The engine manages a `data-mv-state` attribute on the host element with three values — `"loading"`, `"nodata"`, and `"ready"` — and shows built-in overlays for the first two unless you opt out.
+The engine manages a `data-mv-state` attribute on the host element with three values - `"loading"`, `"nodata"`, and `"ready"` - and shows built-in overlays for the first two unless you opt out.
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
 | `isLoading` | `boolean` | `false` | Shows the `.mv-loading` overlay and bypasses the no-data check entirely. |
-| `isNodata` | `boolean \| (dataSet) => boolean` | — | Overrides the default predicate (empty `dataSet` or every series has zero points). Pass `false` to force the chart to render even when data looks empty. |
-| `noDataLabel` | `string` | — | Text shown inside the default `.mv-nodata` overlay. Ignored when `suppressDefaultOverlay` is true. |
-| `suppressDefaultOverlay` | `boolean` | `false` | Prevents the engine from injecting its own loading/no-data node. Use this when a framework wrapper (e.g. the `@michi-vz/react` `LineChart`) renders `isLoadingComponent` / `isNodataComponent` as a React overlay instead. The host is never unmounted — the overlay is layered on top. |
+| `isNodata` | `boolean \| (dataSet) => boolean` | - | Overrides the default predicate (empty `dataSet` or every series has zero points). Pass `false` to force the chart to render even when data looks empty. |
+| `noDataLabel` | `string` | - | Text shown inside the default `.mv-nodata` overlay. Ignored when `suppressDefaultOverlay` is true. |
+| `suppressDefaultOverlay` | `boolean` | `false` | Prevents the engine from injecting its own loading/no-data node. Use this when a framework wrapper (e.g. the `@michi-vz/react` `LineChart`) renders `isLoadingComponent` / `isNodataComponent` as a React overlay instead. The host is never unmounted - the overlay is layered on top. |
 
 ::: tip React wrapper behaviour
 `@michi-vz/react`'s `LineChart` automatically sets `suppressDefaultOverlay` and renders `isLoadingComponent` / `isNodataComponent` as a positioned React node above the chart host. The chart DOM is always mounted, so `isNodataComponent` still fires on empty data even without a custom predicate.
@@ -55,7 +55,7 @@ The engine manages a `data-mv-state` attribute on the host element with three va
 
 ## Font family
 
-`fontFamily` sets the CSS custom property `--michi-vz-font-family` on the host element, which is read by both the SVG text renderer and the canvas `getComputedStyle` probe. The family must already be loaded by the page — no font embedding is performed.
+`fontFamily` sets the CSS custom property `--michi-vz-font-family` on the host element, which is read by both the SVG text renderer and the canvas `getComputedStyle` probe. The family must already be loaded by the page - no font embedding is performed.
 
 ## ChartContext / legendData
 
@@ -67,7 +67,7 @@ interface LegendItem {
   color: string;         // resolved colour at the time of processing
   order: number;         // appearance order (legend slot index)
   disabled?: boolean;    // true when the label is currently hidden
-  dataLabelSafe?: string; // sanitizeForClassName(label) — the CSS hook the canvas colour probe matches
+  dataLabelSafe?: string; // sanitizeForClassName(label) - the CSS hook the canvas colour probe matches
 }
 
 interface BaseChartContext {

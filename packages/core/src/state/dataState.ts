@@ -1,6 +1,6 @@
 // Renderer-agnostic loading / no-data decision. Ported verbatim (logic) from the
 // legacy michi-vz hooks/useDisplayIsNodata so the migrated charts decide "no data"
-// IDENTICALLY to the old React components — the consumer (e.g. thd MonitorV2) often
+// IDENTICALLY to the old React components - the consumer (e.g. thd MonitorV2) often
 // passes only `isLoading` + a no-data component and relies on this DEFAULT predicate.
 //
 // Used by the engine (vanilla default overlay + skip marks) AND re-exported so a

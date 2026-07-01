@@ -1,7 +1,7 @@
 // Imperative SVG renderer for AreaChart: one <path class="area"> per stacked key,
 // bottom-to-top, each carrying data-label + data-label-safe so the consumer colour
 // contract (`.area[data-label-safe] { fill }`) and the canvas probe match. Areas
-// are pointer-events:none — hover is handled by a transparent overlay the engine
+// are pointer-events:none - hover is handled by a transparent overlay the engine
 // adds (so hit-testing is uniform across SVG and canvas).
 import { svgEl } from "../dom";
 import type { AreaRenderModel } from "./renderModel";

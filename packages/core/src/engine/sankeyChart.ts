@@ -1,5 +1,5 @@
 // Sankey engine: mount/update/getContext/destroy. Nodes laid out in columns with
-// flow-proportional link bands via d3-sankey. LIGHT DOM (SVG) or canvas. No axes —
+// flow-proportional link bands via d3-sankey. LIGHT DOM (SVG) or canvas. No axes -
 // just a title, the links, and the nodes. Mirrors the other engines' plugin wiring
 // + colour-mapping dispatch; the layout lives in the pure layer.
 import DOMPurify from "dompurify";
@@ -199,7 +199,7 @@ export function mountSankeyChart(
 
     // Link hit-test needs a real 2D canvas context. In webgpu mode that canvas
     // is only present while the GPU device isn't ready (the first-frame canvas
-    // fallback) — once GPU actually paints, link hover falls through to
+    // fallback) - once GPU actually paints, link hover falls through to
     // hideTooltip() below (node hover keeps working via geometry above).
     const ctx = canvas?.getContext("2d") ?? null;
     if (ctx) {
@@ -242,7 +242,7 @@ export function mountSankeyChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData (identity with no plugins).
+    // Plugin hook #1 - transformData (identity with no plugins).
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
@@ -327,7 +327,7 @@ export function mountSankeyChart(
         onReady: render,
       });
       if (ready) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -352,12 +352,12 @@ export function mountSankeyChart(
       colorsMapping: colors.generatedColorsMapping,
       linkColorMode: r.linkColorMode,
     });
-    // Plugin hook #3 — enrichContext before a11y + dataprocessed.
+    // Plugin hook #3 - enrichContext before a11y + dataprocessed.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    // Plugin hook #2 — validate the USER's data, merged with plugin warnings.
+    // Plugin hook #2 - validate the USER's data, merged with plugin warnings.
     if (baseProps.onDataWarning) {
       const warnings = [
         ...checkSankeyData(baseProps.nodes, baseProps.links),

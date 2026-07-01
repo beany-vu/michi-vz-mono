@@ -32,12 +32,12 @@ export const Default: Story = {
   args: { ...renewable, width: 820, height: 480, renderer: "svg", showDataPoints: true },
 };
 
-/** isLoading=true — the engine shows its loading overlay and skips axes/marks. */
+/** isLoading=true - the engine shows its loading overlay and skips axes/marks. */
 export const Loading: Story = {
   args: { ...renewable, width: 820, height: 480, renderer: "svg", isLoading: true },
 };
 
-/** isNodata=true — the engine shows the no-data overlay (default text unless noDataLabel is set). */
+/** isNodata=true - the engine shows the no-data overlay (default text unless noDataLabel is set). */
 export const NoData: Story = {
   args: {
     ...renewable,
@@ -49,7 +49,7 @@ export const NoData: Story = {
   },
 };
 
-/** showGridLines:false — horizontal dashed grid lines suppressed; zero line still solid. */
+/** showGridLines:false - horizontal dashed grid lines suppressed; zero line still solid. */
 export const NoGridlines: Story = {
   args: {
     ...renewable,
@@ -61,7 +61,7 @@ export const NoGridlines: Story = {
   },
 };
 
-/** showVerticalGridLines:true — vertical dashed grid lines at each x tick (off by default). */
+/** showVerticalGridLines:true - vertical dashed grid lines at each x tick (off by default). */
 export const WithVerticalGrid: Story = {
   args: {
     ...renewable,
@@ -73,7 +73,7 @@ export const WithVerticalGrid: Story = {
   },
 };
 
-/** fontFamily — axis tick and title text rendered in a custom system font stack. */
+/** fontFamily - axis tick and title text rendered in a custom system font stack. */
 export const CustomFont: Story = {
   args: {
     ...renewable,
@@ -85,12 +85,12 @@ export const CustomFont: Story = {
   },
 };
 
-/** detectGaps — Brazil skips 2021-2022; the gap segment auto-dashes while Spain stays solid. */
+/** detectGaps - Brazil skips 2021-2022; the gap segment auto-dashes while Spain stays solid. */
 export const Gaps: Story = {
   args: { ...gaps, width: 820, height: 420, renderer: "svg", showDataPoints: true },
 };
 
-/** Canvas renderer — same four-series data painted to a <canvas>. */
+/** Canvas renderer - same four-series data painted to a <canvas>. */
 export const Canvas: Story = {
   args: { ...renewable, width: 820, height: 480, renderer: "canvas", showDataPoints: true },
 };

@@ -1,4 +1,4 @@
-// Imperative port of shared/XaxisLinear.tsx — a framework-agnostic, d3-axis-free
+// Imperative port of shared/XaxisLinear.tsx - a framework-agnostic, d3-axis-free
 // linear/time x-axis builder. Faithful to the legacy tick logic (evenly spaced,
 // always include first/last; numeric domains starting at 0 anchor a zero tick)
 // and visuals (vertical grid line, hoverable tick dot, centered label). Time
@@ -40,7 +40,7 @@ export interface XAxisLinearOptions {
   /**
    * Hard cap on labels shown. When more candidate ticks than this exist, thin to an
    * even sample that ALWAYS keeps the first + last tick (the axis endpoints). Lets a
-   * dense series (e.g. 48 months) collapse to a clean 3–5 labels without losing the ends.
+   * dense series (e.g. 48 months) collapse to a clean 3-5 labels without losing the ends.
    */
   maxTicks?: number;
 }
@@ -110,7 +110,7 @@ export function renderXAxisLinear(
     .filter((p) => Number.isFinite(p.px));
 
   // Adaptive density (opt-in via autoRotate): show ALL candidate labels while they
-  // fit — horizontal first, then tilted -45° (which packs much denser) — and only
+  // fit - horizontal first, then tilted -45° (which packs much denser) - and only
   // thin to a small set (keeping the first + last tick) once even the rotated labels
   // would collide. A spacious axis therefore keeps every label; a crammed one (e.g.
   // 48 months) drops to ~maxTicks.
@@ -132,9 +132,9 @@ export function renderXAxisLinear(
     };
     let { maxW, minGap } = measure();
     if (maxW + pad <= minGap) {
-      rotated = false; // every label fits horizontally — show them all
+      rotated = false; // every label fits horizontally - show them all
     } else if (minGap >= ROTATED_MIN_SPACING) {
-      rotated = true; // every label fits once tilted -45° — show them all, rotated
+      rotated = true; // every label fits once tilted -45° - show them all, rotated
     } else {
       // Too dense even rotated → thin to a small set (first + last preserved), then
       // re-measure: the surviving few usually fit horizontally.

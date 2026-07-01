@@ -1,9 +1,9 @@
-// EXPERIMENTAL opt-in WebGPU renderer for FanChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for FanChart - the third sibling to
 // renderSvg (inline in the engine) / renderCanvas.ts, consuming the SAME model:
 // nested confidence bands (pixel-space top/bottom polylines) drawn as filled
 // triangle strips (pushBandStrip), then the history/forecast median line drawn as
 // stroked triangle quads (pushStroke) per run so the dash/solid split matches the
-// SVG/canvas layers (dashed runs are approximated as solid on GPU — see fellBackFor
+// SVG/canvas layers (dashed runs are approximated as solid on GPU - see fellBackFor
 // notes in the engine). Colours resolve through the SAME light-DOM probes as canvas
 // mode (makeSimpleProbe("path","area","fill") / ("path","line","stroke")), so
 // consumer CSS still reaches GPU pixels. Text/axes/title stay on the SVG layer.
@@ -20,7 +20,7 @@ export interface FanWebgpuOptions {
 
 /**
  * Draw the fan chart's bands + median line via WebGPU. Returns false when the
- * device/context is not (yet) available — the caller then paints the canvas-2D
+ * device/context is not (yet) available - the caller then paints the canvas-2D
  * fallback (drawFanCanvas), same convention as scatter's drawScatterWebgpu.
  */
 export function drawFanWebgpu(
@@ -60,9 +60,9 @@ export function drawFanWebgpu(
     pushBandStrip(batch.triangles, b.top, b.bottom, markColor(css, b.opacity));
   }
 
-  // Line on top — one continuous stroked polyline per series (the model's already
+  // Line on top - one continuous stroked polyline per series (the model's already
   // pixel-projected `points`). Dash pattern (solid history / dashed forecast) is an
-  // SVG/canvas-only affordance; GPU strokes are solid across the whole line — see
+  // SVG/canvas-only affordance; GPU strokes are solid across the whole line - see
   // fellBackFor: the dashed forecast segment renders solid in webgpu mode.
   for (const s of model.lineModel.series) {
     if (s.points.length < 2) continue;

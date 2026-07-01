@@ -1,5 +1,5 @@
 // Moved verbatim from michi-vz src/components/hooks/lineChart/lttb.ts.
-// LTTB (Largest-Triangle-Three-Buckets) downsampling — reduces a series to
+// LTTB (Largest-Triangle-Three-Buckets) downsampling - reduces a series to
 // roughly `threshold` points while preserving the shape a human reads off a line
 // chart. Pure; never constructs new points (the result is a subset, so
 // `certainty`/`label`/`code` and object identity are preserved). Used by the

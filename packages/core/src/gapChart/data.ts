@@ -1,5 +1,5 @@
 // Ported from michi-vz src/components/hooks/gapChart/useGapChartData.ts (the
-// React useMemo shells dropped — pure functions).
+// React useMemo shells dropped - pure functions).
 import type { GapDataItem, Filter } from "../types";
 
 export interface ProcessedGapData {

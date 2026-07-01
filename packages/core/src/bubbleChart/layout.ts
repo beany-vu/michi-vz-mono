@@ -1,10 +1,10 @@
-// Bubble layout — the only d3-force call site. Radii are area-proportional to
+// Bubble layout - the only d3-force call site. Radii are area-proportional to
 // value, scaled so the bubbles fill a target fraction of the plot. A force
 // simulation pulls every bubble toward the centre (gravity) and resolves
 // overlaps (collision), so they "suck together" into an organic cluster.
 //
 // Strategy "force-recenter-scale": let the cluster settle freely (NO hard
-// position clamp — clamping force-pushes edge bubbles through each other and
+// position clamp - clamping force-pushes edge bubbles through each other and
 // breaks the no-overlap invariant), then UNIFORMLY scale positions + radii to
 // fit the plot box and re-centre. Uniform scaling preserves non-overlap exactly:
 // every centre distance and every radius (and the padding gap between them) is
@@ -97,7 +97,7 @@ export function layoutBubbles(nodes: BubbleNode[], o: BubbleLayoutOptions): Pack
   const clusterW = maxX - minX;
   const clusterH = maxY - minY;
 
-  // Uniform scale to fit the box (never upscale past 1 — keep the chosen fillRatio
+  // Uniform scale to fit the box (never upscale past 1 - keep the chosen fillRatio
   // when the cluster already fits). Uniform => non-overlap is preserved.
   const s = Math.min(
     clusterW > 0 ? o.width / clusterW : 1,

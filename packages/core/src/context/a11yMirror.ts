@@ -2,7 +2,7 @@
 // screen readers (and DOM-scraping tools / LLMs) a real, readable representation
 // even in canvas mode where there are no per-mark nodes. Renders purely from the
 // chart-agnostic BaseChartContext (`summary` + `a11yTable`), so EVERY chart reuses
-// it — no per-chart series shape leaks in here.
+// it - no per-chart series shape leaks in here.
 import { htmlEl, svgEl, clear } from "../dom";
 import type { BaseChartContext } from "../types";
 
@@ -20,7 +20,7 @@ export const MAX_A11Y_ROWS = 100;
  * schema.org JSON-LD. The text lands in the DOM so crawlers index it; the SVG is also
  * marked `aria-hidden` because the visually-hidden `.mv-a11y` table is the screen-reader
  * representation (this avoids a double announcement). Called from renderA11yMirror, which
- * every engine already invokes with the context — so all charts get it from one place.
+ * every engine already invokes with the context - so all charts get it from one place.
  * render() clears the <svg> each pass, so these nodes are re-added fresh (no duplicates).
  */
 function applySvgSemantics(svg: SVGElement, ctx: BaseChartContext): void {

@@ -1,13 +1,13 @@
 // Band x-axis layout decision. Ported from the legacy michi-vz
 // (shared/xaxisBand/chooseAxisMode.ts) verbatim so the new engine matches the
 // old behaviour: fit horizontally, else rotate -45° (all labels), else thin to a
-// readable subset. Pure — no DOM (measurement is injected).
+// readable subset. Pure - no DOM (measurement is injected).
 export type AxisMode = "horizontal" | "rotated" | "fallback";
 
 export interface ChooseAxisModeParams {
   domain: string[];
   formatter: (d: string) => string;
-  /** Per-band slot width in px — pass `xScale.step()` (not bandwidth()). */
+  /** Per-band slot width in px - pass `xScale.step()` (not bandwidth()). */
   bandWidth: number;
   measure: (label: string) => number;
   padding?: number;
@@ -22,7 +22,7 @@ export interface ChooseAxisModeResult {
 
 const ESTIMATED_TICK_WIDTH = 80;
 
-/** Round a raw step up to the nearest 1/2/5 × 10^k — d3's "nice number" ladder. */
+/** Round a raw step up to the nearest 1/2/5 × 10^k - d3's "nice number" ladder. */
 function niceStep(raw: number): number {
   if (!(raw > 0)) return 1;
   const mag = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -34,7 +34,7 @@ function niceStep(raw: number): number {
 /**
  * Nordic default: when the band labels are numeric (years, etc.), land the thinned
  * ticks on ROUND values (2000, 2050, 2100 …) by snapping nice-number targets to the
- * nearest existing category — instead of index-sampling to arbitrary values (2089).
+ * nearest existing category - instead of index-sampling to arbitrary values (2089).
  * The two endpoints are always kept so the axis still spans the full data extent.
  */
 function niceNumberSample(domain: string[], nums: number[], count: number): string[] {
@@ -125,7 +125,7 @@ export function chooseAxisMode(params: ChooseAxisModeParams): ChooseAxisModeResu
     const COS_45 = Math.SQRT1_2;
     // Rotated labels trail diagonally, so adjacent labels can graze each other
     // without their text colliding. 3× lets the -45° footprint extend past one
-    // band before we give up and thin — prioritizes "all labels visible".
+    // band before we give up and thin - prioritizes "all labels visible".
     const ROTATED_MAX_OVERLAP = 3;
     if (maxLabelWidth * COS_45 <= bandWidth * ROTATED_MAX_OVERLAP) {
       return { mode: "rotated", tickValues: domain };

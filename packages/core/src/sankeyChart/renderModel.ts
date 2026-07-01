@@ -1,4 +1,4 @@
-// Renderer-agnostic Sankey model — consumed by SVG, canvas, hit-test, and
+// Renderer-agnostic Sankey model - consumed by SVG, canvas, hit-test, and
 // context. Node rects (with the colour-contract attributes) + link bands (path +
 // width + stroke colour). Link colour follows the source or target node.
 // Highlight dimming is applied at draw time (not baked here).

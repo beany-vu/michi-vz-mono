@@ -46,7 +46,7 @@ const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share the
 // host-level hit-test / crosshair / click-to-pin path. svg does not. ⚠️ Keep this and
-// the webgpu render branch — they are the opt-in renderer="webgpu" support.
+// the webgpu render branch - they are the opt-in renderer="webgpu" support.
 const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
@@ -132,7 +132,7 @@ export function mountScatterChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
-  // changes — an unconditional re-fire loops "Maximum update depth" in any consumer
+  // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
   let model: ReturnType<typeof buildScatterRenderModel> | null = null;
@@ -257,7 +257,7 @@ export function mountScatterChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: append/transform points/series before layout.
+    // Plugin hook #1 - transformData: append/transform points/series before layout.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -348,7 +348,7 @@ export function mountScatterChart(
       showGrid: r.showGridY,
     });
 
-    // Consumer-supplied SVG children (axis text labels, reference lines) — rendered
+    // Consumer-supplied SVG children (axis text labels, reference lines) - rendered
     // before the marks, mirroring the legacy `{children}` slot. The source is the React
     // wrapper's renderToStaticMarkup(children). DOMPurify strips a bare <text> (mXSS
     // guard) unless it sits under an <svg> root, so sanitise the markup wrapped in one,
@@ -410,7 +410,7 @@ export function mountScatterChart(
       );
     }
 
-    // ⚠️ PAINTED (canvas + webgpu) render branch — opt-in renderer="webgpu" support.
+    // ⚠️ PAINTED (canvas + webgpu) render branch - opt-in renderer="webgpu" support.
     // Keep the webgpu arm (agents/humans): it tries the GPU then falls back to the 2D
     // canvas when unavailable (always, in jsdom/CI). SVG/canvas behaviour is untouched.
     if (isPainted(r.renderer)) {
@@ -485,7 +485,7 @@ export function mountScatterChart(
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
@@ -495,7 +495,7 @@ export function mountScatterChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [

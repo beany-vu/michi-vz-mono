@@ -6,7 +6,7 @@ import type { ComparableBarChartProps, ComparableBarDataPoint } from "../src/typ
 // WebGPU is never really available in jsdom (no GPUCanvasContext, no adapter), so
 // these tests verify the CAPABILITY GATE and the FALLBACK path: with navigator.gpu
 // absent the engine downgrades to canvas; with it mocked-present the engine enters
-// the webgpu branch, fails to get a device, and paints the canvas-2D stopgap — and
+// the webgpu branch, fails to get a device, and paints the canvas-2D stopgap - and
 // crucially the canvas-mode INTERACTION layer (host hit-test) is reused.
 // Real GPU pixel output is not testable headless; it is verified in-browser.
 
@@ -45,7 +45,7 @@ afterEach(() => {
   __resetGPUDeviceForTest();
 });
 
-describe("mountComparableHorizontalBarChart — webgpu renderer (capability gate + fallback)", () => {
+describe("mountComparableHorizontalBarChart - webgpu renderer (capability gate + fallback)", () => {
   it("does not throw when mounted with renderer=webgpu (gpu absent)", () => {
     setGpu(false);
     expect(() => {

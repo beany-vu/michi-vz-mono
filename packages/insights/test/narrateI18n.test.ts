@@ -17,7 +17,7 @@ const ctx: LineChartContext = {
   a11yTable: { headers: [], rows: [] },
 };
 
-// French phrase builders — i18n by overriding the fragments.
+// French phrase builders - i18n by overriding the fragments.
 const fr: NarrateStrings = {
   topMover: (label, dir, pct) => `${label} a ${dir === "rose" ? "le plus augmenté" : dir === "fell" ? "le plus baissé" : "stagné"}${pct}.`,
   trendSplit: (up, down) => `${up} séries en hausse et ${down} en baisse.`,

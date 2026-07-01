@@ -1,9 +1,9 @@
 /// <reference types="@webgpu/types" />
-// ⚠️ SHARED WebGPU foundation — do not edit/remove per chart (see webgpu/marks.ts).
+// ⚠️ SHARED WebGPU foundation - do not edit/remove per chart (see webgpu/marks.ts).
 // The setupCanvas() analog for WebGPU. Sizes the backing store for
 // devicePixelRatio (identical math to canvas/setupCanvas.ts) and configures the
 // GPUCanvasContext with premultiplied alpha + the preferred format. Returns null
-// when WebGPU is unavailable (e.g. jsdom), so every draw routine early-returns —
+// when WebGPU is unavailable (e.g. jsdom), so every draw routine early-returns -
 // mirroring the canvas null-guard the whole library relies on.
 
 export interface WebgpuSetup {
@@ -45,7 +45,7 @@ export const setupWebgpu = (
   }
 
   const format = gpu.getPreferredCanvasFormat();
-  // Re-configure on every setup — configure() must be re-run after a resize, and
+  // Re-configure on every setup - configure() must be re-run after a resize, and
   // it is idempotent for an unchanged size.
   ctx.configure({ device, format, alphaMode: "premultiplied" });
 

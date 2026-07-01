@@ -40,7 +40,7 @@ describe("buildScatterContext", () => {
     expect(ctx.summary).toContain("correlation");
   });
 
-  it("emits legendData (one row per unique point label, with dataLabelSafe) — colour-authority hook", () => {
+  it("emits legendData (one row per unique point label, with dataLabelSafe) - colour-authority hook", () => {
     const ctx = buildScatterContext({
       renderer: "svg",
       xAxisDataType: "number",
@@ -131,7 +131,7 @@ describe("mountScatterChart (jsdom)", () => {
   });
 });
 
-describe("mountScatterChart — band x-axis (ByPattern contract)", () => {
+describe("mountScatterChart - band x-axis (ByPattern contract)", () => {
   // Two points per label (TMax square + TMin triangle) sharing a band slot, exactly
   // like ByPattern's filteredData. Marks are positioned by `label`, not `x`.
   const bandDataSet: ScatterDataPoint[] = [
@@ -168,7 +168,7 @@ describe("mountScatterChart — band x-axis (ByPattern contract)", () => {
     host.remove();
   });
 
-  it("centres each label in its band slot — Beta sits to the right of Alpha", () => {
+  it("centres each label in its band slot - Beta sits to the right of Alpha", () => {
     const { host, chart } = mountBand();
     const rectX = (label: string): number =>
       Number(
@@ -216,7 +216,7 @@ describe("mountScatterChart — band x-axis (ByPattern contract)", () => {
   });
 });
 
-describe("mountScatterChart — URP features (crosshair / dScaleLegend / grid / ticks / children)", () => {
+describe("mountScatterChart - URP features (crosshair / dScaleLegend / grid / ticks / children)", () => {
   it("renders a .michi-vz-legend group when dScaleLegend is provided, none otherwise", () => {
     const a = mount({ dScaleLegend: { title: "Trade", valueFormatter: (d) => `${Math.round(d)}` } });
     expect(a.host.querySelector(".michi-vz-legend")).not.toBeNull();

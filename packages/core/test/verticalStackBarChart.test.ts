@@ -34,8 +34,8 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     host.remove();
   });
 
-  it("onChartDataProcessed is idempotent — fires once per distinct context (no dispatch loop)", () => {
-    // ByTrend (Tariff Structure) runs TWO colour writers — useColorV2 for the
+  it("onChartDataProcessed is idempotent - fires once per distinct context (no dispatch loop)", () => {
+    // ByTrend (Tariff Structure) runs TWO colour writers - useColorV2 for the
     // fixed buckets AND onChartDataProcessed=setMetadata. If the engine re-emits
     // an unchanged context every render, the second writer never converges →
     // "Maximum update depth exceeded". The guard emits only when the serialized
@@ -148,7 +148,7 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     expect(typeof d.key).toBe("string"); // the hovered segment key
     expect(d.seriesKey).toBeDefined();
     expect(Array.isArray(d.series)).toBe(true);
-    // the exact access the consumer makes — must resolve, not throw
+    // the exact access the consumer makes - must resolve, not throw
     expect(d.item[d.key]).toBeDefined();
 
     chart.destroy();

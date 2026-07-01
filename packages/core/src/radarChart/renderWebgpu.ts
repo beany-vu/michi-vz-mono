@@ -1,9 +1,9 @@
-// EXPERIMENTAL opt-in WebGPU renderer for RadarChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for RadarChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME RadarRenderModel. Each
 // series polygon becomes a triangle FAN (fill) + a stroked outline; the polar
 // grid (rings/spokes/axis labels) stays on the SVG layer. Colours are resolved
 // through the SAME probe canvas mode uses, so consumer CSS still reaches GPU
-// pixels. Built on the shared chart-agnostic mark layer (webgpu/marks.ts) — this
+// pixels. Built on the shared chart-agnostic mark layer (webgpu/marks.ts) - this
 // file only builds a MarkBatch and hands it off, it does not own a GPU pipeline.
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import { emptyBatch, pushFan, pushStroke, markColor, drawMarksWebgpu } from "../webgpu/marks";
@@ -21,10 +21,10 @@ export interface RadarWebgpuOptions {
 
 /**
  * Draw the radar series polygons (fill + outline) via WebGPU. Returns false when
- * the device/context is not (yet) available — the caller then paints its
+ * the device/context is not (yet) available - the caller then paints its
  * canvas-2D fallback (drawRadarCanvas), incl. jsdom where WebGPU is never present.
  * Pole dots and the polar grid are NOT drawn here (grid stays SVG; dots would need
- * an extra instanced-circle pass — omitted for this pass, see fellBackFor).
+ * an extra instanced-circle pass - omitted for this pass, see fellBackFor).
  */
 export function drawRadarWebgpu(
   canvas: HTMLCanvasElement | null,
@@ -33,7 +33,7 @@ export function drawRadarWebgpu(
   o: RadarWebgpuOptions
 ): boolean {
   // Resolve colours through the SAME probe as canvas mode (stroke, falling
-  // through to fill) — see radarChart/renderCanvas.ts.
+  // through to fill) - see radarChart/renderCanvas.ts.
   const labels = model.series.map((s) => s.label);
   const fallback = new Map(model.series.map((s) => [s.label, s.color]));
   const fillColors = resolveMarkColors(

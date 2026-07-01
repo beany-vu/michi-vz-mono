@@ -44,7 +44,7 @@ const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks); svg does not.
 // (Area's hover/hit-test uses a renderer-agnostic overlay rect, so unlike scatter
-// there is no interaction-path branch to share here — isPainted only gates the
+// there is no interaction-path branch to share here - isPainted only gates the
 // painted-layer lifecycle below.)
 const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
@@ -124,7 +124,7 @@ export function mountAreaChart(
 
   const showTooltip = (row: AreaDataRow, key: string, ev: MouseEvent): void => {
     const htmlStr = baseProps.tooltipFormatter
-      ? // Legacy arg order: (datum, fullSeries, key) — consumers read d[key] + series.
+      ? // Legacy arg order: (datum, fullSeries, key) - consumers read d[key] + series.
         baseProps.tooltipFormatter(row, baseProps.series, key)
       : `<strong>${key}</strong><br/>${String(row.date)}: ${Number(row[key]) || 0}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
@@ -180,7 +180,7 @@ export function mountAreaChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -253,7 +253,7 @@ export function mountAreaChart(
     // Legacy parity: NO vertical grid lines, and a clean SMALL set of date labels
     // that always includes the FIRST and LAST period (axis endpoints). Feed every
     // period as a candidate; maxTicks thins a dense monthly series (e.g. 48) down to
-    // ~3–5 evenly-spaced labels keeping both ends; autoRotate tilts only if the kept
+    // ~3-5 evenly-spaced labels keeping both ends; autoRotate tilts only if the kept
     // labels still collide. A short yearly series (≤ maxTicks) shows every year.
     const periodTicks =
       xAxisDataType === "date_annual" || xAxisDataType === "date_monthly"
@@ -348,7 +348,7 @@ export function mountAreaChart(
           onReady: render,
         });
         if (ready) {
-          // GPU painted — drop any first-frame 2D fallback canvas.
+          // GPU painted - drop any first-frame 2D fallback canvas.
           removeCanvas();
         } else {
           // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -379,7 +379,7 @@ export function mountAreaChart(
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
@@ -389,7 +389,7 @@ export function mountAreaChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [

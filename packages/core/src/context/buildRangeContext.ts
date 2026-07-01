@@ -41,7 +41,7 @@ export function buildRangeContext(input: BuildRangeContextInput): RangeChartCont
   const summary =
     `Range chart ${titlePart}with ${series.length} band${series.length === 1 ? "" : "s"} over ${pointCount} point${
       pointCount === 1 ? "" : "s"
-    }. Value range ${round(input.yAxisDomain[0])}–${round(input.yAxisDomain[1])}.`;
+    }. Value range ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
 
   return {
     chartType: "range-chart",

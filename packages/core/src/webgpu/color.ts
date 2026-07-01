@@ -1,4 +1,4 @@
-// ⚠️ SHARED WebGPU foundation — do not edit/remove per chart (see webgpu/marks.ts).
+// ⚠️ SHARED WebGPU foundation - do not edit/remove per chart (see webgpu/marks.ts).
 // CSS-colour-string → premultiplied RGBA floats, the single conversion point for
 // the `alphaMode: "premultiplied"` swap-chain contract. resolveMarkColors() hands
 // back computed CSS colours (getComputedStyle → rgb()/rgba() form) or model
@@ -60,7 +60,7 @@ export function cssColorToPremultiplied(css: string | undefined | null): RGBA {
     if (hex) return hex;
   }
 
-  // rgb(r g b / a) and rgb(r,g,b,a) — the getComputedStyle output form.
+  // rgb(r g b / a) and rgb(r,g,b,a) - the getComputedStyle output form.
   const m = s.match(/^rgba?\(([^)]+)\)$/);
   if (m) {
     const parts = m[1].split(/[\s,/]+/).filter(Boolean);

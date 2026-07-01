@@ -107,7 +107,7 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     host.remove();
   });
 
-  it("emits legendData (label/color/dataLabelSafe) on the context — the colour-authority hook", () => {
+  it("emits legendData (label/color/dataLabelSafe) on the context - the colour-authority hook", () => {
     // Without legendData, thd's setMetadata early-returns and every bar resolves
     // transparent. dataLabelSafe must equal sanitizeForClassName(label).
     const { host, chart } = mount({ colorsMapping: { Beta: "#abcdef" } });
@@ -123,7 +123,7 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     host.remove();
   });
 
-  it("onChartDataProcessed is idempotent — fires once per distinct context (no dispatch loop)", () => {
+  it("onChartDataProcessed is idempotent - fires once per distinct context (no dispatch loop)", () => {
     // A consumer colour authority dispatches into redux on every call; re-firing an
     // unchanged context every render is the "Maximum update depth" loop.
     let calls = 0;
@@ -163,7 +163,7 @@ describe("y-band gridlines respect showGrid (no phantom horizontal lines)", () =
   });
 });
 
-describe("createComparableBarScales — maxBarHeight cap", () => {
+describe("createComparableBarScales - maxBarHeight cap", () => {
   const margin = { top: 50, right: 10, bottom: 50, left: 20 };
 
   it("caps the band thickness and centres the bands when few rows would balloon", () => {
@@ -188,7 +188,7 @@ describe("createComparableBarScales — maxBarHeight cap", () => {
   });
 });
 
-describe("processComparableBarData — symmetricXDomain", () => {
+describe("processComparableBarData - symmetricXDomain", () => {
   it("forces a symmetric domain [-M, M] with M = max(|min|, |max|)", () => {
     const data: ComparableBarDataPoint[] = [
       { label: "a", valueBased: -25, valueCompared: -25 },

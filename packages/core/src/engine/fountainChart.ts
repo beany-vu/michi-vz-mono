@@ -214,7 +214,7 @@ export function mountFountainChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData.
+    // Plugin hook #1 - transformData.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
@@ -341,7 +341,7 @@ export function mountFountainChart(
           onReady: render,
         });
         if (ready) {
-          // GPU painted — drop any first-frame 2D fallback canvas.
+          // GPU painted - drop any first-frame 2D fallback canvas.
           removeCanvas();
         } else {
           // Device not ready / unavailable (incl. jsdom): paint the canvas-2D
@@ -373,12 +373,12 @@ export function mountFountainChart(
       yAxisDomain: processed.yAxisDomain,
       colorsMapping: colors.generatedColorsMapping,
     });
-    // Plugin hook #3 — enrichContext (before the a11y mirror + dataprocessed event).
+    // Plugin hook #3 - enrichContext (before the a11y mirror + dataprocessed event).
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    // Plugin hook #2 — validate. Validate the USER's data (baseProps); add layout
+    // Plugin hook #2 - validate. Validate the USER's data (baseProps); add layout
     // warnings from the processed model (crowding / clipped spread).
     if (baseProps.onDataWarning) {
       const warnings: DataWarning[] = [

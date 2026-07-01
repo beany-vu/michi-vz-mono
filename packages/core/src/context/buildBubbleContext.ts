@@ -71,9 +71,9 @@ export function buildBubbleContext(input: BuildBubbleContextInput): BubbleChartC
     const base: Array<string | number> = [b.label, b.value];
     if (hasPartial) {
       base.push(
-        b.partial ?? "—",
-        b.remainder ?? "—",
-        b.partialPct != null ? `${Math.round(b.partialPct * 100)}%` : "—"
+        b.partial ?? "-",
+        b.remainder ?? "-",
+        b.partialPct != null ? `${Math.round(b.partialPct * 100)}%` : "-"
       );
     }
     return base;

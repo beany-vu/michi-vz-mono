@@ -1,10 +1,10 @@
 // The `forecast()` plugin: appends a dashed (certainty:false) prediction tail to
 // each target Line series, optional what-if scenario lines and a regression
 // trendline, a threshold/goal line + "fall point" via the annotate() hook, and a
-// forecast sentence (with accuracy + breach) into the chart summary — which flows
+// forecast sentence (with accuracy + breach) into the chart summary - which flows
 // to the a11y mirror + dataprocessed event for free.
 //
-// Statistical only — zero model download. Works on numeric x-axes (incl. annual
+// Statistical only - zero model download. Works on numeric x-axes (incl. annual
 // year numbers); series with non-numeric x are left untouched (MVP limitation).
 import type {
   Annotation,
@@ -57,7 +57,7 @@ export interface ForecastPluginOptions {
   trendline?: boolean;
   /** a goal/threshold line + a marked "fall point" where the forecast crosses it. */
   threshold?: ThresholdSpec;
-  /** fired (on change) when a forecast is projected to cross `threshold` — for alerting. */
+  /** fired (on change) when a forecast is projected to cross `threshold` - for alerting. */
   onThresholdBreach?: (breach: ThresholdBreach) => void;
   /** shade the forecast region (a faint zone highlighting prediction vs actual). Default true. */
   zone?: boolean;
@@ -146,7 +146,7 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
       const dataSet: LineDataItem[] = lp.dataSet.map((item) => {
         if (!isTarget(item.label) || item.series.length < 2) return item;
         const xs = numericDates(item.series);
-        if (!xs) return item; // non-numeric x — can't extrapolate (MVP limitation)
+        if (!xs) return item; // non-numeric x - can't extrapolate (MVP limitation)
         const values = item.series.map((d) => d.value);
         if (values.filter((v) => Number.isFinite(v)).length < 2) return item;
 
@@ -265,7 +265,7 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
 }
 
 /**
- * Fan-chart helper — turn a Line series into nested RangeChart bands (NO new chart
+ * Fan-chart helper - turn a Line series into nested RangeChart bands (NO new chart
  * type: RangeChart already fills a valueMin..valueMax band + a median line). Returns
  * one RangeDataItem per confidence level, widest first so narrower bands paint on top.
  */

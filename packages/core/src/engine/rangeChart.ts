@@ -151,7 +151,7 @@ export function mountRangeChart(
     const htmlStr =
       baseProps.tooltipFormatter && item && mid
         ? baseProps.tooltipFormatter(mid, item)
-        : `<strong>${label}</strong>` + (mid ? `<br/>${String(mid.date)}: ${mid.valueMin}–${mid.valueMax}` : "");
+        : `<strong>${label}</strong>` + (mid ? `<br/>${String(mid.date)}: ${mid.valueMin}-${mid.valueMax}` : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
   };
@@ -166,7 +166,7 @@ export function mountRangeChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -260,7 +260,7 @@ export function mountRangeChart(
         onReady: render,
       });
       if (ready) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -286,13 +286,13 @@ export function mountRangeChart(
       items,
       colorsMapping: colors.generatedColorsMapping,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [

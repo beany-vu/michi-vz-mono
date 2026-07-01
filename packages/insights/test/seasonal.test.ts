@@ -7,7 +7,7 @@ function makeSeries(length: number, slope = 1.0): number[] {
   return Array.from({ length }, (_, i) => i * slope + PATTERN[i % PATTERN.length]);
 }
 
-// Deterministic, genuinely aperiodic noise via a seeded PRNG (mulberry32) — NOT
+// Deterministic, genuinely aperiodic noise via a seeded PRNG (mulberry32) - NOT
 // the simple alternating sequence, which is actually a clean period-2/4 signal
 // (ACF at lag 4 ~ 0.60) and so should detect a period, not 1.
 function seededNoise(length: number, seed = 1337): number[] {

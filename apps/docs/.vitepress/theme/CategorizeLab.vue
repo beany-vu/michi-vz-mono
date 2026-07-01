@@ -142,7 +142,7 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
     <p class="elab-result">
       <template v-if="sorted"><strong>{{ COMMENTS.length }}</strong> comments → sorted into
         <strong class="elab-hit">{{ THEMES.length }}</strong> themes by meaning{{ preview ? " (instant preview)" : "" }}</template>
-      <template v-else><strong>{{ COMMENTS.length }}</strong> comments — <strong>one untagged pile</strong>;
+      <template v-else><strong>{{ COMMENTS.length }}</strong> comments - <strong>one untagged pile</strong>;
         load a model to sort them</template>
     </p>
 

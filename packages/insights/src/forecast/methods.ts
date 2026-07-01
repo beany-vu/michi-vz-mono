@@ -1,4 +1,4 @@
-// Pure forecasting methods. No DOM, no deps, fully deterministic — easy to test.
+// Pure forecasting methods. No DOM, no deps, fully deterministic - easy to test.
 // Each returns the next `horizon` point forecasts plus the in-sample one-step-ahead
 // fitted values (used to size the confidence band and the accuracy metrics).
 

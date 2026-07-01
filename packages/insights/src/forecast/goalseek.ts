@@ -1,6 +1,6 @@
 // Goal-seek + pacing: the inverse of forecasting. Given a known target, work out
 // what growth/run-rate is needed, or extrapolate the current pace to a finish line.
-// Pure + deterministic — plain arithmetic, no DOM, no deps, no randomness.
+// Pure + deterministic - plain arithmetic, no DOM, no deps, no randomness.
 
 /**
  * Constant per-period multiplicative growth rate `g` such that

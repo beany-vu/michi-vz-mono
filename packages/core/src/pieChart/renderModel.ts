@@ -1,4 +1,4 @@
-// Renderer-agnostic Pie model — consumed by SVG, canvas, hit-test, and context.
+// Renderer-agnostic Pie model - consumed by SVG, canvas, hit-test, and context.
 // One mark per slice (path around origin + centroid + angles); the geometry is
 // centred at (cx,cy), which the renderers translate to. Highlight dimming is
 // applied at draw time (not baked here).
@@ -11,7 +11,7 @@ export interface PieSliceMark {
   code?: string;
   /** Colour-group key (the slice label). */
   colorKey: string;
-  /** sanitizeForClassName(label) — the colour contract. */
+  /** sanitizeForClassName(label) - the colour contract. */
   dataLabelSafe: string;
   fill: string;
   value: number;

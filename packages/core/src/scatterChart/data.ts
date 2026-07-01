@@ -36,7 +36,7 @@ export function processScatterData(
   }
 
   // Band (categorical) x: the domain is the ordered unique category labels of the
-  // visible points — mirroring legacy ScatterPlotChart (scaleBand domain = dataSet
+  // visible points - mirroring legacy ScatterPlotChart (scaleBand domain = dataSet
   // labels). The numeric `x` field is ignored for placement; marks are positioned by
   // `label` (see renderModel). y/size domains are still numeric.
   if (opts.xAxisDataType === "band") {

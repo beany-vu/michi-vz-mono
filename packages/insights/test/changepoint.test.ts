@@ -32,7 +32,7 @@ describe("detectChangepoints", () => {
   });
 
   it("respects an explicit threshold (a tiny bend is ignored at high threshold)", () => {
-    // gentle slope change: 1 then 1.5 — delta ~0.5 at the bend.
+    // gentle slope change: 1 then 1.5 - delta ~0.5 at the bend.
     const series = [0, 1, 2, 3, 4.5, 6, 7.5, 9];
     const lenient = detectChangepoints(series, { threshold: 0.1 });
     const strict = detectChangepoints(series, { threshold: 5 });

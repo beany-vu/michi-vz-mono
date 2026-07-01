@@ -15,7 +15,7 @@ const META = [
 
 <template>
   <Layout>
-    <!-- Factual meta line under the hero CTAs — plain text, one accent-free line -->
+    <!-- Factual meta line under the hero CTAs - plain text, one accent-free line -->
     <template #home-hero-actions-after>
       <div class="mv-hero-meta">
         <span v-for="m in META" :key="m" class="mv-meta-chip">{{ m }}</span>

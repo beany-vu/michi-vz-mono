@@ -1,4 +1,4 @@
-// Minimal MCP (Model Context Protocol) server — JSON-RPC 2.0 over a pluggable
+// Minimal MCP (Model Context Protocol) server - JSON-RPC 2.0 over a pluggable
 // transport, exposing a chart registry's tools (read + drive) and each chart's
 // ChartContext as a resource. Dependency-free so it stays tiny and fully testable
 // with an in-memory transport; runs headless over stdio for Claude Code / Codex /
@@ -111,7 +111,7 @@ export function createMcpServer(
   return { handle, toolDefs, resourceDefs };
 }
 
-/** Newline-delimited JSON-RPC over Node stdio — the transport Claude Code / Codex use. */
+/** Newline-delimited JSON-RPC over Node stdio - the transport Claude Code / Codex use. */
 export function stdioTransport(): McpTransport {
   let handler: (m: JsonRpcMessage) => void = () => {};
   let buf = "";

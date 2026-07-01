@@ -59,7 +59,7 @@ describe("narrate", () => {
     expect(out.summary).toContain("A rose the most");
   });
 
-  // The treemap is a non-time-series chart, so forecast/anomaly don't apply — but it
+  // The treemap is a non-time-series chart, so forecast/anomaly don't apply - but it
   // IS a first-class insight via the generic narrate/explain path (its rich summary
   // carries the realized/untapped headline + biggest opportunity).
   it("narrates a treemap from its summary (insight coverage)", async () => {

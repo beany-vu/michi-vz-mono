@@ -1,4 +1,4 @@
-// <michi-vz-comparable-horizontal-bar-chart> — Lit, LIGHT DOM, over the
+// <michi-vz-comparable-horizontal-bar-chart> - Lit, LIGHT DOM, over the
 // @michi-vz/core ComparableHorizontalBar engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountComparableHorizontalBarChart } from "@michi-vz/core";

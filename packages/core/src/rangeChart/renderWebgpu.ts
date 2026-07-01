@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for RangeChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for RangeChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME RangeRenderModel. Each band
 // is drawn as a filled TRIANGLE strip between the valueMax (top) and valueMin
 // (bottom) polylines (pushBandStrip), with the median drawn as a stroked polyline
@@ -7,10 +7,10 @@
 //
 // The render model only carries SVG path strings (curve-interpolated by d3), so
 // each series' area/median `d` is flattened back into polylines by sampling an
-// offscreen <path> via getPointAtLength — the exact same geometry the SVG/canvas
+// offscreen <path> via getPointAtLength - the exact same geometry the SVG/canvas
 // renderers paint, just tessellated for the GPU. (jsdom does not implement
 // getPointAtLength, but that is moot: this only runs once a real GPU device has
-// been acquired, which never happens in jsdom — the engine falls back to canvas
+// been acquired, which never happens in jsdom - the engine falls back to canvas
 // first.)
 import { svgEl } from "../dom";
 import { emptyBatch, pushBandStrip, pushStroke, markColor, drawMarksWebgpu } from "../webgpu/marks";
@@ -26,7 +26,7 @@ export interface RangeWebgpuOptions {
   onReady?: () => void;
 }
 
-// d3 area() emits: M <top...> L <bottom...reversed> Z — the top ring runs forward
+// d3 area() emits: M <top...> L <bottom...reversed> Z - the top ring runs forward
 // through the points and the bottom ring runs backward, closing the band. Sampling
 // the full closed path and splitting it at its midpoint recovers both polylines in
 // the SAME point order the SVG/canvas renderers draw (curve included).

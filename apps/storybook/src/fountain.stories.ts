@@ -3,7 +3,7 @@ import { examples } from "@michi-vz/examples";
 import "@michi-vz/wc/fountain-chart";
 import { renderElement } from "./render";
 
-// Famous fountain snapshot + forecast trend — the docs demo data.
+// Famous fountain snapshot + forecast trend - the docs demo data.
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const snapshot = reg["fountain-chart"][0].props;
 const trend = reg["fountain-chart"][1].props;
@@ -37,7 +37,7 @@ export const Trend: Story = {
   args: { ...trend, width: 820, height: 500, renderer: "svg" },
 };
 
-/** Canvas renderer — same jets, painted to a <canvas>. */
+/** Canvas renderer - same jets, painted to a <canvas>. */
 export const Canvas: Story = {
   args: { ...snapshot, width: 820, height: 500, renderer: "canvas" },
 };
@@ -47,7 +47,7 @@ export const TightColumn: Story = {
   args: { ...snapshot, width: 820, height: 500, bloomExponent: 6, renderer: "svg" },
 };
 
-/** No droplets, no mist — minimal look. */
+/** No droplets, no mist - minimal look. */
 export const Minimal: Story = {
   args: { ...snapshot, width: 820, height: 500, showDroplets: false, showMist: false, renderer: "svg" },
 };

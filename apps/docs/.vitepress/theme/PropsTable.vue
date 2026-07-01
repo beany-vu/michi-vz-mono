@@ -26,15 +26,15 @@ const common = computed(() => entry.value?.props.filter((p: any) => p.common) ??
           <td><code class="mv-c-type">{{ p.type }}</code></td>
           <td>
             <code v-if="p.default" class="mv-c-default">{{ p.default }}</code>
-            <span v-else class="mv-dash">—</span>
+            <span v-else class="mv-dash">-</span>
           </td>
-          <td>{{ p.description || "—" }}</td>
+          <td>{{ p.description || "-" }}</td>
         </tr>
       </tbody>
     </table>
 
     <details class="mv-props-common">
-      <summary>Common props — shared by every chart ({{ common.length }})</summary>
+      <summary>Common props - shared by every chart ({{ common.length }})</summary>
       <table class="mv-props-table">
         <thead>
           <tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr>
@@ -45,9 +45,9 @@ const common = computed(() => entry.value?.props.filter((p: any) => p.common) ??
             <td><code class="mv-c-type">{{ p.type }}</code></td>
             <td>
               <code v-if="p.default" class="mv-c-default">{{ p.default }}</code>
-              <span v-else class="mv-dash">—</span>
+              <span v-else class="mv-dash">-</span>
             </td>
-            <td>{{ p.description || "—" }}</td>
+            <td>{{ p.description || "-" }}</td>
           </tr>
         </tbody>
       </table>

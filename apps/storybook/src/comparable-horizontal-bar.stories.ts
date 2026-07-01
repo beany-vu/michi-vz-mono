@@ -39,7 +39,7 @@ const fewRows = {
  * `maxBarHeight` caps bar thickness so a 1-2 row result doesn't expand into giant
  * blocks: the band range shrinks to yield exactly that thickness and is centred in
  * the plot (symmetric whitespace). No-op for dense charts. Band *padding* can't do
- * this — the band step (hence label spacing) is fixed by height/count.
+ * this - the band step (hence label spacing) is fixed by height/count.
  */
 export const MaxBarHeight: Story = {
   args: { ...fewRows, maxBarHeight: 28, width: 760, height: 420, renderer: "svg" },
@@ -58,13 +58,13 @@ const signed = {
 /**
  * `symmetricXDomain` forces `[-M, M]`, M = max(|min|, |max|), so 0 sits dead-centre
  * and the ± sides mirror. Wins over xAxisDomain / xAxisPredefinedDomain. The
- * smaller-magnitude side then shows empty axis — inherent to symmetric, not a bug.
+ * smaller-magnitude side then shows empty axis - inherent to symmetric, not a bug.
  */
 export const SymmetricXDomain: Story = {
   args: { ...signed, symmetricXDomain: true, width: 760, height: 420, renderer: "svg" },
 };
 
-/** Canvas renderer — same two-period comparison, painted to a <canvas>. */
+/** Canvas renderer - same two-period comparison, painted to a <canvas>. */
 export const Canvas: Story = {
   args: { ...base, width: 760, height: 460, renderer: "canvas" },
 };

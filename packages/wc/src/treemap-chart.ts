@@ -1,4 +1,4 @@
-// <michi-vz-treemap-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-treemap-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core Treemap engine. Hierarchical squarified tiling with an optional
 // two-part (e.g. realized/untapped) split per leaf, plus a mobile-friendly stack
 // layout.

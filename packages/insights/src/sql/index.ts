@@ -72,7 +72,7 @@ export interface SqlEngine {
 
 /**
  * Lazy DuckDB-Wasm engine for real in-browser SQL. Returns null when DuckDB-Wasm
- * isn't installed (opt-in dep) — callers fall back to `aggregate()`.
+ * isn't installed (opt-in dep) - callers fall back to `aggregate()`.
  */
 export async function createSqlEngine(): Promise<SqlEngine | null> {
   const duckdb = await optionalImport<Record<string, unknown>>("@duckdb/duckdb-wasm");

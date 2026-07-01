@@ -1,4 +1,4 @@
-// @michi-vz/insights — opt-in, client-side AI/predictive layer over @michi-vz/core.
+// @michi-vz/insights - opt-in, client-side AI/predictive layer over @michi-vz/core.
 // Each capability is also its own tree-shakeable sub-path ("@michi-vz/insights/forecast",
 // "/anomaly", "/validate", "/agent", "/mcp"); this root re-exports the lightweight,
 // model-free pieces for convenience. The Node MCP server stays at "/mcp" only.

@@ -1,4 +1,4 @@
-// Phase 2 — generalized ChartContext schema (TDD, written before the impl).
+// Phase 2 - generalized ChartContext schema (TDD, written before the impl).
 // Drives: a shared BaseChartContext with a chart-agnostic `a11yTable`, a
 // discriminated union keyed on `chartType`, and an a11y mirror that renders from
 // the base (no gap-specific fields) so every future chart reuses it.

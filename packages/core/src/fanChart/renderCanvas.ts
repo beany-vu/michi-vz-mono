@@ -1,4 +1,4 @@
-// Canvas 2D renderer for FanChart — draws the SAME model the SVG path uses: nested
+// Canvas 2D renderer for FanChart - draws the SAME model the SVG path uses: nested
 // band area paths (graduated opacity) then the history/forecast line runs (solid +
 // dashed). Colours resolve through the SVG colour probe (resolveMarkColors) so the
 // light-DOM contract reaches canvas pixels. jsdom has no 2D context -> no-op.
@@ -14,7 +14,7 @@ export interface FanBandPath {
   areaPath: string;
   opacity: number;
   /** Pixel-space top (valueMax) / bottom (valueMin) polylines, same length, ordered
-   *  by x — used by the webgpu renderer's pushBandStrip (areaPath is SVG/canvas-only). */
+   *  by x - used by the webgpu renderer's pushBandStrip (areaPath is SVG/canvas-only). */
   top?: Array<[number, number]>;
   bottom?: Array<[number, number]>;
 }
@@ -39,7 +39,7 @@ export function drawFanCanvas(
   if (!setup) return; // jsdom / no 2D context
   const { ctx } = setup;
 
-  // ----- Bands (fill, graduated opacity) — probe the .area fill contract -----
+  // ----- Bands (fill, graduated opacity) - probe the .area fill contract -----
   const bandLabels = [...new Set(args.bands.map((b) => b.label))];
   const bandFallback = new Map(args.bands.map((b) => [b.label, b.color]));
   const fillColors = resolveMarkColors(
@@ -58,7 +58,7 @@ export function drawFanCanvas(
     ctx.restore();
   }
 
-  // ----- Line (history solid + forecast median dashed) — probe the .line stroke -----
+  // ----- Line (history solid + forecast median dashed) - probe the .line stroke -----
   const lineLabels = args.lineModel.series.map((s) => s.label);
   const lineFallback = new Map(args.lineModel.series.map((s) => [s.label, s.color]));
   const strokeColors = resolveMarkColors(

@@ -1,7 +1,7 @@
 // Opt-in Canvas 2D renderer for VerticalStackBar. Paints the same rects the SVG
 // renderer does (no DOM); fill colours resolved via the SVG colour probe
 // (resolveMarkColors `bar`/fill) so consumer CSS reaches canvas pixels. The
-// hasOwnProperty guard already ran in stack.ts — the model is authoritative, so
+// hasOwnProperty guard already ran in stack.ts - the model is authoritative, so
 // this loop only soft-skips empty key arrays (no second guard). jsdom → no-op.
 import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";

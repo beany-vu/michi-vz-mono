@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for FountainChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for FountainChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME FountainRenderModel. Colours
 // are resolved through the SAME light-DOM probe canvas mode uses (makeSimpleProbe
 // "path.mv-fountain-jet"/fill), so consumer CSS still reaches GPU pixels.
@@ -6,7 +6,7 @@
 // The froth-slice/outline/mist silhouettes are closed polygons (produced by
 // geometry.ts as SVG path strings: M..L..[A]..L..Z); this file samples each path
 // into an ordered point ring (approximating the elliptical crown arc with short
-// segments) and fans it from its centroid via marks.ts pushFan — the shared GPU
+// segments) and fans it from its centroid via marks.ts pushFan - the shared GPU
 // layer only knows triangles/circles, not path strings. Droplet arcs (quadratic
 // Beziers) and the trend polyline are sampled the same way and drawn with
 // pushStroke. Device acquisition is async; while not ready this returns false and
@@ -60,7 +60,7 @@ function samplePath(d: string): Array<[number, number]> {
         void cx;
       }
     } else if (type === "Z" || type === "z") {
-      // closed — ring already implied; no point to add.
+      // closed - ring already implied; no point to add.
     }
   }
   return pts;
@@ -142,7 +142,7 @@ export function drawFountainWebgpu(
 
     // Predicted dashed outline is a stroke-only affordance that the flat MarkBatch
     // triangle layer can't express as a dash pattern; omitted in webgpu mode (the
-    // solid froth-slice fill still conveys the jet — see fellBackFor).
+    // solid froth-slice fill still conveys the jet - see fellBackFor).
 
     for (const dp of jet.dropletPaths) {
       const pts = sampleQuadratic(dp);

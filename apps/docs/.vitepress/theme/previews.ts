@@ -1,12 +1,12 @@
 // Dedicated, hand-tuned thumbnail data for the home-page chart catalog cards.
 //
-// These are intentionally SMALL and clean — a few series/points, no markers, no
-// titles — so each chart reads as a crisp mini-shape at ~190x110px. They are
+// These are intentionally SMALL and clean - a few series/points, no markers, no
+// titles - so each chart reads as a crisp mini-shape at ~190x110px. They are
 // decorative landing-page data, separate from the real per-chart examples in
 // @michi-vz/examples (which power the full chart pages).
 //
 // The cards mount the @michi-vz/core ENGINE directly (not the <michi-vz-*> web
-// component) because the elements expose only a fixed prop subset — notably no
+// component) because the elements expose only a fixed prop subset - notably no
 // `margin`, so a wc thumbnail can't escape the engine's full-size default
 // margins (which collapse the plot at 124px). Mounting the engine gives full
 // prop control (margin/colors/sizeRange/…). The card injects width/height/margin;
@@ -163,7 +163,7 @@ export const previews: Record<string, Preview> = {
     props: {
       axes: ["Health", "Cost", "Safety", "Culture", "Transit", "Green"],
       maxValue: 100,
-      // Thumbnail: blank the radial ring value labels (100/75/50/25) — they clutter
+      // Thumbnail: blank the radial ring value labels (100/75/50/25) - they clutter
       // the tiny card; the shape reads on its own.
       radialLabelFormatter: () => "",
       fillOpacity: 0.18,

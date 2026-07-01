@@ -1,8 +1,8 @@
-// Richer data-quality validation — a companion to core's `onDataWarning`. Pure +
+// Richer data-quality validation - a companion to core's `onDataWarning`. Pure +
 // deterministic: it walks a Line series (or every series of a LineChart) and reports
 // statistical/shape issues as DataWarning[]. It re-uses ONLY the safe, existing
 // DataWarning `type` members from core (a fixed union there); all the specifics go in
-// `message`. No DOM, no deps — easy to test and to fold into the plugin `validate()`
+// `message`. No DOM, no deps - easy to test and to fold into the plugin `validate()`
 // hook (which is merged into the engine's onDataWarning path).
 import type { Annotation, DataPoint, DataWarning, LineChartProps, MichiVzPlugin } from "@michi-vz/core";
 
@@ -23,7 +23,7 @@ function numericDate(date: number | string): number | null {
  *  - "non-monotonic-date": numeric dates are not non-decreasing (a backwards step).
  *
  * Dates are only checked for monotonicity when EVERY date in the series parses to a
- * finite number — categorical / string axes carry no inherent order, so we stay quiet.
+ * finite number - categorical / string axes carry no inherent order, so we stay quiet.
  */
 export function validateSeries(series: DataPoint[]): DataWarning[] {
   const warnings: DataWarning[] = [];
@@ -33,7 +33,7 @@ export function validateSeries(series: DataPoint[]): DataWarning[] {
     return warnings;
   }
 
-  // Non-finite values — one warning per offending point (index + value reported).
+  // Non-finite values - one warning per offending point (index + value reported).
   for (let i = 0; i < series.length; i++) {
     const v = series[i].value;
     if (!Number.isFinite(v)) {
@@ -44,7 +44,7 @@ export function validateSeries(series: DataPoint[]): DataWarning[] {
     }
   }
 
-  // Duplicate dates — report each repeated key once, in first-seen order.
+  // Duplicate dates - report each repeated key once, in first-seen order.
   const seen = new Map<string, number>();
   const reported = new Set<string>();
   for (let i = 0; i < series.length; i++) {
@@ -62,7 +62,7 @@ export function validateSeries(series: DataPoint[]): DataWarning[] {
     }
   }
 
-  // Non-monotonic numeric dates — only when the whole axis is numeric.
+  // Non-monotonic numeric dates - only when the whole axis is numeric.
   const nums = series.map((d) => numericDate(d.date));
   if (nums.every((n) => n !== null)) {
     const xs = nums as number[];
@@ -112,7 +112,7 @@ export interface ValidatePluginOptions {
 }
 
 /**
- * `validate()` plugin — reports data-quality problems via `onDataWarning` AND (when
+ * `validate()` plugin - reports data-quality problems via `onDataWarning` AND (when
  * `highlight` is on) marks the offending points on the chart: a red dot on a bad
  * value/duplicate/out-of-order point, or a red dashed line at a non-finite point's
  * date. Distinct from highlightItems (which highlights a whole series).

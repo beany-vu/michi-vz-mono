@@ -45,7 +45,7 @@ describe("processAreaChartData (stack)", () => {
 });
 
 describe("mountAreaChart (jsdom)", () => {
-  it("emits legendData (label/dataLabelSafe) on the context — the colour-authority hook", () => {
+  it("emits legendData (label/dataLabelSafe) on the context - the colour-authority hook", () => {
     // Without legendData, thd's setMetadata early-returns and stacked fills resolve transparent.
     const { host, chart } = mount();
     const ctx = chart.getContext()!;

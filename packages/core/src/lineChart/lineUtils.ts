@@ -1,5 +1,5 @@
 // Moved from michi-vz src/components/hooks/lineChart/lineChartUtils.ts.
-// NOTE: `sanitizeForClassName` is NOT redefined here — it is imported from the
+// NOTE: `sanitizeForClassName` is NOT redefined here - it is imported from the
 // single source of truth (math/sanitize) per the hard rules. Only the pure
 // scale-domain / colour / x-parse helpers move here.
 import type { LineDataItem, XaxisDataType } from "../types";

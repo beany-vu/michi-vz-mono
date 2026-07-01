@@ -260,7 +260,7 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
         certified countries{{ preview ? " (instant preview)" : ` (by ${selectedLlm.name})` }}</template>
       <template v-else-if="mode === 'reconciled'">→ <strong class="elab-hit">{{ groups.length }}</strong>
         {{ preview ? "countries (instant preview)" : (backend === "bert" ? `groups (${embName} - synonyms merged)` : "groups (fuzzy - spelling/case/typos merged)") }}</template>
-      <template v-else>— messy, duplicated, wrong totals</template>
+      <template v-else>- messy, duplicated, wrong totals</template>
     </p>
 
     <div v-if="mode === 'certified' && !preview" class="elab-certify">

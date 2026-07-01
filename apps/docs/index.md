@@ -2,7 +2,7 @@
 layout: home
 hero:
   name: michi-vz
-  text: Un chart, un chat — il s'appelle Michi.
+  text: Un chart, un chat - il s'appelle Michi.
   tagline: Drop them in as web components, or import per-chart into React, Vue, Svelte, Angular, or plain TypeScript. Themed in your own CSS, and able to describe themselves in plain language.
   image:
     src: /michi-shield.png

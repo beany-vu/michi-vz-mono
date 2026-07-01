@@ -9,7 +9,7 @@ const series: DataPoint[] = [
   { date: 2021, value: 40, certainty: true },
 ];
 const props: LineChartProps = { xAxisDataType: "number", dataSet: [{ label: "A", series }] };
-// minimal PluginContext stub — the forecast hooks only read nothing off it here
+// minimal PluginContext stub - the forecast hooks only read nothing off it here
 const pc = { chartType: "line-chart", getProps: () => props, getContext: () => null, setProps: () => {} } as never;
 const lineCtx = (summary = "Base.") => ({ chartType: "line-chart", summary }) as never;
 

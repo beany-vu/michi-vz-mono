@@ -449,7 +449,7 @@ import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings"
 // opt into a small in-browser BERT (MiniLM via Transformers.js, WebGPU); lazy, nothing bundled
 const e = await createEmbedder({ backend: "transformers" }); // default all-MiniLM-L6-v2
 const [a, b] = await e.embed(["USA", "United States"]);
-cosineSimilarity(a, b); // ≈ 0.8 — close, even with no letters in common
+cosineSimilarity(a, b); // ≈ 0.8 - close, even with no letters in common
 ```
 
 ```ts [Search by meaning]

@@ -5,7 +5,7 @@
 // element that mimics the real SVG mark (same tag/class/data-attributes), reading
 // the colour the browser computed for it (consumer CSS included) via
 // getComputedStyle, then removing it. Shadow DOM would block the consumer CSS
-// from matching the probe — which is why every michi-vz custom element renders
+// from matching the probe - which is why every michi-vz custom element renders
 // into light DOM.
 
 import { sanitizeForClassName } from "../math/sanitize";

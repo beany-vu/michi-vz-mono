@@ -1,4 +1,4 @@
-// Imperative port of shared/Title.tsx — renders a centered <text class="title">
+// Imperative port of shared/Title.tsx - renders a centered <text class="title">
 // only when there is text (the JSX returned null for empty children). Colour is
 // the consumer's contract via core.css `.michi-vz .title` (no fill set here).
 import { svgEl } from "../../dom";

@@ -3,7 +3,7 @@ import { examples } from "@michi-vz/examples";
 import "@michi-vz/wc/sankey-chart";
 import { renderElement } from "./render";
 
-// Bilateral trade flows (exporters -> markets) — the docs demo data.
+// Bilateral trade flows (exporters -> markets) - the docs demo data.
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const flows = reg["sankey-chart"][0].props;
 
@@ -37,7 +37,7 @@ export const ColourByTarget: Story = {
   args: { ...flows, width: 820, height: 500, linkColorMode: "target", renderer: "svg" },
 };
 
-/** Canvas renderer — same layout, painted to a <canvas>. */
+/** Canvas renderer - same layout, painted to a <canvas>. */
 export const Canvas: Story = {
   args: { ...flows, width: 820, height: 500, renderer: "canvas" },
 };

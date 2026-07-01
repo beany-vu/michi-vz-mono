@@ -2,7 +2,7 @@
 // renderer uses (run path strings via Path2D, in pixel space) onto a <canvas>
 // layered behind the <svg>. Stroke colours are resolved through the SVG colour
 // probe (resolveMarkColors with the `line`/stroke contract) so consumer CSS
-// (.line[data-label-safe] { stroke }) reaches canvas pixels — the light-DOM
+// (.line[data-label-safe] { stroke }) reaches canvas pixels - the light-DOM
 // contract. jsdom has no 2D context -> setupCanvas returns null and this no-ops.
 import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";

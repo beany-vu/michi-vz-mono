@@ -86,13 +86,13 @@ export type {
   ChartContext,
 } from "@michi-vz/core";
 
-// Hatch-pattern helper (for the `patternsMapping` prop) — re-exported so consumers
+// Hatch-pattern helper (for the `patternsMapping` prop) - re-exported so consumers
 // import it from @michi-vz/react like the legacy michi-vz did.
 export { createHatchPattern } from "@michi-vz/core";
 export type { HatchPatternOptions } from "@michi-vz/core";
 
 // ---------------------------------------------------------------------------
-// Shared-state provider + hook — parity with the legacy michi-vz MichiVzProvider
+// Shared-state provider + hook - parity with the legacy michi-vz MichiVzProvider
 // / useChartContext, backed by the framework-agnostic createMichiVzStore. The
 // hook subscribes via useSyncExternalStore so charts re-render on shared-state
 // changes (tear-free under concurrent rendering). A future CustomEvent
@@ -315,7 +315,7 @@ export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(functi
 
   const { isLoadingComponent, isNodataComponent, children, ...coreProps } = props;
   // Merge shared state into props (faithful to the legacy context merge), then
-  // suppress the engine's vanilla overlay — React renders the overlay node below.
+  // suppress the engine's vanilla overlay - React renders the overlay node below.
   // Serialise JSX children → SVG markup so the engine can inject them into the <svg>
   // without a React context (matches the legacy <LineChart>'s {children} slot).
   const engineProps: LineChartProps = {

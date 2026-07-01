@@ -1,7 +1,7 @@
 /// <reference types="@webgpu/types" />
-// ⚠️ SHARED WebGPU foundation — do not edit/remove per chart (see webgpu/marks.ts).
+// ⚠️ SHARED WebGPU foundation - do not edit/remove per chart (see webgpu/marks.ts).
 // Page-level GPUDevice singleton. One device is shared by every WebGPU chart on
-// the page (per the porting-lessons design doc) — adapters/devices are scarce and
+// the page (per the porting-lessons design doc) - adapters/devices are scarce and
 // expensive to acquire. Acquisition is async, but the engines' render() path is
 // synchronous, so we expose BOTH a sync cached accessor (used during render) and
 // an async ensure() that re-triggers a render via onDeviceReady when it resolves.
@@ -29,7 +29,7 @@ export function getGPUDeviceCached(): GPUDevice | null {
 }
 
 /**
- * Memoized async device acquisition. Safe to call repeatedly — concurrent callers
+ * Memoized async device acquisition. Safe to call repeatedly - concurrent callers
  * share one in-flight request. Resolves to null when WebGPU is unavailable or the
  * adapter/device cannot be acquired. Registers a one-time device.lost handler that
  * clears the memo so the next call re-acquires.

@@ -1,4 +1,4 @@
-// @michi-vz/core — framework-agnostic rendering engine + renderer-agnostic
+// @michi-vz/core - framework-agnostic rendering engine + renderer-agnostic
 // ChartContext. Wrappers (wc/react/vue/angular/svelte) are thin shells over this.
 
 // ---- Engine(s) ----

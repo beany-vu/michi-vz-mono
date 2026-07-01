@@ -80,7 +80,7 @@ export function renderRadarSvg(
     poly.addEventListener("click", (e) => ia.onClick(s, e));
     sg.appendChild(poly);
 
-    // Pole dots only on the active series — dimmed series are background context.
+    // Pole dots only on the active series - dimmed series are background context.
     if (!s.dimmed) {
       for (const p of s.poles) {
         sg.appendChild(

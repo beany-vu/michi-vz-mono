@@ -40,7 +40,7 @@ export function relativeLuminance(rgb: [number, number, number]): number {
 }
 
 /**
- * Return `dark` or `light` — whichever has the higher WCAG contrast against `bg`.
+ * Return `dark` or `light` - whichever has the higher WCAG contrast against `bg`.
  * Unparseable colours return `light`.
  */
 export function readableTextColor(bg: string, dark = "#1a1a1a", light = "#ffffff"): string {

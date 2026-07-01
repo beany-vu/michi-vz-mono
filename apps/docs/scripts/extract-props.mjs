@@ -76,7 +76,7 @@ function engineDefaults(engineFile) {
     if (val) out[m[1]] = val;
   }
   // Also capture defaults wrapped in a ternary, e.g.
-  // `fillOpacity: p.showFilled === false ? 0 : (p.fillOpacity ?? 0.2)` — read the
+  // `fillOpacity: p.showFilled === false ? 0 : (p.fillOpacity ?? 0.2)` - read the
   // `?? <default>` from the fallback branch. Additive: only fills props the simple
   // pattern above missed, so it can't disturb a straight `p.x ?? d` extraction.
   for (const m of text.matchAll(/(\w+):\s*[^\n]*?\?\s*[^\n:]*:\s*\(?\s*p\.\w+\s*\?\?\s*([^\n)]+)/g)) {

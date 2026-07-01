@@ -18,9 +18,9 @@ export interface BarBellSegment {
   x: number;
   width: number;
   cx: number;
-  /** Row centre line — the BAR sits here (all bars aligned on one line). */
+  /** Row centre line - the BAR sits here (all bars aligned on one line). */
   cy: number;
-  /** End-cap centre y — equals cy unless dodged (then it fans off the line). */
+  /** End-cap centre y - equals cy unless dodged (then it fans off the line). */
   capCy: number;
   color: string;
   dimmed: boolean;

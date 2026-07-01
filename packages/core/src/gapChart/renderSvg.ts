@@ -1,4 +1,4 @@
-// Imperative SVG mark renderer — port of GapChart.tsx's `renderGapBars` JSX.
+// Imperative SVG mark renderer - port of GapChart.tsx's `renderGapBars` JSX.
 // Emits the same node structure + classes + data-label/data-label-safe attrs so
 // the consumer colour contract (`.gap-bar[data-label-safe="X"] { fill }`) and
 // the canvas colour probe keep working identically.
@@ -75,7 +75,7 @@ export function renderGapSvg(
   const root = svgEl("g", { class: "gap-chart-content" });
   const transition = o.enableTransitions ? "all 0.1s ease-in-out" : "none";
 
-  // Layer 1 — gap bars + connecting lines
+  // Layer 1 - gap bars + connecting lines
   for (const el of model.elements) {
     const { d, y, barHeight, gapColor, x1, x2, barWidth, barOpacity, markerOpacity } = el;
     const center = y + barHeight / 2;
@@ -115,7 +115,7 @@ export function renderGapSvg(
     root.appendChild(line);
   }
 
-  // Layer 2 — value markers
+  // Layer 2 - value markers
   for (const el of model.elements) {
     const { d, value1X, value2X, value1Color, value2Color } = el;
     const m1 = marker(el, o.shapeValue1, value1X, value1Color, o.squareRadius, "value1-marker");
@@ -142,8 +142,8 @@ export interface GapLegendItem {
 }
 
 /**
- * Mirror of legacy `useGapChartLegend`: build up to three legend items — value1, gap,
- * value2 (in that order) — from `shapesLabelsMapping`. A role is skipped when its label
+ * Mirror of legacy `useGapChartLegend`: build up to three legend items - value1, gap,
+ * value2 (in that order) - from `shapesLabelsMapping`. A role is skipped when its label
  * is falsy. Colours come from `shapeColorsMapping` when `colorMode === "shape"`, else the
  * legacy defaults (#666 for the value markers, #999 for the gap bar).
  */

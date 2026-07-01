@@ -128,7 +128,7 @@ export function mountLineChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
-  // changes — an unconditional re-fire loops "Maximum update depth" in any consumer
+  // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
   // Kept for canvas-mode hit-testing (full, undecimated points per label).
@@ -224,7 +224,7 @@ export function mountLineChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -330,7 +330,7 @@ export function mountLineChart(
       });
     }
 
-    // Consumer-supplied SVG children (axis-title text, reference lines) — rendered
+    // Consumer-supplied SVG children (axis-title text, reference lines) - rendered
     // after the axes, mirroring the legacy <LineChart>'s `{children}` slot. The source
     // is the React wrapper's renderToStaticMarkup(children). DOMPurify strips a bare
     // <text> (mXSS guard) unless it sits under an <svg> root, so sanitise the markup
@@ -427,7 +427,7 @@ export function mountLineChart(
         onReady: render,
       });
       if (ready) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D
@@ -483,11 +483,11 @@ export function mountLineChart(
       legendData,
       disabledItems: props.disabledItems,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
 
-    // Plugin hook #4 — annotate: draw threshold/goal lines + "fall point" markers on
+    // Plugin hook #4 - annotate: draw threshold/goal lines + "fall point" markers on
     // the SVG layer (present in both render modes), above the marks.
     const annotations = collectAnnotations(pluginList, context, pc);
     if (annotations.length > 0) {
@@ -510,7 +510,7 @@ export function mountLineChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [

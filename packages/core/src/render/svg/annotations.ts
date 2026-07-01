@@ -1,8 +1,8 @@
 // Generic annotations layer (threshold/goal lines, "fall point" markers, bands).
-// Drawn on the SVG layer — which every chart keeps present even in canvas mode
+// Drawn on the SVG layer - which every chart keeps present even in canvas mode
 // (axes/title live there too), so one SVG renderer covers both render modes.
 //
-// It is decorative (no data-label / colour-probe contract) and carries NO ML — it
+// It is decorative (no data-label / colour-probe contract) and carries NO ML - it
 // lives in core so it is reusable for static, user-defined reference lines as well
 // as the forecast-driven annotations the @michi-vz/insights `annotate()` hook emits.
 // The engine supplies value->pixel projection closures so this stays scale-agnostic.
@@ -18,7 +18,7 @@ export interface AnnotationRenderContext {
   plot: { left: number; right: number; top: number; bottom: number };
 }
 
-// Geneva red — a sensible default; consumers override per-annotation via `color`.
+// Geneva red - a sensible default; consumers override per-annotation via `color`.
 const DEFAULT_COLOR = "#d4351c";
 
 function appendLabel(
@@ -116,7 +116,7 @@ export function renderAnnotationsSvg(
       );
       if (a.label) appendLabel(g, a.label, right - 4, Math.min(ya, yb) + 12, color, "end");
     } else if (a.type === "xband" && a.at != null && a.at2 != null) {
-      // a full-height vertical region (e.g. the forecast zone) — drawn faint so the
+      // a full-height vertical region (e.g. the forecast zone) - drawn faint so the
       // marks read through it.
       const x1 = ctx.xPx(a.at);
       const x2 = ctx.xPx(a.at2);

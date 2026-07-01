@@ -1,4 +1,4 @@
-// <michi-vz-dual-horizontal-bar-chart> — Lit, LIGHT DOM, over the @michi-vz/core
+// <michi-vz-dual-horizontal-bar-chart> - Lit, LIGHT DOM, over the @michi-vz/core
 // DualHorizontalBar (tornado) engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountDualHorizontalBarChart } from "@michi-vz/core";

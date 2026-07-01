@@ -1,6 +1,6 @@
 // Make an SVG <g> pointer-draggable within its chart. Used for the scatter
 // dScaleLegend, which can otherwise sit under the bubbles. The drag offset is owned
-// by the caller (a module var that survives re-renders) — the engine re-creates the
+// by the caller (a module var that survives re-renders) - the engine re-creates the
 // group every render, so the helper applies the caller's stored offset and reports
 // back via onMove. Position is applied via inline `style.transform` so it wins over a
 // consumer stylesheet rule like `.michi-vz-legend { transform: ... }`.

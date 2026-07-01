@@ -1,7 +1,7 @@
-// EXPERIMENTAL opt-in WebGPU renderer for RibbonChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for RibbonChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME RibbonRenderModel. Columns are
 // tessellated as RECTs and ribbon connectors as BAND STRIPs (both flat-edged
-// quadrilaterals — no bezier sampling needed here), reusing the shared
+// quadrilaterals - no bezier sampling needed here), reusing the shared
 // packages/core/src/webgpu/marks.ts GPU layer. Fill colours are resolved through
 // the SAME light-DOM colour probe as canvas mode, so consumer CSS still reaches
 // GPU pixels. Text/axes/title stay on the SVG layer. Device acquisition is async;
@@ -20,7 +20,7 @@ export interface RibbonWebgpuOptions {
 
 /**
  * Draw a RibbonChart render model to `canvas` via WebGPU. Returns false when the
- * device/context is not (yet) available — the caller should then paint the
+ * device/context is not (yet) available - the caller should then paint the
  * canvas-2D fallback (drawRibbonCanvas) so the chart is never blank.
  */
 export function drawRibbonWebgpu(
@@ -47,7 +47,7 @@ export function drawRibbonWebgpu(
   // as flat-edged quadrilaterals: top edge [start-top, end-top], bottom edge
   // [start-bottom, end-bottom]. Each connector's path is `M rx,top L lx,top L lx,bottom
   // L rx,bottom Z` (see ribbonChart/renderModel.ts), so top/bottom are already ordered
-  // 2-point polylines — no bezier sampling required.
+  // 2-point polylines - no bezier sampling required.
   for (const rb of model.ribbons) {
     const col = model.columns.find((c) => c.key === rb.key);
     const css = colorOf(rb.key, col?.color ?? "transparent");

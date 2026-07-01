@@ -4,7 +4,7 @@ import "@michi-vz/wc/treemap-chart";
 import { renderElement } from "./render";
 
 // The canonical export-potential dataset (nested sectors -> products, each leaf
-// carrying realized vs untapped) — the same data the docs demo uses.
+// carrying realized vs untapped) - the same data the docs demo uses.
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const grouped = reg["treemap-chart"][0].props; // nested under sectors (primary)
 const flat = reg["treemap-chart"][1].props; // dense flat product set (flattened data)

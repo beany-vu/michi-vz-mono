@@ -1,6 +1,6 @@
 // Ported from michi-vz src/components/hooks/gapChart/useGapChartRenderer.ts.
 // Renderer-agnostic geometry model shared by the SVG renderer, the canvas
-// renderer, and the a11y/LLM context — the single source of truth GapChart
+// renderer, and the a11y/LLM context - the single source of truth GapChart
 // already used in production.
 import type { GapDataItem, Shape } from "../types";
 import type { GapScales } from "./scales";

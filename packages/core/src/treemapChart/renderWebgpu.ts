@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for Treemap — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for Treemap - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME TreemapRenderModel. Tiles are
 // drawn as coloured TRIANGLES (two per rect) via the shared webgpu/marks.ts layer:
 // the solid leaf fill, then (when split) a white veil rect over the untapped
@@ -18,7 +18,7 @@ export interface TreemapWebgpuOptions {
 
 /**
  * Draw a TreemapRenderModel's tiles to `canvas` via WebGPU. Returns false when the
- * device/context is not (yet) available — the engine then paints the canvas-2D
+ * device/context is not (yet) available - the engine then paints the canvas-2D
  * fallback (which also draws the parent outlines + text) so the chart is never
  * blank, incl. jsdom where WebGPU is always unavailable.
  */

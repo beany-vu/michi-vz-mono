@@ -261,7 +261,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       return;
     }
 
-    // Summary — "what the AI sees".
+    // Summary - "what the AI sees".
     readoutEl.append(el("h4", {}, ["Summary"]));
     readoutEl.append(el("div", { class: "mv-devtools-summary" }, [ctx.summary]));
 
@@ -276,7 +276,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       readoutEl.append(kv);
     }
 
-    // Series — including actual vs predicted provenance where present.
+    // Series - including actual vs predicted provenance where present.
     const series = (ctx as { series?: Array<Record<string, unknown>> }).series;
     if (Array.isArray(series) && series.length) {
       const hasProvenance = series.some((s) => "predictedCount" in s || "forecastCount" in s);
@@ -298,7 +298,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
           cells.push(
             el("td", {}, [el("span", { class: "badge actual" }, [String(actual ?? 0)])]),
             el("td", {}, [el("span", { class: "badge predicted" }, [String(predicted ?? 0)])]),
-            el("td", {}, [s.forecastStart == null ? "—" : String(s.forecastStart)])
+            el("td", {}, [s.forecastStart == null ? "-" : String(s.forecastStart)])
           );
         }
         tbody.append(el("tr", {}, cells));

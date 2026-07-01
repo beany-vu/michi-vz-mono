@@ -1,4 +1,4 @@
-// <michi-vz-pie-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-pie-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core Pie engine. Slices sized by value; set `inner-radius-ratio` > 0
 // for a donut.
 import { LitElement, html, type PropertyValues } from "lit";

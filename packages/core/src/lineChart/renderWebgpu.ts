@@ -1,10 +1,10 @@
-// EXPERIMENTAL opt-in WebGPU renderer for LineChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for LineChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME LineRenderModel. Each
 // series run is tessellated into a constant-width stroke quad-strip via the
-// shared marks.ts pushStroke() helper (no per-run dash support on GPU — every
+// shared marks.ts pushStroke() helper (no per-run dash support on GPU - every
 // run draws solid; use renderer="canvas"/"svg" for exact dashed "uncertain"
 // runs). Single-point guide lines are drawn as a thin pushRect() bar. Text/axes/
-// title/data-point-marker shapes stay off this PoC path — use canvas/svg when
+// title/data-point-marker shapes stay off this PoC path - use canvas/svg when
 // showDataPoints is needed. Colours are resolved through the SAME light-DOM
 // probe canvas mode uses, so consumer CSS still reaches GPU pixels.
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
@@ -24,7 +24,7 @@ const STROKE_WIDTH = 2.5;
 
 /**
  * Draw the line chart's polylines (+ single-point guide lines) via WebGPU.
- * Returns false when the device/context is not (yet) available — the caller
+ * Returns false when the device/context is not (yet) available - the caller
  * then paints its canvas-2D fallback (incl. jsdom, where this always no-ops).
  */
 export function drawLineWebgpu(

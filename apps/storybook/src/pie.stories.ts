@@ -3,7 +3,7 @@ import { examples } from "@michi-vz/examples";
 import "@michi-vz/wc/pie-chart";
 import { renderElement } from "./render";
 
-// Export value share by sector — the same data the docs demo uses.
+// Export value share by sector - the same data the docs demo uses.
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const pie = reg["pie-chart"][0].props; // solid pie
 const donut = reg["pie-chart"][1].props; // donut (innerRadiusRatio > 0)
@@ -37,7 +37,7 @@ export const Donut: Story = {
   args: { ...donut, width: 460, height: 420, renderer: "svg" },
 };
 
-/** Canvas renderer — identical geometry, painted to a <canvas>. */
+/** Canvas renderer - identical geometry, painted to a <canvas>. */
 export const Canvas: Story = {
   args: { ...pie, width: 460, height: 420, renderer: "canvas" },
 };

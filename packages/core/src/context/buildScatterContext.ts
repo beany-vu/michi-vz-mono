@@ -51,10 +51,10 @@ export function buildScatterContext(input: BuildScatterContextInput): ScatterCha
   let summary = `Scatter plot ${titlePart}with ${n} point${n === 1 ? "" : "s"}.`;
   const xPart = isBand
     ? `x categories ${(input.xAxisDomain as string[]).join(", ")}`
-    : `x ranges ${round((input.xAxisDomain as [number, number])[0])}–${round(
+    : `x ranges ${round((input.xAxisDomain as [number, number])[0])}-${round(
         (input.xAxisDomain as [number, number])[1]
       )}`;
-  summary += ` ${xPart}, y ${round(input.yAxisDomain[0])}–${round(input.yAxisDomain[1])}.`;
+  summary += ` ${xPart}, y ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
   if (correlation !== null) {
     const strength =
       Math.abs(correlation) > 0.7 ? "strong" : Math.abs(correlation) > 0.4 ? "moderate" : "weak";
@@ -84,7 +84,7 @@ export function buildScatterContext(input: BuildScatterContextInput): ScatterCha
     summary,
     a11yTable: {
       headers: ["Label", "X", "Y", "Size"],
-      rows: pts.map((p) => [p.label, p.x, p.y, p.d ?? "—"]),
+      rows: pts.map((p) => [p.label, p.x, p.y, p.d ?? "-"]),
     },
   };
 }

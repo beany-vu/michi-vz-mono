@@ -3,7 +3,7 @@ import { examples } from "@michi-vz/examples";
 import "@michi-vz/wc/bubble-chart";
 import { renderElement } from "./render";
 
-// Export potential by market (realized vs untapped) — the docs demo data.
+// Export potential by market (realized vs untapped) - the docs demo data.
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const split = reg["bubble-chart"][0].props; // realized/untapped split
 const plain = reg["bubble-chart"][1].props; // single-fill cloud
@@ -38,7 +38,7 @@ export const PlainCloud: Story = {
   args: { ...plain, width: 720, height: 520, renderer: "svg" },
 };
 
-/** Canvas renderer — same settled layout, painted to a <canvas>. */
+/** Canvas renderer - same settled layout, painted to a <canvas>. */
 export const Canvas: Story = {
   args: { ...split, width: 720, height: 520, renderer: "canvas" },
 };

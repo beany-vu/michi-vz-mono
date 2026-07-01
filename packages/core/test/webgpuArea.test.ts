@@ -46,7 +46,7 @@ afterEach(() => {
   __resetGPUDeviceForTest();
 });
 
-describe("mountAreaChart — webgpu renderer (capability gate + fallback)", () => {
+describe("mountAreaChart - webgpu renderer (capability gate + fallback)", () => {
   it("does not throw when mounted with renderer=webgpu (gpu absent)", () => {
     setGpu(false);
     expect(() => {

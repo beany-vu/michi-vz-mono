@@ -4,7 +4,7 @@
 // are set as inline styles by the engine, not here.
 //
 // Auto-injected once via document.adoptedStyleSheets from the engine `mount()`
-// (call-time, never on import — so it can't defeat tree-shaking). Opt out with
+// (call-time, never on import - so it can't defeat tree-shaking). Opt out with
 // globalThis.__MICHI_VZ_NO_AUTO_STYLE__ = true, or import the raw stylesheet and
 // manage it yourself.
 
@@ -12,7 +12,7 @@ export const CORE_CSS = `
 .michi-vz {
   position: relative;
   /* Default to INHERIT the host/page font (e.g. an app's Museo) when no fontFamily
-     prop is set — the canvas reads the computed family too. Pass fontFamily to pin it. */
+     prop is set - the canvas reads the computed family too. Pass fontFamily to pin it. */
   font-family: var(--michi-vz-font-family, inherit);
   /* One global knob for ALL chart text (SVG + canvas). Per-role sizes scale off it. */
   font-size: var(--michi-vz-font-size, 12px);
@@ -23,11 +23,11 @@ export const CORE_CSS = `
 .michi-vz .mv-axis-label { fill: var(--michi-vz-muted, #666); font-size: var(--michi-vz-font-size, 12px); }
 .michi-vz .mv-grid { stroke: var(--michi-vz-grid, lightgray); stroke-dasharray: 2 2; }
 /* y=0 baseline: SOLID (not dashed) but GRAY by default (matches the previous
-   version — user preference); override --michi-vz-zero-line for emphasis. */
+   version - user preference); override --michi-vz-zero-line for emphasis. */
 .michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-width: 1; stroke-dasharray: none; }
 /* Opt-in "calm" axis theme (Nordic / lagom): a whisper-quiet grid and muted labels so
    the axis recedes and the data carries the only saturation. Add class="michi-vz-calm"
-   to the chart host (or ANY ancestor — the vars cascade); pair with fewer ticks
+   to the chart host (or ANY ancestor - the vars cascade); pair with fewer ticks
    (the ticks / yTicksQty props) for the full airy look. color-mix keeps it theme-adaptive:
    the grid/labels derive from the inherited text colour, so it works on light AND dark. */
 .michi-vz-calm {
@@ -38,7 +38,7 @@ export const CORE_CSS = `
 .michi-vz-calm .mv-zero-line { stroke: color-mix(in srgb, currentColor 22%, transparent); }
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
-  /* Match the x-axis tick labels (.mv-axis-label) EXACTLY — same configurable colour
+  /* Match the x-axis tick labels (.mv-axis-label) EXACTLY - same configurable colour
      (--michi-vz-muted, NOT the darker --michi-vz-ink), font family + normal weight. The
      y-label is an HTML <div> in a <foreignObject>, so set these explicitly: it can
      otherwise inherit a different family/weight from the app cascade than the SVG <text>
@@ -48,7 +48,7 @@ export const CORE_CSS = `
   /* Wrap long category labels (legacy behaviour) instead of single-line ellipsis;
      overflow:visible (the foreignObject is also overflow:visible) lets a centred
      multi-line label spill into the empty inter-band gaps instead of clipping at the
-     band height — worst case the TOP band, whose label was cut off. */
+     band height - worst case the TOP band, whose label was cut off. */
   white-space: normal; overflow: visible; line-height: 1.15;
 }
 /* Treemap / stack / annotation labels: font-size lives in CSS (NOT inline) so this
@@ -99,7 +99,7 @@ export const CORE_CSS = `
 let greeted = false;
 
 /**
- * A friendly once-per-page console hello — hidden from end users, found by curious devs.
+ * A friendly once-per-page console hello - hidden from end users, found by curious devs.
  * Opt out with `globalThis.__MICHI_VZ_NO_GREETING__ = true`. SSR-safe.
  */
 function greetOnce(): void {
@@ -113,7 +113,7 @@ function greetOnce(): void {
       "%cThis chart is drawn with michi-vz.\n" +
       "→ Docs:   https://michi-vz.netlify.app\n" +
       "→ Source: https://github.com/beany-vu/michi-vz-mono\n" +
-      "Spotted a bug, have an idea, or just curious? Issues & feedback are very welcome — come say hi! 🌻",
+      "Spotted a bug, have an idea, or just curious? Issues & feedback are very welcome - come say hi! 🌻",
     "font-weight:700;font-size:13px;color:#fff;background:#2e7ebb;padding:2px 8px;border-radius:6px;",
     "font-weight:600;color:#e8833a;",
     "color:#6b5b4f;line-height:1.6;"

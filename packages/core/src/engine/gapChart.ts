@@ -113,7 +113,7 @@ export function mountGapChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
-  // changes — an unconditional re-fire loops "Maximum update depth" in any consumer
+  // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
 
@@ -207,7 +207,7 @@ export function mountGapChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -332,7 +332,7 @@ export function mountGapChart(
         onReady: render,
       });
       if (painted) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -391,7 +391,7 @@ export function mountGapChart(
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
@@ -401,7 +401,7 @@ export function mountGapChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [

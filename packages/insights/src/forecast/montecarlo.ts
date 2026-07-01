@@ -31,7 +31,7 @@ export interface MonteCarloOptions {
   method?: ForecastMethod;
 }
 
-/** mulberry32 — a tiny, fast, deterministic 32-bit PRNG. Returns floats in [0, 1). */
+/** mulberry32 - a tiny, fast, deterministic 32-bit PRNG. Returns floats in [0, 1). */
 function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return function () {

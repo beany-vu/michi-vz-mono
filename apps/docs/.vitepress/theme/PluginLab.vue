@@ -109,7 +109,7 @@ const CP_VALS: [number, number][] = [[2013, 8], [2014, 12], [2015, 17], [2016, 2
 const changepoints = ref<Array<{ year: number; slopeBefore: number; slopeAfter: number }>>([]);
 
 // ============================================================ seasonal
-// trend up + a 4-step (quarterly) wave + light noise — a textbook seasonal series.
+// trend up + a 4-step (quarterly) wave + light noise - a textbook seasonal series.
 const SEAS_VALS = [52, 61, 49, 58, 60, 70, 56, 66, 69, 80, 64, 75, 78, 90, 73, 85];
 const seasonal = ref<{ period: number; residSd: number } | null>(null);
 

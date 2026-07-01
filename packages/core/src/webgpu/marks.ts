@@ -1,13 +1,13 @@
 /// <reference types="@webgpu/types" />
-// ⚠️ SHARED FOUNDATION — DO NOT EDIT/REMOVE per chart (agents/humans). Every
+// ⚠️ SHARED FOUNDATION - DO NOT EDIT/REMOVE per chart (agents/humans). Every
 // packages/core/src/<chart>/renderWebgpu.ts imports this module; changing its exported
 // API (drawMarksWebgpu / emptyBatch / MarkBatch / push* / markColor) breaks all charts.
 // Add new geometry helpers here rather than reimplementing them per chart.
 //
 // Chart-agnostic WebGPU mark layer. Every chart's marks reduce to two GPU shapes:
 //   • colored TRIANGLES (rects/bars, area & range bands, pie & radar wedges, line
-//     strokes, filled polygons) — CPU-tessellated into a flat vertex buffer, and
-//   • instanced CIRCLES (scatter/bubble point clouds, bar-bell dots) — one instance
+//     strokes, filled polygons) - CPU-tessellated into a flat vertex buffer, and
+//   • instanced CIRCLES (scatter/bubble point clouds, bar-bell dots) - one instance
 //     per point, drawn with a fragment SDF (far cheaper than tessellating each disc).
 // Text/axes/titles stay on the SVG layer. Colours are resolved via the existing
 // light-DOM probe (resolveMarkColors) and converted to premultiplied RGBA here.
@@ -267,7 +267,7 @@ export interface DrawMarksOptions {
 
 /**
  * Draw a MarkBatch to the given canvas via WebGPU. Returns false when the device
- * or context is not (yet) available — the caller then paints its canvas-2D fallback
+ * or context is not (yet) available - the caller then paints its canvas-2D fallback
  * and, if a device is still resolving, re-renders on onReady to upgrade to GPU.
  */
 export function drawMarksWebgpu(

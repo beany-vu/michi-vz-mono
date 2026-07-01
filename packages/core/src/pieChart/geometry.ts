@@ -1,4 +1,4 @@
-// Pie/donut geometry — the only d3-shape call site. Builds one arc per slice
+// Pie/donut geometry - the only d3-shape call site. Builds one arc per slice
 // (path string + centroid), all measured around the origin (0,0); the renderers
 // translate by (cx,cy). Input is already in render order, so pie().sort(null)
 // preserves it. innerRadiusRatio 0 = solid pie, >0 = donut hole.

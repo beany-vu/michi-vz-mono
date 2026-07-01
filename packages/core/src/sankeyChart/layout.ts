@@ -1,4 +1,4 @@
-// Sankey layout — the only d3-sankey call site. d3-sankey MUTATES its input, so
+// Sankey layout - the only d3-sankey call site. d3-sankey MUTATES its input, so
 // we clone first to keep the engine's stored props/hit-test data pure. Returns
 // positioned node rects + per-link endpoint geometry (the renderer builds the
 // rounded filled ribbon from it) in pixel space.

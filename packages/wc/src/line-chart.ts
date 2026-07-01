@@ -1,4 +1,4 @@
-// <michi-vz-line-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-line-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core LineChart engine. Same shape as <michi-vz-gap-chart>: light DOM
 // preserves the consumer colour contract + canvas probe; no decorators; mounts
 // the imperative engine into a stable host <div>.

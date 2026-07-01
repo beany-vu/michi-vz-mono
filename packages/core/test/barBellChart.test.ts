@@ -18,7 +18,7 @@ function mount(extra: Partial<BarBellChartProps> = {}) {
 }
 
 describe("mountBarBellChart (jsdom)", () => {
-  it("emits legendData (label/dataLabelSafe) on the context — the colour-authority hook", () => {
+  it("emits legendData (label/dataLabelSafe) on the context - the colour-authority hook", () => {
     // Without legendData, thd's setMetadata early-returns and every mark resolves transparent.
     const { host, chart } = mount();
     const ctx = chart.getContext()!;
@@ -29,7 +29,7 @@ describe("mountBarBellChart (jsdom)", () => {
     host.remove();
   });
 
-  it("dodges only the cap (capCy) — bars stay on the row line, caps fan centred on it", () => {
+  it("dodges only the cap (capCy) - bars stay on the row line, caps fan centred on it", () => {
     // B is zero-valued → its cap coincides with A's at the same x → they dodge apart.
     const { host, chart } = mount({
       dataSet: [{ date: "2001", A: 10, B: 0 }],
@@ -40,7 +40,7 @@ describe("mountBarBellChart (jsdom)", () => {
     const aCapCy = Number(caps.find((c) => c.getAttribute("data-label") === "A")!.getAttribute("cy"));
     const bCapCy = Number(caps.find((c) => c.getAttribute("data-label") === "B")!.getAttribute("cy"));
     expect(aCapCy).not.toBe(bCapCy); // caps fanned vertically
-    // A's bar stays on the row line — which is the midpoint the caps fan around.
+    // A's bar stays on the row line - which is the midpoint the caps fan around.
     const aBar = host.querySelector<SVGRectElement>('rect.bar[data-label="A"]')!;
     const barMid = Number(aBar.getAttribute("y")) + Number(aBar.getAttribute("height")) / 2;
     expect((aCapCy + bCapCy) / 2).toBeCloseTo(barMid, 1);

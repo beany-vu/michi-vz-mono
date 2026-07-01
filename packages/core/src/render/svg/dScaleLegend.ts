@@ -23,7 +23,7 @@ export interface DScaleLegendOptions {
  * Append a bubble-size reference legend to `parent`.
  *
  * `sizeScale` maps a data `d` → pixel RADIUS (range = sizeRange). The three
- * sentinel radii shown are [rMin, rMax/2, rMax] — for sizeRange=[8,40] that is
+ * sentinel radii shown are [rMin, rMax/2, rMax] - for sizeRange=[8,40] that is
  * [8,20,40], exactly the legacy diameters 16/40/80. Each label is the data value
  * that produces that radius, via `sizeScale.invert(radius)`.
  */

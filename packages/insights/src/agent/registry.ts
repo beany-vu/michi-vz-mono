@@ -1,4 +1,4 @@
-// Agent tool registry — the surface an in-page agent or an MCP server drives. It
+// Agent tool registry - the surface an in-page agent or an MCP server drives. It
 // maps generic tools onto the capabilities every @michi-vz chart already exposes
 // (getContext + the engine update() path) plus any plugin-provided tools. No LLM
 // here; this is the deterministic, testable substrate under createAgent + the MCP server.

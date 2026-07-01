@@ -91,7 +91,7 @@ describe("mountRadarChart (jsdom)", () => {
   });
 });
 
-describe("mountRadarChart — drop-in features (data shape, colours, hover)", () => {
+describe("mountRadarChart - drop-in features (data shape, colours, hover)", () => {
   it("derives values[] from a legacy data:[{date,value}] series aligned to axes", () => {
     const host = document.createElement("div");
     document.body.appendChild(host);

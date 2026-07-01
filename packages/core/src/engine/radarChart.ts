@@ -130,7 +130,7 @@ export function mountRadarChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
-  // changes — an unconditional re-fire loops "Maximum update depth" in any consumer
+  // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
   let model: ReturnType<typeof buildRadarRenderModel> | null = null;
@@ -168,7 +168,7 @@ export function mountRadarChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: forecast/etc. append predicted series/values.
+    // Plugin hook #1 - transformData: forecast/etc. append predicted series/values.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -176,7 +176,7 @@ export function mountRadarChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
     // Let axis labels sit at / spill past the plot edge without clipping (legacy parity)
-    // — this is what lets the radar use a larger radius with labels right up to the edge.
+    // - this is what lets the radar use a larger radius with labels right up to the edge.
     svg.style.overflow = "visible";
 
     // Resolve axes (axes prop or legacy poles.labels) + normalise the series shape
@@ -272,7 +272,7 @@ export function mountRadarChart(
           onReady: render,
         });
         if (ready) {
-          // GPU painted — drop any first-frame 2D fallback canvas.
+          // GPU painted - drop any first-frame 2D fallback canvas.
           if (canvas) {
             canvas.remove();
             canvas = null;
@@ -358,7 +358,7 @@ export function mountRadarChart(
       items,
       colorsMapping: colors.generatedColorsMapping,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
@@ -368,7 +368,7 @@ export function mountRadarChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised series.
     if (baseProps.onDataWarning) {
       const warnings = [

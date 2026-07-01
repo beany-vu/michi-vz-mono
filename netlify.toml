@@ -1,5 +1,5 @@
 # Netlify build config for the @michi-vz docs site.
-# Netlify reads this automatically — no need to set the build command / publish
+# Netlify reads this automatically - no need to set the build command / publish
 # directory in the UI. pnpm is auto-detected from pnpm-lock.yaml.
 #
 # `--filter "docs..."` builds the docs package AND its workspace dependencies

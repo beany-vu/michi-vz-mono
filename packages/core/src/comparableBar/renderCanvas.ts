@@ -18,7 +18,7 @@ export interface ComparableCanvasOptions {
   patternsMapping?: Record<string, string>;
 }
 
-// Cache of loaded hatch images keyed by data-URI (module scope — shared across
+// Cache of loaded hatch images keyed by data-URI (module scope - shared across
 // re-renders so a pattern loads once).
 const patternImageCache = new Map<string, HTMLImageElement>();
 
@@ -84,7 +84,7 @@ export function drawComparableCanvas(
       { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color, pattern: undefined as string | undefined },
     ];
     for (const part of parts) {
-      // transparent-skip: a consumer hides a sub-bar with fill:transparent — don't
+      // transparent-skip: a consumer hides a sub-bar with fill:transparent - don't
       // paint it (unless it's pattern-filled).
       if (isTransparent(part.color) && !part.pattern) continue;
 

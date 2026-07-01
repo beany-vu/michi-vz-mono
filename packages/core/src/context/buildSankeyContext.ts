@@ -1,6 +1,6 @@
 // Renderer-agnostic semantic context for Sankey. Derived from the laid-out graph
 // (not the DOM), so SVG and canvas produce identical context. The a11y table is
-// the link list — the readable substance of a sankey ("X → Y: value").
+// the link list - the readable substance of a sankey ("X → Y: value").
 import type { SankeyLaidNode, SankeyLaidLink } from "../sankeyChart/layout";
 import type { SankeyChartContext, SankeyNodeContext, SankeyLinkContext } from "../types";
 

@@ -1,4 +1,4 @@
-// ⚠️ SHARED WebGPU foundation — do not edit/remove per chart (see webgpu/marks.ts).
+// ⚠️ SHARED WebGPU foundation - do not edit/remove per chart (see webgpu/marks.ts).
 // WebGPU capability gate. The renderer is EXPERIMENTAL and not Baseline web
 // (Firefox-Linux off by default, Safari only since v26, can be disabled in
 // managed/enterprise browsers), so every entry point downgrades gracefully.
@@ -6,7 +6,7 @@ import type { Renderer } from "../types";
 
 /**
  * True when the current environment exposes the WebGPU entry point. Note this
- * only checks for `navigator.gpu` — it does NOT guarantee an adapter/device can
+ * only checks for `navigator.gpu` - it does NOT guarantee an adapter/device can
  * actually be acquired (that is async and can still fail; see webgpu/device.ts),
  * so callers must also handle a null device at draw time.
  */

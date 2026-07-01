@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for BarBell — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for BarBell - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME BarBellRenderModel. Bars are
 // drawn as stroked polylines (pushStroke) and end-caps as instanced circles
 // (pushCircle), via the shared chart-agnostic marks.ts layer. Fill colour is

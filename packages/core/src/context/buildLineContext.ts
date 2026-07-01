@@ -22,7 +22,7 @@ export interface BuildLineContextInput {
   colorsMapping: Record<string, string>;
   /** Flat legend rows (label/dataLabelSafe/color/disabled) for the colour contract. */
   legendData?: LegendItem[];
-  /** Labels the consumer has hidden — excluded from visibleItems (legacy parity). */
+  /** Labels the consumer has hidden - excluded from visibleItems (legacy parity). */
   disabledItems?: string[];
 }
 
@@ -38,7 +38,7 @@ function seriesContext(item: LineDataItem): LineSeriesContext {
   const changePct =
     first && last && first.y !== 0 ? round(((last.y - first.y) / Math.abs(first.y)) * 100) : null;
   const trend = change > 0 ? "up" : change < 0 ? "down" : "flat";
-  // Uncertain segments (gaps / dashed) — first point has no incoming segment.
+  // Uncertain segments (gaps / dashed) - first point has no incoming segment.
   const gaps = pts.reduce((n, d, i) => (i > 0 && d.certainty === false ? n + 1 : n), 0);
   // Provenance: actual vs predicted (explicit `predicted`, else derived from certainty).
   const { actualCount, predictedCount, forecastStart } = provenanceCounts(pts);
@@ -90,7 +90,7 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
     const dir = largestMover.change > 0 ? "rose" : "fell";
     summary += ` ${largestMover.label} ${dir} the most (${largestMover.change}).`;
   }
-  summary += ` Value range ${round(input.yAxisDomain[0])}–${round(input.yAxisDomain[1])}.`;
+  summary += ` Value range ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
 
   return {
     chartType: "line-chart",
@@ -114,8 +114,8 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
       rows: series.map((s) => [
         s.label,
         s.pointCount,
-        s.first ? s.first.y : "—",
-        s.last ? s.last.y : "—",
+        s.first ? s.first.y : "-",
+        s.last ? s.last.y : "-",
         s.change,
         s.trend,
       ]),

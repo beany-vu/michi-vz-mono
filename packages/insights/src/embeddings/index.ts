@@ -1,8 +1,8 @@
-// Embeddings — vectorize text (a chart's context, a series label) so we can measure
+// Embeddings - vectorize text (a chart's context, a series label) so we can measure
 // semantic similarity: search charts, cluster series, dashboard-wide RAG. The model
 // path lazy-loads Transformers.js (BERT / MiniLM, WebGPU) and is opt-in; the default
 // is a deterministic, model-free hashing embedder so similarity works offline and is
-// fully testable. (MiniLM has a training-data caveat — disclose before production use.)
+// fully testable. (MiniLM has a training-data caveat - disclose before production use.)
 import { optionalImport } from "../internal/lazyImport";
 
 /** Cosine similarity of two vectors (0 when either is zero-length). */
@@ -38,7 +38,7 @@ export function hashEmbed(text: string, dim = 128): number[] {
   const v = new Array(dim).fill(0);
   const tokens = text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   for (const t of tokens) {
-    v[fnv1a(t) % dim] += 1; // whole word — keeps exact matches strong
+    v[fnv1a(t) % dim] += 1; // whole word - keeps exact matches strong
     const w = `#${t}#`;
     if (w.length <= 3) {
       v[fnv1a(w) % dim] += 1;

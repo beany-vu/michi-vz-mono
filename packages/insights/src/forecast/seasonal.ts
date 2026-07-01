@@ -1,5 +1,5 @@
 // Classical (additive) seasonal decomposition + autocorrelation-based period
-// detection. Pure + deterministic — plain TS and Math only, no DOM/deps/randomness.
+// detection. Pure + deterministic - plain TS and Math only, no DOM/deps/randomness.
 
 export interface Decomposition {
   /** centered moving-average trend (edges filled with nearest defined value). */
@@ -14,7 +14,7 @@ export interface Decomposition {
 
 /**
  * Sample autocorrelation of `values` at a given `lag` (Pearson-style, using the
- * global mean and variance — the standard estimator). Returns 0 for a degenerate
+ * global mean and variance - the standard estimator). Returns 0 for a degenerate
  * (constant) series.
  */
 function autocorrelation(values: number[], lag: number): number {
@@ -135,7 +135,7 @@ function fillEdges(arr: Array<number | null>): number[] {
     }
   }
   if (firstDefined === -1) {
-    // nothing defined at all — fall back to zeros
+    // nothing defined at all - fall back to zeros
     return new Array(n).fill(0);
   }
   for (let i = 0; i < firstDefined; i++) out[i] = out[firstDefined];

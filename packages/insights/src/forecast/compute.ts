@@ -31,7 +31,7 @@ export interface ForecastResult {
   lower: number[];
   /** upper band edge per step at the primary level. */
   upper: number[];
-  /** nested bands (one per requested level), widest last — for a fan chart. */
+  /** nested bands (one per requested level), widest last - for a fan chart. */
   bands: ForecastBand[];
   /** residual standard error (band half-width per sqrt-step before the z-multiplier). */
   se: number;

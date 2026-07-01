@@ -170,7 +170,7 @@ export interface ChartA11yTable {
  * disabled), distinct from the richer per-series `series`/`legend` shapes. A
  * consumer that drives its own colour authority off `onChartDataProcessed`
  * (e.g. thd MonitorV2) reads `legendData[].{label,dataLabelSafe,color,disabled}`
- * to emit per-label CSS — so `dataLabelSafe` MUST equal sanitizeForClassName(label).
+ * to emit per-label CSS - so `dataLabelSafe` MUST equal sanitizeForClassName(label).
  */
 export interface LegendItem {
   label: string;
@@ -180,7 +180,7 @@ export interface LegendItem {
   order: number;
   /** True when the label is currently hidden/disabled by the consumer. */
   disabled?: boolean;
-  /** sanitizeForClassName(label) — the CSS hook the canvas probe matches. */
+  /** sanitizeForClassName(label) - the CSS hook the canvas probe matches. */
   dataLabelSafe?: string;
 }
 
@@ -227,7 +227,7 @@ export interface GapChartContext extends BaseChartContext {
 export type CurveType = "curveBumpX" | "curveLinear" | "curveMonotoneX";
 
 export interface DataPoint {
-  /** Numeric value, year, or date string — parsed per xAxisDataType. */
+  /** Numeric value, year, or date string - parsed per xAxisDataType. */
   date: number | string;
   /** Y value of the point */
   value: number;
@@ -297,7 +297,7 @@ export interface LineChartProps {
   yTicks?: number;
   /** Draw horizontal dashed grid lines at each y tick (default true). */
   showGridLines?: boolean;
-  /** Draw vertical dashed grid lines at each x tick (default false — the legacy chart drew none). */
+  /** Draw vertical dashed grid lines at each x tick (default false - the legacy chart drew none). */
   showVerticalGridLines?: boolean;
   /** Emphasise the y=0 grid line with a darker solid stroke (default true). */
   highlightZeroLine?: boolean;
@@ -393,7 +393,7 @@ export interface LineChartContext extends BaseChartContext {
     largestMover: { label: string; change: number } | null;
     valueRange: [number, number];
   };
-  /** Legacy-parity (useLineChartMetadataExpose): labels currently rendered — not
+  /** Legacy-parity (useLineChartMetadataExpose): labels currently rendered - not
    * disabled AND carrying ≥1 point. Consumers read it off onChartDataProcessed. */
   visibleItems: string[];
 }
@@ -571,7 +571,7 @@ export interface ScatterChartProps {
   filter?: Filter;
   /**
    * Render as inline SVG (default), to a canvas (faster for large datasets), or
-   * to WebGPU ("webgpu", EXPERIMENTAL — opt-in, capability-gated, falls back to
+   * to WebGPU ("webgpu", EXPERIMENTAL - opt-in, capability-gated, falls back to
    * canvas when WebGPU is unavailable). getContext() is identical either way.
    */
   renderer?: Renderer;
@@ -638,7 +638,7 @@ export interface ScatterChartContext extends BaseChartContext {
 
 export interface VerticalStackBarDataPoint {
   /** The band category for this row (the x-axis tick); may be null. Accepts a
-   * number too — thd consumers pass `date: +year`; the engine String()-coerces it. */
+   * number too - thd consumers pass `date: +year`; the engine String()-coerces it. */
   date: string | number | null;
   /** Numeric segment values keyed by name (string|number); "code" is reserved
    * and excluded from stack keys. */
@@ -677,7 +677,7 @@ export interface StackRectData {
   isMissing?: boolean;
 }
 
-/** Argument passed to VerticalStackBar `tooltipFormatter` — the legacy contract
+/** Argument passed to VerticalStackBar `tooltipFormatter` - the legacy contract
  * (consumers read `data.item[data.key]` and `data.series`). NOT the flat rect. */
 export interface StackTooltipData {
   /** The full data row under the cursor. */
@@ -857,7 +857,7 @@ export interface ComparableBarChartProps {
   /** Legacy alias for xAxisDomain (consumers pass [min,max]); wins over xAxisDomain when length===2 */
   xAxisPredefinedDomain?: number[];
   /** Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based
-   * sub-bar — the canvas tiles it via ctx.createPattern, an SVG renderer via <pattern>/<image> */
+   * sub-bar - the canvas tiles it via ctx.createPattern, an SVG renderer via <pattern>/<image> */
   patternsMapping?: Record<string, string>;
   /** Draw a solid vertical line at x=0 on the value axis (diverging charts) */
   showZeroLineForXAxis?: boolean;
@@ -886,7 +886,7 @@ export interface ComparableBarChartProps {
   isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
   /** Text for the built-in no-data overlay */
   noDataLabel?: string;
-  /** Set by a framework wrapper passing its own overlay node — suppresses the default overlay */
+  /** Set by a framework wrapper passing its own overlay node - suppresses the default overlay */
   suppressDefaultOverlay?: boolean;
   /** Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc) */
   filter?: { limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc" };
@@ -1642,7 +1642,7 @@ export interface FanChartContext extends BaseChartContext {
 // ---- TreemapChart (hierarchical squarified tiling; optional two-part split per leaf) ----
 // Each leaf's rect is sized by `value`; an optional `partial` sub-value splits the rect into a
 // solid primary part (width = partial/value) and a lighter remainder. The two parts are named by a
-// configurable `splitLabels` (e.g. ["Realized","Untapped"]) — nothing here hardcodes domain words.
+// configurable `splitLabels` (e.g. ["Realized","Untapped"]) - nothing here hardcodes domain words.
 // Parents render as padded containers with a header label. Generic "part-of-a-total in a tile".
 
 export interface TreemapNode {
@@ -1889,7 +1889,7 @@ export interface BubbleChartProps {
   colors?: string[];
   /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
   colorsMapping?: Record<string, string>;
-  /** Strength of the pull toward the centre in [0,1] (default 0.09) — higher =
+  /** Strength of the pull toward the centre in [0,1] (default 0.09) - higher =
    * tighter cluster ("suck together"). */
   gravity?: number;
   /** Many-body charge: negative repels, positive attracts (default 0). */

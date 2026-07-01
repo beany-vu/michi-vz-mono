@@ -69,7 +69,7 @@ export function drawRadarCanvas(
     const color = fillColors.get(s.label) || s.color;
     const path = polyPath(s.points);
     ctx.save();
-    // Dimmed (e.g. non-current-year) series stay visible as a soft background — a bit
+    // Dimmed (e.g. non-current-year) series stay visible as a soft background - a bit
     // more opaque than a bare hint, closer to the legacy seriesAlpha ~0.2.
     ctx.fillStyle = color;
     ctx.globalAlpha = s.dimmed ? (o.dimmedFill === false ? 0 : 0.12) : o.fillOpacity;
@@ -79,7 +79,7 @@ export function drawRadarCanvas(
     // The active (current) path is drawn thicker so it stands out over the dimmed ones.
     ctx.lineWidth = s.dimmed ? 2 : 3;
     ctx.stroke(path);
-    // Pole dots only on the active series — dimmed years are non-interactive
+    // Pole dots only on the active series - dimmed years are non-interactive
     // background context (no dots, and not hit-tested; see setupRadarCanvasHover).
     if (!s.dimmed) {
       ctx.fillStyle = color;
@@ -215,7 +215,7 @@ export function setupRadarCanvasHover(
     points: s.poles.map((p) => ({ x: p.x, y: p.y, axisIndex: p.axisIndex })),
   }));
   const pick = (mx: number, my: number): Hit | null => {
-    // Only the active (non-dimmed) series is interactive — dimmed years are
+    // Only the active (non-dimmed) series is interactive - dimmed years are
     // de-emphasised background context, so they are not hit-tested (no hover/tooltip).
     const active = hits.filter((h) => !h.dimmed);
     return hitSubset(active, mx, my, true);

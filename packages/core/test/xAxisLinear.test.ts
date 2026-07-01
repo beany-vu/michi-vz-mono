@@ -27,7 +27,7 @@ describe("renderXAxisLinear adaptive density (autoRotate + maxTicks)", () => {
     // 8 labels, ~30px gap: too tight for ~49px horizontal labels, but >= the 18px
     // rotated spacing → show all 8, rotated.
     const labels = render(scaleLinear().domain([0, 7]).range([20, 230]), { autoRotate: true }, 8);
-    expect(labels.length).toBe(8); // none thinned — there's room when rotated
+    expect(labels.length).toBe(8); // none thinned - there's room when rotated
     expect(labels.every((l) => (l.getAttribute("transform") ?? "").includes("rotate(-45)"))).toBe(true);
   });
 

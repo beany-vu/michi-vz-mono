@@ -108,7 +108,7 @@ describe("mountLineChart (jsdom)", () => {
     b.host.remove();
   });
 
-  it("emits visibleItems (not-disabled + has-data) — legacy useLineChartMetadataExpose parity", () => {
+  it("emits visibleItems (not-disabled + has-data) - legacy useLineChartMetadataExpose parity", () => {
     // Market/ProductDiversification read this off onChartDataProcessed for master/slave colour sync.
     const { host, chart } = mount();
     const ctx = chart.getContext()!;

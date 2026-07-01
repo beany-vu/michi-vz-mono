@@ -1,8 +1,8 @@
-// @michi-vz/examples — the single source of truth for chart examples.
+// @michi-vz/examples - the single source of truth for chart examples.
 //
 // Each Example is plain, typed data (no rendering). VitePress live demos,
 // Storybook stories/args, code snippets, and future "Open in CodePen / StackBlitz"
-// buttons all DERIVE from these — so they can never drift. `props` are the engine
+// buttons all DERIVE from these - so they can never drift. `props` are the engine
 // props (the documented API); a wc adapter maps `title`→`chartTitle` etc.
 //
 // The optional `codepen` / `sandbox` fields are intentionally omitted for now;
@@ -35,7 +35,7 @@ export interface Example<P = Record<string, unknown>> {
   element: string;
   /** engine props for this example. */
   props: P;
-  /** optional sandbox links — the docs button is hidden when absent. */
+  /** optional sandbox links - the docs button is hidden when absent. */
   codepen?: string;
   sandbox?: string;
 }
@@ -532,7 +532,7 @@ const verticalStackBar: Example<VerticalStackBarChartProps>[] = [
   {
     "id": "vsb-employment-sector",
     "title": "Employment by sector, % of total (World)",
-    "description": "One bar per year, each split into the three economic sectors that sum to 100% — the share of the workforce in agriculture falls as services rises.",
+    "description": "One bar per year, each split into the three economic sectors that sum to 100% - the share of the workforce in agriculture falls as services rises.",
     "element": "michi-vz-vertical-stack-bar-chart",
     "props": {
       "title": "Employment by sector, % of total (World)",
@@ -790,7 +790,7 @@ const range: Example<RangeChartProps>[] = [
   {
     "id": "range-gdp-forecast",
     "title": "GDP growth forecast range, %",
-    "description": "Per-economy GDP growth forecast bands (low–high), 2024–2028, with the central projection down the middle.",
+    "description": "Per-economy GDP growth forecast bands (low-high), 2024-2028, with the central projection down the middle.",
     "element": "michi-vz-range-chart",
     "props": {
       "title": "GDP growth forecast range by economy, % per year",
@@ -1256,7 +1256,7 @@ const treemap: Example<TreemapChartProps>[] = [
   // [0] Nested: products grouped under their sector (the primary demo).
   {
     id: "treemap-export-potential-grouped",
-    title: "Export potential — grouped by sector",
+    title: "Export potential - grouped by sector",
     description:
       "Products nested under their sector: parent tiles get a header label and the colour groups by sector. Each leaf splits into the realized share (solid) + the untapped opportunity (lighter).",
     element: "michi-vz-treemap-chart",
@@ -1305,7 +1305,7 @@ const treemap: Example<TreemapChartProps>[] = [
   // [1] Flat: one tile per product, each its own colour (flattened data, no nesting).
   {
     id: "treemap-export-potential-flat",
-    title: "Export potential — flattened data",
+    title: "Export potential - flattened data",
     description:
       "A flat list: one tile per product, each sized by its total export potential and coloured individually, with the realized/untapped split inside. On a narrow screen, layout:\"auto\" falls back to a single-column stack.",
     element: "michi-vz-treemap-chart",
@@ -1361,7 +1361,7 @@ const pie: Example<PieChartProps>[] = [
   // [1] Donut: same data with an inner radius (innerRadiusRatio > 0).
   {
     id: "pie-export-share-donut",
-    title: "Export value share — donut",
+    title: "Export value share - donut",
     description:
       "The same shares as a donut: set innerRadiusRatio to carve out the hole. The mode flips to \"donut\" in the chart context, but the data and slices are identical.",
     element: "michi-vz-pie-chart",
@@ -1417,7 +1417,7 @@ const bubble: Example<BubbleChartProps>[] = [
     id: "bubble-market-size",
     title: "Market size cloud",
     description:
-      "Single-fill bubbles sized by value, clustered by gravity. With no `partial`, there's no split veil — just a clean proportional bubble cloud.",
+      "Single-fill bubbles sized by value, clustered by gravity. With no `partial`, there's no split veil - just a clean proportional bubble cloud.",
     element: "michi-vz-bubble-chart",
     props: {
       title: "Addressable market by category",

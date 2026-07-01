@@ -98,7 +98,7 @@ export function mountVerticalStackBarChart(
   let canvas: HTMLCanvasElement | null = null;
   let webgpuCanvas: HTMLCanvasElement | null = null;
   // Tracks whether the LAST webgpu draw actually painted to the GPU canvas (true)
-  // vs fell back to the 2D stopgap (false) — same-frame hover redraws below need
+  // vs fell back to the 2D stopgap (false) - same-frame hover redraws below need
   // to know which layer to repaint.
   let webgpuPainted = false;
   const chrome = createChromeRefs();
@@ -124,15 +124,15 @@ export function mountVerticalStackBarChart(
   let lastLegendSent = "";
   // Idempotency guard for onChartDataProcessed: re-firing an unchanged context
   // every render loops "Maximum update depth" in any consumer that dispatches on
-  // each call — fatal under Tariff Structure, where ByTrend runs TWO colour
+  // each call - fatal under Tariff Structure, where ByTrend runs TWO colour
   // writers (useColorV2 for the fixed buckets + onChartDataProcessed=setMetadata)
   // so the second writer never converges. Mirrors comparableHorizontalBarChart.
   let lastContextSig = "";
   let model: ReturnType<typeof buildStackRenderModel> | null = null;
 
   const showTooltip = (rect: StackRectData, ev: MouseEvent): void => {
-    // Legacy contract: pass { item, key, seriesKey, series, isMissing } — NOT the flat
-    // rect — so consumers can read data.item[data.key] and data.series. `series` mirrors
+    // Legacy contract: pass { item, key, seriesKey, series, isMissing } - NOT the flat
+    // rect - so consumers can read data.item[data.key] and data.series. `series` mirrors
     // the legacy: the hovered segment's rows across dates for the same seriesKey.
     const series = (model?.stackedRectData[rect.key] ?? [])
       .filter((s) => s.seriesKey === rect.seriesKey)
@@ -146,7 +146,7 @@ export function mountVerticalStackBarChart(
           isMissing: rect.isMissing,
         })
       : `<strong>${rect.key}</strong> (${rect.seriesKeyAbbreviation})<br/>${String(rect.date)}: ${
-          rect.value ?? "—"
+          rect.value ?? "-"
         }`;
     // Set content BEFORE measuring so the box size is known, then position with
     // edge awareness (mirrors legacy): flip to the LEFT of the cursor when the
@@ -271,7 +271,7 @@ export function mountVerticalStackBarChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
+    // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -329,11 +329,11 @@ export function mountVerticalStackBarChart(
       bandWidth: scales.xScale.step(),
       measure: measureLabelWidth,
       // Min gap (px) a horizontal label needs before it tilts -45°. Bump it to give
-      // crowded date labels (e.g. "MM-YYYY") more breathing room — they rotate sooner
+      // crowded date labels (e.g. "MM-YYYY") more breathing room - they rotate sooner
       // instead of sitting flush against each other. Default 8 (legacy parity).
       padding: props.xAxisLabelPadding,
       // "horizontal" keeps labels flat (thinning if needed) instead of rotating -45°,
-      // so no rotated-label bottom-margin is reserved — useful when labels are hidden
+      // so no rotated-label bottom-margin is reserved - useful when labels are hidden
       // (thumbnails) or you simply never want tilted dates.
       forceMode: props.xAxisMode,
     });
@@ -438,7 +438,7 @@ export function mountVerticalStackBarChart(
             onReady: render,
           });
           if (webgpuPainted) {
-            // GPU painted — drop any first-frame 2D fallback canvas.
+            // GPU painted - drop any first-frame 2D fallback canvas.
             if (canvas) {
               canvas.remove();
               canvas = null;
@@ -508,7 +508,7 @@ export function mountVerticalStackBarChart(
       colorsMapping: colors.generatedColorsMapping,
       yAxisDomain: yDomain,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
@@ -518,7 +518,7 @@ export function mountVerticalStackBarChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [

@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for GapChart — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for GapChart - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME GapRenderModel. Builds a
 // chart-agnostic MarkBatch (../webgpu/marks.ts) and hands it to drawMarksWebgpu:
 // gap bars → pushRect, the white connecting line → pushStroke, value1/value2
@@ -95,7 +95,7 @@ export function drawGapWebgpu(
     const gapC = markColor(gapColors.get(label) || el.gapColor, barOpacity);
     pushRect(batch.triangles, x1, center - 4, barWidth, 8, gapC);
 
-    // connecting line (dashed diff not expressible in the shared stroke helper —
+    // connecting line (dashed diff not expressible in the shared stroke helper -
     // draw solid; SVG/canvas keep the exact dash pattern).
     const lineC = markColor("white", markerOpacity);
     pushStroke(batch.triangles, [[x1, center], [x2, center]], 2, lineC);

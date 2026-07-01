@@ -1,4 +1,4 @@
-// <michi-vz-bar-bell-chart> — Lit, LIGHT DOM, over the @michi-vz/core BarBell engine.
+// <michi-vz-bar-bell-chart> - Lit, LIGHT DOM, over the @michi-vz/core BarBell engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountBarBellChart } from "@michi-vz/core";
 import type {

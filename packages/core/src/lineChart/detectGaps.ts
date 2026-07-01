@@ -87,7 +87,7 @@ export const applyGapDetection = (
   }
 
   // 2. Resolve expected step. number requires an explicit step. A non-positive or
-  // non-finite expectedStep is treated as "not provided" — otherwise a 0/negative
+  // non-finite expectedStep is treated as "not provided" - otherwise a 0/negative
   // step would mark every segment a gap (we can't trust the caller's value).
   const validStep =
     typeof expectedStep === "number" && Number.isFinite(expectedStep) && expectedStep > 0

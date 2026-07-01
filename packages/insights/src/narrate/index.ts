@@ -1,4 +1,4 @@
-// Narration — "explain this chart" in prose. The baseline is RULE-BASED and
+// Narration - "explain this chart" in prose. The baseline is RULE-BASED and
 // deterministic (no model, works offline); it can be upgraded by an opt-in local
 // SLM (Transformers.js / WebLLM, lazy-imported) or a bring-your-own remote caller.
 // Every path falls back to the rule-based text, so narration never hard-fails.
@@ -27,13 +27,13 @@ const DEFAULT_STRINGS: Required<NarrateStrings> = {
 
 export interface NarrateOptions {
   backend?: NarrateBackend;
-  /** backend:"remote" — your model caller (prompt -> text). Privacy: data leaves the client. */
+  /** backend:"remote" - your model caller (prompt -> text). Privacy: data leaves the client. */
   caller?: (prompt: string) => Promise<string>;
   /** model id for transformers/webllm (default a small instruct model; see SLM presets). */
   model?: string;
   /** i18n: override the rule-based phrase builders (used by the rules path + fallback). */
   strings?: NarrateStrings;
-  /** full custom narrator — replaces the rule-based text entirely (any language/wording). */
+  /** full custom narrator - replaces the rule-based text entirely (any language/wording). */
   render?: (ctx: ChartContext) => string;
   /** model-load progress (wired to Transformers.js / WebLLM) so you can show a loader. */
   onProgress?: (info: { status?: string; progress?: number; file?: string }) => void;
@@ -115,7 +115,7 @@ export async function explainChart(ctx: ChartContext, options: NarrateOptions = 
       return out?.trim() || ruleText(ctx, options);
     }
     if (backend === "transformers") {
-      // lazy, optional dep — never bundled unless this path runs
+      // lazy, optional dep - never bundled unless this path runs
       const mod = await optionalImport<{ pipeline?: (task: string, model?: string, opts?: { progress_callback?: unknown }) => Promise<(text: string) => Promise<unknown>> }>(
         "@huggingface/transformers"
       );
@@ -145,7 +145,7 @@ export async function explainChart(ctx: ChartContext, options: NarrateOptions = 
 }
 
 /**
- * The `narrate()` plugin — synchronously upgrades the chart's `summary` to richer
+ * The `narrate()` plugin - synchronously upgrades the chart's `summary` to richer
  * prose (which flows to the a11y mirror + dataprocessed event). Default is the
  * rule-based narration; pass `strings` to localize it (i18n) or `render` for a fully
  * custom narrator. For model-backed prose, call `explainChart(getContext())` on demand.

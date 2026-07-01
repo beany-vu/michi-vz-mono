@@ -27,7 +27,7 @@ export function createComparableBarScales(
   maxBarHeight?: number
 ): ComparableScales {
   // padding.left/right inset the PLOT (bars + value axis) without moving the y-axis
-  // labels (anchored to margin.left) — opens a left column for the label chips.
+  // labels (anchored to margin.left) - opens a left column for the label chips.
   const xScale = scaleLinear()
     .domain(xDomain)
     .range([margin.left + padding.left, width - margin.right - padding.right])

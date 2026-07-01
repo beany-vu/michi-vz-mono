@@ -71,7 +71,7 @@ export function prepareStackedData(
           // hasOwnProperty guard: only emit a marker if the key is explicitly
           // present on this data point (with a null/NaN/undefined value). A key
           // that is simply absent from the data point means "this DataSet doesn't
-          // own this key" — its bar belongs to a different DataSet's slot, not
+          // own this key" - its bar belongs to a different DataSet's slot, not
           // this one, so emitting a marker here would paint a stub in every
           // group's slot for every other group's missing key.
           const isExplicitlyMissing = Object.prototype.hasOwnProperty.call(yearData, key);

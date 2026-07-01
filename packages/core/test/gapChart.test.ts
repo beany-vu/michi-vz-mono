@@ -72,7 +72,7 @@ describe("buildGapContext", () => {
     expect(ctx.summary).toContain("Largest gap: Beta (30)");
   });
 
-  it("emits legendData (label/dataLabelSafe/disabled) — the colour-authority hook", () => {
+  it("emits legendData (label/dataLabelSafe/disabled) - the colour-authority hook", () => {
     const r = processGapChartData(sample, undefined, []);
     const ctx = buildGapContext({
       title: "Demo",
@@ -92,7 +92,7 @@ describe("buildGapContext", () => {
 
   it("emits renderedData keyed by label (legacy useGapChartMetadata parity)", () => {
     // thd's TradeSimulationSnapshot reads value1/value2 off renderedData to size its
-    // x-axis ticks. Shape must be { [label]: [item] } — a single-element array per row.
+    // x-axis ticks. Shape must be { [label]: [item] } - a single-element array per row.
     const r = processGapChartData(sample, undefined, []);
     const ctx = buildGapContext({
       title: "Demo",

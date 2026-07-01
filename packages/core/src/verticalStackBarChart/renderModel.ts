@@ -1,4 +1,4 @@
-// Renderer-agnostic VerticalStackBar model — consumed by SVG, canvas, hit-test,
+// Renderer-agnostic VerticalStackBar model - consumed by SVG, canvas, hit-test,
 // and context. Highlight opacity is computed at draw time (not baked in) so
 // highlight changes don't rebuild geometry.
 import { sanitizeForClassName } from "../math/sanitize";

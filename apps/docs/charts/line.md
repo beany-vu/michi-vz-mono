@@ -117,7 +117,7 @@ chart.destroy();
 
 Pass `isLoading` while your data fetch is in-flight; the engine shows a `.mv-loading` overlay and sets `data-mv-state="loading"` on the host.
 
-When the fetch resolves to nothing, `isNodata` takes over. The default predicate treats an empty `dataSet` (or every series being empty) as no-data — you can override it with a boolean or a function:
+When the fetch resolves to nothing, `isNodata` takes over. The default predicate treats an empty `dataSet` (or every series being empty) as no-data - you can override it with a boolean or a function:
 
 ```tsx [React]
 // boolean shortcut
@@ -174,7 +174,7 @@ The zero line colour defaults to the grid colour (`--michi-vz-grid`). Override i
 
 ## Font family
 
-Pass `fontFamily` to keep SVG labels and canvas text in sync. The engine writes `--michi-vz-font-family` on the chart host; both the SVG `<text>` elements and the canvas `ctx.font` path read that computed style, so no font embedding is required — the family just needs to be loaded by the page already.
+Pass `fontFamily` to keep SVG labels and canvas text in sync. The engine writes `--michi-vz-font-family` on the chart host; both the SVG `<text>` elements and the canvas `ctx.font` path read that computed style, so no font embedding is required - the family just needs to be loaded by the page already.
 
 ```tsx [React]
 <LineChart fontFamily="Inter, sans-serif" />

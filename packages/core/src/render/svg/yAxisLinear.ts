@@ -1,4 +1,4 @@
-// Imperative port of shared/YaxisLinear.tsx — linear (numeric) y-axis: horizontal
+// Imperative port of shared/YaxisLinear.tsx - linear (numeric) y-axis: horizontal
 // grid line + right-aligned label per tick, ticks from the scale's own .ticks().
 // Used by value-axis charts (LineChart, AreaChart, …); band charts use
 // renderYAxisBand instead.

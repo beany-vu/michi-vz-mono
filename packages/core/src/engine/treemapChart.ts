@@ -1,5 +1,5 @@
 // Treemap engine: mount/update/getContext/destroy. Squarified tiling (d3-hierarchy)
-// with an optional two-part split per leaf, in LIGHT DOM (SVG) or canvas. No axes —
+// with an optional two-part split per leaf, in LIGHT DOM (SVG) or canvas. No axes -
 // just a title, the tiles, and an optional split legend. Mirrors the other engines'
 // plugin wiring + colour-mapping dispatch; the tiling/geometry live in the pure layer.
 import DOMPurify from "dompurify";
@@ -243,7 +243,7 @@ export function mountTreemapChart(
   }
 
   function render(): void {
-    // Plugin hook #1 — transformData (identity with no plugins).
+    // Plugin hook #1 - transformData (identity with no plugins).
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
@@ -352,7 +352,7 @@ export function mountTreemapChart(
         onReady: render,
       });
       if (ready) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         if (canvas) {
           canvas.remove();
           canvas = null;
@@ -391,12 +391,12 @@ export function mountTreemapChart(
       splitLabels: r.splitLabels,
       depth,
     });
-    // Plugin hook #3 — enrichContext before a11y + dataprocessed.
+    // Plugin hook #3 - enrichContext before a11y + dataprocessed.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    // Plugin hook #2 — validate the USER's data, merged with plugin warnings.
+    // Plugin hook #2 - validate the USER's data, merged with plugin warnings.
     if (baseProps.onDataWarning) {
       const warnings = [
         ...checkTreemapData(baseProps.dataSet),

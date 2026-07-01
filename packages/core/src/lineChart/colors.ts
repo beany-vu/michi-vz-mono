@@ -3,7 +3,7 @@
 //   > item.color          (the series' own colour)
 //   > palette[index]       (auto-assigned, stable by insertion order)
 // Under skipColorMappingDispatch, unmapped labels resolve to "transparent" so the
-// consumer's CSS drives mark colour (the external-CSS contract) — matching gap.
+// consumer's CSS drives mark colour (the external-CSS contract) - matching gap.
 import { DEFAULT_COLORS } from "../theme/colors";
 import type { LineDataItem } from "../types";
 

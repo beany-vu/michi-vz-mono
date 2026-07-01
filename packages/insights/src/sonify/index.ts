@@ -1,4 +1,4 @@
-// Sonification — play a data series as pitch over time (an accessibility aid:
+// Sonification - play a data series as pitch over time (an accessibility aid:
 // "hear the trend"). `valuesToTones` is a pure, deterministic mapping (testable);
 // `sonify` schedules them via the Web Audio API and is a graceful no-op where there
 // is no AudioContext (SSR / jsdom).

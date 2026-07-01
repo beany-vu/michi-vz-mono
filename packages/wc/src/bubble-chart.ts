@@ -1,4 +1,4 @@
-// <michi-vz-bubble-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-bubble-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core Bubble engine. Circles sized by value, clustered by gravity, with
 // an optional realized/untapped split per bubble.
 import { LitElement, html, type PropertyValues } from "lit";

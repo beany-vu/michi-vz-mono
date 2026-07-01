@@ -1,6 +1,6 @@
 // Position a tooltip near the cursor, flipping LEFT when it would overflow the host's
 // right edge (so it doesn't slide under a sibling sidebar) and UP when it would
-// overflow the bottom. Call this AFTER the tooltip content is set + made visible — it
+// overflow the bottom. Call this AFTER the tooltip content is set + made visible - it
 // measures offsetWidth/offsetHeight to decide the flip.
 export function placeTooltip(
   host: HTMLElement,

@@ -1,11 +1,11 @@
-// EXPERIMENTAL opt-in WebGPU renderer for ComparableHorizontalBar — the third
+// EXPERIMENTAL opt-in WebGPU renderer for ComparableHorizontalBar - the third
 // sibling to renderSvg.ts / renderCanvas.ts, consuming the SAME
 // ComparableRenderModel. Each label's two sub-bars (value-based behind,
 // value-compared in front) are drawn as GPU rects via the shared marks.ts layer.
 // Sub-bar fill colours are resolved through the SAME dual nested probes canvas
 // mode uses, so consumer CSS still reaches GPU pixels. Text/axes/title stay on
 // the SVG layer. PoC scope: bars are flat rects (no rounded corners, no hatch
-// PATTERN fill — pattern-filled value-based bars are omitted in webgpu mode;
+// PATTERN fill - pattern-filled value-based bars are omitted in webgpu mode;
 // use renderer="canvas"/"svg" for exact rounded-rect + pattern rendering).
 import { emptyBatch, pushRect, markColor, drawMarksWebgpu } from "../webgpu/marks";
 import { resolveMarkColors, makeSubBarProbe } from "../canvas/resolveMarkColors";

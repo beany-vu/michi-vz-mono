@@ -258,7 +258,7 @@ export function mountComparableHorizontalBarChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: append/derive points before processing.
+    // Plugin hook #1 - transformData: append/derive points before processing.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -376,7 +376,7 @@ export function mountComparableHorizontalBarChart(
         onReady: render,
       });
       if (ready) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -427,7 +427,7 @@ export function mountComparableHorizontalBarChart(
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
@@ -438,7 +438,7 @@ export function mountComparableHorizontalBarChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [

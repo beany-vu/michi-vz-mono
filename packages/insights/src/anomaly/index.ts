@@ -1,4 +1,4 @@
-// Anomaly detection over a numeric series. Pure + deterministic — no DOM, no deps,
+// Anomaly detection over a numeric series. Pure + deterministic - no DOM, no deps,
 // no randomness. Three methods: a population z-score, Tukey's IQR fences, and a
 // one-step-ahead forecast residual test (reusing computeForecast). The `anomaly()`
 // plugin mirrors the forecast plugin: it runs detection on each target Line
@@ -185,7 +185,7 @@ export function anomaly(options: AnomalyPluginOptions = {}): MichiVzPlugin<LineC
     name: "anomaly",
 
     transformData(props) {
-      // detection only — never mutates the data; just refreshes the cache.
+      // detection only - never mutates the data; just refreshes the cache.
       run(props.dataSet);
       return props;
     },

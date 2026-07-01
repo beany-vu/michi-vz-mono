@@ -139,7 +139,7 @@ export function mountBarBellChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
-  // changes — an unconditional re-fire loops "Maximum update depth" in any consumer
+  // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
   let model: ReturnType<typeof buildBarBellRenderModel> | null = null;
@@ -208,7 +208,7 @@ export function mountBarBellChart(
   });
 
   function render(): void {
-    // Plugin hook #1 — transformData: append/rewrite rows before layout.
+    // Plugin hook #1 - transformData: append/rewrite rows before layout.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
@@ -269,7 +269,7 @@ export function mountBarBellChart(
       margin: r.margin,
       format: (label) => yFormat(label),
       // Pass the RAW prop (undefined when unset) so renderYAxisBand sizes the label
-      // box to the left margin — the full gutter — instead of a fixed 100px box that
+      // box to the left margin - the full gutter - instead of a fixed 100px box that
       // strands free space on the left and truncates long "MM-YYYY | step" labels.
       tickHtmlWidth: props.tickHtmlWidth,
       showGrid: false,
@@ -308,7 +308,7 @@ export function mountBarBellChart(
         onReady: render,
       });
       if (painted) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -335,7 +335,7 @@ export function mountBarBellChart(
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
     });
-    // Plugin hook #3 — enrichContext: rewrite summary BEFORE the a11y mirror + the
+    // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
@@ -345,7 +345,7 @@ export function mountBarBellChart(
       props.onChartDataProcessed?.(context);
     }
 
-    // Plugin hook #2 — validate: merge core checks with plugin warnings. Validate the
+    // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
     // USER's data (baseProps), not the plugin-synthesised rows.
     if (baseProps.onDataWarning) {
       const warnings = [

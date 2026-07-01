@@ -1,4 +1,4 @@
-// Shared imperative SVG sub-component builders — ported once from the legacy
+// Shared imperative SVG sub-component builders - ported once from the legacy
 // React `shared/*.tsx` so every chart (GapChart, LineChart, AreaChart, …) draws
 // its title / axes / loading / overlay through one implementation.
 export { renderTitle } from "./title";

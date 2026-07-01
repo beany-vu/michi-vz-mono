@@ -72,8 +72,8 @@ export function buildFanContext(input: BuildFanContextInput): FanChartContext {
         s.label,
         s.historyCount,
         s.forecastCount,
-        s.last ? s.last.y : "—",
-        s.finalUncertainty ?? "—",
+        s.last ? s.last.y : "-",
+        s.finalUncertainty ?? "-",
       ]),
     },
   };

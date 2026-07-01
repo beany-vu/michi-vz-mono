@@ -1,4 +1,4 @@
-// <michi-vz-radar-chart> — Lit, LIGHT DOM, over the @michi-vz/core RadarChart engine.
+// <michi-vz-radar-chart> - Lit, LIGHT DOM, over the @michi-vz/core RadarChart engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountRadarChart } from "@michi-vz/core";
 import type {

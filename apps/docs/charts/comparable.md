@@ -103,7 +103,7 @@ Props are typed as `ComparableHorizontalBarChartProps` in [`@michi-vz/core`](htt
 
 Each row draws `valueBased` (behind) and `valueCompared` (in front), diverging from x=0. `valueBasedOpacity` / `valueComparedOpacity` set their fill opacity. A sub-bar whose resolved fill is `transparent` is **skipped** (consumers hide one half via CSS). `minBarWidth` (default 5) floors a non-zero bar so near-zero values stay visible.
 
-### `patternsMapping` — hatch / image fills
+### `patternsMapping` - hatch / image fills
 
 `patternsMapping: Record<label, imageSrc>` fills the **value-based** sub-bar with a tiled image instead of a flat colour. `createHatchPattern({ color, angle?, spacing?, strokeWidth? })` (exported from `@michi-vz/core` and `@michi-vz/react`) returns a diagonal-hatch SVG data-URI for the common case. The canvas renderer tiles it via `ctx.createPattern` and re-renders once the image loads.
 
@@ -113,7 +113,7 @@ Each row draws `valueBased` (behind) and `valueCompared` (in front), diverging f
 
 ### Label column (y)
 
-The y-axis category labels live in a left column `tickHtmlWidth` px wide (default 100, ellipsised). `padding.left` insets the **plot** (bars + value axis) to the right WITHOUT moving the labels — opening room for a wide label column. `horizontalTickPosition: { x, y }` nudges the labels to align with an external legend. `hideTickLabels` hides them entirely (when the category names live in a legend instead).
+The y-axis category labels live in a left column `tickHtmlWidth` px wide (default 100, ellipsised). `padding.left` insets the **plot** (bars + value axis) to the right WITHOUT moving the labels - opening room for a wide label column. `horizontalTickPosition: { x, y }` nudges the labels to align with an external legend. `hideTickLabels` hides them entirely (when the category names live in a legend instead).
 
 ### Tooltip
 

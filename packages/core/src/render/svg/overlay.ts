@@ -1,4 +1,4 @@
-// Imperative port of shared/Overlay.tsx — appends a transparent capture <rect>
+// Imperative port of shared/Overlay.tsx - appends a transparent capture <rect>
 // (class "tpRef") sized to the chart so mouse events (tooltip / x-axis crosshair)
 // have a hit surface even where there are no marks. Returns the rect so the
 // caller can attach listeners. Append this LAST so it sits above the marks.

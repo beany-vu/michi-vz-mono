@@ -72,9 +72,9 @@ export function buildTreemapContext(input: BuildTreemapContextInput): TreemapCha
     const base: Array<string | number> = [l.path.join(" › "), l.value];
     if (hasPartial) {
       base.push(
-        l.partial ?? "—",
-        l.remainder ?? "—",
-        l.partialPct != null ? `${Math.round(l.partialPct * 100)}%` : "—"
+        l.partial ?? "-",
+        l.remainder ?? "-",
+        l.partialPct != null ? `${Math.round(l.partialPct * 100)}%` : "-"
       );
     }
     return base;

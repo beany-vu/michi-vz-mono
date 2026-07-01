@@ -9,7 +9,7 @@ export interface ProcessedFountain {
   mode: "snapshot" | "trend";
   /** The temporal x type when in trend mode, else null */
   temporalType: XaxisDataType | null;
-  /** Band categories (snapshot) — the deduped jet labels */
+  /** Band categories (snapshot) - the deduped jet labels */
   labels: string[];
   /** [min, max] x in numeric/epoch-ms space (trend mode only) */
   xDomain: [number, number];

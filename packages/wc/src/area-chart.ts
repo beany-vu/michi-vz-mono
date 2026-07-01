@@ -1,4 +1,4 @@
-// <michi-vz-area-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-area-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core AreaChart engine. Same pattern as the other elements.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountAreaChart } from "@michi-vz/core";

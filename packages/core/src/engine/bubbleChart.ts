@@ -1,6 +1,6 @@
 // Bubble engine: mount/update/getContext/destroy. Circles sized by value, packed
 // into a cluster by a d3-force gravity simulation (settled synchronously), with
-// an optional realized/untapped split. LIGHT DOM (SVG) or canvas. No axes — just a
+// an optional realized/untapped split. LIGHT DOM (SVG) or canvas. No axes - just a
 // title, the bubbles, and an optional split legend. Mirrors the other engines'
 // plugin wiring + colour-mapping dispatch; the force layout lives in the pure layer.
 import DOMPurify from "dompurify";
@@ -266,7 +266,7 @@ export function mountBubbleChart(
   }
 
   function render(): void {
-    // Plugin hook #1 — transformData (identity with no plugins).
+    // Plugin hook #1 - transformData (identity with no plugins).
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
@@ -355,7 +355,7 @@ export function mountBubbleChart(
         onReady: render,
       });
       if (ready) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -380,12 +380,12 @@ export function mountBubbleChart(
       splitLabels: r.splitLabels,
       showSplit,
     });
-    // Plugin hook #3 — enrichContext before a11y + dataprocessed.
+    // Plugin hook #3 - enrichContext before a11y + dataprocessed.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    // Plugin hook #2 — validate the USER's data, merged with plugin warnings.
+    // Plugin hook #2 - validate the USER's data, merged with plugin warnings.
     if (baseProps.onDataWarning) {
       const warnings = [
         ...checkBubbleData(baseProps.dataSet),

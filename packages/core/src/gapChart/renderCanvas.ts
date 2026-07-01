@@ -1,7 +1,7 @@
 // Opt-in Canvas 2D renderer. Mirrors the SVG marks onto a <canvas> layered
 // behind the <svg>. Mark colours are resolved through the SVG colour probe
 // (resolveMarkColors) so consumer CSS (.gap-bar[data-label-safe] { fill }) reaches
-// canvas pixels exactly as it does the SVG — the load-bearing light-DOM contract.
+// canvas pixels exactly as it does the SVG - the load-bearing light-DOM contract.
 import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import type { GapRenderModel, GapElement } from "./renderModel";

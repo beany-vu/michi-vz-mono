@@ -3,7 +3,7 @@ import { renderA11yMirror, MAX_A11Y_ROWS } from "../src/context/a11yMirror";
 import type { BaseChartContext } from "../src/types";
 
 // A screen reader (and the browser) cannot handle a table with one row per point on
-// a heavy dataset — renderA11yMirror must cap the DOM rows and note the remainder.
+// a heavy dataset - renderA11yMirror must cap the DOM rows and note the remainder.
 function ctxWith(n: number): BaseChartContext {
   const rows = Array.from({ length: n }, (_, i) => [`Row ${i}`, String(i)]);
   return {

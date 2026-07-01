@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for Sankey — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for Sankey - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME SankeyRenderModel. Nodes are
 // drawn as filled rects (pushRect) and link ribbons are sampled into a top/bottom
 // polyline pair and drawn as a filled band (pushBandStrip), then handed to the
@@ -95,7 +95,7 @@ export function drawSankeyWebgpu(
     const c = markColor(css, lit ? model.linkOpacity : model.linkOpacity * 0.25);
     if (c[3] <= 0) continue;
     // The mark only carries the finished SVG path string (+ width), not the raw
-    // sx/sy/tx/ty centreline the model computed — recover it exactly from the path's
+    // sx/sy/tx/ty centreline the model computed - recover it exactly from the path's
     // own coordinates (see parseRibbonEndpoints), then resample top/bottom edges at
     // GPU-friendly resolution for pushBandStrip.
     const pts = parseRibbonEndpoints(l.d);

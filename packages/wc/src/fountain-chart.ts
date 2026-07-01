@@ -1,4 +1,4 @@
-// <michi-vz-fountain-chart> — Lit, LIGHT DOM, over the @michi-vz/core FountainChart
+// <michi-vz-fountain-chart> - Lit, LIGHT DOM, over the @michi-vz/core FountainChart
 // ("Jet d'Eau") engine. Categorical x = snapshot, temporal/numeric x = trend.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountFountainChart } from "@michi-vz/core";

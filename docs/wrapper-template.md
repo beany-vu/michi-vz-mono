@@ -2,14 +2,14 @@
 
 How to produce the **wc element + 4 framework wrappers** for any new chart, derived
 from the verified GapChart slice. Wrappers are thin lifecycle adapters over the core
-engine — once the engine + wc element are green you can generate all four **in
+engine - once the engine + wc element are green you can generate all four **in
 parallel**. Replace `<Chart>` / `<chart-tag>` / `<chartProps>` throughout.
 
 ## Stable contract (do not re-invent per chart)
 
 - **Engine API** (`@michi-vz/core`): `mount<Chart>(host, props) => ChartInstance<<Chart>Props>`
   with `{ update(props), getContext(): ChartContext | null, destroy() }`.
-- **CustomEvents** (wc, bubbles + composed) — the canonical names, same for every chart:
+- **CustomEvents** (wc, bubbles + composed) - the canonical names, same for every chart:
   `michi-vz:highlight`, `michi-vz:colormapping`, `michi-vz:dataprocessed`, `michi-vz:datawarning`.
 - **Store shape** (`createMichiVzStore`): `colorsMapping`, `highlightItems`, `disabledItems`,
   `fontFamily?`, `locale?`, `dir?`.
@@ -18,7 +18,7 @@ parallel**. Replace `<Chart>` / `<chart-tag>` / `<chartProps>` throughout.
   Wrappers only ever pass it through (`getContext()`), so they need no per-chart context typing.
 - **SSR rule**: server renders a sized placeholder; the engine mounts on the client.
 
-## 1. wc element — `packages/wc/src/<chart>.ts`
+## 1. wc element - `packages/wc/src/<chart>.ts`
 
 Lit, **light DOM** (`createRenderRoot() { return this }`), no decorators (static `properties`),
 mounts the engine into a stable `.mv-host` div, per-element sub-path export. Complex inputs are
@@ -26,29 +26,29 @@ mounts the engine into a stable `.mv-host` div, per-element sub-path export. Com
 `emit("michi-vz:*", …)`. Expose `getContext()`. Register guarded by `!customElements.get(tag)`.
 (Copy `packages/wc/src/gap-chart.ts` verbatim and rename.)
 
-## 2. React — `packages/react/src/index.tsx`
+## 2. React - `packages/react/src/index.tsx`
 
 `forwardRef` + a host `div`; `mount<Chart>` in a mount-once `useEffect` (cleanup `destroy()`);
 push props in a second effect that runs every render; `useImperativeHandle` exposes `getContext()`;
 placeholder sized by `props.width/height` for SSR.
 
-## 3. Vue 3 — `packages/vue/src/index.ts`
+## 3. Vue 3 - `packages/vue/src/index.ts`
 
 `defineComponent` with a single `options` prop (`PropType<<Chart>Props>`); `mount<Chart>` in
 `onMounted`; `watch(() => props.options, next => chart.update(next), { deep: true })`;
 `onBeforeUnmount(() => chart.destroy())`; `expose({ getContext })`.
 
-## 4. Svelte — `packages/svelte/src/index.ts`
+## 4. Svelte - `packages/svelte/src/index.ts`
 
 A plain-TS **action** (no `.svelte` compiler needed): `export function <chart>(node, props)` →
 `mount<Chart>(node, props)`, returning `{ update, destroy, getContext }`. Usage:
 `<div use:<chart>={props}></div>`.
 
-## 5. Angular — `packages/angular/src/index.ts`
+## 5. Angular - `packages/angular/src/index.ts`
 
 THIN today: `import "@michi-vz/wc"` to register `<chart-tag>`, plus an `apply<Chart>Props(el, props)`
 helper for template property binding (use `CUSTOM_ELEMENTS_SCHEMA`). An idiomatic standalone
-`@Component` via ng-packagr is a deferred increment — keep this layer for now.
+`@Component` via ng-packagr is a deferred increment - keep this layer for now.
 
 ## Per-chart checklist (gate before "done")
 

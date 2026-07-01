@@ -1,7 +1,7 @@
-// EXPERIMENTAL opt-in WebGPU renderer for ScatterPlot — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for ScatterPlot - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME ScatterRenderModel and the
 // SHARED gpu mark layer (webgpu/marks.ts). Points render as instanced CIRCLES;
-// square/triangle shapes are approximated as circles in webgpu mode (PoC scope —
+// square/triangle shapes are approximated as circles in webgpu mode (PoC scope -
 // use renderer="canvas"/"svg" for exact shapes). Fill colours are resolved through
 // the SAME nested probe canvas mode uses, so consumer CSS reaches GPU pixels. Text
 // and axes stay on the SVG layer.

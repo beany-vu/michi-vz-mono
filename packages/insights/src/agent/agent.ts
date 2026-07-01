@@ -1,4 +1,4 @@
-// In-page agent — a tiny tool-calling loop over the registry, with a BYO LLM caller
+// In-page agent - a tiny tool-calling loop over the registry, with a BYO LLM caller
 // (privacy: no required backend; the consumer supplies the model, e.g. a Claude call).
 // The loop is deterministic given a deterministic caller, so it is testable with a mock.
 import type { AgentTool } from "@michi-vz/core";

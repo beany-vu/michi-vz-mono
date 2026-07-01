@@ -1,4 +1,4 @@
-// <michi-vz-range-chart> — Lit, LIGHT DOM, over the @michi-vz/core RangeChart engine.
+// <michi-vz-range-chart> - Lit, LIGHT DOM, over the @michi-vz/core RangeChart engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountRangeChart } from "@michi-vz/core";
 import type {

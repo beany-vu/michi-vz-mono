@@ -1,37 +1,37 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 
-// "Same engine, secretly a cat" — the homepage's one signature moment.
+// "Same engine, secretly a cat" - the homepage's one signature moment.
 // Each block is a REAL <michi-vz-*> web component, rendered in SVG and fed
 // hand-crafted data until the data itself traces a cat, drawn in the Geneva
-// crest red — the single bold accent on an otherwise quiet, muted-grey page.
+// crest red - the single bold accent on an otherwise quiet, muted-grey page.
 // A whisper of gold marks only the eyes/nose/whiskers (the scatter "face").
 // All axes/grids/labels are stripped via CSS (these are light-DOM components,
-// so the docs stylesheet reaches inside them) — only the silhouette remains.
+// so the docs stylesheet reaches inside them) - only the silhouette remains.
 // Swiss-minimal frame, so it stays quiet and Nordic around that one red cat.
 
 const RED = "#a3271f";
 const GOLD = "#b8863b";
 const CHART_H = 152;
 
-// --- LINE: cat-head OUTLINE — cheeks → sharp ear → V-notch → sharp ear → cheeks
+// --- LINE: cat-head OUTLINE - cheeks → sharp ear → V-notch → sharp ear → cheeks
 const LINE_SERIES = [
   [0.5, 2.2], [1.8, 3.0], [2.9, 3.8], [3.35, 7.0], [5.0, 3.7],
   [6.65, 7.0], [7.1, 3.8], [8.2, 3.0], [9.5, 2.2],
 ].map(([date, value]) => ({ date, value, certainty: true }));
 
-// --- AREA: a filled "loaf" cat — rounded body, head + two ears on the right
+// --- AREA: a filled "loaf" cat - rounded body, head + two ears on the right
 const AREA_SERIES = [
   [0.0, 0.0], [0.5, 2.3], [1.6, 3.05], [3.2, 3.5], [4.8, 3.5], [6.0, 3.4],
   [6.8, 3.6], [7.3, 4.4], [7.75, 5.5], [8.05, 4.6], [8.35, 5.5], [8.75, 4.3],
   [9.1, 2.7], [9.5, 1.1], [10.0, 0.0],
 ].map(([date, michi]) => ({ date, michi }));
 
-// --- RADAR: cat-head POLYGON — two ear spikes (axes near 11 & 1 o'clock)
+// --- RADAR: cat-head POLYGON - two ear spikes (axes near 11 & 1 o'clock)
 const RADAR_AXES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"];
 const RADAR_VALUES = [45, 100, 40, 72, 60, 55, 62, 55, 60, 72, 40, 100];
 
-// --- SCATTER: cat-FACE constellation — ears, head ring in red; eyes, nose,
+// --- SCATTER: cat-FACE constellation - ears, head ring in red; eyes, nose,
 // whiskers picked out in the gold secondary highlight.
 function buildFace() {
   const pts: { x: number; y: number; d: number; label: string; color: string }[] = [];
@@ -47,9 +47,9 @@ function buildFace() {
     const rad = (a * Math.PI) / 180;
     push(cx + r * Math.cos(rad), cy + r * Math.sin(rad), 18, RED);
   }
-  // eyes + nose — the gold highlight
+  // eyes + nose - the gold highlight
   push(4.0, 5.7, 60, GOLD); push(6.0, 5.7, 60, GOLD); push(5.0, 4.5, 42, GOLD);
-  // whiskers — gold, quieter dots
+  // whiskers - gold, quieter dots
   push(3.2, 4.6, 11, GOLD); push(2.4, 4.7, 11, GOLD); push(3.2, 4.0, 11, GOLD); push(2.4, 3.9, 11, GOLD);
   push(6.8, 4.6, 11, GOLD); push(7.6, 4.7, 11, GOLD); push(6.8, 4.0, 11, GOLD); push(7.6, 3.9, 11, GOLD);
   return pts;
@@ -242,7 +242,7 @@ onBeforeUnmount(() => {
 }
 
 /* Swiss grid: four equal cells joined by hairline rules (gap over a divider bg).
-   No border-radius flourish, no shadow — the red cat inside each cell is the
+   No border-radius flourish, no shadow - the red cat inside each cell is the
    only thing that should draw the eye here. */
 .cat-grid {
   display: grid;

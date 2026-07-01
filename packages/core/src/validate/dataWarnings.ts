@@ -24,7 +24,7 @@ export function checkGapData(dataSet: GapDataItem[]): DataWarning[] {
       warnings.push({
         type: "duplicate-label",
         label: d.label,
-        message: `Duplicate label "${d.label}" — only one will be rendered per y-band.`,
+        message: `Duplicate label "${d.label}" - only one will be rendered per y-band.`,
       });
     }
     seen.add(d.label);

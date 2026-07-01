@@ -1,4 +1,4 @@
-// @michi-vz/devtools — opt-in in-page developer devtools for michi-vz charts.
+// @michi-vz/devtools - opt-in in-page developer devtools for michi-vz charts.
 // Inspect every chart's live ChartContext (incl. actual vs predicted provenance),
 // drive highlight/disable + agent tools, and edit data. No browser extension needed.
 //

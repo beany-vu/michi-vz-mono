@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // The greeting + style injection both guard on module-level flags, so reset the module
 // between tests to exercise the first-call path each time.
-describe("ensureStyles — once-per-page console greeting", () => {
+describe("ensureStyles - once-per-page console greeting", () => {
   beforeEach(() => {
     vi.resetModules();
     delete (globalThis as Record<string, unknown>).__MICHI_VZ_NO_GREETING__;

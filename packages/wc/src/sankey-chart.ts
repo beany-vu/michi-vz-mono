@@ -1,4 +1,4 @@
-// <michi-vz-sankey-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-sankey-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core Sankey engine. Nodes in columns with flow-proportional link bands.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountSankeyChart } from "@michi-vz/core";

@@ -209,7 +209,7 @@
           "name": "showVerticalGridLines",
           "type": "boolean",
           "optional": true,
-          "description": "Draw vertical dashed grid lines at each x tick (default false — the legacy chart drew none).",
+          "description": "Draw vertical dashed grid lines at each x tick (default false - the legacy chart drew none).",
           "default": "",
           "common": false
         },
@@ -2361,7 +2361,7 @@
           "name": "patternsMapping",
           "type": "Record<string, string>",
           "optional": true,
-          "description": "Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based sub-bar — the canvas tiles it via ctx.createPattern, an SVG renderer via <pattern>/<image>",
+          "description": "Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based sub-bar - the canvas tiles it via ctx.createPattern, an SVG renderer via <pattern>/<image>",
           "default": "",
           "common": false
         },
@@ -2457,7 +2457,7 @@
           "name": "suppressDefaultOverlay",
           "type": "boolean",
           "optional": true,
-          "description": "Set by a framework wrapper passing its own overlay node — suppresses the default overlay",
+          "description": "Set by a framework wrapper passing its own overlay node - suppresses the default overlay",
           "default": "",
           "common": false
         },
@@ -3849,7 +3849,7 @@
           "name": "gravity",
           "type": "number",
           "optional": true,
-          "description": "Strength of the pull toward the centre in [0,1] (default 0.09) — higher = tighter cluster (\"suck together\").",
+          "description": "Strength of the pull toward the centre in [0,1] (default 0.09) - higher = tighter cluster (\"suck together\").",
           "default": "0.09",
           "common": false
         },

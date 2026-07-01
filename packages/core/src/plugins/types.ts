@@ -1,4 +1,4 @@
-// Plugin contract for @michi-vz. INTERFACES ONLY — zero runtime, so core stays
+// Plugin contract for @michi-vz. INTERFACES ONLY - zero runtime, so core stays
 // AI-dependency-free while the engines can host opt-in plugins (e.g. the
 // @michi-vz/insights forecast / anomaly / narrate / agent suite). A chart with no
 // plugins registered runs exactly as before (the runner folds over an empty list).

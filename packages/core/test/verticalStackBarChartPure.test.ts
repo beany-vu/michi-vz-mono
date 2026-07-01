@@ -1,4 +1,4 @@
-// Pure-layer tests for VerticalStackBar — the hasOwnProperty marker guard (HARD
+// Pure-layer tests for VerticalStackBar - the hasOwnProperty marker guard (HARD
 // RULE), flooring, and key ordering. No jsdom needed.
 import { describe, it, expect } from "vitest";
 import {
@@ -152,7 +152,7 @@ describe("VerticalStackBar disabled DataSet widens remaining bars (legacy parity
 });
 
 describe("VerticalStackBar numeric dates (thd consumer contract)", () => {
-  // The thd consumers build each row as { date: +year, Land, Air, Sea } — date is a
+  // The thd consumers build each row as { date: +year, Land, Air, Sea } - date is a
   // NUMBER (e.g. 202208). The legacy chart String()-coerced dates everywhere; the new
   // engine must too. Otherwise collectDates seeds the scaleBand<string> domain with
   // NUMBERS while stack.ts looks up xScale(String(date)) -> InternMap miss -> every bar

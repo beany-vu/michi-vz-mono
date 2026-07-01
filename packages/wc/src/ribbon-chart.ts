@@ -1,4 +1,4 @@
-// <michi-vz-ribbon-chart> — Lit, LIGHT DOM, over the @michi-vz/core RibbonChart engine.
+// <michi-vz-ribbon-chart> - Lit, LIGHT DOM, over the @michi-vz/core RibbonChart engine.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountRibbonChart } from "@michi-vz/core";
 import type {

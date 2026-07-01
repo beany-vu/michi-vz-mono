@@ -105,7 +105,7 @@ export function buildJetPath(g: JetGeometryInput): string {
  * same easing. Stacked translucent, the base (covered by every slice) reads
  * dense and the crown (covered by one) reads wispy. Opacity tapers slightly so
  * the crown is fainter still. Modulates ALPHA of the consumer's single hue only
- * (hard rule #4) — never a hardcoded white.
+ * (hard rule #4) - never a hardcoded white.
  */
 export function buildFrothSlices(g: JetGeometryInput, layers: number, baseOpacity: number): FrothSlice[] {
   const N = Math.max(1, Math.min(20, Math.round(layers)));

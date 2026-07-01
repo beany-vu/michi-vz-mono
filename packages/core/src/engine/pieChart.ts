@@ -1,6 +1,6 @@
 // Pie/donut engine: mount/update/getContext/destroy. Slices sized by value via
 // d3-shape pie()+arc(); `innerRadiusRatio` > 0 makes it a donut. LIGHT DOM (SVG)
-// or canvas. No axes — just a title, the slices, and an optional legend. Mirrors
+// or canvas. No axes - just a title, the slices, and an optional legend. Mirrors
 // the other engines' plugin wiring + colour-mapping dispatch; the arc geometry
 // lives in the pure layer.
 import DOMPurify from "dompurify";
@@ -251,7 +251,7 @@ export function mountPieChart(
   }
 
   function render(): void {
-    // Plugin hook #1 — transformData (identity with no plugins).
+    // Plugin hook #1 - transformData (identity with no plugins).
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
     svg.setAttribute("width", String(r.width));
@@ -343,7 +343,7 @@ export function mountPieChart(
         onReady: render,
       });
       if (ready) {
-        // GPU painted — drop any first-frame 2D fallback canvas.
+        // GPU painted - drop any first-frame 2D fallback canvas.
         removeCanvas();
       } else {
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
@@ -369,12 +369,12 @@ export function mountPieChart(
       total: processed.total,
       colorsMapping: colors.generatedColorsMapping,
     });
-    // Plugin hook #3 — enrichContext before a11y + dataprocessed.
+    // Plugin hook #3 - enrichContext before a11y + dataprocessed.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     props.onChartDataProcessed?.(context);
 
-    // Plugin hook #2 — validate the USER's data, merged with plugin warnings.
+    // Plugin hook #2 - validate the USER's data, merged with plugin warnings.
     if (baseProps.onDataWarning) {
       const warnings = [
         ...checkPieData(baseProps.dataSet),

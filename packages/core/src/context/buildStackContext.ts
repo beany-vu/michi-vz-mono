@@ -98,7 +98,7 @@ export function buildStackContext(input: BuildStackContextInput): VerticalStackB
             cells.push(rect.value);
             total += rect.value;
           } else {
-            cells.push("—");
+            cells.push("-");
           }
         }
         cells.push(round(total));

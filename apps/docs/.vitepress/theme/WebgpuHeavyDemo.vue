@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Reusable EXPERIMENTAL heavy-data WebGPU demo. Mounts ANY michi-vz web-component
 // element with renderer="webgpu" over a caller-supplied heavy dataset, and reports
-// the ACTUAL backend honestly (WebGPU needs an adapter, not just navigator.gpu —
+// the ACTUAL backend honestly (WebGPU needs an adapter, not just navigator.gpu -
 // under software rasterizers / locked-down browsers it falls back to canvas). Each
 // chart page passes a `make` function that returns the element's props; it is called
 // CLIENT-SIDE only (onMounted) so SSR never generates the large dataset.
@@ -93,10 +93,10 @@ onBeforeUnmount(() => {
 <template>
   <div class="gpu-demo">
     <div class="gpu-caveat" role="note">
-      <strong>⚗️ Experimental — not yet stable.</strong>
+      <strong>⚗️ Experimental - not yet stable.</strong>
       WebGPU rendering is an opt-in preview. It needs a WebGPU-capable browser
       (Chrome / Edge, or Safari 26+); everywhere else it falls back to canvas
-      automatically. Axes, labels and tooltips stay on the SVG layer — only the
+      automatically. Axes, labels and tooltips stay on the SVG layer - only the
       data marks are painted on the GPU.
     </div>
     <div class="gpu-bar">

@@ -1,6 +1,6 @@
 # Provider & shared state
 
-`@michi-vz/react` ships a React context layer — `MichiVzProvider` + `useChartContext` — that lets a tree of charts share colours, highlights, and display state without prop-drilling.
+`@michi-vz/react` ships a React context layer - `MichiVzProvider` + `useChartContext` - that lets a tree of charts share colours, highlights, and display state without prop-drilling.
 
 ## MichiVzProvider
 
@@ -63,11 +63,11 @@ function MyLegend() {
 }
 ```
 
-`useChartContext` subscribes via `useSyncExternalStore` — updates are tear-free under concurrent rendering. When no `MichiVzProvider` is in the tree it returns safe empty defaults (`colorsMapping: {}`, `highlightItems: []`, etc.) so you never read `undefined`.
+`useChartContext` subscribes via `useSyncExternalStore` - updates are tear-free under concurrent rendering. When no `MichiVzProvider` is in the tree it returns safe empty defaults (`colorsMapping: {}`, `highlightItems: []`, etc.) so you never read `undefined`.
 
 ## The legendData colour contract
 
-For **canvas charts** the engine cannot read CSS variables directly at paint time — it uses a `getComputedStyle` probe instead. When a chart is rendered with `skipColorMappingDispatch` (the consumer controls colours, not the engine), the colour authority workflow is:
+For **canvas charts** the engine cannot read CSS variables directly at paint time - it uses a `getComputedStyle` probe instead. When a chart is rendered with `skipColorMappingDispatch` (the consumer controls colours, not the engine), the colour authority workflow is:
 
 1. The engine populates `ChartContext.legendData` after processing data. Each entry is a `LegendItem`:
 
@@ -89,15 +89,15 @@ For **canvas charts** the engine cannot read CSS variables directly at paint tim
    .line[data-label-safe="north-africa"]       { stroke: #e8a838; }
    ```
 
-3. On the next paint the canvas probe calls `getComputedStyle` on the matching SVG element and reads the colour — no opacity/transparent bar problem.
+3. On the next paint the canvas probe calls `getComputedStyle` on the matching SVG element and reads the colour - no opacity/transparent bar problem.
 
 The `dataLabelSafe` field is produced by `sanitizeForClassName` from `@michi-vz/core` and is stable across renders for the same label string.
 
 ::: tip Canvas colour checklist
 For canvas charts (`renderer="canvas"` + `skipColorMappingDispatch`) you need **both**:
 
-- A `<style>{cssFromLegendData}</style>` block in your JSX — without it every bar renders transparent.
-- Unconditional mount + key-driven remount (`key={chartKey}`) rather than `{ready && <Chart />}` — conditional mount prevents `isNodataComponent` from firing on empty data.
+- A `<style>{cssFromLegendData}</style>` block in your JSX - without it every bar renders transparent.
+- Unconditional mount + key-driven remount (`key={chartKey}`) rather than `{ready && <Chart />}` - conditional mount prevents `isNodataComponent` from firing on empty data.
 :::
 
 ## Migrating from the standalone `michi-vz` package
@@ -122,8 +122,8 @@ In the legacy package `legendData` lived on `ChartMetadata` and was only availab
 
 ### No CSS import needed
 
-The legacy package required a separate `import "michi-vz/dist/style.css"`. The mono auto-injects layout/overlay CSS via `ensureStyles()` at mount time — remove the import if you have one. Colour CSS (fill/stroke) is still your contract, as before.
+The legacy package required a separate `import "michi-vz/dist/style.css"`. The mono auto-injects layout/overlay CSS via `ensureStyles()` at mount time - remove the import if you have one. Colour CSS (fill/stroke) is still your contract, as before.
 
 ### Provider / useChartContext parity
 
-`MichiVzProvider` accepts exactly the same core props as before (`colorsMapping`, `highlightItems`, `disabledItems`, `fontFamily`, `singlePointLine`), plus the new additions (`hiddenItems`, `visibleItems`, `categoryMetadata`, `colorsBasedMapping`, `locale`, `dir`). `useChartContext` returns a superset of the legacy `MichiVzState` — existing destructures are safe.
+`MichiVzProvider` accepts exactly the same core props as before (`colorsMapping`, `highlightItems`, `disabledItems`, `fontFamily`, `singlePointLine`), plus the new additions (`hiddenItems`, `visibleItems`, `categoryMetadata`, `colorsBasedMapping`, `locale`, `dir`). `useChartContext` returns a superset of the legacy `MichiVzState` - existing destructures are safe.

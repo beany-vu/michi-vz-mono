@@ -15,7 +15,7 @@ describe("embeddings", () => {
     expect(Math.sqrt(a.reduce((s, x) => s + x * x, 0))).toBeCloseTo(1, 6);
   });
 
-  it("findSimilar ranks by meaning (hash fallback) — revenue items beat churn", async () => {
+  it("findSimilar ranks by meaning (hash fallback) - revenue items beat churn", async () => {
     const items = ["quarterly revenue forecast", "customer churn rate", "annual revenue growth projection"];
     const ranked = await findSimilar("revenue", items, (t) => t);
     expect(ranked).toHaveLength(3);

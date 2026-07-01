@@ -1,8 +1,8 @@
-// <michi-vz-gap-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-gap-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core engine. Light DOM (createRenderRoot returns `this`) preserves
 // the consumer colour contract + canvas probe. We let Lit render a single stable
 // host <div> and mount the imperative engine into it; Lit's diff keeps that div
-// (and the engine's children) across updates. No decorators — keeps tsup/esbuild
+// (and the engine's children) across updates. No decorators - keeps tsup/esbuild
 // builds simple.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountGapChart } from "@michi-vz/core";

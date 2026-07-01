@@ -1,4 +1,4 @@
-// <michi-vz-scatter-chart> — native web component (Lit, LIGHT DOM) over the
+// <michi-vz-scatter-chart> - native web component (Lit, LIGHT DOM) over the
 // @michi-vz/core ScatterPlot engine. Same pattern as the other elements.
 import { LitElement, html, type PropertyValues } from "lit";
 import { mountScatterChart } from "@michi-vz/core";

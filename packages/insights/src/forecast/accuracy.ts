@@ -1,5 +1,5 @@
 // Forecast accuracy metrics. MAPE is the intuitive default but is unstable on
-// zero/intermittent actuals, so it is null when no non-zero actual exists — callers
+// zero/intermittent actuals, so it is null when no non-zero actual exists - callers
 // fall back to RMSE/MAE there (per the plan's honest-metric note).
 
 export interface Accuracy {

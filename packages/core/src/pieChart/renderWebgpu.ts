@@ -1,4 +1,4 @@
-// EXPERIMENTAL opt-in WebGPU renderer for Pie/donut — the third sibling to
+// EXPERIMENTAL opt-in WebGPU renderer for Pie/donut - the third sibling to
 // renderSvg.ts / renderCanvas.ts, consuming the SAME PieRenderModel. Each slice
 // is tessellated into a triangle fan (pie) or an annulus band strip (donut) by
 // sampling its arc into ring points, then handed to the shared GPU mark layer

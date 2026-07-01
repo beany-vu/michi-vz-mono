@@ -1,4 +1,4 @@
-// Imperative port of shared/YaxisBand.tsx — band-scale y-axis with HTML labels
+// Imperative port of shared/YaxisBand.tsx - band-scale y-axis with HTML labels
 // (via <foreignObject>, so long labels ellipsize and stay hoverable) plus a
 // full-width dashed grid line per band. Optional hover wiring + dim, matching the
 // legacy component's `onHover`/`hoveredItem` behaviour (no-hover guard is
@@ -46,7 +46,7 @@ export function renderYAxisBand(
     // Only emit the line when grid is on. The old `stroke="transparent"` fallback did
     // NOT hide it: the `.mv-grid` CSS rule (stroke: lightgray) overrides a presentation
     // attribute, so showGrid:false still drew a dashed line under each band. Match the
-    // x-axis (which appends the line only inside `if (showGrid)`) — showGrid is now authoritative.
+    // x-axis (which appends the line only inside `if (showGrid)`) - showGrid is now authoritative.
     if (o.showGrid) {
       g.appendChild(
         svgEl("line", {
@@ -65,7 +65,7 @@ export function renderYAxisBand(
     // flex-centered div keeps the text at the band centre (same as before), so any
     // tickLabelOffset still nudges from centre. overflow:visible (paired with the
     // .mv-ylabel div + the overflow:visible svg) lets a label taller than the band
-    // spill into the empty inter-band gaps rather than clip — the foreignObject would
+    // spill into the empty inter-band gaps rather than clip - the foreignObject would
     // otherwise clip to its viewport, cutting off long labels (worst at the top band).
     const fo = svgEl("foreignObject", {
       class: "mv-ylabel-fo",

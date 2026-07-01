@@ -1,5 +1,5 @@
 // Trend changepoint detection: find indices where the slope of the series
-// structurally shifts. Pure + deterministic — no DOM, no deps, no randomness.
+// structurally shifts. Pure + deterministic - no DOM, no deps, no randomness.
 //
 // Approach (intentionally simple and explainable):
 //   For every candidate split point t in [minSegment .. n - minSegment] we fit
@@ -19,7 +19,7 @@ export interface Changepoint {
   slopeBefore: number;
   /** OLS slope fitted to values[index..n). */
   slopeAfter: number;
-  /** |slopeAfter - slopeBefore| — the strength of the bend. */
+  /** |slopeAfter - slopeBefore| - the strength of the bend. */
   delta: number;
 }
 
