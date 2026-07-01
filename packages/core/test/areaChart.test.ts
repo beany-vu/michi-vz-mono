@@ -133,3 +133,27 @@ describe("mountAreaChart (jsdom)", () => {
     host.remove();
   });
 });
+
+describe("mountAreaChart fillPeriodTicks (Layer 2)", () => {
+  it("marks a missing period (2022) as a faded no-data tick", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountAreaChart(host, {
+      series: [
+        { date: 2020, "Fruit Sales": 10, Veg: 5, Dairy: 3 },
+        { date: 2021, "Fruit Sales": 12, Veg: 6, Dairy: 4 },
+        { date: 2023, "Fruit Sales": 9, Veg: 8, Dairy: 6 },
+      ],
+      keys,
+      width: 900,
+      height: 300,
+      xAxisDataType: "date_annual",
+      xAxisFormat: (d) => String(new Date(Number(d)).getUTCFullYear()),
+      fillPeriodTicks: true,
+    });
+    const faded = Array.from(host.querySelectorAll("text.mv-tick-nodata")).map((l) => l.textContent);
+    expect(faded).toContain("2022");
+    chart.destroy();
+    host.remove();
+  });
+});

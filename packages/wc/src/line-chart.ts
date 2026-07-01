@@ -55,6 +55,9 @@ export class LineChartElement extends LitElement {
     yAxisFormat: { attribute: false },
     ticks: { type: Number },
     tickValues: { attribute: false },
+    fillPeriodTicks: { type: Boolean, attribute: "fill-period-ticks" },
+    noDataTickTooltip: { attribute: false },
+    noDataTickColor: { type: String, attribute: "no-data-tick-color" },
     filter: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     svgChildren: { type: String, attribute: "svg-children" },
@@ -94,6 +97,9 @@ export class LineChartElement extends LitElement {
   yAxisFormat?: (d: number | string) => string;
   ticks?: number;
   tickValues?: Array<number | Date>;
+  fillPeriodTicks?: boolean;
+  noDataTickTooltip?: (date: number) => string;
+  noDataTickColor?: string;
   filter?: Filter;
   enableTransitions?: boolean;
   svgChildren?: string;
@@ -147,6 +153,9 @@ export class LineChartElement extends LitElement {
       yAxisFormat: this.yAxisFormat,
       ticks: this.ticks,
       tickValues: this.tickValues,
+      fillPeriodTicks: this.fillPeriodTicks,
+      noDataTickTooltip: this.noDataTickTooltip,
+      noDataTickColor: this.noDataTickColor,
       filter: this.filter,
       enableTransitions: this.enableTransitions,
       svgChildren: this.svgChildren,

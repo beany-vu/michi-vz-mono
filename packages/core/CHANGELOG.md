@@ -1,5 +1,13 @@
 # @michi-vz/core
 
+## 1.3.0
+
+### Minor Changes
+
+- **LineChart x-axis: the first + last periods are never dropped, and crowded labels auto-rotate then thin to ~5.** LineChart now opts into the same adaptive axis machinery AreaChart already used (a data-period tick set + `autoRotate` + `maxTicks`), so a date axis always keeps its true first and last period - even when they are not the round calendar boundaries that raw `d3 scaleTime().ticks()` would otherwise snap to and drop - and dense labels tilt -45° then thin to ~5 (keeping both ends) instead of silently disappearing.
+
+- **New opt-in `fillPeriodTicks` "continuous timeline" mode (LineChart + AreaChart).** Draws a tick for EVERY period across the range (every month/year), not just the periods present in the data. Periods with no value render faded (`.mv-tick-nodata`) and show a "no data" hover tooltip. Customize with `noDataTickTooltip(epochMs)` (tooltip text, plain string or sanitized HTML) and `noDataTickColor` (or the `--michi-vz-tick-nodata` CSS var). Exposed as `enumeratePeriods` / `periodValue` helpers and a `noDataValues` axis option internally; all five framework wrappers forward the new props.
+
 ## 1.2.1
 
 ### Patch Changes

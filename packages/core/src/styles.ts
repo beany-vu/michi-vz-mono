@@ -21,6 +21,11 @@ export const CORE_CSS = `
 .michi-vz .title { font-size: calc(var(--michi-vz-font-size, 12px) * 1.33); font-weight: 600; fill: var(--michi-vz-ink, currentColor); }
 .michi-vz .gap-line { stroke-width: 2; fill: none; }
 .michi-vz .mv-axis-label { fill: var(--michi-vz-muted, #666); font-size: var(--michi-vz-font-size, 12px); }
+/* Faded label for a fillPeriodTicks period with no data. Colour = --michi-vz-tick-nodata
+   (set via the noDataTickColor prop) else the muted axis colour; the extra opacity fades it
+   below the real labels. Theme-adaptive on light AND dark (derives from currentColor). The
+   engine wires a "Data not available" hover tooltip; cursor:help signals it. */
+.michi-vz .mv-tick-nodata { fill: var(--michi-vz-tick-nodata, var(--michi-vz-muted, #999)); opacity: 0.45; cursor: help; }
 .michi-vz .mv-grid { stroke: var(--michi-vz-grid, lightgray); stroke-dasharray: 2 2; }
 /* y=0 baseline: SOLID (not dashed) but GRAY by default (matches the previous
    version - user preference); override --michi-vz-zero-line for emphasis. */

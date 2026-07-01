@@ -39,6 +39,9 @@ export class AreaChartElement extends LitElement {
     yAxisDomain: { attribute: false },
     ticks: { type: Number },
     tickValues: { attribute: false },
+    fillPeriodTicks: { type: Boolean, attribute: "fill-period-ticks" },
+    noDataTickTooltip: { attribute: false },
+    noDataTickColor: { type: String, attribute: "no-data-tick-color" },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
@@ -68,6 +71,9 @@ export class AreaChartElement extends LitElement {
   yAxisDomain?: [number, number];
   ticks?: number;
   tickValues?: Array<number | Date>;
+  fillPeriodTicks?: boolean;
+  noDataTickTooltip?: (date: number) => string;
+  noDataTickColor?: string;
   enableTransitions?: boolean;
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: AreaDataRow[] | null | undefined) => boolean);
@@ -111,6 +117,9 @@ export class AreaChartElement extends LitElement {
       yAxisDomain: this.yAxisDomain,
       ticks: this.ticks,
       tickValues: this.tickValues,
+      fillPeriodTicks: this.fillPeriodTicks,
+      noDataTickTooltip: this.noDataTickTooltip,
+      noDataTickColor: this.noDataTickColor,
       enableTransitions: this.enableTransitions,
       isLoading: this.isLoading,
       isNodata: this.isNodata,

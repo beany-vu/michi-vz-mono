@@ -158,3 +158,103 @@ describe("mountLineChart (jsdom)", () => {
     host.remove();
   });
 });
+
+// Formats an epoch-ms tick value back to its UTC year / year-month label.
+const yearLabel = (d: number | string) => String(new Date(Number(d)).getUTCFullYear());
+const monthLabel = (d: number | string) => {
+  const dt = new Date(Number(d));
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}`;
+};
+// Scope to the x-axis group - `.mv-axis-label` is shared with the y-axis labels.
+const axisTexts = (host: HTMLElement) =>
+  Array.from(host.querySelectorAll(".mv-x-axis text.mv-axis-label")).map((l) => l.textContent);
+
+describe("mountLineChart x-axis: first + last never dropped (Layer 1)", () => {
+  it("annual 2020-2024: renders a tick for BOTH the first (2020) and last (2024) year", () => {
+    const { host, chart } = mount({
+      xAxisDataType: "date_annual",
+      width: 900,
+      xAxisFormat: yearLabel,
+      dataSet: [
+        { label: "S", color: "#00f", series: [2020, 2021, 2022, 2023, 2024].map((y, i) => ({ date: y, value: i + 1, certainty: true })) },
+      ],
+    });
+    const labels = axisTexts(host);
+    expect(labels).toContain("2020");
+    expect(labels).toContain("2024");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("monthly with NON-round endpoints (2020-02 .. 2023-11): keeps the true first + last month", () => {
+    // raw d3 scaleTime().ticks() would snap to Januarys and drop both ends; the fix
+    // feeds the real periods so the endpoints survive (thinned or not, order preserved).
+    const months: { date: string; value: number; certainty: boolean }[] = [];
+    let y = 2020;
+    let m = 2;
+    for (let i = 0; i < 46; i++) {
+      months.push({ date: `${y}-${String(m).padStart(2, "0")}`, value: i, certainty: true });
+      if (++m > 12) {
+        m = 1;
+        y++;
+      }
+    }
+    const { host, chart } = mount({
+      xAxisDataType: "date_monthly",
+      width: 900,
+      xAxisFormat: monthLabel,
+      dataSet: [{ label: "S", color: "#00f", series: months }],
+    });
+    const labels = axisTexts(host);
+    expect(labels[0]).toBe("2020-02");
+    expect(labels[labels.length - 1]).toBe("2023-11");
+    chart.destroy();
+    host.remove();
+  });
+});
+
+describe("mountLineChart fillPeriodTicks (Layer 2)", () => {
+  const withGap = {
+    xAxisDataType: "date_annual" as const,
+    width: 900,
+    xAxisFormat: yearLabel,
+    fillPeriodTicks: true,
+    // 2022 is MISSING from the data
+    dataSet: [
+      { label: "S", color: "#00f", series: [2020, 2021, 2023, 2024].map((yr) => ({ date: yr, value: 1, certainty: true })) },
+    ],
+  };
+
+  it("draws the missing period (2022) as a faded no-data tick; present years stay normal", () => {
+    const { host, chart } = mount(withGap);
+    const faded = Array.from(host.querySelectorAll("text.mv-tick-nodata")).map((l) => l.textContent);
+    expect(faded).toContain("2022");
+    const normal = Array.from(host.querySelectorAll(".mv-x-axis text.mv-axis-label"))
+      .filter((l) => !(l.getAttribute("class") ?? "").includes("mv-tick-nodata"))
+      .map((l) => l.textContent);
+    expect(normal).toContain("2020");
+    expect(normal).toContain("2024");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("hovering a no-data tick shows the custom tooltip", () => {
+    const { host, chart } = mount({ ...withGap, noDataTickTooltip: () => "No data for this year" });
+    const faded = host.querySelector<SVGTextElement>("text.mv-tick-nodata")!;
+    const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
+    faded.dispatchEvent(new MouseEvent("mouseenter"));
+    expect(tooltip.style.visibility).toBe("visible");
+    expect(tooltip.innerHTML).toContain("No data for this year");
+    faded.dispatchEvent(new MouseEvent("mouseleave"));
+    expect(tooltip.style.visibility).toBe("hidden");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("does nothing when fillPeriodTicks is off (no faded ticks)", () => {
+    const { host, chart } = mount({ ...withGap, fillPeriodTicks: false });
+    expect(host.querySelectorAll("text.mv-tick-nodata").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+});

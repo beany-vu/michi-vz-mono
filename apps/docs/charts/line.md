@@ -43,6 +43,38 @@ function makeLine() {
   });
   return { dataSet, xAxisDataType: "date_annual", showDataPoints: false };
 }
+
+function makeNoDataLine() {
+  // 24 months of Jan 2022 - Dec 2023, but several months are MISSING from the data
+  // (2022-04/05/09, 2023-02/03) so the "fill" toggle has real gaps to reveal.
+  const present = [
+    "2022-01", "2022-02", "2022-03", "2022-06", "2022-07", "2022-08",
+    "2022-10", "2022-11", "2022-12", "2023-01", "2023-04", "2023-05",
+    "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12",
+  ];
+  const mk = (base, amp) =>
+    present.map((date, i) => ({
+      date,
+      value: Math.round((base + Math.sin(i / 2) * amp) * 10) / 10,
+      certainty: true,
+    }));
+  return {
+    dataSet: [
+      { label: "Exports", color: "#2c6fbb", series: mk(60, 12) },
+      { label: "Imports", color: "#e07b39", series: mk(45, 9) },
+    ],
+    xAxisDataType: "date_monthly",
+    xAxisFormat: (d) => {
+      const dt = new Date(Number(d));
+      return (
+        dt.toLocaleString("en-US", { month: "short", timeZone: "UTC" }) +
+        " " +
+        String(dt.getUTCFullYear()).slice(2)
+      );
+    },
+    noDataTickTooltip: () => "No data reported for this month",
+  };
+}
 </script>
 
 The line chart's opt-in `renderer="webgpu"` paints its line/marker geometry on the GPU while axes, labels and tooltips stay on the SVG layer; it is capability-gated with automatic canvas fallback when WebGPU is unavailable.
@@ -54,6 +86,53 @@ The line chart's opt-in `renderer="webgpu"` paints its line/marker geometry on t
 A missing period renders as a **dashed** segment - set it per point with `certainty: false`, or let `detectGaps` derive it. Here one series skips a reporting period:
 
 <ChartDemo chart="line-chart" :index="1" />
+
+## Continuous timeline & no-data ticks
+
+By default the x-axis is honest about time in two ways: **the first and last period are never dropped** (even when they land on an "unround" month d3 would otherwise skip), and crowded labels tilt to -45° then thin to ~5 - always keeping both ends.
+
+Opt into `fillPeriodTicks` and the axis draws a tick for **every** period in range, not just the ones with data. Months with no value render **faded**; hover one to explain the gap. Flip the toggle:
+
+<NoDataTicksDemo :make="makeNoDataLine" />
+
+Customize it: `noDataTickTooltip(epochMs)` returns the tooltip text (plain string or sanitized HTML), and `noDataTickColor` (or the `--michi-vz-tick-nodata` CSS var) sets the faded colour.
+
+::: code-group
+
+```tsx [React]
+<LineChart
+  {...props}
+  xAxisDataType="date_monthly"
+  fillPeriodTicks
+  noDataTickTooltip={() => "No data reported for this month"}
+  noDataTickColor="#c0392b"
+/>
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, fillPeriodTicks: true, noDataTickTooltip: () => 'No data' }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, fillPeriodTicks: true, noDataTickTooltip: () => 'No data' }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, {
+  ...props,
+  fillPeriodTicks: true,
+  noDataTickTooltip: () => "No data",
+});
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c" fill-period-ticks no-data-tick-color="#c0392b"></michi-vz-line-chart>
+<script>
+  document.getElementById("c").noDataTickTooltip = () => "No data reported";
+</script>
+```
+
+:::
 
 ## Usage
 

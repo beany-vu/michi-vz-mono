@@ -230,6 +230,30 @@
           "common": false
         },
         {
+          "name": "fillPeriodTicks",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw a tick for EVERY period across the axis range (every month/year), not just the periods present in the data. Periods with no value render faded and show `noDataTickTooltip` on hover. Opt-in; default false.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataTickTooltip",
+          "type": "(date: number) => string",
+          "optional": true,
+          "description": "Tooltip content (plain text or sanitized HTML) for a faded no-data tick; receives the tick's epoch-ms value. Used only with `fillPeriodTicks`. Default: a localized \"Data not available\".",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataTickColor",
+          "type": "string",
+          "optional": true,
+          "description": "Colour for faded no-data tick labels; sets the `--michi-vz-tick-nodata` CSS var on the host. Used only with `fillPeriodTicks`.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "curve",
           "type": "\"curveBumpX\" | \"curveLinear\" | \"curveMonotoneX\"",
           "optional": true,
@@ -778,6 +802,30 @@
           "type": "Array<number | Date>",
           "optional": true,
           "description": "Explicit tick values, overriding the generated ones",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "fillPeriodTicks",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw a tick for EVERY period across the axis range (every month/year), not just the periods present in the data. Periods with no value render faded and show `noDataTickTooltip` on hover. Opt-in; default false.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataTickTooltip",
+          "type": "(date: number) => string",
+          "optional": true,
+          "description": "Tooltip content (plain text or sanitized HTML) for a faded no-data tick; receives the tick's epoch-ms value. Used only with `fillPeriodTicks`. Default: a localized \"Data not available\".",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataTickColor",
+          "type": "string",
+          "optional": true,
+          "description": "Colour for faded no-data tick labels; sets the `--michi-vz-tick-nodata` CSS var on the host. Used only with `fillPeriodTicks`.",
           "default": "",
           "common": false
         },

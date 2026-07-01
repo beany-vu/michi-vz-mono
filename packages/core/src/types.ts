@@ -303,6 +303,16 @@ export interface LineChartProps {
   highlightZeroLine?: boolean;
   /** Explicit tick values, overriding the generated ones */
   tickValues?: Array<number | Date>;
+  /** Draw a tick for EVERY period across the axis range (every month/year), not just the
+   * periods present in the data. Periods with no value render faded and show
+   * `noDataTickTooltip` on hover. Opt-in; default false. */
+  fillPeriodTicks?: boolean;
+  /** Tooltip content (plain text or sanitized HTML) for a faded no-data tick; receives the
+   * tick's epoch-ms value. Used only with `fillPeriodTicks`. Default: a localized "Data not available". */
+  noDataTickTooltip?: (date: number) => string;
+  /** Colour for faded no-data tick labels; sets the `--michi-vz-tick-nodata` CSS var on the host.
+   * Used only with `fillPeriodTicks`. */
+  noDataTickColor?: string;
   /** Default interpolation for every series (per-series `curve` wins). */
   curve?: CurveType;
   /** Auto-derive `certainty` from missing periods (dashes the gap segment). */
@@ -444,6 +454,16 @@ export interface AreaChartProps {
   ticks?: number;
   /** Explicit tick values, overriding the generated ones */
   tickValues?: Array<number | Date>;
+  /** Draw a tick for EVERY period across the axis range (every month/year), not just the
+   * periods present in the data. Periods with no value render faded and show
+   * `noDataTickTooltip` on hover. Opt-in; default false. */
+  fillPeriodTicks?: boolean;
+  /** Tooltip content (plain text or sanitized HTML) for a faded no-data tick; receives the
+   * tick's epoch-ms value. Used only with `fillPeriodTicks`. Default: a localized "Data not available". */
+  noDataTickTooltip?: (date: number) => string;
+  /** Colour for faded no-data tick labels; sets the `--michi-vz-tick-nodata` CSS var on the host.
+   * Used only with `fillPeriodTicks`. */
+  noDataTickColor?: string;
   /** Line interpolation: curveLinear, curveMonotoneX, or curveBumpX */
   curve?: CurveType;
   /** Labels to emphasise; all other marks dim */

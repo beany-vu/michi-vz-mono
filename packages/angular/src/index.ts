@@ -185,6 +185,9 @@ export function applyLineChartProps(el: LineChartElement, props: LineChartProps)
   if (props.yAxisFormat !== undefined) el.yAxisFormat = props.yAxisFormat;
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickValues !== undefined) el.tickValues = props.tickValues;
+  if (props.fillPeriodTicks !== undefined) el.fillPeriodTicks = props.fillPeriodTicks;
+  if (props.noDataTickTooltip !== undefined) el.noDataTickTooltip = props.noDataTickTooltip;
+  if (props.noDataTickColor !== undefined) el.noDataTickColor = props.noDataTickColor;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
   if (props.svgChildren !== undefined) el.svgChildren = props.svgChildren;
@@ -244,6 +247,9 @@ export function applyAreaChartProps(el: AreaChartElement, props: AreaChartProps)
   if (props.yAxisDomain !== undefined) el.yAxisDomain = props.yAxisDomain;
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickValues !== undefined) el.tickValues = props.tickValues;
+  if (props.fillPeriodTicks !== undefined) el.fillPeriodTicks = props.fillPeriodTicks;
+  if (props.noDataTickTooltip !== undefined) el.noDataTickTooltip = props.noDataTickTooltip;
+  if (props.noDataTickColor !== undefined) el.noDataTickColor = props.noDataTickColor;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;

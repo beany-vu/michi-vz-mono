@@ -3,6 +3,7 @@ import type { Theme } from "vitepress";
 import Layout from "./Layout.vue";
 import ChartDemo from "./ChartDemo.vue";
 import WebgpuHeavyDemo from "./WebgpuHeavyDemo.vue";
+import NoDataTicksDemo from "./NoDataTicksDemo.vue";
 import InsightsDemo from "./InsightsDemo.vue";
 import EmbeddingsLab from "./EmbeddingsLab.vue";
 import SemanticSearchLab from "./SemanticSearchLab.vue";
@@ -24,6 +25,7 @@ export default {
   enhanceApp({ app }) {
     app.component("ChartDemo", ChartDemo);
     app.component("WebgpuHeavyDemo", WebgpuHeavyDemo);
+    app.component("NoDataTicksDemo", NoDataTicksDemo);
     app.component("InsightsDemo", InsightsDemo);
     app.component("EmbeddingsLab", EmbeddingsLab);
     app.component("SemanticSearchLab", SemanticSearchLab);

@@ -7,6 +7,8 @@ export type { TitleOptions } from "./title";
 export { renderXAxisLinear } from "./xAxisLinear";
 export type { XAxisLinearOptions, LinearOrTimeScale } from "./xAxisLinear";
 
+export { wireNoDataTickTooltips } from "./noDataTickTooltips";
+
 export { renderYAxisBand } from "./yAxisBand";
 export type { YAxisBandOptions } from "./yAxisBand";
 

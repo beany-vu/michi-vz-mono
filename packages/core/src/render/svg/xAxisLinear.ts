@@ -43,6 +43,13 @@ export interface XAxisLinearOptions {
    * dense series (e.g. 48 months) collapse to a clean 3-5 labels without losing the ends.
    */
   maxTicks?: number;
+  /**
+   * Numeric tick values (epoch ms for date scales) that have NO underlying data. Their
+   * label is marked `.mv-tick-nodata` (rendered faded via CSS) and tagged with a
+   * `data-mv-value` attribute so the engine can attach a "no data" hover tooltip.
+   * Backs `fillPeriodTicks`; the builder itself stays event-free.
+   */
+  noDataValues?: Set<number>;
 }
 
 /** Even index sample keeping first + last; used to thin overcrowded rotated ticks. */
@@ -182,6 +189,12 @@ export function renderXAxisLinear(
         "text-anchor": "end",
       });
       label.textContent = p.label;
+      if (o.noDataValues?.has(p.v)) {
+        // Faded label + hover target for a period with no data (engine wires the tooltip).
+        label.setAttribute("class", "mv-axis-label mv-tick-nodata");
+        label.setAttribute("pointer-events", "all");
+        label.setAttribute("data-mv-value", String(p.v));
+      }
       tickG.appendChild(label);
       g.appendChild(tickG);
     } else {
@@ -192,6 +205,12 @@ export function renderXAxisLinear(
         "text-anchor": "middle",
       });
       label.textContent = p.label;
+      if (o.noDataValues?.has(p.v)) {
+        // Faded label + hover target for a period with no data (engine wires the tooltip).
+        label.setAttribute("class", "mv-axis-label mv-tick-nodata");
+        label.setAttribute("pointer-events", "all");
+        label.setAttribute("data-mv-value", String(p.v));
+      }
       g.appendChild(label);
     }
   });

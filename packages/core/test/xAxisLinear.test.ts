@@ -60,3 +60,28 @@ describe("renderXAxisLinear adaptive density (autoRotate + maxTicks)", () => {
     expect(labels.every((l) => !(l.getAttribute("transform") ?? "").includes("rotate"))).toBe(true);
   });
 });
+
+describe("renderXAxisLinear no-data ticks (fillPeriodTicks marking)", () => {
+  const cls = (l: Element) => l.getAttribute("class") ?? "";
+
+  it("marks ONLY the noDataValues labels faded + tags them with data-mv-value", () => {
+    const labels = render(
+      scaleLinear().domain([0, 4]).range([20, 780]),
+      { noDataValues: new Set([1, 3]) },
+      5
+    );
+    expect(labels.length).toBe(5);
+    const faded = labels.filter((l) => cls(l).includes("mv-tick-nodata"));
+    expect(faded.map((l) => l.getAttribute("data-mv-value")).sort()).toEqual(["1", "3"]);
+    // faded labels keep the base class AND become hover targets
+    expect(faded.every((l) => cls(l).includes("mv-axis-label"))).toBe(true);
+    expect(faded.every((l) => l.getAttribute("pointer-events") === "all")).toBe(true);
+    // the other three labels are untouched
+    expect(labels.filter((l) => !cls(l).includes("mv-tick-nodata")).length).toBe(3);
+  });
+
+  it("marks nothing when noDataValues is omitted", () => {
+    const labels = render(scaleLinear().domain([0, 4]).range([20, 780]), {}, 5);
+    expect(labels.some((l) => cls(l).includes("mv-tick-nodata"))).toBe(false);
+  });
+});

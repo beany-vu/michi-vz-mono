@@ -31,11 +31,87 @@ function makeArea() {
   }
   return { series, keys, xAxisDataType: "number" };
 }
+
+function makeNoDataArea() {
+  const keys = ["Raw", "Semi-processed", "Processed"];
+  // 24 months, but 2022-04/05/09 and 2023-02/03 are MISSING from the data.
+  const present = [
+    "2022-01", "2022-02", "2022-03", "2022-06", "2022-07", "2022-08",
+    "2022-10", "2022-11", "2022-12", "2023-01", "2023-04", "2023-05",
+    "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12",
+  ];
+  const series = present.map((date, i) => ({
+    date,
+    Raw: 20 + Math.round(Math.sin(i / 3) * 8),
+    "Semi-processed": 30 + Math.round(Math.cos(i / 2) * 6),
+    Processed: 50 + Math.round(Math.sin(i / 4) * 5),
+  }));
+  return {
+    series,
+    keys,
+    xAxisDataType: "date_monthly",
+    colorsMapping: { Raw: "#2c6fbb", "Semi-processed": "#e07b39", Processed: "#3aa757" },
+    xAxisFormat: (d) => {
+      const dt = new Date(Number(d));
+      return (
+        dt.toLocaleString("en-US", { month: "short", timeZone: "UTC" }) +
+        " " +
+        String(dt.getUTCFullYear()).slice(2)
+      );
+    },
+    noDataTickTooltip: () => "No data reported for this month",
+  };
+}
 </script>
 
 AreaChart has an opt-in `renderer="webgpu"` that paints the stacked bands on the GPU while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically.
 
 <WebgpuHeavyDemo element="michi-vz-area-chart" :make="makeArea" caption="~7,500 points" />
+
+## Continuous timeline & no-data ticks
+
+The x-axis always keeps the **first and last period** and tilts / thins crowded labels to ~5. Opt into `fillPeriodTicks` to draw a tick for **every** month in range; months with no data render **faded** with a "no data" hover tooltip. Toggle it:
+
+<NoDataTicksDemo element="michi-vz-area-chart" :make="makeNoDataArea" />
+
+Customize via `noDataTickTooltip(epochMs)` (tooltip text) and `noDataTickColor` (or the `--michi-vz-tick-nodata` CSS var).
+
+::: code-group
+
+```tsx [React]
+<AreaChart
+  {...props}
+  xAxisDataType="date_monthly"
+  fillPeriodTicks
+  noDataTickTooltip={() => "No data reported for this month"}
+  noDataTickColor="#c0392b"
+/>
+```
+
+```vue [Vue]
+<AreaChart :options="{ ...props, fillPeriodTicks: true, noDataTickTooltip: () => 'No data' }" />
+```
+
+```svelte [Svelte]
+<div use:areaChart={{ ...props, fillPeriodTicks: true, noDataTickTooltip: () => 'No data' }}></div>
+```
+
+```ts [Angular]
+applyAreaChartProps(this.c.nativeElement, {
+  ...props,
+  fillPeriodTicks: true,
+  noDataTickTooltip: () => "No data",
+});
+```
+
+```html [Web component]
+<michi-vz-area-chart id="c" fill-period-ticks no-data-tick-color="#c0392b"></michi-vz-area-chart>
+<script>
+  document.getElementById("c").noDataTickTooltip = () => "No data reported";
+</script>
+```
+
+:::
 
 ## Usage
 

@@ -12,6 +12,7 @@ import {
   renderXAxisLinear,
   renderYAxisLinear,
   renderAnnotationsSvg,
+  wireNoDataTickTooltips,
 } from "../render/svg";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processLineChartData } from "../lineChart/data";
@@ -20,7 +21,7 @@ import { createLineScales } from "../lineChart/scales";
 import { buildLineRenderModel } from "../lineChart/renderModel";
 import { lttb } from "../lineChart/lttb";
 import { projectX } from "../lineChart/geometry";
-import { parseXValue } from "../lineChart/lineUtils";
+import { parseXValue, enumeratePeriods, periodValue } from "../lineChart/lineUtils";
 import { renderLineSvg } from "../lineChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
@@ -308,17 +309,64 @@ export function mountLineChart(
     // No-data: render only the title (axes + marks hidden, matching legacy
     // `!displayIsNodata && filteredDataSet.length > 0` gating); the overlay covers it.
     if (dataState !== "nodata") {
-      renderXAxisLinear(svg, scales.xScale, {
+      // Legacy parity (mirrors AreaChart): feed every DATA period as a candidate tick
+      // so the axis ALWAYS keeps the first + last period (raw `scaleTime().ticks()`
+      // snaps to "nice" calendar boundaries and silently drops non-round endpoints).
+      // maxTicks thins a dense series (e.g. 48 months) to ~3-5 keeping both ends;
+      // autoRotate tilts -45deg only when the kept labels still collide.
+      const periodTicks =
+        xAxisDataType === "date_annual" || xAxisDataType === "date_monthly"
+          ? Array.from(
+              new Set(props.dataSet.flatMap((row) => row.series.map((p) => String(p.date))))
+            )
+              .map((d) => parseXValue(d, xAxisDataType))
+              .sort(
+                (a, b) =>
+                  (a instanceof Date ? a.valueOf() : a) - (b instanceof Date ? b.valueOf() : b)
+              )
+          : undefined;
+      const plotW = r.width - r.margin.left - r.margin.right;
+      const xMaxTicks = plotW < 480 ? 3 : 5;
+      // Opt-in continuous timeline: draw a tick for EVERY period in range (not just
+      // periods present in data); periods with no non-null value are marked faded and
+      // get a "no data" hover tooltip. Explicit `tickValues` still wins over the fill.
+      let candidateTicks = props.tickValues ?? periodTicks;
+      let noDataValues: Set<number> | undefined;
+      const isDateAxis = xAxisDataType === "date_annual" || xAxisDataType === "date_monthly";
+      if (props.fillPeriodTicks && !props.tickValues && isDateAxis) {
+        const [dMin, dMax] = scales.xScale.domain() as [Date, Date];
+        const allPeriods = enumeratePeriods(dMin, dMax, xAxisDataType);
+        candidateTicks = allPeriods;
+        const present = new Set<number>();
+        for (const row of props.dataSet) {
+          for (const p of row.series) {
+            if (p.value === null || p.value === undefined || Number.isNaN(p.value)) continue;
+            const parsed = parseXValue(p.date, xAxisDataType);
+            present.add(parsed instanceof Date ? periodValue(parsed, xAxisDataType) : parsed);
+          }
+        }
+        noDataValues = new Set(allPeriods.filter((v) => !present.has(v)));
+        if (props.noDataTickColor != null) {
+          host.style.setProperty("--michi-vz-tick-nodata", props.noDataTickColor);
+        }
+      }
+      const xAxisG = renderXAxisLinear(svg, scales.xScale, {
         width: r.width,
         height: r.height,
         margin: r.margin,
         xAxisDataType,
         format: (v) => xFormat(v),
         ticks: r.ticks,
-        tickValues: props.tickValues,
+        tickValues: candidateTicks,
         enableExplicitTickValues: true,
         showGrid: props.showVerticalGridLines === true,
+        autoRotate: true,
+        maxTicks: xMaxTicks,
+        noDataValues,
       });
+      if (noDataValues && noDataValues.size > 0) {
+        wireNoDataTickTooltips(xAxisG, tooltip, host, props.noDataTickTooltip);
+      }
       renderYAxisLinear(svg, scales.yScale, {
         width: r.width,
         height: r.height,

@@ -1,5 +1,16 @@
 # @michi-vz/wc
 
+## 1.3.0
+
+### Minor Changes
+
+- LineChart/AreaChart x-axis: the first + last periods are never dropped, crowded labels auto-rotate then thin to ~5, and the opt-in `fillPeriodTicks` continuous-timeline mode (faded no-data ticks + a "no data" hover tooltip, customizable via `noDataTickTooltip` / `noDataTickColor`). New props forwarded by the `<michi-vz-line-chart>` / `<michi-vz-area-chart>` element (`fill-period-ticks` attribute + reactive properties).
+
+### Patch Changes
+
+- Updated dependencies:
+  - @michi-vz/core@1.3.0
+
 ## 1.2.1
 
 ### Patch Changes

@@ -7,12 +7,18 @@ import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
-import { renderTitle, renderXAxisLinear, renderYAxisLinear, renderOverlay } from "../render/svg";
+import {
+  renderTitle,
+  renderXAxisLinear,
+  renderYAxisLinear,
+  renderOverlay,
+  wireNoDataTickTooltips,
+} from "../render/svg";
 import { processAreaChartData } from "../areaChart/data";
 import { buildAreaColors } from "../areaChart/colors";
 import { createAreaScales } from "../areaChart/scales";
 import { areaProjectX } from "../areaChart/geometry";
-import { parseXValue } from "../lineChart/lineUtils";
+import { parseXValue, enumeratePeriods, periodValue } from "../lineChart/lineUtils";
 import { buildAreaRenderModel } from "../areaChart/renderModel";
 import { renderAreaSvg } from "../areaChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
@@ -265,19 +271,47 @@ export function mountAreaChart(
     // ~5 labels (first + last + 3 interior) on a normal-width chart; drop to 3 only
     // when the plot is genuinely narrow. autoRotate handles any residual overlap.
     const xMaxTicks = plotW < 480 ? 3 : 5;
-    renderXAxisLinear(svg, scales.xScale, {
+    // Opt-in continuous timeline: a tick for EVERY period in range; periods with no
+    // finite value are faded + get a "no data" hover tooltip. Explicit tickValues wins.
+    let candidateTicks = props.tickValues ?? periodTicks;
+    let noDataValues: Set<number> | undefined;
+    const isDateAxis = xAxisDataType === "date_annual" || xAxisDataType === "date_monthly";
+    if (props.fillPeriodTicks && !props.tickValues && isDateAxis) {
+      const [dMin, dMax] = scales.xScale.domain() as [Date, Date];
+      const allPeriods = enumeratePeriods(dMin, dMax, xAxisDataType);
+      candidateTicks = allPeriods;
+      const present = new Set<number>();
+      for (const row of props.series) {
+        const hasValue = props.keys.some((k) => {
+          const raw = row[k];
+          return raw != null && Number.isFinite(Number(raw));
+        });
+        if (!hasValue) continue;
+        const parsed = parseXValue(String(row.date), xAxisDataType);
+        present.add(parsed instanceof Date ? periodValue(parsed, xAxisDataType) : parsed);
+      }
+      noDataValues = new Set(allPeriods.filter((v) => !present.has(v)));
+      if (props.noDataTickColor != null) {
+        host.style.setProperty("--michi-vz-tick-nodata", props.noDataTickColor);
+      }
+    }
+    const xAxisG = renderXAxisLinear(svg, scales.xScale, {
       width: r.width,
       height: r.height,
       margin: r.margin,
       xAxisDataType,
       format: (v) => xFormat(v),
       ticks: r.ticks,
-      tickValues: props.tickValues ?? periodTicks,
+      tickValues: candidateTicks,
       enableExplicitTickValues: true,
       showGrid: false,
       autoRotate: true,
       maxTicks: xMaxTicks,
+      noDataValues,
     });
+    if (noDataValues && noDataValues.size > 0) {
+      wireNoDataTickTooltips(xAxisG, tooltip, host, props.noDataTickTooltip);
+    }
     renderYAxisLinear(svg, scales.yScale, {
       width: r.width,
       height: r.height,
