@@ -65,10 +65,10 @@ export default defineConfig({
       { text: "Guide", link: "/guide/installation" },
       {
         // TanStack-style version switcher (single version for now).
-        text: "v1.0.0",
+        text: "v1.2.1",
         items: [
-          { text: "v1.0.0 (latest)", link: "/charts/" },
-          { text: "Changelog", link: "https://github.com/beany-vu/michi-vz-mono/releases" },
+          { text: "What's new in v1.2.1", link: "/guide/whats-new" },
+          { text: "Changelog (GitHub)", link: "https://github.com/beany-vu/michi-vz-mono/releases" },
         ],
       },
     ],
@@ -103,6 +103,7 @@ export default defineConfig({
       const guideGroup = {
         text: "Guide",
         items: [
+          { text: "What's new", link: "/guide/whats-new" },
           { text: "Installation", link: "/guide/installation" },
           { text: "Getting started", link: "/guide/getting-started" },
           { text: "Provider & shared state", link: "/guide/provider" },
@@ -117,7 +118,10 @@ export default defineConfig({
         "/guide/": [guideGroup, insightsApiGroup],
       };
     })(),
-    socialLinks: [{ icon: "github", link: "https://github.com/beany-vu/michi-vz-mono" }],
+    socialLinks: [
+      { icon: "github", link: "https://github.com/beany-vu/michi-vz-mono" },
+      { icon: "npm", link: "https://www.npmjs.com/org/michi-vz" },
+    ],
     footer: {
       message: "Free and open source. MIT licensed.",
       copyright: "© 2026 Hoang VU",

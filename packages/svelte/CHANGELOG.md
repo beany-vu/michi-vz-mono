@@ -1,5 +1,13 @@
 # @michi-vz/svelte
 
+## 1.2.1
+
+### Patch Changes
+
+- docs: add a Framework packages cross-link table to every package README and fix the dead monorepo link, so each npm page links to all the sibling wrappers. Also aligns vue/angular/svelte/wc to the same release as core/react.
+- Updated dependencies
+  - @michi-vz/core@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes

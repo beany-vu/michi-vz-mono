@@ -1,15 +1,15 @@
 # Installation
 
-`@michi-vz` is published to npm. Install the one package for your stack - the framework wrappers pull in the engine (`@michi-vz/core`) automatically.
+`@michi-vz` is published to npm under the [**@michi-vz**](https://www.npmjs.com/org/michi-vz) scope. Install the one package for your stack - the framework wrappers pull in the engine (`@michi-vz/core`) automatically. Each package name below links to its npm page.
 
 | Stack | Package | Peer dependencies |
 | --- | --- | --- |
-| React | `@michi-vz/react` | `react` & `react-dom` >= 18 |
-| Vue | `@michi-vz/vue` | `vue` >= 3 |
-| Svelte | `@michi-vz/svelte` | `svelte` >= 4 |
-| Angular | `@michi-vz/angular` | `@angular/core` >= 16 |
-| Web component | `@michi-vz/wc` | none (self-contained) |
-| Vanilla / engine | `@michi-vz/core` | none (d3 is bundled) |
+| React | [`@michi-vz/react`](https://www.npmjs.com/package/@michi-vz/react) | `react` & `react-dom` >= 18 |
+| Vue | [`@michi-vz/vue`](https://www.npmjs.com/package/@michi-vz/vue) | `vue` >= 3 |
+| Svelte | [`@michi-vz/svelte`](https://www.npmjs.com/package/@michi-vz/svelte) | `svelte` >= 4 |
+| Angular | [`@michi-vz/angular`](https://www.npmjs.com/package/@michi-vz/angular) | `@angular/core` >= 16 |
+| Web component | [`@michi-vz/wc`](https://www.npmjs.com/package/@michi-vz/wc) | none (self-contained) |
+| Vanilla / engine | [`@michi-vz/core`](https://www.npmjs.com/package/@michi-vz/core) | none (d3 is bundled) |
 
 ## Install
 

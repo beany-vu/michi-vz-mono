@@ -23,4 +23,7 @@ hero:
     - theme: alt
       text: GitHub
       link: https://github.com/beany-vu/michi-vz-mono
+    - theme: alt
+      text: npm
+      link: https://www.npmjs.com/org/michi-vz
 ---

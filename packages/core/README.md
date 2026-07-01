@@ -10,8 +10,22 @@ React/Vue/Svelte/Angular wrappers. Every chart emits an LLM-ready `ChartContext`
 npm i @michi-vz/core
 ```
 
-See the [monorepo README](https://github.com/) for full usage, the 17 charts, and the
-light-DOM colour contract.
+## Framework packages
+
+Pick the package for your stack - they all render the same charts from the same engine:
+
+| Package | For |
+| --- | --- |
+| **[@michi-vz/core](https://www.npmjs.com/package/@michi-vz/core)** (this package) | Framework-agnostic engine, no framework deps |
+| [@michi-vz/wc](https://www.npmjs.com/package/@michi-vz/wc) | Native web components (Lit, light DOM) |
+| [@michi-vz/react](https://www.npmjs.com/package/@michi-vz/react) | React 18+ |
+| [@michi-vz/vue](https://www.npmjs.com/package/@michi-vz/vue) | Vue 3 |
+| [@michi-vz/svelte](https://www.npmjs.com/package/@michi-vz/svelte) | Svelte |
+| [@michi-vz/angular](https://www.npmjs.com/package/@michi-vz/angular) | Angular |
+
+Full usage, the chart gallery, and the light-DOM colour contract are in the
+[monorepo README](https://github.com/beany-vu/michi-vz-mono) and the
+[live docs](https://michi-vz.netlify.app/).
 
 ## License
 

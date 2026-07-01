@@ -53,6 +53,21 @@ cluster + realized/untapped split) · Sankey (flow diagram) - each available acr
 outputs (core engine, web component, and React/Vue/Svelte/Angular wrappers), in both SVG
 and canvas renderers.
 
+## Packages
+
+All published to npm under the [**@michi-vz**](https://www.npmjs.com/org/michi-vz)
+scope. Every package renders the same charts from the same engine - pick the one
+that matches your stack:
+
+| Package | Install | For |
+| --- | --- | --- |
+| [@michi-vz/core](https://www.npmjs.com/package/@michi-vz/core) | `npm i @michi-vz/core` | Framework-agnostic engine, no framework deps |
+| [@michi-vz/wc](https://www.npmjs.com/package/@michi-vz/wc) | `npm i @michi-vz/wc` | Native web components (Lit, light DOM) |
+| [@michi-vz/react](https://www.npmjs.com/package/@michi-vz/react) | `npm i @michi-vz/react` | React 18+ |
+| [@michi-vz/vue](https://www.npmjs.com/package/@michi-vz/vue) | `npm i @michi-vz/vue` | Vue 3 |
+| [@michi-vz/svelte](https://www.npmjs.com/package/@michi-vz/svelte) | `npm i @michi-vz/svelte` | Svelte |
+| [@michi-vz/angular](https://www.npmjs.com/package/@michi-vz/angular) | `npm i @michi-vz/angular` | Angular |
+
 ## Install
 
 ```bash
