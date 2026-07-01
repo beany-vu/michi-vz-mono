@@ -4,6 +4,11 @@ title: DevTools - inspect, drive, and edit any chart
 
 # See inside your charts
 
+::: warning In development
+DevTools is **actively being built and not yet available**. This page previews the intended
+API and behaviour; expect it to change before release.
+:::
+
 A chart draws pixels, but the interesting part is the **state behind them**: the series, the
 stats, the plain-language summary an AI reads, and which points are *observed* versus *forecast*.
 `@michi-vz/devtools` is an opt-in, in-page panel that surfaces all of it for **every** michi-vz

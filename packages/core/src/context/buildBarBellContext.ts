@@ -6,7 +6,7 @@ const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildBarBellContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   xAxisDomain: [number, number];
   dataSet: BarBellDataRow[];
   activeKeys: string[];

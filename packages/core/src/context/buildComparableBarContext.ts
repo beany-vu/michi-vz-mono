@@ -10,7 +10,7 @@ const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildComparableContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   xAxisDomain: [number, number];
   points: ComparableBarDataPoint[];
   colorsMapping: Record<string, string>;

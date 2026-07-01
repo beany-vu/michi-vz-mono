@@ -14,6 +14,8 @@ import { layoutTreemap, layoutStack } from "../treemapChart/layout";
 import { buildTreemapRenderModel, type TreemapLeafMark, type TreemapRenderModel } from "../treemapChart/renderModel";
 import { renderTreemapSvg } from "../treemapChart/renderSvg";
 import { drawTreemapCanvas } from "../treemapChart/renderCanvas";
+import { drawTreemapWebgpu } from "../treemapChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildTreemapContext } from "../context/buildTreemapContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkTreemapData } from "../validate/treemapWarnings";
@@ -30,17 +32,22 @@ import type {
   ChartInstance,
   Margin,
   MountOptions,
+  Renderer,
   TreemapChartProps,
   TreemapLeafContext,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 36, right: 6, bottom: 6, left: 6 };
 
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / click-to-pin interaction path. svg does not.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
+
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   paddingInner: number;
   paddingTop: number;
   layout: "squarify" | "stack";
@@ -59,7 +66,10 @@ function resolve(p: TreemapChartProps): Resolved {
     width,
     height: p.height ?? 520,
     margin: p.margin ?? DEFAULT_MARGIN,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     paddingInner: p.paddingInner ?? 1,
     paddingTop: p.paddingTop ?? 18,
     layout,
@@ -84,6 +94,7 @@ export function mountTreemapChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -147,7 +158,7 @@ export function mountTreemapChart(
 
   // Canvas-mode hit-test: tiles don't overlap, so the first containing rect wins.
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -169,7 +180,7 @@ export function mountTreemapChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -296,7 +307,7 @@ export function mountTreemapChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderTreemapSvg(
         svg,
         model,
@@ -322,19 +333,52 @@ export function mountTreemapChart(
 
     if (legendH > 0) renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "treemap-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+      const c = htmlEl("canvas", { class: className });
+      c.style.position = "absolute";
+      c.style.top = getComputedStyle(host).paddingTop;
+      c.style.left = getComputedStyle(host).paddingLeft;
+      c.style.pointerEvents = "none";
+      host.insertBefore(c, tooltip);
+      return c;
+    };
+
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("treemapChart-webgpu-canvas");
+      const ready = drawTreemapWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (ready) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        if (canvas) {
+          canvas.remove();
+          canvas = null;
+        }
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("treemap-chart-canvas");
+        drawTreemapCanvas(canvas, svg, model, { width: r.width, height: r.height });
       }
+    } else if (r.renderer === "canvas") {
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
+      if (!canvas) canvas = makeLayerCanvas("treemap-chart-canvas");
       drawTreemapCanvas(canvas, svg, model, { width: r.width, height: r.height });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      if (canvas) {
+        canvas.remove();
+        canvas = null;
+      }
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
     }
 
     const depth = processed.leaves.reduce((m, l) => Math.max(m, l.path.length), 1);
@@ -386,6 +430,8 @@ export function mountTreemapChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-treemap-chart");
     },

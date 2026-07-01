@@ -11,6 +11,37 @@ Who's gaining and who's slipping? When market share, budget splits, or vote tall
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeRibbon() {
+  const keys = Array.from({ length: 30 }, (_, i) => `Category ${i + 1}`);
+  const palette = [
+    "#e63946", "#1d3557", "#2a9d8f", "#e9c46a", "#9b5de5",
+    "#f15bb5", "#00bbf9", "#00f5d4", "#fee440", "#4cb944",
+  ];
+  const colorsMapping = {};
+  keys.forEach((k, i) => { colorsMapping[k] = palette[i % palette.length]; });
+  // Each key gets a slowly drifting base weight so ribbons visibly swell/shrink/re-rank.
+  const bases = keys.map(() => 2 + Math.random() * 8);
+  const drifts = keys.map(() => (Math.random() - 0.5) * 0.8);
+  const series = [];
+  for (let p = 0; p < 15; p++) {
+    const row = { date: `${2010 + p}` };
+    keys.forEach((k, i) => {
+      const wobble = Math.sin(p * 0.7 + i) * 1.5;
+      row[k] = Math.max(0.5, bases[i] + drifts[i] * p + wobble);
+    });
+    series.push(row);
+  }
+  return { series, keys, colorsMapping };
+}
+</script>
+
+RibbonChart has an opt-in `renderer="webgpu"` that paints its ribbons on the GPU while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-ribbon-chart" :make="makeRibbon" caption="dense ribbons" />
+
 ## Usage
 
 ::: code-group
@@ -71,4 +102,4 @@ chart.destroy();
 
 ## API
 
-Props are typed as `RibbonChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `RibbonChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

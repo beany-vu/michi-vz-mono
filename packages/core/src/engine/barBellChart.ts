@@ -14,6 +14,8 @@ import type { BarBellSegment } from "../barBell/renderModel";
 import { renderBarBellSvg } from "../barBell/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawBarBellCanvas } from "../barBell/renderCanvas";
+import { drawBarBellWebgpu } from "../barBell/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildBarBellContext } from "../context/buildBarBellContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -42,9 +44,13 @@ interface Resolved {
   margin: Margin;
   ticks: number;
   tickHtmlWidth: number;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   enableTransitions: boolean;
 }
+
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / click-to-pin interaction path. svg does not.
+const isPainted = (rr: Resolved["renderer"]): boolean => rr === "canvas" || rr === "webgpu";
 
 function resolve(p: BarBellChartProps): Resolved {
   return {
@@ -53,7 +59,10 @@ function resolve(p: BarBellChartProps): Resolved {
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
     tickHtmlWidth: p.tickHtmlWidth ?? 80,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
   };
 }
@@ -82,11 +91,38 @@ export function mountBarBellChart(
   tooltip.style.visibility = "hidden";
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
+  // The 2D canvas (canvas mode, and the webgpu first-frame fallback) and the
+  // dedicated WebGPU canvas. Both are layered absolutely behind the SVG.
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
   host.appendChild(a11y);
+
+  // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
+  // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+  const removeCanvas = (): void => {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+    }
+  };
+  const removeWebgpuCanvas = (): void => {
+    if (webgpuCanvas) {
+      webgpuCanvas.remove();
+      webgpuCanvas = null;
+    }
+  };
 
   let baseProps: BarBellChartProps = initial;
   let context: ChartContext | null = null;
@@ -125,7 +161,7 @@ export function mountBarBellChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -153,7 +189,7 @@ export function mountBarBellChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -239,7 +275,7 @@ export function mountBarBellChart(
       showGrid: false,
     });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderBarBellSvg(
         svg,
         model,
@@ -263,19 +299,30 @@ export function mountBarBellChart(
       );
     }
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "bar-bell-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("barBellChart-webgpu-canvas");
+      const painted = drawBarBellWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (painted) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("bar-bell-canvas");
+        drawBarBellCanvas(canvas, svg, model, { width: r.width, height: r.height });
       }
+    } else if (r.renderer === "canvas") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("bar-bell-canvas");
       drawBarBellCanvas(canvas, svg, model, { width: r.width, height: r.height });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     context = buildBarBellContext({
@@ -333,6 +380,8 @@ export function mountBarBellChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-bar-bell-chart");
     },

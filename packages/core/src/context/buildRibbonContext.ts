@@ -5,7 +5,7 @@ const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildRibbonContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   series: RibbonDataRow[];
   activeKeys: string[];
   dates: string[];

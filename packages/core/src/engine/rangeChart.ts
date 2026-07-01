@@ -12,6 +12,8 @@ import { buildRangeColors } from "../rangeChart/colors";
 import { buildRangeRenderModel } from "../rangeChart/renderModel";
 import { renderRangeSvg } from "../rangeChart/renderSvg";
 import { drawRangeCanvas } from "../rangeChart/renderCanvas";
+import { drawRangeWebgpu } from "../rangeChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildRangeContext } from "../context/buildRangeContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -39,7 +41,7 @@ interface Resolved {
   height: number;
   margin: Margin;
   ticks: number;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   fillOpacity: number;
   enableTransitions: boolean;
 }
@@ -50,7 +52,10 @@ function resolve(p: RangeChartProps): Resolved {
     height: p.height ?? 500,
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     fillOpacity: p.fillOpacity ?? 0.8,
     enableTransitions: p.enableTransitions ?? true,
   };
@@ -89,7 +94,10 @@ export function mountRangeChart(
   tooltip.style.visibility = "hidden";
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
+  // The 2D canvas (canvas mode, and the webgpu first-frame fallback) and the
+  // dedicated WebGPU canvas. Both are layered absolutely behind the SVG.
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -109,6 +117,30 @@ export function mountRangeChart(
   };
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
+
+  // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
+  // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+  const removeCanvas = (): void => {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+    }
+  };
+  const removeWebgpuCanvas = (): void => {
+    if (webgpuCanvas) {
+      webgpuCanvas.remove();
+      webgpuCanvas = null;
+    }
+  };
 
   const showTooltip = (label: string, ev: MouseEvent): void => {
     const r = host.getBoundingClientRect();
@@ -194,7 +226,7 @@ export function mountRangeChart(
       ticks: r.ticks,
     });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderRangeSvg(
         svg,
         model,
@@ -218,19 +250,31 @@ export function mountRangeChart(
       );
     }
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "range-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("range-chart-webgpu-canvas");
+      const ready = drawRangeWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        fillOpacity: r.fillOpacity,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (ready) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("range-chart-canvas");
+        drawRangeCanvas(canvas, svg, model, { width: r.width, height: r.height, fillOpacity: r.fillOpacity });
       }
+    } else if (r.renderer === "canvas") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("range-chart-canvas");
       drawRangeCanvas(canvas, svg, model, { width: r.width, height: r.height, fillOpacity: r.fillOpacity });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     context = buildRangeContext({
@@ -281,6 +325,8 @@ export function mountRangeChart(
     },
     destroy() {
       for (const t of teardowns) t();
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-range-chart");
     },

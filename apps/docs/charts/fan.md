@@ -9,6 +9,46 @@ title: Fan Chart
 
 <ChartDemo chart="fan-chart" :height="380" />
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeFan() {
+  const n = 1500;
+  const dataSet = [];
+  const bands = [];
+  let level = 100;
+  const cutoff = Math.round(n * 0.85);
+  for (let i = 0; i < n; i++) {
+    level += (Math.random() - 0.48) * 2 + Math.sin(i / 40) * 0.6;
+    const certainty = i < cutoff;
+    dataSet.push({ date: i, value: Math.round(level * 100) / 100, certainty });
+    if (!certainty) {
+      const h = i - cutoff + 1;
+      const spread = Math.sqrt(h) * 1.8;
+      bands.push({ date: i, valueMin: Math.round((level - spread) * 100) / 100, valueMax: Math.round((level + spread) * 100) / 100, valueMedium: Math.round(level * 100) / 100 });
+    } else {
+      bands.push({ date: i, valueMin: level, valueMax: level, valueMedium: level });
+    }
+  }
+  return {
+    dataSet: [
+      {
+        label: "Revenue",
+        color: "#2563eb",
+        series: dataSet,
+        bands: [{ level: 0.95, series: bands }],
+      },
+    ],
+    xAxisDataType: "number",
+    fillOpacity: 0.22,
+  };
+}
+</script>
+
+FanChart's opt-in `renderer="webgpu"` paints its line and band marks on the GPU while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-fan-chart" :make="makeFan" caption="~1,500 points" />
+
 ## How to read it
 
 - **Solid line - history.** The actuals you already have.

@@ -14,6 +14,8 @@ import { layoutSankey } from "../sankeyChart/layout";
 import { buildSankeyRenderModel, type SankeyRenderModel } from "../sankeyChart/renderModel";
 import { renderSankeySvg, type SankeyHoverTarget } from "../sankeyChart/renderSvg";
 import { drawSankeyCanvas } from "../sankeyChart/renderCanvas";
+import { drawSankeyWebgpu } from "../sankeyChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildSankeyContext } from "../context/buildSankeyContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkSankeyData } from "../validate/sankeyWarnings";
@@ -30,6 +32,7 @@ import type {
   ChartInstance,
   Margin,
   MountOptions,
+  Renderer,
   SankeyChartProps,
   SankeyNodeContext,
   SankeyLinkContext,
@@ -37,11 +40,15 @@ import type {
 
 const DEFAULT_MARGIN: Margin = { top: 36, right: 12, bottom: 12, left: 12 };
 
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / click-to-pin interaction path. svg does not.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
+
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   nodeWidth: number;
   nodePadding: number;
   nodeRadius: number;
@@ -57,7 +64,10 @@ function resolve(p: SankeyChartProps): Resolved {
     width: p.width ?? 800,
     height: p.height ?? 500,
     margin: p.margin ?? DEFAULT_MARGIN,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     nodeWidth: p.nodeWidth ?? 18,
     nodePadding: p.nodePadding ?? 12,
     nodeRadius: p.nodeRadius ?? 2,
@@ -82,7 +92,10 @@ export function mountSankeyChart(
   tooltip.style.visibility = "hidden";
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
+  // The 2D canvas (canvas mode, and the webgpu first-frame fallback) and the
+  // dedicated WebGPU canvas. Both are layered absolutely behind the SVG.
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -103,6 +116,30 @@ export function mountSankeyChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: SankeyRenderModel | null = null;
+
+  // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
+  // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+  const removeCanvas = (): void => {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+    }
+  };
+  const removeWebgpuCanvas = (): void => {
+    if (webgpuCanvas) {
+      webgpuCanvas.remove();
+      webgpuCanvas = null;
+    }
+  };
 
   const showTooltip = (target: SankeyHoverTarget, ev: MouseEvent): void => {
     const r = host.getBoundingClientRect();
@@ -144,10 +181,10 @@ export function mountSankeyChart(
   const highlightFor = (target: SankeyHoverTarget): string[] =>
     target.kind === "node" ? [target.node.id] : [target.link.sourceId, target.link.targetId];
 
-  // Canvas-mode hit-test: nodes (point-in-rect) first, then links via
-  // isPointInStroke under an identity transform (path + point both in CSS px).
+  // Canvas/webgpu-mode hit-test: nodes (point-in-rect) first, then links via
+  // isPointInPath under an identity transform (path + point both in CSS px).
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -160,6 +197,10 @@ export function mountSankeyChart(
       }
     }
 
+    // Link hit-test needs a real 2D canvas context. In webgpu mode that canvas
+    // is only present while the GPU device isn't ready (the first-frame canvas
+    // fallback) — once GPU actually paints, link hover falls through to
+    // hideTooltip() below (node hover keeps working via geometry above).
     const ctx = canvas?.getContext("2d") ?? null;
     if (ctx) {
       // Filled ribbons → point-in-path. Identity transform so the path (CSS px)
@@ -179,10 +220,10 @@ export function mountSankeyChart(
     hideTooltip();
     baseProps.onHighlightItem?.([]);
   };
-  // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
-  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
+  // Canvas/webgpu-mode click-to-pin: SVG marks pin via their own onClick, but
+  // painted marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -253,7 +294,7 @@ export function mountSankeyChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderSankeySvg(
         svg,
         model,
@@ -277,19 +318,30 @@ export function mountSankeyChart(
       );
     }
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "sankey-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("sankeyChart-webgpu-canvas");
+      const ready = drawSankeyWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (ready) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
+        drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height });
       }
+    } else if (r.renderer === "canvas") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
       drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     context = buildSankeyContext({
@@ -339,6 +391,8 @@ export function mountSankeyChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-sankey-chart");
     },

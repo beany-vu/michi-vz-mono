@@ -2,7 +2,7 @@
 
 `@michi-vz` is a framework-agnostic chart library: a plain-TS **engine** (`@michi-vz/core`),
 native **web components** (`@michi-vz/wc`), and thin **React / Vue / Svelte / Angular** wrappers.
-Every chart renders in **SVG or canvas** and emits an **LLM-ready `ChartContext`**.
+Every chart renders in **SVG or canvas** (plus an experimental **WebGPU** path) and emits an **LLM-ready `ChartContext`**.
 
 ## Install
 

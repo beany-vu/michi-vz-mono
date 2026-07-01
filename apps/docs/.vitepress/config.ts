@@ -120,7 +120,7 @@ export default defineConfig({
     socialLinks: [{ icon: "github", link: "https://github.com/beany-vu/michi-vz-mono" }],
     footer: {
       message: "Free and open source. MIT licensed.",
-      copyright: "© 2026 Beany Vu",
+      copyright: "© 2026 Hoang VU",
     },
     search: { provider: "local" },
   },

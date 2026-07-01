@@ -11,6 +11,32 @@ The total is growing, but which slice is driving it? Stack your categories and w
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeArea() {
+  const keys = ["Coal", "Natural gas", "Nuclear", "Wind", "Solar"];
+  const base = { Coal: 1500, "Natural gas": 1100, Nuclear: 800, Wind: 180, Solar: 30 };
+  const drift = { Coal: -0.6, "Natural gas": 0.3, Nuclear: 0.02, Wind: 0.4, Solar: 0.5 };
+  const series = [];
+  const rows = 1500;
+  for (let i = 0; i < rows; i++) {
+    const row = { date: i };
+    for (const k of keys) {
+      const trend = base[k] + drift[k] * i;
+      const noise = (Math.sin(i * 0.37 + k.length) + Math.random() - 0.5) * base[k] * 0.03;
+      row[k] = Math.max(0, trend + noise);
+    }
+    series.push(row);
+  }
+  return { series, keys, xAxisDataType: "number" };
+}
+</script>
+
+AreaChart has an opt-in `renderer="webgpu"` that paints the stacked bands on the GPU while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically.
+
+<WebgpuHeavyDemo element="michi-vz-area-chart" :make="makeArea" caption="~7,500 points" />
+
 ## Usage
 
 ::: code-group
@@ -71,4 +97,4 @@ chart.destroy();
 
 ## API
 
-Props are typed as `AreaChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `AreaChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

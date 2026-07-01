@@ -12,7 +12,11 @@ import type { ScatterPointModel, ScatterRenderModel } from "./renderModel";
 // picks up that fill. A FLAT probe (bare <circle>) would NOT match the descendant
 // selector → every label resolves to the transparent skip-mode fallback → an
 // invisible chart. Mirrors makeSubBarProbe's nested-probe pattern.
-const makeGroupedScatterProbe = (label: string, labelSafe: string, fallback: string): ColorProbe => {
+export const makeGroupedScatterProbe = (
+  label: string,
+  labelSafe: string,
+  fallback: string
+): ColorProbe => {
   const NS = "http://www.w3.org/2000/svg";
   const g = document.createElementNS(NS, "g") as SVGGElement;
   g.setAttribute("data-label", label);

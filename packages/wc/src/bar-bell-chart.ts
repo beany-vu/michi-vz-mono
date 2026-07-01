@@ -45,7 +45,7 @@ export class BarBellChartElement extends LitElement {
   chartTitle = "";
   width = 900;
   height = 480;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];
   disabledItems?: string[];

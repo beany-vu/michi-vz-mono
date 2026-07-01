@@ -49,7 +49,7 @@ export class TreemapChartElement extends LitElement {
   chartTitle = "";
   width = 900;
   height = 520;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   layout: "squarify" | "stack" | "auto" = "squarify";
   stackBreakpoint?: number;
   splitLabels?: [string, string];

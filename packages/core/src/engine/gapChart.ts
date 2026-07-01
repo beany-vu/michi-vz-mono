@@ -15,6 +15,8 @@ import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
 import { renderGapSvg, buildGapLegendItems, renderGapLegend } from "../gapChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawGapCanvas } from "../gapChart/renderCanvas";
+import { drawGapWebgpu } from "../gapChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildGapContext } from "../context/buildContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkGapData } from "../validate/dataWarnings";
@@ -38,6 +40,11 @@ import type {
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 150, bottom: 100, left: 150 };
 
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test path. svg does not.
+type GapRenderer = "svg" | "canvas" | "webgpu";
+const isPainted = (rr: GapRenderer): boolean => rr === "canvas" || rr === "webgpu";
+
 interface Resolved {
   width: number;
   height: number;
@@ -48,7 +55,7 @@ interface Resolved {
   tickHtmlWidth: number;
   squareRadius: number;
   colorMode: "label" | "shape";
-  renderer: "svg" | "canvas";
+  renderer: GapRenderer;
   enableTransitions: boolean;
 }
 
@@ -63,7 +70,10 @@ function resolve(p: GapChartProps): Resolved {
     tickHtmlWidth: p.tickHtmlWidth ?? 100,
     squareRadius: p.squareRadius ?? 2,
     colorMode: p.colorMode ?? "label",
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
   };
 }
@@ -82,6 +92,7 @@ export function mountGapChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -106,6 +117,30 @@ export function mountGapChart(
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
 
+  // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
+  // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+  const removeCanvas = (): void => {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+    }
+  };
+  const removeWebgpuCanvas = (): void => {
+    if (webgpuCanvas) {
+      webgpuCanvas.remove();
+      webgpuCanvas = null;
+    }
+  };
+
   const showTooltip = (d: GapDataItem, ev: MouseEvent): void => {
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(d)
@@ -126,7 +161,7 @@ export function mountGapChart(
   // Canvas-mode hit-test (no retained SVG nodes to attach handlers to).
   let canvasModel: ReturnType<typeof buildGapRenderModel> | null = null;
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !canvasModel || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !canvasModel || sticky) return;
     const rect = svg.getBoundingClientRect();
     const x = ev.clientX - rect.left;
     const y = ev.clientY - rect.top;
@@ -153,7 +188,7 @@ export function mountGapChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -256,7 +291,7 @@ export function mountGapChart(
       showGrid: true,
     });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderGapSvg(
         svg,
         model,
@@ -285,16 +320,35 @@ export function mountGapChart(
       );
     }
 
-    // ----- Canvas layer -----
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "gap-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    // ----- Canvas / WebGPU layer -----
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("gapChart-webgpu-canvas");
+      const painted = drawGapWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        shapeValue1: r.shapeValue1,
+        shapeValue2: r.shapeValue2,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (painted) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("gap-chart-canvas");
+        drawGapCanvas(canvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          shapeValue1: r.shapeValue1,
+          shapeValue2: r.shapeValue2,
+          squareRadius: r.squareRadius,
+        });
       }
+    } else if (r.renderer === "canvas") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("gap-chart-canvas");
       drawGapCanvas(canvas, svg, model, {
         width: r.width,
         height: r.height,
@@ -302,9 +356,9 @@ export function mountGapChart(
         shapeValue2: r.shapeValue2,
         squareRadius: r.squareRadius,
       });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     // ----- Built-in legend (SVG layer, both renderers) -----
@@ -382,6 +436,8 @@ export function mountGapChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-gap-chart");
     },

@@ -6,7 +6,7 @@ const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildRadarContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   axes: string[];
   maxValue: number;
   items: RadarDataItem[];

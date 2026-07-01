@@ -11,6 +11,37 @@ How does a running total stack up, piece by piece? Each row lays its parts end t
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeBarBell() {
+  const keys = ["Asia-Pacific", "Europe", "North America"];
+  const colorsMapping = {
+    "Asia-Pacific": "#d62728",
+    "Europe": "#2ca02c",
+    "North America": "#1f77b4",
+  };
+  const dataSet = [];
+  let asia = 40, europe = 20, america = 10;
+  for (let i = 0; i < 120; i++) {
+    asia += Math.random() * 12;
+    europe += Math.random() * 6;
+    america += Math.random() * 4;
+    dataSet.push({
+      date: String(2000 + i),
+      "Asia-Pacific": Math.round(asia),
+      "Europe": Math.round(europe),
+      "North America": Math.round(america),
+    });
+  }
+  return { dataSet, keys, colorsMapping };
+}
+</script>
+
+BarBellChart has an opt-in `renderer="webgpu"` that paints the segment bars and end-cap circles as GPU-instanced marks while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 rows" />
+
 ## Usage
 
 ::: code-group
@@ -71,4 +102,4 @@ chart.destroy();
 
 ## API
 
-Props are typed as `BarBellChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `BarBellChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

@@ -7,7 +7,7 @@ const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildTreemapContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   layout: "squarify" | "stack";
   leaves: TmNode[];
   colorsMapping: Record<string, string>;

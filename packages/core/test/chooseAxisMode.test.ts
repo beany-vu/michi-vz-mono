@@ -80,6 +80,29 @@ describe("chooseAxisMode", () => {
     expect(result.tickValues).toEqual(["only-one-very-long-label"]);
   });
 
+  test("numeric domain thins to ROUND values (Nordic default), not index-sampled oddities", () => {
+    // Dense year axis 2000..2149. Legacy index sampling produced 2089/2119; the
+    // Nordic default snaps interior ticks to round multiples of a nice step.
+    const domain = Array.from({ length: 150 }, (_, i) => String(2000 + i));
+    const result = chooseAxisMode({
+      domain,
+      formatter: (d) => String(d),
+      bandWidth: 5,
+      measure,
+      padding: 8,
+      maxTicks: 15,
+    });
+
+    expect(result.mode).toBe("fallback");
+    const vals = result.tickValues.map(Number);
+    expect(vals[0]).toBe(2000); // endpoints kept for orientation
+    expect(vals[vals.length - 1]).toBe(2149);
+    const interior = vals.slice(1, -1);
+    expect(interior.length).toBeGreaterThan(0);
+    // No 2089/2119: every interior tick is a round multiple of the nice step.
+    expect(interior.every((v) => v % 20 === 0)).toBe(true);
+  });
+
   test("forceMode='horizontal' skips rotation and falls back to current sampling", () => {
     const result = chooseAxisMode({
       domain: ["01-2023", "02-2023", "03-2023", "04-2023", "05-2023"],

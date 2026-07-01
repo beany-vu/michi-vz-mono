@@ -20,6 +20,8 @@ import { projectX } from "../lineChart/geometry";
 import { parseXValue } from "../lineChart/lineUtils";
 import { makeRangeAreaGenerator } from "../rangeChart/geometry";
 import { drawFanCanvas, type FanBandPath } from "../fanChart/renderCanvas";
+import { drawFanWebgpu } from "../fanChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildFanContext } from "../context/buildFanContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -50,11 +52,15 @@ interface Resolved {
   height: number;
   margin: Margin;
   ticks: number;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   fillOpacity: number;
   showDataPoints: boolean;
   enableTransitions: boolean;
 }
+
+// canvas + webgpu both paint into a <canvas> layer (no per-mark DOM), so they share
+// the host-level hit-test / click-to-pin interaction path. svg does not.
+const isPainted = (rr: Resolved["renderer"]): boolean => rr === "canvas" || rr === "webgpu";
 
 function resolve(p: FanChartProps): Resolved {
   return {
@@ -62,7 +68,10 @@ function resolve(p: FanChartProps): Resolved {
     height: p.height ?? 500,
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     fillOpacity: p.fillOpacity ?? 0.18,
     showDataPoints: p.showDataPoints ?? false,
     enableTransitions: p.enableTransitions ?? true,
@@ -103,6 +112,7 @@ export function mountFanChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -147,7 +157,7 @@ export function mountFanChart(
   // lineChart's handler so canvas keeps the SAME interaction as SVG.
   const onHostMove = (ev: MouseEvent): void => {
     const r = resolve(baseProps);
-    if (r.renderer !== "canvas" || sticky || hitData.length === 0) return;
+    if (!isPainted(r.renderer) || sticky || hitData.length === 0) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -175,7 +185,7 @@ export function mountFanChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -265,7 +275,21 @@ export function mountFanChart(
         if (!d) return;
         // narrower bands (later j) get more opaque so the fan reads as nested.
         const base = r.fillOpacity * ((j + 1) / n);
-        bandPaths.push({ label: it.label, safe, color, areaPath: d, opacity: dimmed ? base * 0.3 : base });
+        // Pixel-space top/bottom polylines for webgpu's pushBandStrip (areaPath
+        // alone is an SVG/canvas path string, not usable as GPU geometry).
+        const bandX = (p: (typeof band.series)[number]) =>
+          (scales.xScale as (x: number | Date) => number)(parseXValue(p.date, xAxisDataType));
+        const top: Array<[number, number]> = band.series.map((p) => [bandX(p), scales.yScale(p.valueMax)]);
+        const bottom: Array<[number, number]> = band.series.map((p) => [bandX(p), scales.yScale(p.valueMin)]);
+        bandPaths.push({
+          label: it.label,
+          safe,
+          color,
+          areaPath: d,
+          opacity: dimmed ? base * 0.3 : base,
+          top,
+          bottom,
+        });
       });
     }
     const lineModel = buildLineRenderModel(processedDataSet, scales, colors, {
@@ -305,7 +329,7 @@ export function mountFanChart(
       ticks: r.ticks,
     });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       // Bands underneath, then the line on top — both on the SVG layer.
       const bandsLayer = svgEl("g", { class: "mv-fan-bands" });
       for (const b of bandPaths) {
@@ -353,6 +377,50 @@ export function mountFanChart(
         canvas.remove();
         canvas = null;
       }
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
+    } else if (r.renderer === "webgpu") {
+      // ----- WebGPU layer: try GPU, fall back to the canvas-2D stopgap -----
+      if (!webgpuCanvas) {
+        webgpuCanvas = htmlEl("canvas", { class: "fanChart-webgpu-canvas" });
+        webgpuCanvas.style.position = "absolute";
+        webgpuCanvas.style.top = getComputedStyle(host).paddingTop;
+        webgpuCanvas.style.left = getComputedStyle(host).paddingLeft;
+        webgpuCanvas.style.pointerEvents = "none";
+        host.insertBefore(webgpuCanvas, tooltip);
+      }
+      const painted = drawFanWebgpu(
+        webgpuCanvas,
+        svg,
+        { bands: bandPaths, lineModel },
+        {
+          width: r.width,
+          height: r.height,
+          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+          onReady: render,
+        }
+      );
+      if (painted) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        if (canvas) {
+          canvas.remove();
+          canvas = null;
+        }
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) {
+          canvas = htmlEl("canvas", { class: "fan-chart-canvas" });
+          canvas.style.position = "absolute";
+          canvas.style.top = getComputedStyle(host).paddingTop;
+          canvas.style.left = getComputedStyle(host).paddingLeft;
+          canvas.style.pointerEvents = "none";
+          host.insertBefore(canvas, tooltip);
+        }
+        drawFanCanvas(canvas, svg, { bands: bandPaths, lineModel }, { width: r.width, height: r.height });
+      }
     } else {
       // ----- Canvas layer (bands + line drawn from the same model) -----
       if (!canvas) {
@@ -364,6 +432,10 @@ export function mountFanChart(
         host.insertBefore(canvas, tooltip);
       }
       drawFanCanvas(canvas, svg, { bands: bandPaths, lineModel }, { width: r.width, height: r.height });
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
     }
 
     // ----- Context + plugin hooks + a11y + warnings -----
@@ -446,6 +518,8 @@ export function mountFanChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-fan-chart");
     },

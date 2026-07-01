@@ -11,6 +11,30 @@ Which option wins, and where? Lay a few candidates over the same set of criteria
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeRadar() {
+  const axes = [
+    "Healthcare", "Education", "Cost of living", "Safety",
+    "Environment", "Culture", "Infrastructure", "Climate",
+    "Jobs", "Nightlife", "Walkability", "Diversity",
+  ];
+  const palette = ["#1f77b4", "#d62728", "#2ca02c", "#ff7f0e"];
+  const names = ["Vienna", "Singapore", "Lisbon", "Auckland"];
+  const series = names.map((label, i) => ({
+    label,
+    color: palette[i],
+    values: axes.map(() => Math.round(20 + Math.random() * 80)),
+  }));
+  return { axes, series, maxValue: 100, fillOpacity: 0.2 };
+}
+</script>
+
+RadarChart has an opt-in `renderer="webgpu"` that paints the polygon fills and pole markers as GPU-instanced marks while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
+
 ## Usage
 
 ::: code-group
@@ -71,4 +95,4 @@ chart.destroy();
 
 ## API
 
-Props are typed as `RadarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `RadarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

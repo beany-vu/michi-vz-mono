@@ -48,7 +48,7 @@ export class SankeyChartElement extends LitElement {
   chartTitle = "";
   width = 800;
   height = 500;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   nodeWidth?: number;
   nodePadding?: number;
   nodeRadius?: number;

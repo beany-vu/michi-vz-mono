@@ -163,6 +163,9 @@ export const previews: Record<string, Preview> = {
     props: {
       axes: ["Health", "Cost", "Safety", "Culture", "Transit", "Green"],
       maxValue: 100,
+      // Thumbnail: blank the radial ring value labels (100/75/50/25) — they clutter
+      // the tiny card; the shape reads on its own.
+      radialLabelFormatter: () => "",
       fillOpacity: 0.18,
       series: [
         { label: "X", color: RED, values: [88, 55, 80, 70, 62, 75] },
@@ -176,6 +179,9 @@ export const previews: Record<string, Preview> = {
     props: {
       keys: ["Services", "Industry", "Farming"],
       keysOrder: "bottomToTop",
+      // Thumbnail: keep dates flat (labels are hidden anyway) so no rotated-label
+      // bottom margin is reserved and the bars fill the frame.
+      xAxisMode: "horizontal",
       yAxisDomain: [0, 100],
       colors: [BLUE, GOLD, GREEN],
       dataSet: [

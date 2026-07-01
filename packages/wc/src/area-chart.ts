@@ -50,7 +50,7 @@ export class AreaChartElement extends LitElement {
   chartTitle = "";
   width = 900;
   height = 480;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   xAxisDataType: XaxisDataType = "number";
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];

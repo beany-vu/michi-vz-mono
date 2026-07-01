@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 
-// "Four charts of Michi" — the homepage feature band.
+// "Same engine, secretly a cat" — the homepage's one signature moment.
 // Each block is a REAL <michi-vz-*> web component, rendered in SVG and fed
-// hand-crafted data until the data itself traces an (orange, like Michi) cat.
+// hand-crafted data until the data itself traces a cat, drawn in the Geneva
+// crest red — the single bold accent on an otherwise quiet, muted-grey page.
+// A whisper of gold marks only the eyes/nose/whiskers (the scatter "face").
 // All axes/grids/labels are stripped via CSS (these are light-DOM components,
 // so the docs stylesheet reaches inside them) — only the silhouette remains.
-// Swiss-minimal frame, one gold heraldic mark, so it still belongs to the
-// Geneva homepage while reading quiet and Nordic.
+// Swiss-minimal frame, so it stays quiet and Nordic around that one red cat.
 
-const ORANGE = "#d9772f";
+const RED = "#a3271f";
+const GOLD = "#b8863b";
 const CHART_H = 152;
 
 // --- LINE: cat-head OUTLINE — cheeks → sharp ear → V-notch → sharp ear → cheeks
@@ -29,26 +31,27 @@ const AREA_SERIES = [
 const RADAR_AXES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"];
 const RADAR_VALUES = [45, 100, 40, 72, 60, 55, 62, 55, 60, 72, 40, 100];
 
-// --- SCATTER: cat-FACE constellation — ears, head ring, eyes, nose, whiskers
+// --- SCATTER: cat-FACE constellation — ears, head ring in red; eyes, nose,
+// whiskers picked out in the gold secondary highlight.
 function buildFace() {
   const pts: { x: number; y: number; d: number; label: string; color: string }[] = [];
-  const push = (x: number, y: number, d: number) =>
-    pts.push({ x, y, d, label: "p" + pts.length, color: ORANGE });
+  const push = (x: number, y: number, d: number, color: string) =>
+    pts.push({ x, y, d, label: "p" + pts.length, color });
   // ears (triangle clusters)
-  push(2.7, 8.3, 26); push(3.5, 8.3, 26); push(3.1, 9.5, 26);
-  push(6.5, 8.3, 26); push(7.3, 8.3, 26); push(6.9, 9.5, 26);
+  push(2.7, 8.3, 26, RED); push(3.5, 8.3, 26, RED); push(3.1, 9.5, 26, RED);
+  push(6.5, 8.3, 26, RED); push(7.3, 8.3, 26, RED); push(6.9, 9.5, 26, RED);
   // head outline ring (top gap left for the ears)
   const cx = 5, cy = 5, r = 2.7;
   for (let a = 20; a <= 340; a += 32) {
     if (a > 62 && a < 118) continue;
     const rad = (a * Math.PI) / 180;
-    push(cx + r * Math.cos(rad), cy + r * Math.sin(rad), 18);
+    push(cx + r * Math.cos(rad), cy + r * Math.sin(rad), 18, RED);
   }
-  // eyes + nose
-  push(4.0, 5.7, 60); push(6.0, 5.7, 60); push(5.0, 4.5, 42);
-  // whiskers
-  push(3.2, 4.6, 11); push(2.4, 4.7, 11); push(3.2, 4.0, 11); push(2.4, 3.9, 11);
-  push(6.8, 4.6, 11); push(7.6, 4.7, 11); push(6.8, 4.0, 11); push(7.6, 3.9, 11);
+  // eyes + nose — the gold highlight
+  push(4.0, 5.7, 60, GOLD); push(6.0, 5.7, 60, GOLD); push(5.0, 4.5, 42, GOLD);
+  // whiskers — gold, quieter dots
+  push(3.2, 4.6, 11, GOLD); push(2.4, 4.7, 11, GOLD); push(3.2, 4.0, 11, GOLD); push(2.4, 3.9, 11, GOLD);
+  push(6.8, 4.6, 11, GOLD); push(7.6, 4.7, 11, GOLD); push(6.8, 4.0, 11, GOLD); push(7.6, 3.9, 11, GOLD);
   return pts;
 }
 const FACE = buildFace();
@@ -92,13 +95,13 @@ const SPECS: Spec[] = [
       highlightZeroLine: false,
       margin: { top: 14, right: 14, bottom: 14, left: 14 },
       width: w, height: h,
-      dataSet: [{ label: "Michi", color: ORANGE, curve: "curveLinear", series: LINE_SERIES }],
+      dataSet: [{ label: "Michi", color: RED, curve: "curveLinear", series: LINE_SERIES }],
     }),
   },
   {
     tag: "michi-vz-scatter-chart",
-    title: "SVG or canvas",
-    sub: "Either renderer, painted in your own CSS.",
+    title: "SVG, canvas, WebGPU",
+    sub: "Three renderers, painted in your own CSS.",
     build: (w, h) => {
       const m = 12;
       const dom = fitDomain(2.2, 7.8, 3.5, 9.8, Math.max(40, w - 2 * m), h - 2 * m);
@@ -128,20 +131,20 @@ const SPECS: Spec[] = [
       rings: 4,
       margin: { top: 2, right: 2, bottom: 2, left: 2 },
       width: w, height: h,
-      series: [{ label: "Michi", color: ORANGE, values: RADAR_VALUES }],
+      series: [{ label: "Michi", color: RED, values: RADAR_VALUES }],
     }),
   },
   {
     tag: "michi-vz-area-chart",
     title: "Insights, experimental",
-    sub: "An opt-in AI layer narrates what each chart shows.",
+    sub: "Plug a small in-browser model to narrate and summarise any chart.",
     build: (w, h) => ({
       renderer: "svg",
       xAxisDataType: "number",
       xAxisDomain: [0, 10],
       yAxisDomain: [0, 5.6],
       keys: ["michi"],
-      colorsMapping: { michi: ORANGE },
+      colorsMapping: { michi: RED },
       margin: { top: 12, right: 12, bottom: 12, left: 12 },
       width: w, height: h,
       series: AREA_SERIES,
@@ -211,8 +214,8 @@ onBeforeUnmount(() => {
       </div>
       <p class="mv-lede">
         Every block below is a real michi-vz chart (a line, a scatter, a radar, an area),
-        fed data until it turned into Michi, our orange cat in Geneva. The serious demos
-        live in the atlas underneath.
+        fed data until it turned into Michi, our cat in Geneva. The serious demos live in
+        the atlas underneath.
       </p>
 
       <div class="cat-grid">
@@ -231,31 +234,32 @@ onBeforeUnmount(() => {
 <style scoped>
 .cat-band {
   max-width: 1152px;
-  margin: 8px auto 0;
+  margin: 0 auto;
   padding: 8px 24px 8px;
 }
 .mv-lede {
   max-width: 60ch;
 }
 
-/* Swiss grid: four equal cells joined by hairline rules (gap over a divider bg). */
+/* Swiss grid: four equal cells joined by hairline rules (gap over a divider bg).
+   No border-radius flourish, no shadow — the red cat inside each cell is the
+   only thing that should draw the eye here. */
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   background: var(--vp-c-divider);
   border: 1px solid var(--vp-c-divider);
-  border-radius: 10px;
   overflow: hidden;
-  margin-top: 6px;
+  margin-top: 28px;
 }
 .cat-card {
   margin: 0;
   background: var(--vp-c-bg);
-  padding: 16px 18px 18px;
+  padding: 20px 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 .cat-chart {
   height: 152px;
@@ -269,7 +273,7 @@ onBeforeUnmount(() => {
 .cat-title {
   font-family: "Josefin Sans", system-ui, sans-serif;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14.5px;
   letter-spacing: -0.01em;
   color: var(--vp-c-text-1);
 }
@@ -309,5 +313,12 @@ onBeforeUnmount(() => {
 }
 .cat-band .cat-chart svg {
   overflow: visible;
+}
+/* The radar (3rd cell, "Explains itself") is an inscribed circle, so it can't fill a
+   wide cell the way the line/area silhouettes do. Scale it up (overflow is visible) so
+   it reads as large as its neighbours and its chin sits closer to the caption. */
+.cat-band .cat-card:nth-of-type(3) .cat-chart svg {
+  transform: scale(1.16);
+  transform-origin: center 58%;
 }
 </style>

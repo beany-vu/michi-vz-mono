@@ -2,6 +2,12 @@
 
 export type XaxisDataType = "date_annual" | "date_monthly" | "number" | "band";
 export type Shape = "circle" | "square" | "triangle";
+/**
+ * Rendering backend. "svg" (default) and "canvas" are supported by every chart.
+ * "webgpu" is EXPERIMENTAL and currently opt-in for ScatterChart only; it is
+ * capability-gated and falls back to "canvas" when WebGPU is unavailable.
+ */
+export type Renderer = "svg" | "canvas" | "webgpu";
 
 export interface Margin {
   /** Top inner padding in px between the SVG edge and the plot area (also reserves room for the title) */
@@ -101,7 +107,7 @@ export interface GapChartProps {
   /** Corner radius in px for square markers (default 2) */
   squareRadius?: number;
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to "transparent" and the chart
@@ -182,8 +188,8 @@ export interface BaseChartContext {
   chartType: string;
   /** Optional chart title rendered above the plot */
   title?: string;
-  /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer: "svg" | "canvas";
+  /** The EFFECTIVE renderer that painted ("webgpu" only on ScatterChart, and only when available; otherwise downgraded). getContext() is identical regardless. */
+  renderer: Renderer;
   /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
   colorsMapping: Record<string, string>;
   /**
@@ -318,7 +324,7 @@ export interface LineChartProps {
   /** Top-N / sort filter applied to the data before rendering */
   filter?: Filter;
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -445,7 +451,7 @@ export interface AreaChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -563,8 +569,12 @@ export interface ScatterChartProps {
   disabledItems?: string[];
   /** Top-N / sort filter applied to the data before rendering */
   filter?: Filter;
-  /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  /**
+   * Render as inline SVG (default), to a canvas (faster for large datasets), or
+   * to WebGPU ("webgpu", EXPERIMENTAL — opt-in, capability-gated, falls back to
+   * canvas when WebGPU is unavailable). getContext() is identical either way.
+   */
+  renderer?: Renderer;
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -710,6 +720,9 @@ export interface VerticalStackBarChartProps {
    * crowded date labels more breathing room (they rotate sooner instead of sitting flush).
    * Default 8 (legacy parity). */
   xAxisLabelPadding?: number;
+  /** "auto" (default) tilts crowded date labels -45°; "horizontal" keeps them flat
+   * (thinning instead), so no rotated-label bottom margin is reserved. */
+  xAxisMode?: "auto" | "horizontal";
   /** Formats an x tick value into its display label */
   xAxisFormat?: (d: number | string) => string;
   /** Formats a y tick value into its display label */
@@ -737,7 +750,7 @@ export interface VerticalStackBarChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -882,7 +895,7 @@ export interface ComparableBarChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -978,7 +991,7 @@ export interface DualBarChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1053,7 +1066,7 @@ export interface BarBellChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1164,7 +1177,7 @@ export interface RangeChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1248,7 +1261,7 @@ export interface RibbonChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1358,7 +1371,7 @@ export interface FountainChartProps {
   /** Labels to hide and exclude from scales */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas; getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted */
@@ -1475,7 +1488,7 @@ export interface RadarChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1580,7 +1593,7 @@ export interface FanChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1690,7 +1703,7 @@ export interface TreemapChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1794,7 +1807,7 @@ export interface PieChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -1904,7 +1917,7 @@ export interface BubbleChartProps {
   /** Labels to hide and exclude from scales/stacks */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
@@ -2013,7 +2026,7 @@ export interface SankeyChartProps {
   /** Node ids to drop (their links are dropped too). */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
-  renderer?: "svg" | "canvas";
+  renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */

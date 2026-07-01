@@ -15,6 +15,35 @@ No split needed? Drop `partial` for a clean proportional cloud, one colour per c
 
 > The cluster is laid out with [d3-force](https://github.com/d3/d3-force): bubbles fall toward the centre (`gravity`) and push apart so they never overlap (collision). The simulation is settled **synchronously**, so SVG and canvas render the identical, reproducible layout.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeBubble() {
+  const categories = [
+    { label: "Machinery", color: "#e63946" },
+    { label: "Fruits", color: "#1d3557" },
+    { label: "Oil seeds", color: "#2a9d8f" },
+    { label: "Beverages", color: "#e9c46a" },
+    { label: "Ferrous metals", color: "#9b5de5" },
+    { label: "Textiles", color: "#f4a261" },
+  ];
+  const dataSet = [];
+  for (let i = 0; i < 2000; i++) {
+    const c = categories[i % categories.length];
+    dataSet.push({
+      label: `${c.label} #${i}`,
+      value: 5 + Math.random() * 150,
+      color: c.color,
+    });
+  }
+  return { dataSet, gravity: 0.06, padding: 0.5 };
+}
+</script>
+
+BubbleChart has an opt-in `renderer="webgpu"` that paints the bubble cloud as GPU-instanced circles while labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-bubble-chart" :make="makeBubble" caption="~2,000 bubbles" />
+
 ## Usage
 
 ::: code-group
@@ -96,4 +125,4 @@ const props = {
 
 ## API
 
-Props are typed as `BubbleChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Bubble API](/api/bubble).
+Props are typed as `BubbleChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Bubble API](/api/bubble).

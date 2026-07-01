@@ -1,13 +1,13 @@
 // Renderer-agnostic semantic context for ScatterPlot. x/y means + Pearson
 // correlation + a chart-agnostic a11yTable (one row per point) + NL summary.
-import type { ScatterChartContext, ScatterDataPoint, XaxisDataType } from "../types";
+import type { Renderer, ScatterChartContext, ScatterDataPoint, XaxisDataType } from "../types";
 import { buildLegendData } from "./legend";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildScatterContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   xAxisDataType: XaxisDataType;
   xAxisDomain: [number, number] | string[];
   yAxisDomain: [number, number];

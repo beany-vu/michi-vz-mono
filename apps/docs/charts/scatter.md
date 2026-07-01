@@ -11,6 +11,42 @@ Does more of X really move Y, or are you chasing a coincidence? Plot your points
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeScatter() {
+  const clusters = [
+    { label: "Cluster A", color: "#e63946", cx: 25, cy: 70 },
+    { label: "Cluster B", color: "#1d3557", cx: 70, cy: 60 },
+    { label: "Cluster C", color: "#2a9d8f", cx: 50, cy: 30 },
+    { label: "Cluster D", color: "#e9c46a", cx: 80, cy: 25 },
+    { label: "Cluster E", color: "#9b5de5", cx: 35, cy: 40 },
+  ];
+  const g = () => {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  };
+  const dataSet = [];
+  const colorsMapping = {};
+  for (const c of clusters) colorsMapping[c.label] = c.color;
+  for (let i = 0; i < 50000; i++) {
+    const c = clusters[i % clusters.length];
+    dataSet.push({
+      label: c.label,
+      x: Math.max(0, Math.min(100, c.cx + g() * 7)),
+      y: Math.max(0, Math.min(100, c.cy + g() * 7)),
+    });
+  }
+  return { dataSet, colorsMapping, xAxisDataType: "number", xAxisDomain: [0, 100], yAxisDomain: [0, 100], sizeRange: [2, 2] };
+}
+</script>
+
+ScatterChart has an opt-in `renderer="webgpu"` that paints the point cloud as GPU-instanced circles while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-scatter-chart" :make="makeScatter" caption="50,000 points" />
+
 ## Usage
 
 ::: code-group
@@ -71,4 +107,4 @@ chart.destroy();
 
 ## API
 
-Props are typed as `ScatterChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `ScatterChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

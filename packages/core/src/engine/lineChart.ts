@@ -24,6 +24,8 @@ import { parseXValue } from "../lineChart/lineUtils";
 import { renderLineSvg } from "../lineChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
+import { drawLineWebgpu } from "../lineChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildLineContext } from "../context/buildLineContext";
 import { buildLegendData } from "../context/legend";
 import { renderA11yMirror } from "../context/a11yMirror";
@@ -45,17 +47,22 @@ import type {
   LineDataItem,
   Margin,
   MountOptions,
+  Renderer,
   SinglePointLineConfig,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
+
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / click-to-pin interaction path. svg does not.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
   ticks: number;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   showDataPoints: boolean;
   enableMouseLine: boolean;
   enableTransitions: boolean;
@@ -73,7 +80,10 @@ function resolve(p: LineChartProps): Resolved {
     height: p.height ?? 500,
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     showDataPoints: p.showDataPoints ?? false,
     enableMouseLine: p.enableMouseLine ?? false,
     enableTransitions: p.enableTransitions ?? true,
@@ -95,6 +105,7 @@ export function mountLineChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
   let mouseLine: SVGLineElement | null = null;
   const chrome = createChromeRefs();
 
@@ -166,7 +177,7 @@ export function mountLineChart(
         mouseLine.style.visibility = "hidden";
       }
     }
-    if (r.renderer !== "canvas" || sticky || hitData.length === 0) return;
+    if (!isPainted(r.renderer) || sticky || hitData.length === 0) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -194,7 +205,7 @@ export function mountLineChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -269,9 +280,9 @@ export function mountLineChart(
       })),
     }));
 
-    // Canvas mode: LTTB-decimate each series to ~2 points/px before drawing.
+    // Canvas/webgpu mode: LTTB-decimate each series to ~2 points/px before drawing.
     const drawDataSet: LineDataItem[] =
-      r.renderer === "canvas"
+      isPainted(r.renderer)
         ? processedDataSet.map((item) => {
             const pxX = (d: DataPoint) => projectX(d, scales.xScale, xAxisDataType);
             const span = item.series.length
@@ -339,7 +350,7 @@ export function mountLineChart(
       svg.appendChild(childG);
     }
 
-    if (r.renderer !== "canvas" && dataState !== "nodata") {
+    if (r.renderer === "svg" && dataState !== "nodata") {
       renderLineSvg(
         svg,
         model,
@@ -382,16 +393,57 @@ export function mountLineChart(
       mouseLine = null;
     }
 
-    // ----- Canvas layer -----
-    if (r.renderer === "canvas" && dataState !== "nodata") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "line-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    // ----- Canvas / WebGPU layer -----
+    const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+      const c = htmlEl("canvas", { class: className });
+      c.style.position = "absolute";
+      c.style.top = getComputedStyle(host).paddingTop;
+      c.style.left = getComputedStyle(host).paddingLeft;
+      c.style.pointerEvents = "none";
+      host.insertBefore(c, tooltip);
+      return c;
+    };
+    const removeCanvas = (): void => {
+      if (canvas) {
+        canvas.remove();
+        canvas = null;
       }
+    };
+    const removeWebgpuCanvas = (): void => {
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
+    };
+
+    if (r.renderer === "webgpu" && dataState !== "nodata") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("lineChart-webgpu-canvas");
+      const ready = drawLineWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        singlePointLine: r.singlePointLine,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (ready) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D
+        // stopgap so the chart is never blank; onReady re-render swaps in GPU.
+        if (!canvas) canvas = makeLayerCanvas("line-chart-canvas");
+        drawLineCanvas(canvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          margin: r.margin,
+          showDataPoints: r.showDataPoints,
+          singlePointLine: r.singlePointLine,
+        });
+      }
+    } else if (r.renderer === "canvas" && dataState !== "nodata") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("line-chart-canvas");
       drawLineCanvas(canvas, svg, model, {
         width: r.width,
         height: r.height,
@@ -399,9 +451,9 @@ export function mountLineChart(
         showDataPoints: r.showDataPoints,
         singlePointLine: r.singlePointLine,
       });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     // ----- Legend rows (flat colour-contract payload) -----
@@ -493,6 +545,8 @@ export function mountLineChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-line-chart");
     },

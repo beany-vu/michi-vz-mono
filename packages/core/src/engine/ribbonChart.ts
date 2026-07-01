@@ -13,6 +13,8 @@ import { buildRibbonRenderModel } from "../ribbonChart/renderModel";
 import type { RibbonColumn } from "../ribbonChart/renderModel";
 import { renderRibbonSvg } from "../ribbonChart/renderSvg";
 import { drawRibbonCanvas } from "../ribbonChart/renderCanvas";
+import { drawRibbonWebgpu } from "../ribbonChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildRibbonContext } from "../context/buildRibbonContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -29,11 +31,16 @@ import type {
   DataWarning,
   Margin,
   MountOptions,
+  Renderer,
   RibbonChartProps,
   RibbonDataRow,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 60, left: 60 };
+
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / click-to-pin interaction path. svg does not.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
   width: number;
@@ -41,7 +48,7 @@ interface Resolved {
   margin: Margin;
   ticks: number;
   columnWidth: number;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   enableTransitions: boolean;
 }
 
@@ -52,7 +59,10 @@ function resolve(p: RibbonChartProps): Resolved {
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
     columnWidth: p.columnWidth ?? 30,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
   };
 }
@@ -78,6 +88,7 @@ export function mountRibbonChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -99,6 +110,18 @@ export function mountRibbonChart(
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildRibbonRenderModel> | null = null;
 
+  // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
+  // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+
   const showTooltip = (col: RibbonColumn, ev: MouseEvent): void => {
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
@@ -116,7 +139,7 @@ export function mountRibbonChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -138,7 +161,7 @@ export function mountRibbonChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -213,7 +236,7 @@ export function mountRibbonChart(
       ticks: r.ticks,
     });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderRibbonSvg(
         svg,
         model,
@@ -237,19 +260,42 @@ export function mountRibbonChart(
       );
     }
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "ribbon-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("ribbonChart-webgpu-canvas");
+      const ready = drawRibbonWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (ready) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        if (canvas) {
+          canvas.remove();
+          canvas = null;
+        }
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("ribbon-chart-canvas");
+        drawRibbonCanvas(canvas, svg, model, { width: r.width, height: r.height });
       }
+    } else if (r.renderer === "canvas") {
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
+      if (!canvas) canvas = makeLayerCanvas("ribbon-chart-canvas");
       drawRibbonCanvas(canvas, svg, model, { width: r.width, height: r.height });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      if (canvas) {
+        canvas.remove();
+        canvas = null;
+      }
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
     }
 
     context = buildRibbonContext({
@@ -302,6 +348,8 @@ export function mountRibbonChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-ribbon-chart");
     },

@@ -19,6 +19,8 @@ import { buildScatterRenderModel } from "../scatterChart/renderModel";
 import type { ScatterPointModel } from "../scatterChart/renderModel";
 import { renderScatterSvg } from "../scatterChart/renderSvg";
 import { drawScatterCanvas } from "../scatterChart/renderCanvas";
+import { drawScatterWebgpu } from "../scatterChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildScatterContext } from "../context/buildScatterContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkScatterData } from "../validate/scatterWarnings";
@@ -35,11 +37,17 @@ import type {
   ChartInstance,
   Margin,
   MountOptions,
+  Renderer,
   ScatterChartProps,
   ScatterDataPoint,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
+
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share the
+// host-level hit-test / crosshair / click-to-pin path. svg does not. ⚠️ Keep this and
+// the webgpu render branch — they are the opt-in renderer="webgpu" support.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
   width: number;
@@ -49,7 +57,7 @@ interface Resolved {
   yTicks: number | undefined;
   showGridX: boolean;
   showGridY: boolean;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   enableTransitions: boolean;
   sizeRange: [number, number];
   showCrosshair: boolean;
@@ -74,7 +82,8 @@ function resolve(p: ScatterChartProps): Resolved {
     yTicks: p.yTicksQty,
     showGridX: resolveGrid(p.showGrid, "x"),
     showGridY: resolveGrid(p.showGrid, "y"),
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: opt-in "webgpu" downgrades to "canvas" when unavailable.
+    renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
     sizeRange: p.sizeRange ?? [4, 20],
     showCrosshair: p.showCrosshair ?? false,
@@ -99,7 +108,10 @@ export function mountScatterChart(
   tooltip.style.visibility = "hidden";
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
+  // The 2D canvas (canvas mode + the webgpu first-frame fallback) and the dedicated
+  // WebGPU canvas. Both are layered absolutely behind the SVG.
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -147,6 +159,30 @@ export function mountScatterChart(
   let legendOffset = { x: 0, y: 0 };
   let legendDragging = false;
 
+  // Lazily create an absolutely-positioned <canvas> behind the SVG, matching host
+  // padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+  const removeCanvas = (): void => {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+    }
+  };
+  const removeWebgpuCanvas = (): void => {
+    if (webgpuCanvas) {
+      webgpuCanvas.remove();
+      webgpuCanvas = null;
+    }
+  };
+
   const showTooltip = (p: ScatterDataPoint, ev: MouseEvent): void => {
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(p)
@@ -162,7 +198,7 @@ export function mountScatterChart(
 
   // Canvas-mode hit-test (topmost = smallest, model is largest-first → scan reverse).
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky || legendDragging) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky || legendDragging) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -201,7 +237,7 @@ export function mountScatterChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -350,7 +386,7 @@ export function mountScatterChart(
       });
     }
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderScatterSvg(
         svg,
         model,
@@ -374,16 +410,31 @@ export function mountScatterChart(
       );
     }
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "scatter-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    // ⚠️ PAINTED (canvas + webgpu) render branch — opt-in renderer="webgpu" support.
+    // Keep the webgpu arm (agents/humans): it tries the GPU then falls back to the 2D
+    // canvas when unavailable (always, in jsdom/CI). SVG/canvas behaviour is untouched.
+    if (isPainted(r.renderer)) {
+      if (r.renderer === "webgpu") {
+        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("scatter-chart-webgpu-canvas");
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        const ok = drawScatterWebgpu(webgpuCanvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          onReady: render,
+        });
+        if (ok) {
+          removeCanvas();
+        } else {
+          // Device not ready / unavailable: paint the canvas-2D stopgap so the chart
+          // is never blank; the onReady re-render swaps in the GPU layer.
+          if (!canvas) canvas = makeLayerCanvas("scatter-chart-canvas");
+          lastFillColors = drawScatterCanvas(canvas, svg, model, { width: r.width, height: r.height });
+        }
+      } else {
+        removeWebgpuCanvas();
+        if (!canvas) canvas = makeLayerCanvas("scatter-chart-canvas");
+        lastFillColors = drawScatterCanvas(canvas, svg, model, { width: r.width, height: r.height });
       }
-      lastFillColors = drawScatterCanvas(canvas, svg, model, { width: r.width, height: r.height });
       // Crosshair overlay <svg>, layered ABOVE the canvas so it sits on the bubbles.
       if (r.showCrosshair) {
         if (!crosshairSvg) {
@@ -403,14 +454,14 @@ export function mountScatterChart(
         crosshairSvg = null;
         crosshairGroup = null;
       }
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     // Crosshair config the canvas hover handler (onHostMove) reads; null when off.
     crosshairCfg =
-      r.renderer === "canvas" && r.showCrosshair
+      isPainted(r.renderer) && r.showCrosshair
         ? {
             margin: r.margin,
             width: r.width,
@@ -482,6 +533,8 @@ export function mountScatterChart(
       crosshairSvg = null;
       crosshairGroup = null;
       crosshairCfg = null;
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-scatter-chart");
     },

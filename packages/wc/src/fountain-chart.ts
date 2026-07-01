@@ -49,7 +49,7 @@ export class FountainChartElement extends LitElement {
   chartTitle = "";
   width = 900;
   height = 480;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   fountainStyle?: "jet" | "plume";
   xAxisDataType?: FountainXAxisType;
   colorsMapping?: Record<string, string>;

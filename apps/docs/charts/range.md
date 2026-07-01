@@ -11,6 +11,47 @@ title: Range Chart
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeRange() {
+  const series = [
+    { label: "India", color: "#2563eb", base: 6.5, drift: 0.02, spread: 0.8 },
+    { label: "United States", color: "#16a34a", base: 2.6, drift: -0.01, spread: 0.6 },
+    { label: "China", color: "#dc2626", base: 4.8, drift: -0.03, spread: 0.9 },
+    { label: "Germany", color: "#7c3aed", base: 1.2, drift: 0.01, spread: 0.5 },
+    { label: "Brazil", color: "#ea580c", base: 2.1, drift: 0.015, spread: 1.1 },
+    { label: "Nigeria", color: "#0891b2", base: 3.4, drift: 0.02, spread: 1.3 },
+    { label: "Japan", color: "#be185d", base: 0.9, drift: -0.005, spread: 0.4 },
+    { label: "Indonesia", color: "#65a30d", base: 5.1, drift: 0.01, spread: 0.9 },
+    { label: "France", color: "#9333ea", base: 1.4, drift: 0.005, spread: 0.5 },
+    { label: "South Africa", color: "#ca8a04", base: 1.8, drift: -0.02, spread: 1.0 },
+  ];
+  const pointsPerSeries = 20;
+  const dataSet = series.map((s) => {
+    const points = [];
+    for (let i = 0; i < pointsPerSeries; i++) {
+      const year = 2020 + i;
+      const wobble = Math.sin(i * 0.7 + s.base) * s.spread * 0.5;
+      const mid = s.base + s.drift * i + wobble;
+      points.push({
+        date: year,
+        valueMin: Number((mid - s.spread / 2).toFixed(2)),
+        valueMax: Number((mid + s.spread / 2).toFixed(2)),
+        valueMedium: Number(mid.toFixed(2)),
+        certainty: i < pointsPerSeries - 5,
+      });
+    }
+    return { label: s.label, color: s.color, series: points };
+  });
+  return { dataSet, xAxisDataType: "date_annual", fillOpacity: 0.55 };
+}
+</script>
+
+RangeChart has an opt-in `renderer="webgpu"` that paints the min/max bands as GPU-instanced geometry while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-range-chart" :make="makeRange" caption="~200 bands" />
+
 ## Usage
 
 ::: code-group
@@ -71,4 +112,4 @@ chart.destroy();
 
 ## API
 
-Props are typed as `RangeChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `RangeChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

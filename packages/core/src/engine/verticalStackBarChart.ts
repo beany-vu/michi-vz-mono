@@ -23,6 +23,8 @@ import { prepareStackedData } from "../verticalStackBarChart/stack";
 import { buildStackRenderModel } from "../verticalStackBarChart/renderModel";
 import { renderStackSvg } from "../verticalStackBarChart/renderSvg";
 import { drawStackCanvas } from "../verticalStackBarChart/renderCanvas";
+import { drawVerticalStackBarWebgpu } from "../verticalStackBarChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildStackContext } from "../context/buildStackContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkStackData } from "../validate/stackWarnings";
@@ -39,6 +41,7 @@ import type {
   ChartInstance,
   Margin,
   MountOptions,
+  Renderer,
   StackLegendItem,
   StackRectData,
   VerticalStackBarChartProps,
@@ -46,11 +49,15 @@ import type {
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 100, left: 60 };
 
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / interaction path. svg does not.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
+
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   keysOrder: "topToBottom" | "bottomToTop";
   minBarWidth: number;
   minBarHeight: number;
@@ -63,7 +70,10 @@ function resolve(p: VerticalStackBarChartProps): Resolved {
     width: p.width ?? 900,
     height: p.height ?? 480,
     margin: p.margin ?? DEFAULT_MARGIN,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     keysOrder: p.keysOrder ?? "topToBottom",
     minBarWidth: p.minBarWidth ?? 5,
     minBarHeight: p.minBarHeight ?? 15,
@@ -86,6 +96,11 @@ export function mountVerticalStackBarChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
+  // Tracks whether the LAST webgpu draw actually painted to the GPU canvas (true)
+  // vs fell back to the 2D stopgap (false) — same-frame hover redraws below need
+  // to know which layer to repaint.
+  let webgpuPainted = false;
   const chrome = createChromeRefs();
 
   host.appendChild(svg);
@@ -165,21 +180,32 @@ export function mountVerticalStackBarChart(
     }
     return null;
   };
-  // Same-frame canvas dim: redraw immediately with `keys` highlighted, bypassing the
-  // throttled Redux round-trip so dimming isn't ~50ms late. The Redux path still fires
-  // (cross-chart legend) and later redraws identically.
+  // Same-frame canvas/webgpu dim: redraw immediately with `keys` highlighted,
+  // bypassing the throttled Redux round-trip so dimming isn't ~50ms late. The
+  // Redux path still fires (cross-chart legend) and later redraws identically.
   let lastHoverKey: string | null = null;
   const redrawHighlight = (keys: string[]): void => {
-    if (!canvas || !model) return;
+    if (!model) return;
     const rr = resolve(baseProps);
-    drawStackCanvas(canvas, svg, model, {
-      width: rr.width,
-      height: rr.height,
-      highlightSet: new Set(keys),
-    });
+    if (rr.renderer === "webgpu" && webgpuPainted && webgpuCanvas) {
+      // Same model, per-call highlightSet override (mirrors drawStackCanvas's
+      // highlightSet option) so the hovered key dims without rebuilding geometry.
+      drawVerticalStackBarWebgpu(
+        webgpuCanvas,
+        svg,
+        { ...model, highlightSet: new Set(keys) },
+        { width: rr.width, height: rr.height }
+      );
+    } else if (canvas) {
+      drawStackCanvas(canvas, svg, model, {
+        width: rr.width,
+        height: rr.height,
+        highlightSet: new Set(keys),
+      });
+    }
   };
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const hit = hitTestAt(ev);
     if (hit) {
       showTooltip(hit, ev);
@@ -197,10 +223,10 @@ export function mountVerticalStackBarChart(
       }
     }
   };
-  // Canvas click (marks have no DOM, so the host catches it): hit-test to decide.
-  // hit → (re-)pin; miss while pinned → unpin; miss while unpinned → no-op.
+  // Canvas/webgpu click (marks have no DOM, so the host catches it): hit-test to
+  // decide. hit → (re-)pin; miss while pinned → unpin; miss while unpinned → no-op.
   const onHostClick = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     const hit = hitTestAt(ev);
     if (hit) {
       sticky = true;
@@ -306,6 +332,10 @@ export function mountVerticalStackBarChart(
       // crowded date labels (e.g. "MM-YYYY") more breathing room — they rotate sooner
       // instead of sitting flush against each other. Default 8 (legacy parity).
       padding: props.xAxisLabelPadding,
+      // "horizontal" keeps labels flat (thinning if needed) instead of rotating -45°,
+      // so no rotated-label bottom-margin is reserved — useful when labels are hidden
+      // (thumbnails) or you simply never want tilted dates.
+      forceMode: props.xAxisMode,
     });
     if (axis.mode === "rotated") {
       const maxLabelWidth = axis.tickValues.reduce(
@@ -367,7 +397,7 @@ export function mountVerticalStackBarChart(
         highlightZeroLine: props.highlightZeroLine !== false,
       });
 
-      if (r.renderer !== "canvas") {
+      if (r.renderer === "svg") {
         renderStackSvg(
           svg,
           model,
@@ -391,23 +421,80 @@ export function mountVerticalStackBarChart(
         );
       }
 
-      if (r.renderer === "canvas") {
-        if (!canvas) {
-          canvas = htmlEl("canvas", { class: "stack-chart-canvas" });
-          canvas.style.position = "absolute";
-          canvas.style.top = getComputedStyle(host).paddingTop;
-          canvas.style.left = getComputedStyle(host).paddingLeft;
-          canvas.style.pointerEvents = "none";
-          host.insertBefore(canvas, tooltip);
+      if (isPainted(r.renderer)) {
+        if (r.renderer === "webgpu") {
+          if (!webgpuCanvas) {
+            webgpuCanvas = htmlEl("canvas", { class: "stack-chart-webgpu-canvas" });
+            webgpuCanvas.style.position = "absolute";
+            webgpuCanvas.style.top = getComputedStyle(host).paddingTop;
+            webgpuCanvas.style.left = getComputedStyle(host).paddingLeft;
+            webgpuCanvas.style.pointerEvents = "none";
+            host.insertBefore(webgpuCanvas, tooltip);
+          }
+          webgpuPainted = drawVerticalStackBarWebgpu(webgpuCanvas, svg, model, {
+            width: r.width,
+            height: r.height,
+            // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+            onReady: render,
+          });
+          if (webgpuPainted) {
+            // GPU painted — drop any first-frame 2D fallback canvas.
+            if (canvas) {
+              canvas.remove();
+              canvas = null;
+            }
+          } else {
+            // Device not ready / unavailable (incl. jsdom): paint the canvas-2D
+            // stopgap so the chart is never blank; the onReady re-render swaps in
+            // the GPU layer.
+            if (!canvas) {
+              canvas = htmlEl("canvas", { class: "stack-chart-canvas" });
+              canvas.style.position = "absolute";
+              canvas.style.top = getComputedStyle(host).paddingTop;
+              canvas.style.left = getComputedStyle(host).paddingLeft;
+              canvas.style.pointerEvents = "none";
+              host.insertBefore(canvas, tooltip);
+            }
+            drawStackCanvas(canvas, svg, model, { width: r.width, height: r.height });
+          }
+        } else {
+          // canvas mode
+          if (webgpuCanvas) {
+            webgpuCanvas.remove();
+            webgpuCanvas = null;
+          }
+          webgpuPainted = false;
+          if (!canvas) {
+            canvas = htmlEl("canvas", { class: "stack-chart-canvas" });
+            canvas.style.position = "absolute";
+            canvas.style.top = getComputedStyle(host).paddingTop;
+            canvas.style.left = getComputedStyle(host).paddingLeft;
+            canvas.style.pointerEvents = "none";
+            host.insertBefore(canvas, tooltip);
+          }
+          drawStackCanvas(canvas, svg, model, { width: r.width, height: r.height });
         }
-        drawStackCanvas(canvas, svg, model, { width: r.width, height: r.height });
-      } else if (canvas) {
+      } else {
+        if (canvas) {
+          canvas.remove();
+          canvas = null;
+        }
+        if (webgpuCanvas) {
+          webgpuCanvas.remove();
+          webgpuCanvas = null;
+        }
+        webgpuPainted = false;
+      }
+    } else {
+      if (canvas) {
         canvas.remove();
         canvas = null;
       }
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
+      webgpuPainted = false;
     }
 
     context = buildStackContext({
@@ -468,6 +555,8 @@ export function mountVerticalStackBarChart(
       host.removeEventListener("mouseleave", onHostLeave);
       host.removeEventListener("click", onHostClick);
       if (typeof document !== "undefined") document.removeEventListener("click", onDocClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-vertical-stack-bar-chart");
     },

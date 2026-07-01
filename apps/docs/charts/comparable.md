@@ -11,6 +11,30 @@ Did it get better or worse? Put before and after side by side on one bar per lab
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeComparable() {
+  const colors = ["#c0392b", "#2c6fbb", "#1f1f1f", "#e07b39", "#2e8b57", "#8e44ad", "#16a085"];
+  const dataSet = [];
+  for (let i = 0; i < 120; i++) {
+    const base = 50 + Math.round(Math.random() * 2950);
+    const compared = Math.max(1, Math.round(base * (0.6 + Math.random() * 0.8)));
+    dataSet.push({
+      label: `Region ${i + 1}`,
+      valueBased: base,
+      valueCompared: compared,
+      color: colors[i % colors.length],
+    });
+  }
+  return { title: "Merchandise exports: 2019 vs 2024, US$ bn (synthetic)", dataSet };
+}
+</script>
+
+ComparableHorizontalBarChart has an opt-in `renderer="webgpu"` that paints the two sub-bars per row as GPU-instanced rectangles while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-comparable-horizontal-bar-chart" :make="makeComparable" caption="~120 rows" />
+
 ## Usage
 
 ::: code-group
@@ -71,7 +95,7 @@ chart.destroy();
 
 ## API
 
-Props are typed as `ComparableHorizontalBarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `ComparableHorizontalBarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
 
 ## Behaviour notes
 

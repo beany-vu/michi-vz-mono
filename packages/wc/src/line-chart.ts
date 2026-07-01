@@ -64,7 +64,7 @@ export class LineChartElement extends LitElement {
   chartTitle = "";
   width = 1000;
   height = 500;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   xAxisDataType: XaxisDataType = "number";
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];

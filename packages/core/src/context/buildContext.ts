@@ -3,14 +3,20 @@
 // as SVG or canvas — the bridge for LLM tool-use / RAG / agents and the source
 // for the a11y mirror. `summary` is a deterministic, model-free NL string that
 // doubles as alt text.
-import type { GapChartContext, GapDataItem, GapSeriesContext, XaxisDataType } from "../types";
+import type {
+  GapChartContext,
+  GapDataItem,
+  GapSeriesContext,
+  Renderer,
+  XaxisDataType,
+} from "../types";
 import { buildLegendData } from "./legend";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   xAxisDataType: XaxisDataType;
   xAxisDomain: [number, number];
   processedDataSet: GapDataItem[];

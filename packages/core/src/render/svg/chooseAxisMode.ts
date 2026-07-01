@@ -22,6 +22,45 @@ export interface ChooseAxisModeResult {
 
 const ESTIMATED_TICK_WIDTH = 80;
 
+/** Round a raw step up to the nearest 1/2/5 × 10^k — d3's "nice number" ladder. */
+function niceStep(raw: number): number {
+  if (!(raw > 0)) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const step = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+  return step * mag;
+}
+
+/**
+ * Nordic default: when the band labels are numeric (years, etc.), land the thinned
+ * ticks on ROUND values (2000, 2050, 2100 …) by snapping nice-number targets to the
+ * nearest existing category — instead of index-sampling to arbitrary values (2089).
+ * The two endpoints are always kept so the axis still spans the full data extent.
+ */
+function niceNumberSample(domain: string[], nums: number[], count: number): string[] {
+  const lo = nums[0];
+  const hi = nums[nums.length - 1];
+  const span = Math.abs(hi - lo);
+  if (span === 0) return [domain[0], domain[domain.length - 1]];
+
+  const step = niceStep(span / Math.max(1, count - 1));
+  const start = Math.ceil(Math.min(lo, hi) / step) * step;
+  const chosen = new Set<number>([0, domain.length - 1]); // endpoints for orientation
+  for (let v = start; v <= Math.max(lo, hi) + 1e-9; v += step) {
+    let bestI = 0;
+    let bestD = Infinity;
+    for (let i = 0; i < nums.length; i++) {
+      const d = Math.abs(nums[i] - v);
+      if (d < bestD) {
+        bestD = d;
+        bestI = i;
+      }
+    }
+    chosen.add(bestI);
+  }
+  return [...chosen].sort((a, b) => a - b).map((i) => domain[i]);
+}
+
 function sampleEvenly(domain: string[], bandWidth: number, maxTicks: number): string[] {
   if (domain.length === 0) return [];
   if (domain.length === 1) return domain;
@@ -39,6 +78,14 @@ function sampleEvenly(domain: string[], bandWidth: number, maxTicks: number): st
 
   if (domain.length <= effectiveTicks) {
     return domain;
+  }
+
+  // Prefer round tick VALUES for numeric domains (calmer, more legible than
+  // index-sampled oddities). Non-numeric categories fall back to even index spacing.
+  const nums = domain.map((d) => Number(d));
+  if (nums.every((n) => Number.isFinite(n))) {
+    const nice = niceNumberSample(domain, nums, effectiveTicks);
+    if (nice.length >= 2) return nice;
   }
 
   const result: string[] = [first];

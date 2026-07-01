@@ -15,6 +15,37 @@ Need to compare two things side by side? Pass **more than one series** in `dataS
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeVsb() {
+  const keys = ["Cloud", "Hardware", "Licenses", "Services", "Support"];
+  const base = { Cloud: 40, Hardware: 60, Licenses: 50, Services: 30, Support: 20 };
+  const drift = { Cloud: 3.2, Hardware: -0.4, Licenses: 0.6, Services: 1.8, Support: 0.3 };
+  const series = [];
+  for (let i = 0; i < 150; i++) {
+    const row = { date: String(2000 + i) };
+    for (const k of keys) {
+      const noise = (Math.random() - 0.5) * 8;
+      row[k] = Math.max(1, base[k] + drift[k] * i * 0.1 + noise);
+    }
+    series.push(row);
+  }
+  const dataSet = [
+    {
+      seriesKey: "Global",
+      seriesKeyAbbreviation: "GLB",
+      series,
+    },
+  ];
+  return { dataSet, keys, keysOrder: "bottomToTop" };
+}
+</script>
+
+VerticalStackBarChart has an opt-in `renderer="webgpu"` that paints its bars on the GPU while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-vertical-stack-bar-chart" :make="makeVsb" caption="~150 bars × 5 keys" />
+
 ## Usage
 
 ::: code-group
@@ -75,7 +106,7 @@ chart.destroy();
 
 ## API
 
-Props are typed as `VerticalStackBarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `VerticalStackBarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
 
 ## Behaviour notes
 

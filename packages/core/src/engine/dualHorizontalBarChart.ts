@@ -12,6 +12,8 @@ import { buildDualRenderModel } from "../dualBar/renderModel";
 import type { DualBarModel } from "../dualBar/renderModel";
 import { renderDualSvg } from "../dualBar/renderSvg";
 import { drawDualCanvas } from "../dualBar/renderCanvas";
+import { drawDualBarWebgpu } from "../dualBar/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildDualBarContext } from "../context/buildDualBarContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -30,16 +32,21 @@ import type {
   DualBarDataPoint,
   Margin,
   MountOptions,
+  Renderer,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 120 };
+
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / click-to-pin interaction path. svg does not.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
   tickHtmlWidth: number;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   value1Opacity: number;
   value2Opacity: number;
   enableTransitions: boolean;
@@ -51,7 +58,10 @@ function resolve(p: DualBarChartProps): Resolved {
     height: p.height ?? 480,
     margin: p.margin ?? DEFAULT_MARGIN,
     tickHtmlWidth: p.tickHtmlWidth ?? 100,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     value1Opacity: p.value1Opacity ?? 0.9,
     value2Opacity: p.value2Opacity ?? 0.55,
     enableTransitions: p.enableTransitions ?? true,
@@ -88,7 +98,10 @@ export function mountDualHorizontalBarChart(
   tooltip.style.visibility = "hidden";
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
+  // The 2D canvas (canvas mode, and the webgpu first-frame fallback) and the
+  // dedicated WebGPU canvas. Both are layered absolutely behind the SVG.
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -126,7 +139,7 @@ export function mountDualHorizontalBarChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -151,7 +164,7 @@ export function mountDualHorizontalBarChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -168,6 +181,30 @@ export function mountDualHorizontalBarChart(
     tooltip.classList.remove("sticky");
     tooltip.style.visibility = "hidden";
   });
+
+  // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
+  // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+  const removeCanvas = (): void => {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+    }
+  };
+  const removeWebgpuCanvas = (): void => {
+    if (webgpuCanvas) {
+      webgpuCanvas.remove();
+      webgpuCanvas = null;
+    }
+  };
 
   function render(): void {
     // Plugin hook #1 — transformData: forecast/etc. append predicted points/series.
@@ -214,7 +251,7 @@ export function mountDualHorizontalBarChart(
       showGrid: false,
     });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderDualSvg(
         svg,
         model,
@@ -238,24 +275,42 @@ export function mountDualHorizontalBarChart(
       );
     }
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "dual-bar-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("dual-bar-webgpu-canvas");
+      const ready = drawDualBarWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        value1Opacity: r.value1Opacity,
+        value2Opacity: r.value2Opacity,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (ready) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("dual-bar-canvas");
+        drawDualCanvas(canvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          value1Opacity: r.value1Opacity,
+          value2Opacity: r.value2Opacity,
+        });
       }
+    } else if (r.renderer === "canvas") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("dual-bar-canvas");
       drawDualCanvas(canvas, svg, model, {
         width: r.width,
         height: r.height,
         value1Opacity: r.value1Opacity,
         value2Opacity: r.value2Opacity,
       });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     context = buildDualBarContext({
@@ -306,6 +361,8 @@ export function mountDualHorizontalBarChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-dual-bar-chart");
     },

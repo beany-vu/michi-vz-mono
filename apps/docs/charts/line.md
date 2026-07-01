@@ -11,6 +11,44 @@ title: Line Chart
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeLine() {
+  const seriesLabels = [
+    { label: "Germany", color: "#1f9e57" },
+    { label: "United Kingdom", color: "#2c6fbb" },
+    { label: "France", color: "#e63946" },
+    { label: "Spain", color: "#e9c46a" },
+    { label: "Italy", color: "#2a9d8f" },
+    { label: "Poland", color: "#9b5de5" },
+    { label: "Sweden", color: "#f4a261" },
+    { label: "Netherlands", color: "#264653" },
+  ];
+  const POINTS_PER_SERIES = 2000;
+  const START_YEAR = 1900;
+  const dataSet = seriesLabels.map((s, si) => {
+    let value = 20 + si * 5;
+    const series = [];
+    for (let i = 0; i < POINTS_PER_SERIES; i++) {
+      value += (Math.random() - 0.5) * 2;
+      value = Math.max(0, Math.min(100, value));
+      series.push({
+        date: START_YEAR + i,
+        value: Math.round(value * 100) / 100,
+        certainty: true,
+      });
+    }
+    return { label: s.label, color: s.color, series };
+  });
+  return { dataSet, xAxisDataType: "date_annual", showDataPoints: false };
+}
+</script>
+
+The line chart's opt-in `renderer="webgpu"` paints its line/marker geometry on the GPU while axes, labels and tooltips stay on the SVG layer; it is capability-gated with automatic canvas fallback when WebGPU is unavailable.
+
+<WebgpuHeavyDemo element="michi-vz-line-chart" :make="makeLine" caption="~16,000 points" />
+
 ## Gap detection
 
 A missing period renders as a **dashed** segment - set it per point with `certainty: false`, or let `detectGaps` derive it. Here one series skips a reporting period:
@@ -164,4 +202,4 @@ Line colours follow the **`data-label-safe` CSS contract**. Each series element 
 
 ## API
 
-Props are typed as `LineChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `LineChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

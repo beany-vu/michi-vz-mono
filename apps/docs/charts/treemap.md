@@ -15,6 +15,41 @@ Prefer a flat list (one tile per product, each its own colour - the classic expo
 
 > The split is generic. Name the two parts with `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - nothing in the engine hardcodes a domain.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeTreemap() {
+  const sectors = [
+    { label: "Industry", color: "#1d3557" },
+    { label: "Agri-food", color: "#e9c46a" },
+    { label: "Materials", color: "#2a9d8f" },
+    { label: "Textiles", color: "#e63946" },
+    { label: "Pharmaceuticals", color: "#457b9d" },
+    { label: "Energy", color: "#f4a261" },
+    { label: "Electronics", color: "#9b5de5" },
+    { label: "Services", color: "#06d6a0" },
+  ];
+  const dataSet = sectors.map((sector, si) => {
+    const children = [];
+    for (let i = 0; i < 50; i++) {
+      const value = 5 + Math.round(Math.random() * 120);
+      const partial = Math.round(Math.random() * value);
+      children.push({
+        label: `${sector.label} product ${si * 50 + i + 1}`,
+        value,
+        partial,
+      });
+    }
+    return { label: sector.label, color: sector.color, children };
+  });
+  return { splitLabels: ["Realized", "Untapped"], showLegend: true, layout: "squarify", dataSet };
+}
+</script>
+
+TreemapChart has an opt-in `renderer="webgpu"` that paints the tiles as GPU-instanced rectangles while labels, tooltips and the split fill stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-treemap-chart" :make="makeTreemap" caption="~400 tiles" />
+
 ## Usage
 
 ::: code-group
@@ -100,4 +135,4 @@ const props = {
 
 ## API
 
-Props are typed as `TreemapChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Treemap API](/api/treemap).
+Props are typed as `TreemapChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Treemap API](/api/treemap).

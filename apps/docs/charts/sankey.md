@@ -11,6 +11,61 @@ title: Sankey
 
 > Layout is computed with [d3-sankey](https://github.com/d3/d3-sankey): nodes are assigned to columns from the graph topology, packed vertically, and links drawn as smooth horizontal bands. Hover a node or a flow for its figures.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeSankey() {
+  const columns = [
+    { prefix: "Source", count: 8, color: "#e63946" },
+    { prefix: "Hub", count: 12, color: "#1d3557" },
+    { prefix: "Region", count: 12, color: "#2a9d8f" },
+    { prefix: "Market", count: 8, color: "#e9c46a" },
+  ];
+  const nodes = [];
+  const columnIds = columns.map((col) => []);
+  columns.forEach((col, ci) => {
+    for (let i = 0; i < col.count; i++) {
+      const id = `${col.prefix} ${i + 1}`;
+      nodes.push({ id, color: col.color });
+      columnIds[ci].push(id);
+    }
+  });
+  const links = [];
+  for (let ci = 0; ci < columns.length - 1; ci++) {
+    const from = columnIds[ci];
+    const to = columnIds[ci + 1];
+    // Ensure every node has at least one outgoing and one incoming link.
+    from.forEach((source, i) => {
+      const target = to[i % to.length];
+      links.push({ source, target, value: 5 + Math.round(Math.random() * 45) });
+    });
+    to.forEach((target, i) => {
+      const source = from[i % from.length];
+      if (!links.some((l) => l.source === source && l.target === target)) {
+        links.push({ source, target, value: 5 + Math.round(Math.random() * 45) });
+      }
+    });
+  }
+  // Top up with extra random cross-links (within the same adjacent columns) until ~150.
+  let guard = 0;
+  while (links.length < 150 && guard < 5000) {
+    guard++;
+    const ci = Math.floor(Math.random() * (columns.length - 1));
+    const from = columnIds[ci];
+    const to = columnIds[ci + 1];
+    const source = from[Math.floor(Math.random() * from.length)];
+    const target = to[Math.floor(Math.random() * to.length)];
+    if (links.some((l) => l.source === source && l.target === target)) continue;
+    links.push({ source, target, value: 5 + Math.round(Math.random() * 45) });
+  }
+  return { linkColorMode: "source", nodeRadius: 3, linkRadius: 2, nodes, links };
+}
+</script>
+
+This chart's opt-in `renderer="webgpu"` paints its marks on the GPU while axes/labels/tooltips stay on SVG; capability-gated with automatic canvas fallback.
+
+<WebgpuHeavyDemo element="michi-vz-sankey-chart" :make="makeSankey" caption="~150 links" />
+
 ## Usage
 
 ::: code-group
@@ -105,4 +160,4 @@ const props = { nodeRadius: 4, linkRadius: 4, /* …nodes, links */ };
 
 ## API
 
-Props are typed as `SankeyChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Sankey API](/api/sankey).
+Props are typed as `SankeyChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Sankey API](/api/sankey).

@@ -25,6 +25,17 @@ export const CORE_CSS = `
 /* y=0 baseline: SOLID (not dashed) but GRAY by default (matches the previous
    version — user preference); override --michi-vz-zero-line for emphasis. */
 .michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-width: 1; stroke-dasharray: none; }
+/* Opt-in "calm" axis theme (Nordic / lagom): a whisper-quiet grid and muted labels so
+   the axis recedes and the data carries the only saturation. Add class="michi-vz-calm"
+   to the chart host (or ANY ancestor — the vars cascade); pair with fewer ticks
+   (the ticks / yTicksQty props) for the full airy look. color-mix keeps it theme-adaptive:
+   the grid/labels derive from the inherited text colour, so it works on light AND dark. */
+.michi-vz-calm {
+  --michi-vz-grid: color-mix(in srgb, currentColor 11%, transparent);
+  --michi-vz-muted: color-mix(in srgb, currentColor 55%, transparent);
+}
+.michi-vz-calm .mv-grid { stroke-dasharray: 1 5; }
+.michi-vz-calm .mv-zero-line { stroke: color-mix(in srgb, currentColor 22%, transparent); }
 .michi-vz .mv-ylabel {
   display: flex; align-items: center; height: 100%; cursor: pointer;
   /* Match the x-axis tick labels (.mv-axis-label) EXACTLY — same configurable colour

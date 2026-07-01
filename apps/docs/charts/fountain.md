@@ -22,6 +22,32 @@ The default `style: "jet"` is the faithful Jet d'Eau: a tall, narrow column, den
 
 > One chart, two modes - decided by the x-axis type. Set `xAxisDataType: "band"` for **Snapshot mode**: one jet per category, comparing magnitudes side by side (fountains, cities, products). Use a temporal or numeric x (`"date_annual"`, `"date_monthly"`, `"number"`) for **Trend mode**: a jet per period, the rising apexes trace the trend while each plume shows that period's volatility, and a forecast jet renders dashed with a wider, frothier crown.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeFountain() {
+  const dataSet = [];
+  for (let i = 0; i < 400; i++) {
+    const base = 40 + 60 * Math.sin(i / 11) + 20 * Math.sin(i / 3.3);
+    const value = Math.max(5, Math.round(base + (i % 7) * 2));
+    const spread = Math.max(1, Math.round(4 + 18 * Math.abs(Math.sin(i / 5)) + (i % 5)));
+    const density = Math.min(1, 0.15 + (spread / 40));
+    dataSet.push({
+      label: `Jet ${i + 1}`,
+      value,
+      spread,
+      density,
+      ...(i % 47 === 0 ? { color: "#D4AF37" } : {}),
+    });
+  }
+  return { dataSet, xAxisDataType: "band" };
+}
+</script>
+
+FountainChart has an opt-in `renderer="webgpu"` that paints each jet's column and frayed plume as GPU-instanced marks while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-fountain-chart" :make="makeFountain" caption="400 jets" />
+
 ## Usage
 
 ::: code-group
@@ -150,4 +176,4 @@ We checked the literature before shipping this. The Jet d'Eau metaphor is novel 
 
 ## API
 
-Props are typed as `FountainChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Fountain API](/api/fountain).
+Props are typed as `FountainChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Fountain API](/api/fountain).

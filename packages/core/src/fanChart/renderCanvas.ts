@@ -13,6 +13,10 @@ export interface FanBandPath {
   color: string;
   areaPath: string;
   opacity: number;
+  /** Pixel-space top (valueMax) / bottom (valueMin) polylines, same length, ordered
+   *  by x — used by the webgpu renderer's pushBandStrip (areaPath is SVG/canvas-only). */
+  top?: Array<[number, number]>;
+  bottom?: Array<[number, number]>;
 }
 
 export interface FanCanvasArgs {

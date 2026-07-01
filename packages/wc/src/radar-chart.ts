@@ -46,7 +46,7 @@ export class RadarChartElement extends LitElement {
   chartTitle = "";
   width = 600;
   height = 600;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];
   disabledItems?: string[];

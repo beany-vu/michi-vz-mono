@@ -314,6 +314,7 @@ export function applyVerticalStackBarChartProps(
   if (props.locale !== undefined) el.locale = props.locale;
   if (props.margin !== undefined) el.margin = props.margin;
   if (props.xAxisLabelPadding !== undefined) el.xAxisLabelPadding = props.xAxisLabelPadding;
+  if (props.xAxisMode !== undefined) el.xAxisMode = props.xAxisMode;
   if (props.xAxisFormat !== undefined) el.xAxisFormat = props.xAxisFormat;
   if (props.yAxisFormat !== undefined) el.yAxisFormat = props.yAxisFormat;
   if (props.xAxisDomain !== undefined) el.xAxisDomain = props.xAxisDomain;

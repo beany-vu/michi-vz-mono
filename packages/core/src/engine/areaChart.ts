@@ -17,6 +17,8 @@ import { buildAreaRenderModel } from "../areaChart/renderModel";
 import { renderAreaSvg } from "../areaChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawAreaCanvas } from "../areaChart/renderCanvas";
+import { drawAreaWebgpu } from "../areaChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildAreaContext } from "../context/buildAreaContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkAreaData } from "../validate/areaWarnings";
@@ -35,16 +37,23 @@ import type {
   ChartInstance,
   Margin,
   MountOptions,
+  Renderer,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
+
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks); svg does not.
+// (Area's hover/hit-test uses a renderer-agnostic overlay rect, so unlike scatter
+// there is no interaction-path branch to share here — isPainted only gates the
+// painted-layer lifecycle below.)
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
   ticks: number;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   enableTransitions: boolean;
   forcePercentageScale: boolean;
 }
@@ -55,7 +64,10 @@ function resolve(p: AreaChartProps): Resolved {
     height: p.height ?? 480,
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 10,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
     forcePercentageScale: p.forcePercentageScale ?? false,
   };
@@ -80,7 +92,10 @@ export function mountAreaChart(
   tooltip.style.visibility = "hidden";
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
+  // The 2D canvas (canvas mode, and the webgpu first-frame fallback) and the
+  // dedicated WebGPU canvas. Both are layered absolutely behind the SVG.
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -271,7 +286,7 @@ export function mountAreaChart(
       ticks: r.ticks,
     });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderAreaSvg(svg, model, { enableTransitions: r.enableTransitions });
     }
 
@@ -300,20 +315,56 @@ export function mountAreaChart(
       }
     });
 
-    // ----- Canvas layer -----
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "area-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    // ----- Canvas / WebGPU layer -----
+    const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+      const c = htmlEl("canvas", { class: className });
+      c.style.position = "absolute";
+      c.style.top = getComputedStyle(host).paddingTop;
+      c.style.left = getComputedStyle(host).paddingLeft;
+      c.style.pointerEvents = "none";
+      host.insertBefore(c, tooltip);
+      return c;
+    };
+    const removeCanvas = (): void => {
+      if (canvas) {
+        canvas.remove();
+        canvas = null;
       }
-      drawAreaCanvas(canvas, svg, model, { width: r.width, height: r.height });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    };
+    const removeWebgpuCanvas = (): void => {
+      if (webgpuCanvas) {
+        webgpuCanvas.remove();
+        webgpuCanvas = null;
+      }
+    };
+
+    if (isPainted(r.renderer)) {
+      if (r.renderer === "webgpu") {
+        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("area-chart-webgpu-canvas");
+        const ready = drawAreaWebgpu(webgpuCanvas, svg, model, scales, xAxisDataType, {
+          width: r.width,
+          height: r.height,
+          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+          onReady: render,
+        });
+        if (ready) {
+          // GPU painted — drop any first-frame 2D fallback canvas.
+          removeCanvas();
+        } else {
+          // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+          // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+          if (!canvas) canvas = makeLayerCanvas("area-chart-canvas");
+          drawAreaCanvas(canvas, svg, model, { width: r.width, height: r.height });
+        }
+      } else {
+        // canvas mode
+        removeWebgpuCanvas();
+        if (!canvas) canvas = makeLayerCanvas("area-chart-canvas");
+        drawAreaCanvas(canvas, svg, model, { width: r.width, height: r.height });
+      }
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     // ----- Context + a11y + warnings -----
@@ -371,6 +422,8 @@ export function mountAreaChart(
     },
     destroy() {
       for (const t of teardowns) t();
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-area-chart");
     },

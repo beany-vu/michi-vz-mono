@@ -48,7 +48,7 @@ export class BubbleChartElement extends LitElement {
   chartTitle = "";
   width = 700;
   height = 500;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   gravity?: number;
   chargeStrength?: number;
   padding?: number;

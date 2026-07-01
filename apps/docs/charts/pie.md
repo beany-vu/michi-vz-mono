@@ -15,6 +15,27 @@ The donut variant is one prop away - here the same shares with `innerRadiusRatio
 
 > Keep slice counts low (≈ 6 or fewer). For many categories, a [bar](/charts/comparable) or [treemap](/charts/treemap) reads more precisely than a pie.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makePie() {
+  const palette = ["#005aba", "#f0a500", "#2aa39a", "#c0392b", "#7952b3", "#e67e22", "#16a085", "#8e44ad", "#2c3e50", "#d35400"];
+  const dataSet = [];
+  for (let i = 0; i < 40; i++) {
+    dataSet.push({
+      label: `Segment ${i + 1}`,
+      value: Math.round(20 + Math.random() * 480),
+      color: palette[i % palette.length],
+    });
+  }
+  return { dataSet, showLabels: true, showLegend: true };
+}
+</script>
+
+PieChart has an opt-in `renderer="webgpu"` that paints the slices as GPU-drawn arcs while labels, legend and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-pie-chart" :make="makePie" caption="40 slices" />
+
 ## Usage
 
 ::: code-group
@@ -96,4 +117,4 @@ One engine renders both. `innerRadiusRatio` is the hole as a fraction of the out
 
 ## API
 
-Props are typed as `PieChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Pie / Donut API](/api/pie).
+Props are typed as `PieChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Pie / Donut API](/api/pie).

@@ -16,7 +16,7 @@ const round = (n: number): number => Math.round(n * 100) / 100;
 
 export interface BuildFountainContextInput {
   title?: string;
-  renderer: "svg" | "canvas";
+  renderer: "svg" | "canvas" | "webgpu";
   mode: "snapshot" | "trend";
   xAxisType: FountainXAxisType;
   items: FountainDataItem[];

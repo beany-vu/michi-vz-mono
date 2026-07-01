@@ -32,6 +32,7 @@ export class VerticalStackBarChartElement extends LitElement {
     locale: { type: String },
     margin: { attribute: false },
     xAxisLabelPadding: { type: Number, attribute: "x-axis-label-padding" },
+    xAxisMode: { type: String, attribute: "x-axis-mode" },
     xAxisFormat: { attribute: false },
     yAxisFormat: { attribute: false },
     xAxisDomain: { attribute: false },
@@ -57,7 +58,7 @@ export class VerticalStackBarChartElement extends LitElement {
   chartTitle = "";
   width = 900;
   height = 480;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];
   disabledItems?: string[];
@@ -68,6 +69,7 @@ export class VerticalStackBarChartElement extends LitElement {
   locale?: string;
   margin?: Margin;
   xAxisLabelPadding?: number;
+  xAxisMode?: "auto" | "horizontal";
   xAxisFormat?: (d: number | string) => string;
   yAxisFormat?: (d: number | string) => string;
   xAxisDomain?: string[];
@@ -118,6 +120,7 @@ export class VerticalStackBarChartElement extends LitElement {
       locale: this.locale,
       margin: this.margin,
       xAxisLabelPadding: this.xAxisLabelPadding,
+      xAxisMode: this.xAxisMode,
       xAxisFormat: this.xAxisFormat,
       yAxisFormat: this.yAxisFormat,
       xAxisDomain: this.xAxisDomain,

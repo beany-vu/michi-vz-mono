@@ -15,6 +15,8 @@ import { layoutPie } from "../pieChart/geometry";
 import { buildPieRenderModel, type PieSliceMark, type PieRenderModel } from "../pieChart/renderModel";
 import { renderPieSvg } from "../pieChart/renderSvg";
 import { drawPieCanvas } from "../pieChart/renderCanvas";
+import { drawPieWebgpu } from "../pieChart/renderWebgpu";
+import { resolveRenderer } from "../webgpu/capability";
 import { buildPieContext } from "../context/buildPieContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkPieData } from "../validate/pieWarnings";
@@ -33,16 +35,21 @@ import type {
   MountOptions,
   PieChartProps,
   PieSliceContext,
+  Renderer,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 36, right: 8, bottom: 8, left: 8 };
 const TAU = Math.PI * 2;
 
+// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
+// the host-level hit-test / interaction path. svg does not.
+const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
+
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
-  renderer: "svg" | "canvas";
+  renderer: Renderer;
   innerRadiusRatio: number;
   padAngle: number;
   cornerRadius: number;
@@ -57,7 +64,10 @@ function resolve(p: PieChartProps): Resolved {
     width: p.width ?? 600,
     height: p.height ?? 420,
     margin: p.margin ?? DEFAULT_MARGIN,
-    renderer: p.renderer ?? "svg",
+    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
+    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
+    // reflects what actually painted.
+    renderer: resolveRenderer(p.renderer),
     innerRadiusRatio: p.innerRadiusRatio ?? 0,
     padAngle: p.padAngle ?? 0,
     cornerRadius: p.cornerRadius ?? 0,
@@ -86,7 +96,10 @@ export function mountPieChart(
   tooltip.style.visibility = "hidden";
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
+  // The 2D canvas (canvas mode, and the webgpu first-frame fallback) and the
+  // dedicated WebGPU canvas. Both are layered absolutely behind the SVG.
   let canvas: HTMLCanvasElement | null = null;
+  let webgpuCanvas: HTMLCanvasElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -107,6 +120,30 @@ export function mountPieChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: PieRenderModel | null = null;
+
+  // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
+  // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
+  const makeLayerCanvas = (className: string): HTMLCanvasElement => {
+    const c = htmlEl("canvas", { class: className });
+    c.style.position = "absolute";
+    c.style.top = getComputedStyle(host).paddingTop;
+    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.pointerEvents = "none";
+    host.insertBefore(c, tooltip);
+    return c;
+  };
+  const removeCanvas = (): void => {
+    if (canvas) {
+      canvas.remove();
+      canvas = null;
+    }
+  };
+  const removeWebgpuCanvas = (): void => {
+    if (webgpuCanvas) {
+      webgpuCanvas.remove();
+      webgpuCanvas = null;
+    }
+  };
 
   const sliceToContext = (s: PieSliceMark): PieSliceContext => ({
     label: s.label,
@@ -140,7 +177,7 @@ export function mountPieChart(
   // Canvas-mode hit-test: convert to slice-local polar (angle clockwise from 12
   // o'clock) and find the wedge that contains the point. Slices don't overlap.
   const onHostMove = (ev: MouseEvent): void => {
-    if (resolve(baseProps).renderer !== "canvas" || !model || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const dx = ev.clientX - svgRect.left - model.cx;
     const dy = ev.clientY - svgRect.top - model.cy;
@@ -167,7 +204,7 @@ export function mountPieChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (resolve(baseProps).renderer !== "canvas") return;
+    if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -271,7 +308,7 @@ export function mountPieChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (r.renderer !== "canvas") {
+    if (r.renderer === "svg") {
       renderPieSvg(
         svg,
         model,
@@ -297,19 +334,30 @@ export function mountPieChart(
 
     if (legendH > 0) renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
 
-    if (r.renderer === "canvas") {
-      if (!canvas) {
-        canvas = htmlEl("canvas", { class: "pie-chart-canvas" });
-        canvas.style.position = "absolute";
-        canvas.style.top = getComputedStyle(host).paddingTop;
-        canvas.style.left = getComputedStyle(host).paddingLeft;
-        canvas.style.pointerEvents = "none";
-        host.insertBefore(canvas, tooltip);
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("pieChart-webgpu-canvas");
+      const ready = drawPieWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+      });
+      if (ready) {
+        // GPU painted — drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("pie-chart-canvas");
+        drawPieCanvas(canvas, svg, model, { width: r.width, height: r.height });
       }
+    } else if (r.renderer === "canvas") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("pie-chart-canvas");
       drawPieCanvas(canvas, svg, model, { width: r.width, height: r.height });
-    } else if (canvas) {
-      canvas.remove();
-      canvas = null;
+    } else {
+      removeCanvas();
+      removeWebgpuCanvas();
     }
 
     context = buildPieContext({
@@ -360,6 +408,8 @@ export function mountPieChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      canvas = null;
+      webgpuCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-pie-chart");
     },

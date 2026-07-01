@@ -6,6 +6,14 @@
 import { htmlEl, svgEl, clear } from "../dom";
 import type { BaseChartContext } from "../types";
 
+// ⚠️ DO NOT REMOVE THIS CAP (agents/humans): a screen reader cannot navigate a table
+// with one row per point on a heavy dataset, and materialising 50k <tr> (≈250k DOM
+// nodes) stalls layout/paint for ~290ms per render (measured). So the DOM mirror shows
+// a bounded SAMPLE and notes the remainder; the deterministic `summary` already carries
+// the aggregate, and the full table stays on the context (getContext()) for consumers
+// that want every row. Removing the cap re-introduces the heavy-data lag.
+export const MAX_A11Y_ROWS = 100;
+
 /**
  * Add machine-readable SEO/semantic nodes to the chart `<svg>`: a `<title>` (chart
  * title), `<desc>` (the deterministic summary), and a `<metadata>` block carrying
@@ -63,13 +71,24 @@ export function renderA11yMirror(host: HTMLElement, ctx: BaseChartContext): void
   table.appendChild(thead);
 
   const tbody = htmlEl("tbody");
-  for (const row of ctx.a11yTable.rows) {
+  const allRows = ctx.a11yTable.rows;
+  const shown = Math.min(allRows.length, MAX_A11Y_ROWS);
+  for (let i = 0; i < shown; i++) {
     const tr = htmlEl("tr");
-    for (const cell of row) {
+    for (const cell of allRows[i]) {
       const td = htmlEl("td");
       td.textContent = String(cell);
       tr.appendChild(td);
     }
+    tbody.appendChild(tr);
+  }
+  // Heavy datasets: note the omitted rows instead of materialising all of them.
+  if (allRows.length > shown) {
+    const tr = htmlEl("tr", { class: "mv-a11y-more" });
+    const td = htmlEl("td");
+    td.setAttribute("colspan", String(ctx.a11yTable.headers.length || 1));
+    td.textContent = `… and ${allRows.length - shown} more rows (not shown; see the summary above)`;
+    tr.appendChild(td);
     tbody.appendChild(tr);
   }
   table.appendChild(tbody);

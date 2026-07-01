@@ -11,6 +11,29 @@ Which side wins, and by how much? Anchor two opposing values to a shared centre 
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
+
+<script setup>
+function makeDual() {
+  const dataSet = [];
+  for (let i = 0; i < 120; i++) {
+    const base = 2 + Math.random() * 18;
+    const skew = (Math.random() - 0.5) * 6;
+    dataSet.push({
+      label: `Row ${i + 1}`,
+      value1: Number(Math.max(0.1, base + skew).toFixed(1)),
+      value2: Number(Math.max(0.1, base - skew).toFixed(1)),
+      color: "#3F7CAC",
+    });
+  }
+  return { dataSet, title: "120 diverging rows (synthetic)" };
+}
+</script>
+
+DualHorizontalBarChart has an opt-in `renderer="webgpu"` that paints value1/value2 bars on the GPU while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+
+<WebgpuHeavyDemo element="michi-vz-dual-horizontal-bar-chart" :make="makeDual" caption="~120 rows" />
+
 ## Usage
 
 ::: code-group
@@ -71,4 +94,4 @@ chart.destroy();
 
 ## API
 
-Props are typed as `DualHorizontalBarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg" | "canvas"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).
+Props are typed as `DualHorizontalBarChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context).

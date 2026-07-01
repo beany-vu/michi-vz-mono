@@ -45,7 +45,7 @@ export class PieChartElement extends LitElement {
   chartTitle = "";
   width = 600;
   height = 420;
-  renderer: "svg" | "canvas" = "svg";
+  renderer: "svg" | "canvas" | "webgpu" = "svg";
   innerRadiusRatio?: number;
   padAngle?: number;
   cornerRadius?: number;
