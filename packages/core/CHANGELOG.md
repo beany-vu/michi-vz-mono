@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.5.1
+
+### Patch Changes
+
+- Sticky (click-to-pin) tooltips now dismiss on a click anywhere outside the chart and tooltip (legacy parity - previously only VerticalStackBarChart did; the other 16 engines left the pinned tooltip stuck with hover disabled). The tooltip click listener and the new document-level listener are now removed in destroy(), fixing a per-remount listener leak.
+
 ## 1.5.0
 
 ### Minor Changes
