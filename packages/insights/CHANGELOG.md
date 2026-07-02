@@ -1,5 +1,16 @@
 # @michi-vz/insights
 
+## 0.2.0
+
+### Minor Changes
+
+- 6d42c8c: New `matchLabels(source, target, options)` in `@michi-vz/insights/embeddings`: link the same entities ACROSS two differently-spelled lists (a CRM export vs an ERP export), so two datasets can become one joined chart. Where `reconcileLabels` cleans duplicates within one list, `matchLabels` pairs the lists: a pair is a confident match only when it clears the similarity threshold, the same confidence-margin gate `reconcileLabels` uses (on the source's choice among targets), and - by default - a MUTUAL best match, so two source rows never silently collide onto one target (duplicates resolve to one winner, the rest reported back). Returns `{ matches, unmatchedSource, unmatchedTarget }`; the unmatched carry their closest near-miss as a "did you mean" hint, never dropped or force-fitted. Model-free hash default links spelling/case/typo variants offline; `{ backend: "transformers" }` (MiniLM) also links synonyms, abbreviations, and translations; `mutual: false` opts into many-to-one. Docs: a live MatchLab demo ("two sources, one chart") plus a recipe feeding matches straight into `mountComparableHorizontalBarChart`.
+
+### Patch Changes
+
+- Updated dependencies [18b92b4]
+  - @michi-vz/core@1.5.2
+
 ## 0.1.1
 
 ### Patch Changes

@@ -6,9 +6,35 @@ The latest `@michi-vz` releases, newest first. All six packages -
 [react](https://www.npmjs.com/package/@michi-vz/react),
 [vue](https://www.npmjs.com/package/@michi-vz/vue),
 [svelte](https://www.npmjs.com/package/@michi-vz/svelte),
-[angular](https://www.npmjs.com/package/@michi-vz/angular) - share one version
-number. Full per-commit detail lives in the
+[angular](https://www.npmjs.com/package/@michi-vz/angular) - version together
+(each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
+
+## v1.6.0
+
+Package versions: react **1.6.0** · devtools **0.2.0** · insights **0.2.0** · core, wc, vue,
+svelte, angular **1.5.2**.
+
+- **DevTools 0.2.0: the Michi shield toggle button.** Mounting the devtools no longer covers
+  your app - it starts as a small floating shield (the library's crest). Click it, or press
+  `Ctrl/Cmd+Shift+M`, to open the panel; the open/closed state is remembered per browser, so a
+  reload comes back exactly how you left it. Corner taken by another floating widget? **Drag
+  the shield anywhere** - that spot is remembered too, and the new `buttonPosition` option
+  picks the starting corner. The handle gained `isOpen()`, and `<MichiVzDevtools />` (react
+  1.6.0) passes `buttonPosition` through. See [DevTools](/guide/devtools).
+- **Insights 0.2.0: `matchLabels()` cross-dataset linkage.** Link the same entities across two
+  differently-spelled lists (a CRM export vs an ERP export) so two datasets become one joined
+  chart: mutual best match by default, confidence-margin gated, unmatched rows returned with a
+  "did you mean" hint. Model-free hashing works offline; the MiniLM backend also links
+  synonyms, abbreviations, and translations. Try the live
+  [MatchLab](/guide/insights#clean-match-and-search-your-data) demo.
+- **Core 1.5.2: heavy-page performance fixes.** The `onChartDataProcessed` idempotency guard
+  now signs contexts through a bounded FNV-1a hash instead of stringifying every row (a
+  multi-MB string per render at 50k points), and canvas/WebGPU scatter hover collapses each
+  frame's pointer burst into one trailing `requestAnimationFrame` pass. Big dashboards stay
+  responsive with nothing to configure.
+- **Docs:** the Michi shield is now the site favicon and sits beside the navbar title; every
+  page ships a unique description and social card.
 
 ## v1.5.0
 
