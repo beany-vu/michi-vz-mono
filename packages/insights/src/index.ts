@@ -72,10 +72,14 @@ export {
   narrateRules,
   explainChart,
   SLM_PRESETS,
+  ollamaCaller,
+  openaiCompatCaller,
   type NarrateBackend,
   type NarrateOptions,
   type NarrateStrings,
   type NarratePluginOptions,
+  type OllamaCallerOptions,
+  type OpenAICompatCallerOptions,
 } from "./narrate";
 
 // ---- Embeddings (hash fallback; opt-in BERT/MiniLM) ----

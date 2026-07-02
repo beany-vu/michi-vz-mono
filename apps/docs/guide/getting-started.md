@@ -62,3 +62,16 @@ via a `getComputedStyle` probe. Colour marks by their sanitized label:
 
 `@michi-vz/core/styles.css` only handles layout/tooltip - it never sets `fill`/`stroke`, because
 colour is your contract.
+
+## Where to go next
+
+- **Pick a chart** in the [gallery](/charts/) - every chart page has a live demo, framework
+  tabs, and a link to its full prop reference.
+- **Wondering if this library is for you?** [Why michi-vz](/guide/why) - what is genuinely
+  different, and where we are honest about limits.
+- **Debug what you build** with the [DevTools panel](/guide/devtools) - sizing, scales, state
+  diffs, and an accessibility audit for any chart on the page.
+- **Make charts predict and explain themselves** with [Insights](/guide/insights) - forecasts,
+  anomalies, narration, all in the browser with the
+  [methodology spelled out](/guide/insights#methodology---the-exact-logic-behind-every-insight).
+- **Wire charts to an AI assistant** via the [LLM context](/guide/llm-context) and MCP.

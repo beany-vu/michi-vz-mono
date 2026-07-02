@@ -73,11 +73,25 @@ const TABS: Array<[TabKey, string]> = [
 ];
 
 // The one-click AI actions the Insights tab knows how to surface. Tool names may be
-// bare ("narrate") or registry-namespaced ("chart.narrate"); both match.
-const AI_ACTIONS: Array<{ key: string; label: string }> = [
-  { key: "narrate", label: "✦ Narrate" },
-  { key: "anomaly", label: "✦ Detect anomalies" },
-  { key: "forecast", label: "✦ Forecast" },
+// bare ("narrate") or registry-namespaced ("chart.narrate"); both match. Each hint
+// states exactly what runs - by default NO language model is involved, and saying so
+// out loud is the point (no mystery, no surprise downloads).
+const AI_ACTIONS: Array<{ key: string; label: string; hint: string }> = [
+  {
+    key: "narrate",
+    label: "✦ Narrate",
+    hint: "Deterministic prose computed from the chart's data by fixed rules - no language model runs and nothing is downloaded. (The narrate plugin CAN be configured with a model; even then it falls back to these rules.)",
+  },
+  {
+    key: "anomaly",
+    label: "✦ Detect anomalies",
+    hint: "Pure statistics (z-score, IQR fences, or forecast band) - the result names the method, threshold, and the exact logic. No language model, nothing downloaded.",
+  },
+  {
+    key: "forecast",
+    label: "✦ Forecast",
+    hint: "Statistical projection (Holt exponential smoothing or a least-squares line) with a confidence band - no language model, nothing downloaded.",
+  },
 ];
 
 // ---- tiny DOM helpers -------------------------------------------------------
@@ -165,6 +179,23 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const lastJson = new Map<string, string>();
   // Last AI action result per chart (survives re-renders; cleared on selection change).
   const aiState = new Map<string, { tool: string; text: string; labels?: string[] }>();
+  // Each chart's editable props as first seen by the panel, so Reset can undo every
+  // panel-driven edit (dataSet, highlight, disable) in one click. JSON-cloned: the
+  // three fields are data-only, and function props are never touched by the panel.
+  const initialProps = new Map<string, { dataSet?: unknown; highlightItems: string[]; disabledItems: string[] }>();
+  function rememberInitial(e: DevtoolsChartEntry): void {
+    if (initialProps.has(e.id)) return;
+    const p = (e.getProps() ?? {}) as { dataSet?: unknown; highlightItems?: string[]; disabledItems?: string[] };
+    try {
+      initialProps.set(e.id, {
+        dataSet: p.dataSet === undefined ? undefined : (JSON.parse(JSON.stringify(p.dataSet)) as unknown),
+        highlightItems: [...(p.highlightItems ?? [])],
+        disabledItems: [...(p.disabledItems ?? [])],
+      });
+    } catch {
+      // non-serializable dataSet - reset stays unavailable for this chart
+    }
+  }
   // Canvas hit-test event ring buffer (all hosts; filtered per selection at render).
   const MAX_HITS = 200;
   const hitLog: DevtoolsHitEvent[] = [];
@@ -212,6 +243,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
 
   function capture(): void {
     for (const e of entries()) {
+      rememberInitial(e);
       const ctx = e.getContext();
       if (!ctx) continue;
       const json = safeJson(ctx);
@@ -399,7 +431,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     }
     const prevOutline = host.style.outline;
     const prevOffset = host.style.outlineOffset;
-    host.style.outline = "3px solid #7c5cff";
+    host.style.outline = "3px solid #6f7fc9";
     host.style.outlineOffset = "2px";
     setTimeout(() => {
       host.style.outline = prevOutline;
@@ -894,7 +926,13 @@ ro.observe(host);`,
 
   // -- Insights tab: the chart's own summary + one-click @michi-vz/insights actions --
   function renderInsights(entry: DevtoolsChartEntry, ctx: ChartContext | null): void {
-    contentEl.append(el("h4", {}, ["What the AI sees"]));
+    contentEl.append(
+      el(
+        "h4",
+        { title: "The plain-language summary every chart carries in its ChartContext - this exact text is what an AI agent or a screen reader receives. Computed from the data; no model involved." },
+        ["What the AI sees"]
+      )
+    );
     if (ctx?.summary) {
       contentEl.append(el("div", { class: "mv-devtools-ai" }, [ctx.summary]));
     } else {
@@ -918,9 +956,14 @@ ro.observe(host);`,
 
     if (known.length > 0) {
       contentEl.append(el("h4", {}, ["AI actions"]));
+      contentEl.append(
+        el("div", { class: "mv-devtools-ai-caption" }, [
+          "These run the chart's attached insights plugins locally, in your browser. By default they are deterministic rules and statistics - no language model runs and nothing is downloaded. Hover an action for what it computes.",
+        ])
+      );
       const rowEl = el("div", { class: "row" });
       for (const action of known) {
-        const btn = el("button", { class: "mv-devtools-ai-action" }, [action.label]);
+        const btn = el("button", { class: "mv-devtools-ai-action", title: action.hint }, [action.label]);
         btn.addEventListener("click", async () => {
           btn.disabled = true;
           try {
@@ -1060,6 +1103,26 @@ ro.observe(host);`,
         dRow.append(el("label", { class: "chk" }, [cb, label]));
       }
       controlsEl.append(dRow);
+    }
+
+    // Reset: undo every panel-driven edit at once (back to the props as first seen).
+    const initial = initialProps.get(entry.id);
+    if (initial) {
+      const resetBtn = el(
+        "button",
+        { class: "mv-devtools-btn", title: "Restore the chart's dataSet, highlight and disable state as they were when devtools first saw it" },
+        ["Reset chart"]
+      );
+      resetBtn.addEventListener("click", () => {
+        const patch: Record<string, unknown> = {
+          highlightItems: [...initial.highlightItems],
+          disabledItems: [...initial.disabledItems],
+        };
+        if (initial.dataSet !== undefined) patch.dataSet = JSON.parse(JSON.stringify(initial.dataSet));
+        controlsKey = ""; // force the controls (incl. the dataSet textarea) to rebuild
+        apply(patch);
+      });
+      controlsEl.append(el("div", { class: "row" }, [resetBtn]));
     }
 
     // Data editor.

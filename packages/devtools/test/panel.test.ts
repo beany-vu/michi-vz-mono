@@ -154,6 +154,39 @@ describe("mountDevtools panel", () => {
     dt.destroy();
   });
 
+  it("Reset chart restores the initial dataSet and clears highlight/disable edits", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountLineChart(host, props);
+
+    // drive the chart from the panel: highlight + a destructive dataSet edit
+    const cb = r.querySelector<HTMLInputElement>(".row input[type=checkbox]")!;
+    cb.checked = true;
+    cb.dispatchEvent(new Event("change"));
+    const ta = r.querySelector<HTMLTextAreaElement>("textarea")!;
+    ta.value = JSON.stringify([{ label: "Revenue", series: [{ date: 2020, value: 1, certainty: true }] }]);
+    Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn"))
+      .find((b) => b.textContent === "Apply")!
+      .click();
+    let ctx = chart.getContext() as { series: Array<{ pointCount: number }> };
+    expect(ctx.series[0].pointCount).toBe(1);
+
+    // reset -> back to the 3-point original, edits gone
+    const resetBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
+      (b) => b.textContent === "Reset chart"
+    );
+    expect(resetBtn).not.toBeNull();
+    resetBtn!.click();
+    ctx = chart.getContext() as { series: Array<{ pointCount: number; max?: number }> };
+    expect(ctx.series[0].pointCount).toBe(3);
+    expect((ctx.series[0] as { max?: number }).max).toBe(140);
+
+    chart.destroy();
+    dt.destroy();
+  });
+
   it("captures a ChartContext history and steps back into a read-only snapshot", () => {
     const dt = mountDevtools();
     const r = root(dt);
@@ -566,6 +599,9 @@ describe("devtools tabs", () => {
     const labels = buttons.map((b) => b.textContent);
     expect(labels.some((l) => l?.includes("Narrate"))).toBe(true);
     expect(labels.some((l) => l?.includes("anomal"))).toBe(true);
+    // no mystery: every action explains what actually runs (no LLM by default)
+    for (const b of buttons) expect(b.title.toLowerCase()).toContain("no language model");
+    expect(q(r, ".mv-devtools-ai-caption")?.textContent?.toLowerCase()).toContain("no language model");
 
     buttons.find((b) => b.textContent?.includes("Narrate"))!.click();
     await new Promise((res) => setTimeout(res, 0));

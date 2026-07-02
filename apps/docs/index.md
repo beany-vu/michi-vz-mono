@@ -12,13 +12,16 @@ hero:
       text: Browse the catalog
       link: "#chart-atlas"
     - theme: alt
+      text: Why michi-vz
+      link: /guide/why
+    - theme: alt
       text: Get started
       link: /guide/getting-started
     - theme: alt
       text: Insights · AI
       link: /guide/insights
     - theme: alt
-      text: DevTools · in development
+      text: DevTools
       link: /guide/devtools
     - theme: alt
       text: GitHub

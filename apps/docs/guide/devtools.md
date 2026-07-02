@@ -145,7 +145,13 @@ renders the actual a11y data table - exactly what a screen reader gets.
 
 The classic inspector: the summary, per-series stats (including the actual-vs-predicted split
 below), highlight/disable toggles that patch the live props, and a `dataSet` JSON editor -
-edit, hit **Apply**, and watch the chart re-render.
+edit, hit **Apply**, and watch the chart re-render. Played too much? **Reset chart** restores
+the dataSet, highlight, and disable state to exactly what they were when devtools first saw
+the chart - every panel-driven edit undone in one click.
+
+By the way: the ✦ actions on the Insights tab are **not a language model** by default - they
+run the chart's insights plugins locally (deterministic rules and statistics; each action's
+tooltip says exactly what it computes). Nothing is downloaded, nothing leaves the page.
 
 ## Time travel through state
 

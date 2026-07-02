@@ -413,6 +413,28 @@ await explainChart(chart.getContext(), { backend: "webllm", model: SLM_PRESETS.w
 await explainChart(chart.getContext(), { backend: "remote", caller: (prompt) => callClaude(prompt) });
 ```
 
+**Already running a local AI?** Hook it directly - no download, no Hugging Face, prompts go only
+to the endpoint you name. Two ready-made callers cover the common local servers:
+
+```ts
+import { ollamaCaller, openaiCompatCaller } from "@michi-vz/insights/narrate";
+
+// Ollama (native API, default http://localhost:11434):
+await explainChart(ctx, {
+  backend: "remote",
+  caller: ollamaCaller({ model: "llama3.2" }),
+});
+
+// LM Studio, llama.cpp server, vLLM, LocalAI - anything OpenAI-compatible:
+await explainChart(ctx, {
+  backend: "remote",
+  caller: openaiCompatCaller({ url: "http://localhost:1234", model: "qwen2.5" }),
+});
+```
+
+Both throw on failure, so narration falls back to the deterministic rule-based sentence - the
+chart never ends up blank because a local server was down.
+
 `SLM_PRESETS` ships model ids for **Phi-3-mini** and **Gemma 2 (2B)**. The model is lazy-loaded only
 when called; nothing is bundled, and if it cannot load the rule-based text is returned. Combine with
 `strings` / `render` so even the fallback is in your language.

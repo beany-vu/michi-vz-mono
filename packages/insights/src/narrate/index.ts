@@ -6,6 +6,15 @@ import type { ChartContext, LineChartContext, MichiVzPlugin } from "@michi-vz/co
 import { optionalImport } from "../internal/lazyImport";
 import { applyModelSource, type ModelSource } from "../models/source";
 
+// Ready-made backend:"remote" callers for local AI servers (Ollama, LM Studio,
+// llama.cpp, vLLM, ...) - re-exported so consumers get them from the narrate entry.
+export {
+  ollamaCaller,
+  openaiCompatCaller,
+  type OllamaCallerOptions,
+  type OpenAICompatCallerOptions,
+} from "./callers";
+
 export type NarrateBackend = "rules" | "transformers" | "webllm" | "remote";
 
 /**

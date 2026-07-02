@@ -104,13 +104,12 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: "Charts", link: "/charts/" },
-      { text: "API", link: "/api/line" },
-      { text: "Guide", link: "/guide/installation" },
+      { text: "Guide", link: "/guide/why" },
       {
         // TanStack-style version switcher (single version for now).
-        text: "v1.2.1",
+        text: "v1.4.0",
         items: [
-          { text: "What's new in v1.2.1", link: "/guide/whats-new" },
+          { text: "What's new in v1.4.0", link: "/guide/whats-new" },
           { text: "Changelog (GitHub)", link: "https://github.com/beany-vu/michi-vz-mono/releases" },
         ],
       },
@@ -146,6 +145,7 @@ export default defineConfig({
       const guideGroup = {
         text: "Guide",
         items: [
+          { text: "Why michi-vz", link: "/guide/why" },
           { text: "What's new", link: "/guide/whats-new" },
           { text: "Installation", link: "/guide/installation" },
           { text: "Getting started", link: "/guide/getting-started" },
@@ -155,10 +155,12 @@ export default defineConfig({
           { text: "DevTools", link: "/guide/devtools" },
         ],
       };
+      // The API reference lives INSIDE the Guide navigation (no separate top-level
+      // section): every sidebar shows Guide + Chart API + Insights API together.
       return {
         "/charts/": [chartsGroup, apiGroup, insightsApiGroup],
-        "/api/": [chartsGroup, apiGroup, insightsApiGroup],
-        "/guide/": [guideGroup, insightsApiGroup],
+        "/api/": [guideGroup, chartsGroup, apiGroup, insightsApiGroup],
+        "/guide/": [guideGroup, apiGroup, insightsApiGroup],
       };
     })(),
     socialLinks: [
