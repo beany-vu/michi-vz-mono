@@ -1,5 +1,6 @@
 ---
 title: Fountain (Jet d'Eau)
+description: "Fountain (Jet d'Eau) chart, the michi-vz signature chart inspired by Geneva's fountain: one chart with snapshot and trend modes. Experimental."
 ---
 # Fountain (Jet d'Eau)
 

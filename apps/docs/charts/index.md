@@ -1,5 +1,6 @@
 ---
 title: Charts
+description: "The michi-vz chart catalog: 17 chart types for trends, composition, comparison, correlation, and flow, each with live demos in React, Vue, Svelte, Angular, and web components."
 ---
 # Chart catalog
 

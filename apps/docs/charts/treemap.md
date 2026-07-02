@@ -1,5 +1,6 @@
 ---
 title: Treemap
+description: "Treemap with tiles sized by total and an optional two-part split showing realized vs untapped share; nests under groups and folds to a stack on narrow screens."
 ---
 # Treemap
 

@@ -1,5 +1,6 @@
 ---
 title: Ribbon Chart
+description: "Ribbon chart for rank and share shifts: ribbons connect each period's columns so you can follow a category as it swells, shrinks, and trades places."
 ---
 # Ribbon Chart
 

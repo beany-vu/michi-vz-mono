@@ -1,5 +1,6 @@
 ---
 title: Pie / Donut
+description: "Pie and donut chart: wedges sized by value, labelled with percentages, sorted so the biggest slice reads first; set innerRadiusRatio above 0 for a donut."
 ---
 # Pie / Donut
 

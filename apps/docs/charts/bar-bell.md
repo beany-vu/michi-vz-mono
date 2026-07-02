@@ -1,5 +1,6 @@
 ---
 title: Bar-Bell
+description: "Bar-bell chart: each row lays its parts end to end with an end-cap at every step, so cumulative reach and each segment's share read at a glance."
 ---
 # Bar-Bell
 

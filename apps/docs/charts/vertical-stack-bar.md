@@ -1,5 +1,6 @@
 ---
 title: Vertical Stack Bar
+description: "Vertical stacked bar chart for composition across categories, with an explicit guard that marks missing segments instead of flattening them to zero."
 ---
 # Vertical Stack Bar
 

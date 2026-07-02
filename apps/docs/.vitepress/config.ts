@@ -56,6 +56,9 @@ export default defineConfig({
     "Framework-agnostic charts - a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.",
   lang: "en-US",
   cleanUrls: true,
+  // Git commit time per page: shows "Last updated" in the theme AND emits
+  // <lastmod> in sitemap.xml so crawlers know which pages changed.
+  lastUpdated: true,
   sitemap: { hostname: "https://michi-vz.netlify.app" },
   // Per-page SEO: a unique <meta description>, canonical URL, and Open Graph +
   // Twitter card on every page (VitePress otherwise repeats the site description
@@ -67,13 +70,17 @@ export default defineConfig({
     const url = (base + "/" + path).replace(/\/+$/, "") || base;
     const isHome = pageData.relativePath === "index.md";
     const title = pageData.frontmatter.title || pageData.title || "michi-vz";
+    const isApi = pageData.relativePath.startsWith("api/");
     const desc =
       pageData.frontmatter.description ||
-      (!isHome && pageData.title
-        ? `${pageData.title} - framework-agnostic charts (SVG, canvas, WebGPU) with an LLM-ready ChartContext, for React, Vue, Svelte, Angular, or web components.`
-        : "Framework-agnostic charts: a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.");
+      (isApi && pageData.title
+        ? `${pageData.title.replace(/\s*API$/, "")} API reference for michi-vz: every prop, default, and event, identical across React, Vue, Svelte, Angular, and web components.`
+        : !isHome && pageData.title
+          ? `${pageData.title} - framework-agnostic charts (SVG, canvas, WebGPU) with an LLM-ready ChartContext, for React, Vue, Svelte, Angular, or web components.`
+          : "Framework-agnostic charts: a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.");
     pageData.description = desc;
-    const image = base + "/michi-shield.png";
+    // 1200x630 social card (regenerate with scripts/generate-og-card.mjs).
+    const image = base + "/og-card.png";
     (pageData.frontmatter.head ??= []).push(
       ["link", { rel: "canonical", href: url }],
       ["meta", { property: "og:type", content: isHome ? "website" : "article" }],
@@ -82,11 +89,50 @@ export default defineConfig({
       ["meta", { property: "og:description", content: desc }],
       ["meta", { property: "og:url", content: url }],
       ["meta", { property: "og:image", content: image }],
+      ["meta", { property: "og:image:width", content: "1200" }],
+      ["meta", { property: "og:image:height", content: "630" }],
+      [
+        "meta",
+        {
+          property: "og:image:alt",
+          content: "michi-vz: framework-agnostic charts with the Michi cat crest",
+        },
+      ],
       ["meta", { name: "twitter:card", content: "summary_large_image" }],
       ["meta", { name: "twitter:title", content: title }],
       ["meta", { name: "twitter:description", content: desc }],
       ["meta", { name: "twitter:image", content: image }],
     );
+    if (isHome) {
+      // Structured data so search engines understand this is an open-source
+      // developer library (rich-result eligibility + knowledge-panel signals).
+      pageData.frontmatter.head.push([
+        "script",
+        { type: "application/ld+json" },
+        JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              name: "michi-vz",
+              url: base + "/",
+              description: desc,
+            },
+            {
+              "@type": "SoftwareSourceCode",
+              name: "michi-vz",
+              description: desc,
+              url: base + "/",
+              codeRepository: "https://github.com/beany-vu/michi-vz-mono",
+              programmingLanguage: "TypeScript",
+              runtimePlatform: "Web",
+              license: "https://opensource.org/licenses/MIT",
+              author: { "@type": "Person", name: "Hoang VU" },
+            },
+          ],
+        }),
+      ]);
+    }
   },
   head: [
     ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],

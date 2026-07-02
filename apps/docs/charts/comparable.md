@@ -1,5 +1,6 @@
 ---
 title: Comparable Horizontal Bar
+description: "Comparable bar chart: before and after side by side on one bar per label, so the gap that closed or opened is the first thing readers see."
 ---
 # Comparable Horizontal Bar
 

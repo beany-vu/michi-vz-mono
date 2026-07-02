@@ -1,5 +1,6 @@
 ---
 title: Dual Horizontal Bar (Tornado)
+description: "Dual bar chart (tornado, population pyramid): two opposing values anchored to a shared centre line so the imbalance reads at a glance."
 ---
 # Dual Horizontal Bar (Tornado)
 

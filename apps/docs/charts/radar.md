@@ -1,5 +1,6 @@
 ---
 title: Radar Chart
+description: "Radar chart for comparing options across shared criteria: each candidate becomes a polygon whose spikes and dents show strengths and weaknesses at a glance."
 ---
 # Radar Chart
 

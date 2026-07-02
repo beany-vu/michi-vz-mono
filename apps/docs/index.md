@@ -1,5 +1,8 @@
 ---
 layout: home
+title: michi-vz - framework-agnostic charts for React, Vue, Svelte & Angular
+titleTemplate: false
+description: Free, MIT-licensed data visualization - one plain-TypeScript chart engine behind React, Vue, Svelte, Angular, and native web components. Every chart ships an LLM-ready ChartContext.
 hero:
   name: michi-vz
   text: Un chart, un chat - il s'appelle Michi.

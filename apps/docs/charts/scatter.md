@@ -1,5 +1,6 @@
 ---
 title: Scatter Plot
+description: "Scatter plot with trend, clusters, and outliers at a glance; bubble size carries a third variable and the Pearson correlation comes back in getContext()."
 ---
 # Scatter Plot
 

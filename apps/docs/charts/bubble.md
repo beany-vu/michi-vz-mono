@@ -1,5 +1,6 @@
 ---
 title: Bubble Chart
+description: "Bubble chart with area-true sizing and a gravity layout; each bubble can split into a realized core and an untapped ring, showing size and progress together."
 ---
 # Bubble Chart
 

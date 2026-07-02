@@ -1,5 +1,6 @@
 ---
 title: Sankey
+description: "Sankey diagram for flows: nodes laid out in columns with band thickness equal to flow value, for trade, budgets, and traffic that splits and recombines."
 ---
 # Sankey
 

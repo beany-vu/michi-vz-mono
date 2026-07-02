@@ -1,5 +1,6 @@
 ---
 title: Area Chart
+description: "Stacked area chart for composition over time: watch each category's share of the whole expand or shrink while the total rises."
 ---
 # Area Chart
 

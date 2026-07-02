@@ -1,5 +1,6 @@
 ---
 title: Gap Chart
+description: "Gap chart: plot two values per label (before and after, target and actual) and the bar between them is the story; the wider the gap, the louder it reads."
 ---
 # Gap Chart
 

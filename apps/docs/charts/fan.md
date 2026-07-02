@@ -1,5 +1,6 @@
 ---
 title: Fan Chart
+description: "Fan chart for forecasts with uncertainty: solid history, a dashed most-likely path, and confidence bands that widen into the future."
 ---
 # Fan Chart
 

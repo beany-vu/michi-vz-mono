@@ -1,5 +1,6 @@
 ---
 title: Range Chart
+description: "Range chart: shade the whole spread per series (best to worst case, forecast cones, percentile bands) so uncertainty is something readers can see."
 ---
 # Range Chart
 

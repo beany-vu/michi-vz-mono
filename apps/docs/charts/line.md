@@ -1,5 +1,6 @@
 ---
 title: Line Chart
+description: "Line chart for time series: one series or fifty, missing periods rendered as dashes, and an opt-in canvas renderer with LTTB decimation for thousands of points."
 ---
 # Line Chart
 
