@@ -1,0 +1,65 @@
+name: GitHub Releases
+
+# Creates a GitHub Release for each @michi-vz/<pkg>@<version> tag, with the notes
+# taken from that package's CHANGELOG.md section (written by Changesets).
+#
+# - Runs automatically when release tags are pushed (git push --follow-tags after
+#   a local `pnpm release`).
+# - Run manually from the Actions tab to BACKFILL releases for every tag that
+#   doesn't have one yet.
+on:
+  push:
+    tags:
+      - "@michi-vz/*@*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Create releases from tags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Extract the "## <version>" section of a package changelog.
+          notes_for() { # <pkg> <version>
+            local file="packages/$1/CHANGELOG.md"
+            [ -f "$file" ] || { echo ""; return; }
+            awk -v ver="$2" '
+              $0 == "## " ver { on=1; next }
+              on && /^## /    { exit }
+              on              { print }
+            ' "$file"
+          }
+
+          make_release() { # <tag>
+            local tag="$1"
+            local pkg ver notes
+            pkg="${tag#@michi-vz/}"; pkg="${pkg%@*}"
+            ver="${tag##*@}"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "skip $tag (release exists)"
+              return
+            fi
+            notes="$(notes_for "$pkg" "$ver")"
+            [ -n "$notes" ] || notes="See packages/$pkg/CHANGELOG.md."
+            gh release create "$tag" --title "$tag" --notes "$notes" --verify-tag
+            echo "created $tag"
+          }
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            make_release "${GITHUB_REF#refs/tags/}"
+          else
+            for tag in $(git tag --list '@michi-vz/*@*'); do
+              make_release "$tag"
+            done
+          fi
