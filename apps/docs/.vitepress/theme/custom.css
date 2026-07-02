@@ -501,6 +501,243 @@
   }
 }
 
+/* ---------- Demo frames: skip offscreen layout/paint ---------- */
+/* The IO lazy-mount defers building the chart; content-visibility additionally
+   lets the browser skip rendering the frame itself until it nears the viewport.
+   contain-intrinsic-size reserves roughly a demo's height so the scrollbar
+   doesn't jump when one materializes ("auto" remembers the real size after
+   the first render). */
+.chart-demo,
+.gpu-demo {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+/* ---------- Why spotlight (homepage, below the cat band) ---------- */
+/* One live chart left, six vertical selling-point tabs right. Reuses the
+   .mv-section-head / .mv-lede chrome and the .mv-chip pills; everything else
+   is namespaced .mv-why-*. Colors come from the shared tokens, so dark mode
+   inherits; gold appears only as the active-tab accent bar. */
+.mv-why {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 8px 24px 8px;
+}
+.mv-why .mv-lede {
+  max-width: 60ch;
+}
+.mv-why-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-top: 28px;
+}
+@media (min-width: 900px) {
+  .mv-why-body {
+    grid-template-columns: 1.1fr 1fr;
+  }
+}
+.mv-why-stage {
+  height: 364px; /* 340px chart + 12px padding each side */
+  padding: 12px;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  overflow: hidden;
+}
+.mv-why-ctx {
+  margin-top: 12px;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  padding: 12px 14px;
+}
+.mv-why-ctx-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--vp-c-text-1);
+}
+.mv-why-ctx-note {
+  margin: 6px 0 0;
+  font-family: var(--mv-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--vp-c-text-3);
+}
+.mv-why-ctx-table {
+  margin-top: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.mv-why-ctx-table th,
+.mv-why-ctx-table td {
+  text-align: left;
+  padding: 3px 8px 3px 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  color: var(--vp-c-text-2);
+}
+.mv-why-ctx-table th {
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+.mv-why-ctx-more {
+  font-style: italic;
+  color: var(--vp-c-text-3);
+}
+.mv-why-note {
+  margin: 10px 2px 0;
+  font-size: 12.5px;
+  color: var(--vp-c-text-3);
+}
+.mv-why-gpu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.mv-why-rtoggle {
+  display: inline-flex;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.mv-why-rtoggle button {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 12px;
+  border: none;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+}
+.mv-why-rtoggle button.on {
+  background: var(--vp-c-brand-1);
+  color: #fff;
+}
+.mv-why-gpu-status {
+  font-family: var(--mv-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--vp-c-text-3);
+}
+.mv-why-tabs {
+  display: flex;
+  flex-direction: column;
+}
+.mv-why-tab {
+  font: inherit;
+  text-align: left;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 4px;
+  border: none;
+  border-top: 1px solid var(--vp-c-divider);
+  background: none;
+  cursor: pointer;
+  font-family: "Josefin Sans", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15.5px;
+  letter-spacing: -0.01em;
+  color: var(--vp-c-text-2);
+}
+.mv-why-tabs > .mv-why-tab:last-of-type,
+.mv-why-panel:last-child {
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+.mv-why-tab:hover {
+  color: var(--vp-c-text-1);
+}
+.mv-why-tab[aria-selected="true"] {
+  color: var(--vp-c-text-1);
+  box-shadow: inset 3px 0 0 var(--mv-gold);
+  padding-left: 12px;
+}
+.mv-why-tab:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+.mv-why-tab-num {
+  font-family: var(--mv-mono, monospace);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--vp-c-text-3);
+  letter-spacing: 0.06em;
+}
+.mv-why-panel {
+  padding: 0 4px 18px 35px;
+  animation: mv-why-in 160ms ease;
+}
+.mv-why-copy {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--vp-c-text-2);
+}
+.mv-why-elsewhere {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.65;
+  font-style: italic;
+  color: var(--vp-c-text-3);
+}
+.mv-term {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--vp-c-text-3);
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.mv-why-fw {
+  margin-top: 12px;
+}
+.mv-why-fw-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.mv-why-code {
+  font-family: var(--mv-mono, monospace);
+  font-size: 12.5px;
+  line-height: 1.55;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+.mv-why-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-family: var(--mv-mono, monospace);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: var(--vp-c-brand-1);
+}
+.dark .mv-why-link {
+  color: var(--mv-gold-bright, var(--mv-gold));
+}
+@keyframes mv-why-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mv-why-panel {
+    animation: none;
+  }
+}
+
 /* ==========================================================================
    BOUNDED content-page elegance pass (additive, fully reversible).
    A calm "Nordic" reading rhythm laid over the existing Geneva palette.

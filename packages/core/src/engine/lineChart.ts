@@ -31,6 +31,7 @@ import { resolveRenderer } from "../webgpu/capability";
 import { buildLineContext } from "../context/buildLineContext";
 import { buildLegendData } from "../context/legend";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import { checkLineData } from "../validate/lineWarnings";
 import {
   applyTransformData,
@@ -594,7 +595,7 @@ export function mountLineChart(
     }
 
     renderA11yMirror(a11y, context);
-    const contextSig = JSON.stringify(context);
+    const contextSig = contextSignature(context);
     if (contextSig !== lastContextSig) {
       lastContextSig = contextSig;
       props.onChartDataProcessed?.(context);

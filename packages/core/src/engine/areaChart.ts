@@ -22,6 +22,7 @@ import { drawAreaWebgpu } from "../areaChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildAreaContext } from "../context/buildAreaContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import { checkAreaData } from "../validate/areaWarnings";
 import {
   applyTransformData,
@@ -439,7 +440,7 @@ export function mountAreaChart(
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    const contextSig = JSON.stringify(context);
+    const contextSig = contextSignature(context);
     if (contextSig !== lastContextSig) {
       lastContextSig = contextSig;
       props.onChartDataProcessed?.(context);

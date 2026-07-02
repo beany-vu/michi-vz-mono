@@ -82,8 +82,8 @@ type Spec = {
 const SPECS: Spec[] = [
   {
     tag: "michi-vz-line-chart",
-    title: "One engine, five ways",
-    sub: "React · Vue · Svelte · Angular · web components",
+    title: "Michi, in outline",
+    sub: "Ears up, whiskers out, traced by one line series.",
     build: (w, h) => ({
       renderer: "svg",
       xAxisDataType: "number",
@@ -100,8 +100,8 @@ const SPECS: Spec[] = [
   },
   {
     tag: "michi-vz-scatter-chart",
-    title: "SVG, canvas, WebGPU",
-    sub: "Three renderers, painted in your own CSS.",
+    title: "Michi, dot by dot",
+    sub: "Every point is real chart data. The eyes and nose are gold.",
     build: (w, h) => {
       const m = 12;
       const dom = fitDomain(2.2, 7.8, 3.5, 9.8, Math.max(40, w - 2 * m), h - 2 * m);
@@ -120,8 +120,8 @@ const SPECS: Spec[] = [
   },
   {
     tag: "michi-vz-radar-chart",
-    title: "Explains itself",
-    sub: "getContext() returns a plain-language snapshot.",
+    title: "Michi, spoke by spoke",
+    sub: "Twelve axes, one polygon, two very pointed ears.",
     build: (w, h) => ({
       renderer: "svg",
       axes: RADAR_AXES,
@@ -136,8 +136,8 @@ const SPECS: Spec[] = [
   },
   {
     tag: "michi-vz-area-chart",
-    title: "Insights, experimental",
-    sub: "Plug a small in-browser model to narrate and summarise any chart.",
+    title: "Michi, curled up",
+    sub: "An area chart, loafing.",
     build: (w, h) => ({
       renderer: "svg",
       xAxisDataType: "number",
@@ -214,8 +214,8 @@ onBeforeUnmount(() => {
       </div>
       <p class="mv-lede">
         Every block below is a real michi-vz chart (a line, a scatter, a radar, an area),
-        fed data until it turned into Michi, our cat in Geneva. The serious demos live in
-        the atlas underneath.
+        fed data until it turned into Michi, our cat in Geneva. The serious reasons start
+        right below.
       </p>
 
       <div class="cat-grid">

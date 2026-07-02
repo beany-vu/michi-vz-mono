@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { mountScatterChart } from "../src/engine/scatterChart";
 import { buildScatterContext } from "../src/context/buildScatterContext";
 import { sanitizeForClassName } from "../src/math/sanitize";
@@ -276,6 +276,117 @@ describe("mountScatterChart - URP features (crosshair / dScaleLegend / grid / ti
     expect(legend.style.cursor).toBe("grab");
     expect(legend.style.transform).toContain("translate");
     chart.destroy();
+    host.remove();
+  });
+});
+
+describe("canvas-mode hover throttle (rAF)", () => {
+  // The hit-test is O(points) per event; real mice fire mousemove several
+  // times per frame. The handler processes the FIRST event of a burst
+  // synchronously (so single dispatches - and these tests - stay sync) and
+  // collapses the rest of the frame into one trailing rAF pass.
+  const frame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+  // Freeze performance.now so every dispatch after the first deterministically
+  // lands inside the 16ms leading-edge window, however slow the test machine is.
+  // jsdom's rAF runs on its own clock, so `frame()` still resolves normally.
+  let nowSpy: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => {
+    nowSpy = vi.spyOn(performance, "now").mockReturnValue(100_000);
+  });
+  afterEach(() => {
+    nowSpy.mockRestore();
+  });
+
+  function pointPixel(label: string) {
+    // Read pixel coords from an SVG mount (same scales/model as canvas).
+    const svgMount = mountFor({ renderer: "svg" });
+    const dot = Array.from(
+      svgMount.host.querySelectorAll<SVGCircleElement>("circle.scatter-point")
+    ).find((c) => c.getAttribute("data-label") === label)!;
+    const cx = Number(dot.getAttribute("cx"));
+    const cy = Number(dot.getAttribute("cy"));
+    svgMount.chart.destroy();
+    svgMount.host.remove();
+    return { cx, cy };
+  }
+
+  const throttleData: ScatterDataPoint[] = [
+    { label: "Point A", x: 1, y: 2, d: 5 },
+    { label: "Beta", x: 3, y: 6, d: 10 },
+    { label: "Gamma", x: 5, y: 10, d: 2 },
+    { label: "Delta", x: 7, y: 14, d: 8 },
+  ];
+
+  function mountFor(extra: Partial<ScatterChartProps> = {}) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountScatterChart(host, {
+      dataSet: throttleData,
+      title: "Demo",
+      width: 600,
+      height: 300,
+      xAxisDataType: "number",
+      ...extra,
+    });
+    return { host, chart };
+  }
+
+  it("processes the first move of a burst synchronously, trailing moves on the next frame", async () => {
+    const { cx, cy } = pointPixel("Point A");
+    const highlighted: string[][] = [];
+    const { host, chart } = mountFor({
+      renderer: "canvas",
+      onHighlightItem: (labels) => highlighted.push(labels),
+    });
+    // Leading edge: first event in >16ms is synchronous (jsdom rects are all
+    // zero, so clientX/Y map straight to model coords).
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: cx, clientY: cy, bubbles: true }));
+    expect(highlighted.some((h) => h.includes("Point A"))).toBe(true);
+
+    // Burst: an immediate second move (a miss) is deferred to the next frame.
+    const callsAfterLeading = highlighted.length;
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 599, clientY: 1, bubbles: true }));
+    expect(highlighted.length).toBe(callsAfterLeading); // not yet processed
+    await frame();
+    expect(highlighted[highlighted.length - 1]).toEqual([]); // trailing miss processed
+    chart.destroy();
+    host.remove();
+  });
+
+  it("collapses many same-frame moves into one trailing hit-test (latest event wins)", async () => {
+    const { cx, cy } = pointPixel("Beta");
+    const highlighted: string[][] = [];
+    const { host, chart } = mountFor({
+      renderer: "canvas",
+      onHighlightItem: (labels) => highlighted.push(labels),
+    });
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 1, clientY: 1, bubbles: true })); // leading miss
+    const afterLeading = highlighted.length;
+    for (let i = 0; i < 20; i++) {
+      host.dispatchEvent(new MouseEvent("mousemove", { clientX: 2 + i, clientY: 1, bubbles: true }));
+    }
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: cx, clientY: cy, bubbles: true })); // latest = hit
+    await frame();
+    // Exactly ONE trailing pass ran (not 21), and it saw the latest event.
+    expect(highlighted.length).toBe(afterLeading + 1);
+    expect(highlighted[highlighted.length - 1]).toContain("Beta");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("destroy() cancels a pending trailing hit-test (no callback after destroy)", async () => {
+    const highlighted: string[][] = [];
+    const { host, chart } = mountFor({
+      renderer: "canvas",
+      onHighlightItem: (labels) => highlighted.push(labels),
+    });
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 1, clientY: 1, bubbles: true }));
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 2, clientY: 1, bubbles: true })); // pending
+    const before = highlighted.length;
+    chart.destroy();
+    await frame();
+    expect(highlighted.length).toBe(before); // nothing fired after destroy
     host.remove();
   });
 });

@@ -19,6 +19,7 @@ import { drawBarBellWebgpu } from "../barBell/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildBarBellContext } from "../context/buildBarBellContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import {
   applyTransformData,
   applyEnrichContext,
@@ -341,7 +342,7 @@ export function mountBarBellChart(
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    const contextSig = JSON.stringify(context);
+    const contextSig = contextSignature(context);
     if (contextSig !== lastContextSig) {
       lastContextSig = contextSig;
       props.onChartDataProcessed?.(context);

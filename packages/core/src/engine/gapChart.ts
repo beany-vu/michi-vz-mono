@@ -20,6 +20,7 @@ import { drawGapWebgpu } from "../gapChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildGapContext } from "../context/buildContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import { checkGapData } from "../validate/dataWarnings";
 import {
   applyTransformData,
@@ -397,7 +398,7 @@ export function mountGapChart(
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    const contextSig = JSON.stringify(context);
+    const contextSig = contextSignature(context);
     if (contextSig !== lastContextSig) {
       lastContextSig = contextSig;
       props.onChartDataProcessed?.(context);

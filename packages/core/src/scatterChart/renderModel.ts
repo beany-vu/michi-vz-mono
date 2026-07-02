@@ -39,6 +39,8 @@ export function buildScatterRenderModel(
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
 
+  let firstR: number | null = null;
+  let uniformR = true;
   const models: ScatterPointModel[] = points.map((p) => {
     let cx: number;
     if (o.xAxisDataType === "band" && "bandwidth" in scales.xScale) {
@@ -51,6 +53,8 @@ export function buildScatterRenderModel(
     }
     const cy = scales.yScale(p.y);
     const r = p.d === undefined ? o.defaultRadius : scales.sizeScale(p.d);
+    if (firstR === null) firstR = r;
+    else if (r !== firstR) uniformR = false;
     return {
       raw: p,
       label: p.label,
@@ -64,7 +68,9 @@ export function buildScatterRenderModel(
     };
   });
 
-  // Largest first so smaller points end up on top (z-order).
-  models.sort((a, b) => b.r - a.r);
+  // Largest first so smaller points end up on top (z-order). Skipped when every
+  // radius is identical (sizeRange pinned or no `d` values): sort is stable, so
+  // the order would be unchanged and at 50k points it is pure O(n log n) cost.
+  if (!uniformR) models.sort((a, b) => b.r - a.r);
   return { points: models };
 }

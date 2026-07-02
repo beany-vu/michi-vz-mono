@@ -19,6 +19,7 @@ import { drawComparableBarWebgpu } from "../comparableBar/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildComparableBarContext } from "../context/buildComparableBarContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import {
   applyTransformData,
   applyEnrichContext,
@@ -434,7 +435,7 @@ export function mountComparableHorizontalBarChart(
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
     // Idempotent: only emit when the context changed (breaks the dispatch loop).
-    const sig = JSON.stringify(context);
+    const sig = contextSignature(context);
     if (sig !== lastContextSig) {
       lastContextSig = sig;
       props.onChartDataProcessed?.(context);

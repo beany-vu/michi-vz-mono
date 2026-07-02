@@ -44,14 +44,14 @@ in progress). Every chart emits a renderer-agnostic, LLM-ready **`ChartContext`*
 (structured data + stats + rule-based NL summary + a hidden a11y table mirror)
 that is identical whether the chart renders as SVG or canvas.
 
-## Charts (16)
+## Charts (17)
 
 GapChart · LineChart · FanChart (forecast) · AreaChart · ScatterPlot · VerticalStackBar ·
 ComparableHorizontalBar · DualHorizontalBar (tornado) · BarBell · Range · Ribbon ·
 Radar · Treemap (realized/untapped split + mobile stack) · Pie / Donut · Bubble (gravity
-cluster + realized/untapped split) · Sankey (flow diagram) - each available across all five
-outputs (core engine, web component, and React/Vue/Svelte/Angular wrappers), in both SVG
-and canvas renderers.
+cluster + realized/untapped split) · Sankey (flow diagram) · Fountain (Jet d'Eau,
+experimental) - each available across all five outputs (core engine, web component, and
+React/Vue/Svelte/Angular wrappers), in SVG, canvas, and experimental WebGPU renderers.
 
 ## Packages
 

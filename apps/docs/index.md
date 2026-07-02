@@ -3,7 +3,7 @@ layout: home
 hero:
   name: michi-vz
   text: Un chart, un chat - il s'appelle Michi.
-  tagline: Drop them in as web components, or import per-chart into React, Vue, Svelte, Angular, or plain TypeScript. Themed in your own CSS, and able to describe themselves in plain language.
+  tagline: Every chart explains itself, in plain language, so screen readers, tests, and AI agents can read it too, not just people looking at pixels. One engine behind React, Vue, Svelte, Angular, and plain web components.
   image:
     src: /michi-shield.png
     alt: michi-vz crest

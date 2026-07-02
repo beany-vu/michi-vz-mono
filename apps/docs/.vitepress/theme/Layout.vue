@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DefaultTheme from "vitepress/theme";
 import CatBand from "./CatBand.vue";
+import WhySpotlight from "./WhySpotlight.vue";
 import ChartAtlas from "./ChartAtlas.vue";
 
 const { Layout } = DefaultTheme;
@@ -22,10 +23,12 @@ const META = [
       </div>
     </template>
 
-    <!-- The stock feature grid is replaced by two calm blocks: the red-cat
-         signature band, then the chart atlas grid (kept as the centerpiece). -->
+    <!-- The stock feature grid is replaced by three calm blocks: the red-cat
+         signature band, the "why" spotlight (live chart + selling-point tabs),
+         then the chart atlas grid (kept as the centerpiece). -->
     <template #home-features-after>
       <CatBand />
+      <WhySpotlight />
       <ChartAtlas />
     </template>
   </Layout>

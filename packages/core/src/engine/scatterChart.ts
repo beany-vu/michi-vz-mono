@@ -24,6 +24,7 @@ import { drawScatterWebgpu } from "../scatterChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildScatterContext } from "../context/buildScatterContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import { checkScatterData } from "../validate/scatterWarnings";
 import {
   applyTransformData,
@@ -164,9 +165,10 @@ export function mountScatterChart(
   // padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
   const makeLayerCanvas = (className: string): HTMLCanvasElement => {
     const c = htmlEl("canvas", { class: className });
+    const hostStyle = getComputedStyle(host); // one probe, two reads
     c.style.position = "absolute";
-    c.style.top = getComputedStyle(host).paddingTop;
-    c.style.left = getComputedStyle(host).paddingLeft;
+    c.style.top = hostStyle.paddingTop;
+    c.style.left = hostStyle.paddingLeft;
     c.style.pointerEvents = "none";
     host.insertBefore(c, tooltip);
     return c;
@@ -198,8 +200,14 @@ export function mountScatterChart(
   };
 
   // Canvas-mode hit-test (topmost = smallest, model is largest-first → scan reverse).
-  const onHostMove = (ev: MouseEvent): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !model || sticky || legendDragging) return;
+  // The scan is O(points) per event and real mice fire mousemove several times a
+  // frame - at 50k points that made whole pages feel laggy. onHostMove processes
+  // the FIRST event of a burst synchronously (single moves stay snappy), then
+  // collapses the rest of the frame into ONE trailing rAF pass over the latest
+  // event. `hitTestPainted` caches resolve(baseProps) per render instead of
+  // recomputing it on every pointer event.
+  const runHitTest = (ev: MouseEvent): void => {
+    if (!hitTestPainted || !model || sticky || legendDragging) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -236,10 +244,32 @@ export function mountScatterChart(
       if (crosshairGroup) clearCrosshair(crosshairGroup);
     }
   };
+  let hitTestPainted = false; // refreshed in render()
+  let pendingHoverEv: MouseEvent | null = null;
+  let hoverRaf = 0;
+  let lastHoverTs = 0;
+  const onHostMove = (ev: MouseEvent): void => {
+    const now = performance.now();
+    if (!hoverRaf && now - lastHoverTs >= 16) {
+      lastHoverTs = now;
+      runHitTest(ev); // leading edge: immediate
+      return;
+    }
+    pendingHoverEv = ev; // burst: keep only the latest
+    if (!hoverRaf) {
+      hoverRaf = requestAnimationFrame(() => {
+        hoverRaf = 0;
+        lastHoverTs = performance.now();
+        const p = pendingHoverEv;
+        pendingHoverEv = null;
+        if (p) runHitTest(p);
+      });
+    }
+  };
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
-    if (!isPainted(resolve(baseProps).renderer)) return;
+    if (!hitTestPainted) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -264,6 +294,9 @@ export function mountScatterChart(
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
     const r = resolve(props);
+    // Cache for the pointer handlers: same expression they used to evaluate
+    // per event (baseProps, not the plugin-transformed props).
+    hitTestPainted = isPainted(resolve(baseProps).renderer);
     const xAxisDataType = props.xAxisDataType ?? "number";
     const highlightItems = props.highlightItems ?? [];
 
@@ -492,7 +525,7 @@ export function mountScatterChart(
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    const contextSig = JSON.stringify(context);
+    const contextSig = contextSignature(context);
     if (contextSig !== lastContextSig) {
       lastContextSig = contextSig;
       props.onChartDataProcessed?.(context);
@@ -534,6 +567,9 @@ export function mountScatterChart(
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      if (hoverRaf) cancelAnimationFrame(hoverRaf);
+      hoverRaf = 0;
+      pendingHoverEv = null;
       crosshairSvg = null;
       crosshairGroup = null;
       crosshairCfg = null;

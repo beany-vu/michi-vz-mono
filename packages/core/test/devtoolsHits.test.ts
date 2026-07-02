@@ -39,7 +39,7 @@ beforeEach(() => {
 });
 
 describe("devtools hit channel (canvas hit-test instrumentation)", () => {
-  it("scatter canvas: a mousemove over a point reports a hit with the resolved label", () => {
+  it("scatter canvas: a mousemove over a point reports a hit with the resolved label", async () => {
     // Read the point's pixel coords from an SVG mount (same scales as canvas).
     const svgMount = mountScatter({ renderer: "svg" });
     const dot = Array.from(
@@ -64,8 +64,11 @@ describe("devtools hit channel (canvas hit-test instrumentation)", () => {
     expect(hit.x).toBe(cx);
     expect(hit.y).toBe(cy);
 
-    // A miss (far corner) reports label null - the log keeps flowing.
+    // A miss (far corner) reports label null - the log keeps flowing. This second
+    // move lands in the same frame as the first, so the scatter hover throttle
+    // defers it to one trailing rAF pass; flush that frame before asserting.
     host.dispatchEvent(new MouseEvent("mousemove", { clientX: 599, clientY: 1, bubbles: true }));
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
     expect(events[events.length - 1].label).toBeNull();
 
     unsub();

@@ -28,6 +28,7 @@ import { drawVerticalStackBarWebgpu } from "../verticalStackBarChart/renderWebgp
 import { resolveRenderer } from "../webgpu/capability";
 import { buildStackContext } from "../context/buildStackContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import { checkStackData } from "../validate/stackWarnings";
 import {
   applyTransformData,
@@ -504,7 +505,7 @@ export function mountVerticalStackBarChart(
     // dataprocessed event, so narration flows to both for free.
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    const contextSig = JSON.stringify(context);
+    const contextSig = contextSignature(context);
     if (contextSig !== lastContextSig) {
       lastContextSig = contextSig;
       props.onChartDataProcessed?.(context);

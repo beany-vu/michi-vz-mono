@@ -22,7 +22,10 @@ const el = shallowRef<any>(null);
 const status = ref<"pending" | "webgpu" | "canvas">("pending");
 const fellBack = ref(false);
 let ro: ResizeObserver | null = null;
+let io: IntersectionObserver | null = null;
 let raf = 0;
+let started = false;
+let cancelScheduled: (() => void) | null = null;
 
 function buildNode() {
   if (!host.value) return;
@@ -64,7 +67,9 @@ async function detectBackend() {
   }
 }
 
-onMounted(async () => {
+async function start() {
+  if (started) return;
+  started = true;
   // Register the custom elements client-side only (never during SSR).
   await import("@michi-vz/wc");
   if (!host.value) return;
@@ -80,11 +85,52 @@ onMounted(async () => {
     });
   });
   ro.observe(host.value);
+}
+
+// Generating tens of thousands of points + the first render is a real
+// main-thread burst; run it in an idle slice so it never janks scrolling
+// (or, without requestIdleCallback, at least off the current task).
+function scheduleStart() {
+  const w = window as unknown as {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    cancelIdleCallback?: (id: number) => void;
+  };
+  if (typeof w.requestIdleCallback === "function") {
+    const id = w.requestIdleCallback(() => void start(), { timeout: 500 });
+    cancelScheduled = () => w.cancelIdleCallback?.(id);
+  } else {
+    const id = window.setTimeout(() => void start(), 1);
+    cancelScheduled = () => clearTimeout(id);
+  }
+}
+
+onMounted(() => {
+  if (!host.value) return;
+  // Lazy-mount: heavy demos sit below the fold; building 50k points inside the
+  // nav click's mount tick is what made chart pages feel laggy. Only build when
+  // the stage nears the viewport (same pattern as the homepage CatalogCard).
+  if (typeof IntersectionObserver === "undefined") {
+    scheduleStart();
+    return;
+  }
+  io = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        io?.disconnect();
+        io = null;
+        scheduleStart();
+      }
+    },
+    { rootMargin: "240px" },
+  );
+  io.observe(host.value);
 });
 
 onBeforeUnmount(() => {
+  io?.disconnect();
   ro?.disconnect();
   cancelAnimationFrame(raf);
+  cancelScheduled?.();
   el.value?.remove?.();
   el.value = null;
 });

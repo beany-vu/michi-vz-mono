@@ -13,7 +13,9 @@ const renderer = ref<"canvas" | "svg">("canvas");
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let exCache: any = null;
 let ro: ResizeObserver | null = null;
+let io: IntersectionObserver | null = null;
 let raf = 0;
+let started = false;
 
 function buildNode() {
   if (!exCache || !host.value) return;
@@ -32,7 +34,9 @@ function buildNode() {
   el.value = node;
 }
 
-onMounted(async () => {
+async function start() {
+  if (started) return;
+  started = true;
   // Register the web components client-side only (never during SSR).
   await import("@michi-vz/wc");
   const ex = (examples as any)[props.chart]?.[props.index ?? 0];
@@ -49,11 +53,39 @@ onMounted(async () => {
     raf = requestAnimationFrame(() => { if (el.value) el.value.width = w; });
   });
   ro.observe(host.value);
+}
+
+onMounted(() => {
+  const ex = (examples as any)[props.chart]?.[props.index ?? 0];
+  if (!ex || !host.value) return;
+  title.value = ex.title; // header shows immediately; the chart mounts lazily
+  // Lazy-mount below-the-fold demos (several per page) so SPA navigation stays
+  // snappy - same IntersectionObserver pattern as the homepage CatalogCard.
+  if (typeof IntersectionObserver === "undefined") {
+    void start();
+    return;
+  }
+  io = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        io?.disconnect();
+        io = null;
+        void start();
+      }
+    },
+    { rootMargin: "240px" },
+  );
+  io.observe(host.value);
 });
 
 onBeforeUnmount(() => {
+  io?.disconnect();
   ro?.disconnect();
   cancelAnimationFrame(raf);
+  // Remove the chart element explicitly (its disconnectedCallback destroys the
+  // engine) instead of relying on Vue's DOM teardown timing.
+  el.value?.remove?.();
+  el.value = null;
 });
 
 // Switching renderer recreates the element (the engine builds its SVG/canvas root once).

@@ -16,6 +16,8 @@ coverage/
 **/.vitepress/dist/
 storybook-static/
 playground/screenshot.png
+# pnpm store written into the repo by the docker compose containers (root-owned)
+.pnpm-store/
 
 # AI assistant artifacts - keep ALL of these out of git (user preference)
 .claude/

@@ -138,6 +138,9 @@ importers:
       '@types/d3-shape':
         specifier: ^3.1.7
         version: 3.1.8
+      '@webgpu/types':
+        specifier: ^0.1.71
+        version: 0.1.71
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
@@ -1323,6 +1326,9 @@ packages:
 
   '@vueuse/shared@12.8.2':
     resolution: {integrity: sha512-dznP38YzxZoNloI0qpEfpkms8knDtaoQ6Y/sfS0L7Yki4zh40LFHEhur0odJC6xTHG5dxWVPiUWBXn+wCG2s5w==}
+
+  '@webgpu/types@0.1.71':
+    resolution: {integrity: sha512-mMy8/ODcKhab808co15eW+yN+HgXoQxRQHTiBV9Mrvl1r0ufnid7YOcI+gi4eUWSWl9ezD6TW2KXccrL8HCh2A==}
 
   acorn@8.17.0:
     resolution: {integrity: sha512-xRQbDb9BnwDafYNn6Vwl839DYVjqXYb1XVGtWAZ1kcDc6iwAL4hg3B1dZlRiuENFeO2H53gFG3in621AdERVAg==}
@@ -3752,6 +3758,8 @@ snapshots:
       vue: 3.5.39(typescript@5.9.3)
     transitivePeerDependencies:
       - typescript
+
+  '@webgpu/types@0.1.71': {}
 
   acorn@8.17.0: {}
 
