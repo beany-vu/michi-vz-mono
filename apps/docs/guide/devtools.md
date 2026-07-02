@@ -4,44 +4,19 @@ title: DevTools - inspect, drive, and edit any chart
 
 # See inside your charts
 
-::: warning In development
-DevTools is **actively being built and not yet available**. This page previews the intended
-API and behaviour; expect it to change before release.
-:::
-
-A chart draws pixels, but the interesting part is the **state behind them**: the series, the
-stats, the plain-language summary an AI reads, and which points are *observed* versus *forecast*.
-`@michi-vz/devtools` is an opt-in, in-page panel that surfaces all of it for **every** michi-vz
-chart on the page, lets you **drive** them (highlight, disable, run agent tools), and even **edit
-the data** and watch the chart re-render. No browser extension to install.
+A chart draws pixels, but the bugs live in the **state behind them**: the data that actually
+reached the engine, the axis domains, the host box the chart was measured against, and which
+points are *observed* versus *forecast*. `@michi-vz/devtools` is an opt-in, in-page panel that
+surfaces all of it for **every** michi-vz chart on the page - and no other chart library ships
+anything like it. No browser extension to install: it is one import, versioned with your app.
 
 <DevtoolsDemo />
 
-> Click **Open devtools panel** (or press `Ctrl/Cmd+Shift+M`). Pick the chart in the list to see
-> its `ChartContext`, the actual-vs-predicted split, and controls. Edit the `dataSet` box and
-> hit **Apply** to re-render. It is the real package, running in your browser.
-
-## Why not a browser extension?
-
-You do not need one. Every michi-vz chart is **Light DOM** and already exposes its state
-(`getContext()`, `getTools()`), so an in-page panel reads everything directly. That makes the
-devtools:
-
-- **Zero-install** - it is just an `import`, versioned with your app.
-- **Testable before you ship** - it runs in jsdom/Playwright like any other module.
-- **Framework-agnostic** - it discovers imperative `mountXChart()` instances *and* `<michi-vz-*>`
-  web components alike.
-
-A real browser extension is only worth it later, to inspect michi-vz on pages that do **not** bundle
-the devtools module. It would reuse the same hook, so nothing here is throwaway.
-
-## Time travel through state
-
-The panel snapshots each chart's `ChartContext` on **every update** and keeps a short history. When a
-chart has changed more than once, a **History** bar appears: step `◀` / `▶` through past snapshots to
-see exactly how the state evolved, or click **● live** to return to the latest. While you are viewing a
-past snapshot the controls are read-only (you are inspecting history, not driving the chart). This is
-the fastest way to answer "what did this chart look like one update ago, and what changed?"
+> Click **Open devtools panel** (or press `Ctrl/Cmd+Shift+M`), pick the chart in the list, and
+> walk the tabs: **Overview** (context, series, live editing), **Sizing**, **Scales**, **Diff**,
+> and **Insights** - where ✦ **Narrate** and ✦ **Detect anomalies** run real `@michi-vz/insights`
+> plugins against the live chart (the 2022 Cost spike gets flagged; highlight it from the result).
+> This is the real package, running in your browser.
 
 ## Quick start
 
@@ -62,13 +37,89 @@ mountLineChart(host, { dataSet, xAxisDataType: "number" });
 devtools.destroy();
 ```
 
-`mountDevtools(options?)` returns a handle: `{ open, close, toggle, refresh, destroy }`.
+Using React? There is a one-liner that mounts the panel while it is in the tree and renders
+nothing (dev-only by default - production builds drop the devtools chunk entirely):
 
-| Option      | Default            | Notes                                                        |
-| ----------- | ------------------ | ----------------------------------------------------------- |
-| `container` | `document.body`    | Where the panel is attached.                                 |
-| `open`      | `true`             | Start open or collapsed to a toggle button.                  |
-| `hotkey`    | `Ctrl/Cmd+Shift+M` | Set `null` to disable the keyboard toggle.                   |
+```tsx
+import { MichiVzDevtools } from "@michi-vz/react";
+
+<MichiVzDevtools />
+```
+
+For Vue, Svelte, Angular, or plain web components the recipe is the same three lines: call
+`mountDevtools()` in your root component's mount hook, `destroy()` on unmount. And for builds
+where devtools must stay inert without changing the import site, the
+`@michi-vz/devtools/production` entry exports a no-op `mountDevtools`.
+
+`mountDevtools(options?)` returns a handle: `{ open, close, toggle, refresh, getRoot, destroy }`.
+
+| Option      | Default            | Notes                                                                   |
+| ----------- | ------------------ | ----------------------------------------------------------------------- |
+| `container` | `document.body`    | Where the panel's shadow host is attached.                              |
+| `open`      | `true`             | Start open or collapsed to a toggle button.                             |
+| `hotkey`    | `Ctrl/Cmd+Shift+M` | Set `null` to disable the keyboard toggle.                              |
+| `theme`     | `"auto"`           | `"auto"` follows `prefers-color-scheme`; or force `"dark"` / `"light"`. |
+
+The panel renders inside its own **Shadow DOM**, so its styles cannot leak into your app (and
+your app's CSS cannot break the panel). The charts themselves stay light DOM - the panel never
+touches the color contract.
+
+## The tabs
+
+### Sizing - "why is my chart invisible / overflowing?"
+
+The single most common chart bug in any library is a sizing bug: a host measured at `0×0`
+inside a hidden tab, or a chart sized from `clientWidth` without subtracting padding (yes,
+`clientWidth` **includes** padding) so it overflows its card. The Sizing tab shows the host's
+rendered rect, client box, and padding next to the width/height the chart was asked for, flags
+the mismatch in plain language, and includes a copy-paste `ResizeObserver` recipe - because
+michi-vz charts are fixed-size by design and responsiveness belongs to the host.
+
+### Scales - "why are my axis values wrong?"
+
+Renders the live `xAxis` / `yAxis` domains straight from the `ChartContext`, with sanity checks
+for the three classic failure modes: a `NaN` domain (a date or value failed to parse), a
+zero-width domain (every value identical, marks collapse), and an inverted domain (a manual
+domain prop passed backwards). Charts without axes (pie, sankey, treemap) say so instead of
+showing nothing.
+
+### Diff - "what changed between these two renders?"
+
+The panel snapshots each chart's `ChartContext` on **every update** and keeps a short history.
+The Diff tab deep-diffs the last two snapshots into an added/removed/changed list with exact
+paths (`series[0].max: 140 → 555`), so "my chart looks different and I do not know why" becomes
+a two-line answer. Step back through the History bar and the diff follows the snapshot you are
+viewing.
+
+### Insights - the chart explains itself
+
+Every michi-vz chart already carries a plain-language `summary` in its context - the same text
+an AI agent or screen-reader pipeline consumes. The Insights tab shows it in an AI-styled bubble,
+and when [`@michi-vz/insights`](/guide/insights) is attached to the chart it lights up one-click
+actions discovered through `getTools()`:
+
+- ✦ **Narrate** - `chart.use(narrate())` - deterministic prose narration of the current state.
+- ✦ **Detect anomalies** - `chart.use(anomaly())` - flags outliers per series; the result offers
+  a one-click **highlight** of the flagged series on the live chart.
+- ✦ **Forecast** - `chart.use(forecast())` - the projected points, accuracy, and any threshold
+  crossing.
+
+Anything else a plugin exposes shows under **Advanced** as a raw tool runner (JSON args in,
+JSON result out).
+
+### Overview - inspect, drive, edit
+
+The classic inspector: the summary, per-series stats (including the actual-vs-predicted split
+below), highlight/disable toggles that patch the live props, and a `dataSet` JSON editor -
+edit, hit **Apply**, and watch the chart re-render.
+
+## Time travel through state
+
+When a chart has changed more than once, a **History** bar appears: step `◀` / `▶` through past
+`ChartContext` snapshots to see exactly how the state evolved, or click **● live** to return to
+the latest. While viewing a past snapshot the controls are read-only (you are inspecting history,
+not driving the chart). Combined with the Diff tab, this answers "what did this chart look like
+one update ago, and what changed?" in seconds.
 
 ## Actual vs predicted
 
@@ -108,6 +159,22 @@ const series = [
 natural: **Line**, **Fan**, and **Range** (per series), and **Area** (per row). The categorical,
 part-to-whole, and relational charts (stacked bar, bar-bell, comparable, dual, gap, pie/donut, bubble,
 sankey, treemap, radar, scatter) have no forecast axis, so they do not carry a `predicted` flag.
+
+## Why not a browser extension?
+
+You do not need one. Every michi-vz chart is **Light DOM** and already exposes its state
+(`getContext()`, `getTools()`), so an in-page panel reads everything directly. That makes the
+devtools:
+
+- **Zero-install** - it is just an `import`, versioned with your app.
+- **Testable before you ship** - it runs in jsdom/Playwright like any other module.
+- **Framework-agnostic** - it discovers imperative `mountXChart()` instances *and* `<michi-vz-*>`
+  web components alike.
+- **Prod-safe** - gate it behind `process.env.NODE_ENV !== "production"` (the React component does
+  this for you) or import `@michi-vz/devtools/production`; either way your users never download it.
+
+A real browser extension is only worth it later, to inspect michi-vz on pages that do **not** bundle
+the devtools module. It would reuse the same hook, so nothing here is throwaway.
 
 ## How it works
 

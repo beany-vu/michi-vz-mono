@@ -1014,3 +1014,51 @@ export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>
 export const ScatterPlotChart = ScatterChart;
 export type ScatterPlotChartProps = ScatterChartReactProps;
 export type ScatterPlotChartHandle = ScatterChartHandle;
+
+// ---- devtools ---------------------------------------------------------------
+
+// Module-local ambient: this package ships no node types, but the check below must
+// stay the literal `process.env.NODE_ENV` so bundlers constant-fold it and drop the
+// devtools chunk from production builds.
+declare const process: { env: { NODE_ENV?: string } } | undefined;
+
+export interface MichiVzDevtoolsProps {
+  /** Mount even when process.env.NODE_ENV === "production" (default: dev-only). */
+  forceMount?: boolean;
+  /** Where to attach the panel's shadow host (default: document.body). */
+  container?: HTMLElement;
+  /** Start open (default true). */
+  open?: boolean;
+  /** Toggle hotkey; null disables it. Default: Ctrl/Cmd+Shift+M. */
+  hotkey?: import("@michi-vz/devtools").DevtoolsHotkey | null;
+  /** Panel theme; "auto" (default) follows prefers-color-scheme. */
+  theme?: import("@michi-vz/devtools").DevtoolsTheme;
+}
+
+/**
+ * Renders nothing; mounts the @michi-vz/devtools floating panel while it is in the
+ * tree. Dev-only by default: the dynamic import is behind a NODE_ENV check, so
+ * bundlers drop the devtools chunk from production builds entirely (pass
+ * `forceMount` to opt into shipping it, e.g. on a staging build).
+ *
+ *   {process.env.NODE_ENV !== "production" && <MichiVzDevtools />}
+ */
+export function MichiVzDevtools({ forceMount, container, open, hotkey, theme }: MichiVzDevtoolsProps = {}): null {
+  useEffect(() => {
+    const isProd = typeof process !== "undefined" && process.env.NODE_ENV === "production";
+    if (isProd && !forceMount) return;
+    let handle: import("@michi-vz/devtools").DevtoolsHandle | null = null;
+    let cancelled = false;
+    void import("@michi-vz/devtools").then((m) => {
+      if (cancelled) return;
+      handle = m.mountDevtools({ container, open, hotkey, theme });
+    });
+    return () => {
+      cancelled = true;
+      handle?.destroy();
+    };
+    // mount once; the panel tracks charts itself via the core hook
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}

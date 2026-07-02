@@ -261,6 +261,28 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
       }
       return anns;
     },
+
+    provideTools() {
+      return [
+        {
+          name: "forecast",
+          description: `Return the computed forecast per series (method: ${method}, horizon: ${horizon}): projected points, accuracy, and any threshold crossing.`,
+          run: () =>
+            [...results.entries()].map(([label, sf]) => ({
+              label,
+              method: sf.result.method,
+              horizon,
+              accuracy: sf.result.accuracy,
+              predictions: sf.result.predictions.map((v, h) => ({
+                date: sf.lastX + sf.step * (h + 1),
+                value: round(v),
+              })),
+              crossesThreshold:
+                threshold != null ? (crossingX(sf, threshold.value) ?? null) : undefined,
+            })),
+        },
+      ];
+    },
   };
 }
 

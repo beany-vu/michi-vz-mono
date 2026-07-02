@@ -24,7 +24,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@michi-vz/core": "workspace:*"
+    "@michi-vz/core": "workspace:*",
+    "@michi-vz/devtools": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18",

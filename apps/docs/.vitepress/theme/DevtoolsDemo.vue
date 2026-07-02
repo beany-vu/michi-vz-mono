@@ -30,7 +30,9 @@ function widthOf(el: HTMLElement | undefined) {
   return Math.max(280, el.clientWidth - pad);
 }
 
-// Revenue: 2018-2022 observed, 2023-2025 forecast (predicted: true, drawn dashed via certainty).
+// Revenue: 2018-2022 observed, 2023-2025 forecast (predicted: true, drawn dashed via
+// certainty). Cost: a flat baseline with one genuine spike so the devtools Insights
+// tab's "Detect anomalies" action has something real to flag.
 const DATASET = [
   {
     label: "Revenue",
@@ -43,6 +45,19 @@ const DATASET = [
       { date: 2023, value: 121, certainty: false, predicted: true },
       { date: 2024, value: 140, certainty: false, predicted: true },
       { date: 2025, value: 162, certainty: false, predicted: true },
+    ],
+  },
+  {
+    label: "Cost",
+    series: [
+      { date: 2018, value: 30, certainty: true },
+      { date: 2019, value: 31, certainty: true },
+      { date: 2020, value: 29, certainty: true },
+      { date: 2021, value: 30, certainty: true },
+      { date: 2022, value: 95, certainty: true },
+      { date: 2023, value: 31, certainty: true },
+      { date: 2024, value: 30, certainty: true },
+      { date: 2025, value: 32, certainty: true },
     ],
   },
 ];
@@ -68,6 +83,10 @@ function mountChart() {
     showDataPoints: true,
     onChartDataProcessed: () => refreshReadout(),
   });
+  // Attach @michi-vz/insights so the devtools Insights tab offers one-click
+  // Narrate / Detect anomalies for this chart (the 2022 Cost spike gets flagged).
+  chart.use?.(api.narrate());
+  chart.use?.(api.anomaly({ method: "zscore", threshold: 2 }));
   refreshReadout();
 }
 
@@ -85,8 +104,20 @@ function toggleDevtools() {
 
 onMounted(async () => {
   try {
-    const [core, dt] = await Promise.all([import("@michi-vz/core"), import("@michi-vz/devtools")]);
-    api = { mountLineChart: core.mountLineChart, mountDevtools: dt.mountDevtools };
+    const [core, dt, insights] = await Promise.all([
+      import("@michi-vz/core"),
+      import("@michi-vz/devtools"),
+      import("@michi-vz/insights"),
+    ]);
+    api = {
+      mountLineChart: core.mountLineChart,
+      mountDevtools: dt.mountDevtools,
+      narrate: insights.narrate,
+      anomaly: insights.anomaly,
+    };
+    // Enable the hook BEFORE the chart mounts (the documented order) so the chart
+    // registers itself even though the panel only opens on the button click.
+    core.enableDevtools();
     mountChart();
     ro = new ResizeObserver(() => {
       cancelAnimationFrame(raf);

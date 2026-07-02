@@ -151,11 +151,32 @@ export async function explainChart(ctx: ChartContext, options: NarrateOptions = 
  * custom narrator. For model-backed prose, call `explainChart(getContext())` on demand.
  */
 export function narrate(options: NarratePluginOptions = {}): MichiVzPlugin<unknown> {
+  // The latest narration, cached by enrichContext (which runs on every render). The
+  // narrate TOOL returns this instead of re-narrating pc.getContext() - the live
+  // context's summary already IS the narration, and narrating it again would
+  // duplicate sentences.
+  let lastText: string | null = null;
   return {
     name: "narrate",
     enrichContext(ctx) {
       const text = options.render ? options.render(ctx) : narrateRules(ctx, options.strings);
+      lastText = text;
       return { ...ctx, summary: text };
+    },
+    provideTools(pc) {
+      return [
+        {
+          name: "narrate",
+          description:
+            "Narrate the chart's current state in prose (rule-based and deterministic; honours the plugin's strings/render options).",
+          run: () => {
+            if (lastText) return lastText;
+            const ctx = pc.getContext();
+            if (!ctx) return "No chart context yet - the chart has not rendered.";
+            return options.render ? options.render(ctx) : narrateRules(ctx, options.strings);
+          },
+        },
+      ];
     },
   };
 }

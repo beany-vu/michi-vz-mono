@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mountLineChart, type LineChartProps } from "@michi-vz/core";
-import { mountDevtools } from "../src/panel";
+import { mountLineChart, type LineChartProps, type ChartContext } from "@michi-vz/core";
+import { mountDevtools, type DevtoolsHandle } from "../src/panel";
 
 interface G {
   __MICHI_VZ_DEVTOOLS__?: boolean;
@@ -25,8 +25,22 @@ const props: LineChartProps = {
   xAxisDataType: "date_annual",
 };
 
-function q(root: ParentNode, sel: string): HTMLElement | null {
-  return root.querySelector<HTMLElement>(sel);
+function root(dt: DevtoolsHandle): ShadowRoot {
+  const r = dt.getRoot();
+  if (!r) throw new Error("expected a shadow root");
+  return r;
+}
+
+function q(node: ParentNode, sel: string): HTMLElement | null {
+  return node.querySelector<HTMLElement>(sel);
+}
+
+function clickTab(r: ShadowRoot, label: string): void {
+  const tab = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-tab")).find(
+    (b) => b.textContent === label
+  );
+  if (!tab) throw new Error(`tab not found: ${label}`);
+  tab.click();
 }
 
 describe("mountDevtools panel", () => {
@@ -39,34 +53,46 @@ describe("mountDevtools panel", () => {
     document.body.innerHTML = "";
   });
 
-  it("renders a panel and discovers a chart mounted after it", () => {
+  it("renders inside a shadow root and discovers a chart mounted after it", () => {
     const dt = mountDevtools();
-    expect(q(document.body, ".mv-devtools")).not.toBeNull();
+    const r = root(dt);
+    // isolation: the panel markup lives in the shadow root, not the light DOM
+    expect(q(document.body, ".mv-devtools")).toBeNull();
+    expect(q(r, ".mv-devtools")).not.toBeNull();
+    // the shadow host wrapper is in the light DOM
+    expect(q(document.body, ".mv-devtools-root")).not.toBeNull();
+    // styles are injected into the shadow root, not document.head
+    expect(document.head.querySelector("style[data-michi-vz-devtools]")).toBeNull();
+    expect(r.querySelector("style[data-michi-vz-devtools]")).not.toBeNull();
 
     const host = document.createElement("div");
     document.body.appendChild(host);
     const chart = mountLineChart(host, props);
 
-    const count = q(document.body, ".mv-devtools-count");
-    expect(count?.textContent).toContain("1 chart");
-    // chartType shows in the list
-    expect(q(document.body, ".mv-devtools-list")?.textContent).toContain("line-chart");
+    expect(q(r, ".mv-devtools-count")?.textContent).toContain("1 chart");
+    expect(q(r, ".mv-devtools-list")?.textContent).toContain("line-chart");
 
     chart.destroy();
     dt.destroy();
   });
 
-  it("shows the summary and an actual-vs-predicted series row", () => {
+  it("honours an explicit theme option on the shadow host", () => {
+    const dt = mountDevtools({ theme: "light" });
+    const wrapper = q(document.body, ".mv-devtools-root");
+    expect(wrapper?.getAttribute("data-theme")).toBe("light");
+    dt.destroy();
+  });
+
+  it("shows the summary and an actual-vs-predicted series row (Overview tab)", () => {
     const dt = mountDevtools();
+    const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
     const chart = mountLineChart(host, props);
 
-    const detail = q(document.body, ".mv-devtools-detail");
-    expect(q(document.body, ".mv-devtools-summary")?.textContent).toContain("Line chart");
-    // provenance header + the predicted badge (1 predicted point)
-    expect(detail?.textContent).toContain("actual vs predicted");
-    const badges = document.body.querySelectorAll(".mv-devtools .badge.predicted");
+    expect(q(r, ".mv-devtools-summary")?.textContent).toContain("Line chart");
+    expect(q(r, ".mv-devtools-detail")?.textContent).toContain("actual vs predicted");
+    const badges = r.querySelectorAll(".badge.predicted");
     expect(badges.length).toBeGreaterThan(0);
     expect(Array.from(badges).some((b) => b.textContent === "1")).toBe(true);
 
@@ -76,19 +102,18 @@ describe("mountDevtools panel", () => {
 
   it("highlight toggle patches props via the hook", () => {
     const dt = mountDevtools();
+    const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
     const chart = mountLineChart(host, props);
 
-    const cb = document.body.querySelector<HTMLInputElement>(".mv-devtools .row input[type=checkbox]");
+    const cb = r.querySelector<HTMLInputElement>(".row input[type=checkbox]");
     expect(cb).not.toBeNull();
     cb!.checked = true;
     cb!.dispatchEvent(new Event("change"));
 
     expect(chart.getContext()).not.toBeNull();
-    // the chart was re-rendered with the highlight applied (mark gets dimmed peers);
-    // assert via the live context round-trip through getProps on the entry.
-    expect(document.body.querySelector(".mv-devtools")).not.toBeNull();
+    expect(q(r, ".mv-devtools")).not.toBeNull();
 
     chart.destroy();
     dt.destroy();
@@ -96,11 +121,12 @@ describe("mountDevtools panel", () => {
 
   it("editing the dataSet re-renders the chart and updates the context", () => {
     const dt = mountDevtools();
+    const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
     const chart = mountLineChart(host, props);
 
-    const ta = document.body.querySelector<HTMLTextAreaElement>(".mv-devtools textarea");
+    const ta = r.querySelector<HTMLTextAreaElement>("textarea");
     expect(ta).not.toBeNull();
     const edited = [
       {
@@ -112,8 +138,7 @@ describe("mountDevtools panel", () => {
       },
     ];
     ta!.value = JSON.stringify(edited);
-    // find the Apply button (first .mv-devtools-btn inside the editor row)
-    const applyBtn = Array.from(document.body.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
+    const applyBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
       (b) => b.textContent === "Apply"
     );
     expect(applyBtn).not.toBeNull();
@@ -131,11 +156,11 @@ describe("mountDevtools panel", () => {
 
   it("captures a ChartContext history and steps back into a read-only snapshot", () => {
     const dt = mountDevtools();
+    const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
     const chart = mountLineChart(host, props);
 
-    // First snapshot is captured when the chart registers. Change the data -> 2nd snapshot.
     chart.update({
       ...props,
       title: "Demo v2",
@@ -150,43 +175,200 @@ describe("mountDevtools panel", () => {
       ],
     });
 
-    // Timeline nav appears once there is more than one snapshot.
-    const nav = q(document.body, ".mv-devtools-history");
+    const nav = q(r, ".mv-devtools-history");
     expect(nav).not.toBeNull();
     expect(nav?.textContent).toContain("2/2");
-    // Live view shows the latest summary (the v2 max of 555).
-    expect(q(document.body, ".mv-devtools-summary")?.textContent).toContain("555");
+    expect(q(r, ".mv-devtools-summary")?.textContent).toContain("555");
 
-    // Step back to the first snapshot -> read-only banner, older summary, controls disabled.
-    const older = Array.from(document.body.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
+    const older = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
       (b) => b.textContent === "◀"
     );
     expect(older).not.toBeNull();
     older!.click();
 
-    expect(q(document.body, ".mv-devtools-histbanner")?.textContent).toContain("viewing snapshot");
-    expect(q(document.body, ".mv-devtools-summary")?.textContent).toContain("140"); // original max
-    expect(q(document.body, ".mv-devtools-summary")?.textContent).not.toContain("555");
-    // editing is disabled while viewing history
-    expect(document.body.querySelector(".mv-devtools textarea")).toBeNull();
+    expect(q(r, ".mv-devtools-histbanner")?.textContent).toContain("viewing snapshot");
+    expect(q(r, ".mv-devtools-summary")?.textContent).toContain("140");
+    expect(q(r, ".mv-devtools-summary")?.textContent).not.toContain("555");
+    expect(r.querySelector("textarea")).toBeNull();
 
-    // Return to live.
-    const liveBtn = Array.from(document.body.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
+    const liveBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
       (b) => b.textContent?.includes("live")
     );
     liveBtn!.click();
-    expect(q(document.body, ".mv-devtools-histbanner")).toBeNull();
-    expect(document.body.querySelector(".mv-devtools textarea")).not.toBeNull();
+    expect(q(r, ".mv-devtools-histbanner")).toBeNull();
+    expect(r.querySelector("textarea")).not.toBeNull();
 
     chart.destroy();
     dt.destroy();
   });
 
-  it("destroy removes the panel and unsubscribes", () => {
+  it("destroy removes the shadow host and unsubscribes", () => {
     const dt = mountDevtools();
-    expect(q(document.body, ".mv-devtools")).not.toBeNull();
+    expect(q(document.body, ".mv-devtools-root")).not.toBeNull();
     dt.destroy();
-    expect(q(document.body, ".mv-devtools")).toBeNull();
-    expect(q(document.body, ".mv-devtools-toggle")).toBeNull();
+    expect(q(document.body, ".mv-devtools-root")).toBeNull();
+  });
+});
+
+describe("devtools tabs", () => {
+  beforeEach(() => {
+    g.__MICHI_VZ_DEVTOOLS__ = undefined;
+    g.__MICHI_VZ_DEVTOOLS_HOOK__ = undefined;
+    document.body.innerHTML = "";
+  });
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  function mountWithChart(): { dt: DevtoolsHandle; r: ShadowRoot; host: HTMLDivElement; chart: ReturnType<typeof mountLineChart> } {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountLineChart(host, props);
+    return { dt, r, host, chart };
+  }
+
+  it("shows a tab bar with Overview, Sizing, Scales, Diff and Insights", () => {
+    const { dt, r, chart } = mountWithChart();
+    const labels = Array.from(r.querySelectorAll(".mv-devtools-tab")).map((t) => t.textContent);
+    expect(labels).toEqual(["Overview", "Sizing", "Scales", "Diff", "Insights"]);
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Sizing tab flags a zero-size host", () => {
+    const { dt, r, host, chart } = mountWithChart();
+    Object.defineProperty(host, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0, x: 0, y: 0, toJSON: () => ({}) }),
+    });
+    clickTab(r, "Sizing");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text.toLowerCase()).toContain("zero size");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Sizing tab warns when the requested width exceeds the host's padded inner width", () => {
+    const { dt, r, host, chart } = mountWithChart();
+    host.style.padding = "16px";
+    Object.defineProperty(host, "clientWidth", { configurable: true, value: 300 });
+    Object.defineProperty(host, "clientHeight", { configurable: true, value: 300 });
+    Object.defineProperty(host, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ width: 300, height: 300, top: 0, left: 0, right: 300, bottom: 300, x: 0, y: 0, toJSON: () => ({}) }),
+    });
+    clickTab(r, "Sizing");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    // requested 400 > 300 - 32 inner width; the warning explains the padding trap
+    expect(text).toContain("padding");
+    expect(q(r, ".mv-devtools-flag.warn")).not.toBeNull();
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Scales tab renders the x/y domains for an axis chart", () => {
+    const { dt, r, chart } = mountWithChart();
+    clickTab(r, "Scales");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text).toContain("xAxis");
+    expect(text).toContain("domain");
+    // the y domain of the demo data peaks at 140
+    expect(text).toContain("140");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Scales tab explains when a chart type has no axis scales", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    // wc-style fallback entry: a fake element exposing getContext without axes
+    const node = document.createElement("div");
+    node.className = "michi-vz-pie-chart";
+    (node as HTMLElement & { getContext: () => ChartContext }).getContext = () =>
+      ({ chartType: "pie-chart", renderer: "svg", summary: "Pie chart." }) as unknown as ChartContext;
+    document.body.appendChild(node);
+    dt.refresh();
+    clickTab(r, "Scales");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text.toLowerCase()).toContain("no axis scales");
+    dt.destroy();
+  });
+
+  it("Diff tab lists the changed paths between the last two snapshots", () => {
+    const { dt, r, chart } = mountWithChart();
+    chart.update({
+      ...props,
+      dataSet: [
+        {
+          label: "Revenue",
+          series: [
+            { date: 2020, value: 100, certainty: true },
+            { date: 2021, value: 555, certainty: true },
+          ],
+        },
+      ],
+    });
+    clickTab(r, "Diff");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text).toContain("series[0].max");
+    expect(text).toContain("555");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Diff tab asks for more snapshots when there is only one", () => {
+    const { dt, r, chart } = mountWithChart();
+    clickTab(r, "Diff");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text.toLowerCase()).toContain("snapshot");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Insights tab shows the AI summary and a teaser when no insight tools exist", () => {
+    const { dt, r, chart } = mountWithChart();
+    clickTab(r, "Insights");
+    expect(q(r, ".mv-devtools-ai")?.textContent).toContain("Line chart");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text).toContain("@michi-vz/insights");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Insights tab exposes one-click actions for narrate/anomaly/forecast tools", async () => {
+    const { dt, r, chart } = mountWithChart();
+    chart.use!({
+      name: "narrate",
+      provideTools: () => [
+        { name: "narrate", description: "prose", run: () => "AI narration of the chart" },
+      ],
+    });
+    chart.use!({
+      name: "anomaly",
+      provideTools: () => [
+        {
+          name: "anomaly",
+          description: "outliers",
+          run: () => [{ label: "Revenue", anomalies: [{ index: 2, kind: "high" }] }],
+        },
+      ],
+    });
+    dt.refresh();
+    clickTab(r, "Insights");
+
+    const buttons = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-ai-action"));
+    const labels = buttons.map((b) => b.textContent);
+    expect(labels.some((l) => l?.includes("Narrate"))).toBe(true);
+    expect(labels.some((l) => l?.includes("anomal"))).toBe(true);
+
+    buttons.find((b) => b.textContent?.includes("Narrate"))!.click();
+    await new Promise((res) => setTimeout(res, 0));
+    const result = q(r, ".mv-devtools-ai-result");
+    expect(result?.textContent).toContain("AI narration of the chart");
+
+    chart.destroy();
+    dt.destroy();
   });
 });

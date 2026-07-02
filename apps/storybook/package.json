@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@michi-vz/devtools": "workspace:*",
     "@michi-vz/examples": "workspace:*",
     "@michi-vz/wc": "workspace:*"
   },

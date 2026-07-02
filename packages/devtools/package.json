@@ -15,6 +15,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./production": {
+      "types": "./dist/production.d.ts",
+      "import": "./dist/production.js",
+      "require": "./dist/production.cjs"
     }
   },
   "scripts": {
@@ -46,7 +51,6 @@
     "ai",
     "web-components"
   ],
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/beany-vu/michi-vz-mono.git",

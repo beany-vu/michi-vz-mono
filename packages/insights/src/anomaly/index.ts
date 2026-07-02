@@ -226,5 +226,25 @@ export function anomaly(options: AnomalyPluginOptions = {}): MichiVzPlugin<LineC
         summary: `${ctx.summary} Anomalies (${method}): ${total} ${noun} detected (${parts.join(", ")}).`,
       };
     },
+
+    provideTools() {
+      return [
+        {
+          name: "anomaly",
+          description: `List the detected anomalies per series (method: ${method}). Each entry carries the flagged point's index, kind, date and value.`,
+          run: () =>
+            [...results.entries()].map(([label, sa]) => ({
+              label,
+              anomalies: sa.result.anomalies.map((a) => ({
+                index: a.index,
+                kind: a.kind,
+                score: a.score,
+                date: sa.series[a.index]?.date,
+                value: sa.series[a.index]?.value,
+              })),
+            })),
+        },
+      ];
+    },
   };
 }
