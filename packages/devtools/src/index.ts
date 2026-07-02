@@ -4,14 +4,15 @@
 // highlight/disable, and edit data. No browser extension needed.
 //
 //   import { mountDevtools } from "@michi-vz/devtools";
-//   const devtools = mountDevtools();           // floating panel, toggle Ctrl/Cmd+Shift+M
+//   const devtools = mountDevtools();           // floating Michi shield button; click (or
+//   // Ctrl/Cmd+Shift+M) to open the panel - the last state is remembered
 //   // ... mount charts (mountLineChart, <michi-vz-*>, ...) ...
 //   devtools.destroy();
 //
 // Gate the call behind process.env.NODE_ENV !== "production" (or import the inert
 // "@michi-vz/devtools/production" entry) so app bundles never ship the panel.
 export { mountDevtools } from "./panel";
-export type { MountDevtoolsOptions, DevtoolsHandle, DevtoolsTheme, DevtoolsHotkey } from "./panel";
+export type { MountDevtoolsOptions, DevtoolsHandle, DevtoolsTheme, DevtoolsHotkey, DevtoolsButtonPosition } from "./panel";
 export { DEVTOOLS_CSS } from "./styles";
 export { diffObjects, type DiffEntry } from "./diff";
 export { auditContext, contrastRatio, findDuplicateColors, type A11yFinding, type AuditableContext } from "./a11y";

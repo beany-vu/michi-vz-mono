@@ -1027,23 +1027,32 @@ export interface MichiVzDevtoolsProps {
   forceMount?: boolean;
   /** Where to attach the panel's shadow host (default: document.body). */
   container?: HTMLElement;
-  /** Start open (default true). */
+  /**
+   * Force the initial state. Default: restore the last open/closed state from
+   * localStorage; closed (floating button only) on first run.
+   */
   open?: boolean;
   /** Toggle hotkey; null disables it. Default: Ctrl/Cmd+Shift+M. */
   hotkey?: import("@michi-vz/devtools").DevtoolsHotkey | null;
   /** Panel theme; "auto" (default) follows prefers-color-scheme. */
   theme?: import("@michi-vz/devtools").DevtoolsTheme;
+  /**
+   * Starting corner for the floating toggle button (default "bottom-right").
+   * The button is draggable; a dragged spot is remembered and wins over this.
+   */
+  buttonPosition?: import("@michi-vz/devtools").DevtoolsButtonPosition;
 }
 
 /**
- * Renders nothing; mounts the @michi-vz/devtools floating panel while it is in the
+ * Renders nothing; mounts the @michi-vz/devtools floating toggle button (click it,
+ * or Ctrl/Cmd+Shift+M, to open the panel; drag it anywhere) while it is in the
  * tree. Dev-only by default: the dynamic import is behind a NODE_ENV check, so
  * bundlers drop the devtools chunk from production builds entirely (pass
  * `forceMount` to opt into shipping it, e.g. on a staging build).
  *
  *   {process.env.NODE_ENV !== "production" && <MichiVzDevtools />}
  */
-export function MichiVzDevtools({ forceMount, container, open, hotkey, theme }: MichiVzDevtoolsProps = {}): null {
+export function MichiVzDevtools({ forceMount, container, open, hotkey, theme, buttonPosition }: MichiVzDevtoolsProps = {}): null {
   useEffect(() => {
     const isProd = typeof process !== "undefined" && process.env.NODE_ENV === "production";
     if (isProd && !forceMount) return;
@@ -1051,7 +1060,7 @@ export function MichiVzDevtools({ forceMount, container, open, hotkey, theme }: 
     let cancelled = false;
     void import("@michi-vz/devtools").then((m) => {
       if (cancelled) return;
-      handle = m.mountDevtools({ container, open, hotkey, theme });
+      handle = m.mountDevtools({ container, open, hotkey, theme, buttonPosition });
     });
     return () => {
       cancelled = true;

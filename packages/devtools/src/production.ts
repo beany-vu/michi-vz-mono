@@ -8,5 +8,5 @@ export type { DevtoolsHandle, MountDevtoolsOptions } from "./panel";
 
 export function mountDevtools(_opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const noop = (): void => {};
-  return { open: noop, close: noop, toggle: noop, refresh: noop, destroy: noop, getRoot: () => null };
+  return { open: noop, close: noop, toggle: noop, isOpen: () => false, refresh: noop, destroy: noop, getRoot: () => null };
 }

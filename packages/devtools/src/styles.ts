@@ -255,11 +255,26 @@ export const DEVTOOLS_CSS = `
   border-radius: 6px; padding: 3px 8px; margin-bottom: 6px;
 }
 .mv-devtools-toggle {
-  position: fixed; z-index: 2147482999; right: 16px; bottom: 16px;
-  background: var(--mvdt-bg-raised); color: var(--mvdt-accent); border: 1px solid var(--mvdt-border);
-  border-radius: 999px; padding: 8px 12px; cursor: pointer; box-shadow: var(--mvdt-shadow);
-  font: 700 12px/1 ui-monospace, monospace;
+  position: fixed; z-index: 2147482999;
+  width: 40px; height: 54px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; border-radius: 8px;
+  cursor: pointer;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,.35));
+  transition: transform .12s ease;
 }
+.mv-devtools-toggle:hover { transform: scale(1.08); }
+.mv-devtools-toggle:focus-visible { outline: 2px solid var(--mvdt-accent); outline-offset: 2px; }
+.mv-devtools-toggle.is-dragging { cursor: grabbing; transform: none; transition: none; }
+.mv-devtools-toggle img {
+  display: block; width: 100%; height: 100%; object-fit: contain;
+  pointer-events: none; user-select: none;
+}
+/* starting corners; a dragged spot overrides these via inline left/top */
+.mv-devtools-toggle.is-bottom-right { right: 16px; bottom: 16px; }
+.mv-devtools-toggle.is-bottom-left { left: 16px; bottom: 16px; }
+.mv-devtools-toggle.is-top-right { right: 16px; top: 16px; }
+.mv-devtools-toggle.is-top-left { left: 16px; top: 16px; }
 .mv-devtools-toggle[hidden] { display: none; }
 
 /* tabs */

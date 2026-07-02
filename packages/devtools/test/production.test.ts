@@ -20,8 +20,9 @@ describe("production entry", () => {
     expect(g.__MICHI_VZ_DEVTOOLS__).toBeUndefined();
     expect(g.__MICHI_VZ_DEVTOOLS_HOOK__).toBeUndefined();
     expect(dt.getRoot()).toBeNull();
-    // every handle method is safely callable
+    // every handle method is safely callable; the stub always reports closed
     dt.open();
+    expect(dt.isOpen()).toBe(false);
     dt.close();
     dt.toggle();
     dt.refresh();

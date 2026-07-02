@@ -43,18 +43,25 @@ function clickTab(r: ShadowRoot, label: string): void {
   tab.click();
 }
 
+function clearDevtoolsStorage(): void {
+  localStorage.removeItem("michi-vz-devtools-open");
+  localStorage.removeItem("michi-vz-devtools-btn");
+}
+
 describe("mountDevtools panel", () => {
   beforeEach(() => {
     g.__MICHI_VZ_DEVTOOLS__ = undefined;
     g.__MICHI_VZ_DEVTOOLS_HOOK__ = undefined;
     document.body.innerHTML = "";
+    clearDevtoolsStorage();
   });
   afterEach(() => {
     document.body.innerHTML = "";
+    clearDevtoolsStorage();
   });
 
   it("renders inside a shadow root and discovers a chart mounted after it", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     // isolation: the panel markup lives in the shadow root, not the light DOM
     expect(q(document.body, ".mv-devtools")).toBeNull();
@@ -84,7 +91,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("shows the summary and an actual-vs-predicted series row (Overview tab)", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -101,7 +108,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("highlight toggle patches props via the hook", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -120,7 +127,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("editing the dataSet re-renders the chart and updates the context", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -155,7 +162,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("Reset chart restores the initial dataSet and clears highlight/disable edits", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -188,7 +195,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("captures a ChartContext history and steps back into a read-only snapshot", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -236,7 +243,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("shows which renderer draws the marks (and that chrome stays SVG)", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -259,7 +266,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("filters the chart list from the filter box", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const lineHost = document.createElement("div");
     const scatterHost = document.createElement("div");
@@ -292,7 +299,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("the locate button scrolls the chart host into view and flashes an outline", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -311,7 +318,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("maximize button toggles a full-viewport panel and back", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const panel = q(r, ".mv-devtools")!;
     const maxBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
@@ -327,7 +334,7 @@ describe("mountDevtools panel", () => {
 
   it("dragging the resize handle grows the panel and persists the size", () => {
     localStorage.removeItem("michi-vz-devtools-size");
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const panel = q(r, ".mv-devtools")!;
     const handle = q(r, ".mv-devtools-resize");
@@ -349,7 +356,7 @@ describe("mountDevtools panel", () => {
     dt.destroy();
 
     // a fresh mount restores the saved size
-    const dt2 = mountDevtools();
+    const dt2 = mountDevtools({ open: true });
     const panel2 = q(root(dt2), ".mv-devtools")!;
     expect(parseFloat(panel2.style.getPropertyValue("--mvdt-w"))).toBe(w);
     dt2.destroy();
@@ -358,7 +365,7 @@ describe("mountDevtools panel", () => {
 
   it("the left edge grip resizes width only, leaving height untouched", () => {
     localStorage.removeItem("michi-vz-devtools-size");
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const panel = q(r, ".mv-devtools")!;
     const handle = q(r, ".mv-devtools-resize-l");
@@ -378,7 +385,7 @@ describe("mountDevtools panel", () => {
 
   it("the top edge grip resizes height only, leaving width untouched", () => {
     localStorage.removeItem("michi-vz-devtools-size");
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const panel = q(r, ".mv-devtools")!;
     const handle = q(r, ".mv-devtools-resize-t");
@@ -396,7 +403,7 @@ describe("mountDevtools panel", () => {
   });
 
   it("destroy removes the shadow host and unsubscribes", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     expect(q(document.body, ".mv-devtools-root")).not.toBeNull();
     dt.destroy();
     expect(q(document.body, ".mv-devtools-root")).toBeNull();
@@ -408,13 +415,15 @@ describe("devtools tabs", () => {
     g.__MICHI_VZ_DEVTOOLS__ = undefined;
     g.__MICHI_VZ_DEVTOOLS_HOOK__ = undefined;
     document.body.innerHTML = "";
+    clearDevtoolsStorage();
   });
   afterEach(() => {
     document.body.innerHTML = "";
+    clearDevtoolsStorage();
   });
 
   function mountWithChart(): { dt: DevtoolsHandle; r: ShadowRoot; host: HTMLDivElement; chart: ReturnType<typeof mountLineChart> } {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -457,7 +466,7 @@ describe("devtools tabs", () => {
   });
 
   it("A11y tab flags duplicate series colors", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -527,7 +536,7 @@ describe("devtools tabs", () => {
   });
 
   it("Scales tab explains when a chart type has no axis scales", () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     // wc-style fallback entry: a fake element exposing getContext without axes
     const node = document.createElement("div");
@@ -574,7 +583,7 @@ describe("devtools tabs", () => {
   });
 
   it("Hit-test tab logs canvas pointer events with the resolved label", async () => {
-    const dt = mountDevtools();
+    const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -648,6 +657,122 @@ describe("devtools tabs", () => {
     expect(result?.textContent).toContain("AI narration of the chart");
 
     chart.destroy();
+    dt.destroy();
+  });
+});
+
+describe("devtools toggle button", () => {
+  beforeEach(() => {
+    g.__MICHI_VZ_DEVTOOLS__ = undefined;
+    g.__MICHI_VZ_DEVTOOLS_HOOK__ = undefined;
+    document.body.innerHTML = "";
+    clearDevtoolsStorage();
+  });
+  afterEach(() => {
+    document.body.innerHTML = "";
+    clearDevtoolsStorage();
+  });
+
+  it("mounts closed by default: only the floating branded button shows", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    expect(dt.isOpen()).toBe(false);
+    expect(q(r, ".mv-devtools")!.hidden).toBe(true);
+    const btn = q(r, ".mv-devtools-toggle")!;
+    expect(btn.hidden).toBe(false);
+    // branded: the inlined Michi shield plus an accessible name and a hotkey hint
+    expect(btn.querySelector("img")?.getAttribute("src") ?? "").toContain("data:image/png");
+    expect(btn.getAttribute("aria-label")?.toLowerCase()).toContain("devtools");
+    expect(btn.title).toContain("Ctrl/Cmd+Shift+M");
+    dt.destroy();
+  });
+
+  it("clicking the button opens the panel; isOpen() tracks open/close/toggle", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const btn = q(r, ".mv-devtools-toggle")!;
+    btn.click();
+    expect(dt.isOpen()).toBe(true);
+    expect(q(r, ".mv-devtools")!.hidden).toBe(false);
+    expect(btn.hidden).toBe(true);
+    dt.close();
+    expect(dt.isOpen()).toBe(false);
+    dt.toggle();
+    expect(dt.isOpen()).toBe(true);
+    dt.destroy();
+  });
+
+  it("remembers the last open/closed state across mounts", () => {
+    const dt = mountDevtools();
+    dt.open();
+    dt.destroy();
+    const dt2 = mountDevtools();
+    expect(dt2.isOpen()).toBe(true);
+    dt2.close();
+    dt2.destroy();
+    const dt3 = mountDevtools();
+    expect(dt3.isOpen()).toBe(false);
+    dt3.destroy();
+  });
+
+  it("an explicit open option beats the remembered state", () => {
+    localStorage.setItem("michi-vz-devtools-open", "1");
+    const dt = mountDevtools({ open: false });
+    expect(dt.isOpen()).toBe(false);
+    dt.destroy();
+    localStorage.setItem("michi-vz-devtools-open", "0");
+    const dt2 = mountDevtools({ open: true });
+    expect(dt2.isOpen()).toBe(true);
+    dt2.destroy();
+  });
+
+  it("buttonPosition picks the starting corner (default bottom-right)", () => {
+    const dt = mountDevtools({ buttonPosition: "top-left" });
+    expect(q(root(dt), ".mv-devtools-toggle")!.classList.contains("is-top-left")).toBe(true);
+    dt.destroy();
+    const dt2 = mountDevtools();
+    expect(q(root(dt2), ".mv-devtools-toggle")!.classList.contains("is-bottom-right")).toBe(true);
+    dt2.destroy();
+  });
+
+  it("dragging the button moves it, persists the spot, and swallows the trailing click", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const btn = q(r, ".mv-devtools-toggle")!;
+
+    btn.dispatchEvent(new MouseEvent("mousedown", { clientX: 700, clientY: 500, bubbles: true }));
+    window.dispatchEvent(new MouseEvent("mousemove", { clientX: 100, clientY: 80 }));
+    window.dispatchEvent(new MouseEvent("mouseup", {}));
+    // the click a real browser fires after a drag-release must not toggle the panel
+    btn.click();
+    expect(dt.isOpen()).toBe(false);
+
+    expect(btn.style.left).toContain("px");
+    expect(btn.style.top).toContain("px");
+    const saved = JSON.parse(localStorage.getItem("michi-vz-devtools-btn") ?? "{}");
+    expect(typeof saved.left).toBe("number");
+    expect(typeof saved.top).toBe("number");
+    const left = btn.style.left;
+    dt.destroy();
+
+    // a fresh mount restores the dragged position
+    const dt2 = mountDevtools();
+    const btn2 = q(root(dt2), ".mv-devtools-toggle")!;
+    expect(btn2.style.left).toBe(left);
+    dt2.destroy();
+  });
+
+  it("a sub-threshold press still counts as a click and opens the panel", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const btn = q(r, ".mv-devtools-toggle")!;
+    btn.dispatchEvent(new MouseEvent("mousedown", { clientX: 700, clientY: 500, bubbles: true }));
+    window.dispatchEvent(new MouseEvent("mousemove", { clientX: 701, clientY: 501 }));
+    window.dispatchEvent(new MouseEvent("mouseup", {}));
+    btn.click();
+    expect(dt.isOpen()).toBe(true);
+    // a jitter-press must not persist a position
+    expect(localStorage.getItem("michi-vz-devtools-btn")).toBeNull();
     dt.destroy();
   });
 });

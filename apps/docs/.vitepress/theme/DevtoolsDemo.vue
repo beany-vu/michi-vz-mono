@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // Live demo of @michi-vz/devtools: an in-page inspector for every mounted chart.
 // Mounts a forecast line (actual points + explicit `predicted: true` points) and a
-// button to open the floating devtools panel. The panel reads each chart's live
+// button that mounts the devtools: the floating, draggable Michi shield appears and
+// toggles the panel (the real out-of-box flow). The panel reads each chart's live
 // ChartContext (incl. actual vs predicted), and can drive highlight/disable, run
 // agent tools, and edit the dataSet. Client-only (dynamic import) so SSR never
 // touches the engine. This is the real package, not a mock.
@@ -15,7 +16,7 @@ let devtools: any = null;
 
 const host = ref<HTMLDivElement>();
 const loadError = ref("");
-const panelOpen = ref(false);
+const devtoolsMounted = ref(false);
 // Mirror live context into refs (never read the non-reactive `api`/`chart` from a computed).
 const summary = ref("");
 const actual = ref(0);
@@ -97,10 +98,12 @@ function toggleDevtools() {
   if (devtools) {
     devtools.destroy();
     devtools = null;
-    panelOpen.value = false;
+    devtoolsMounted.value = false;
   } else {
-    devtools = api.mountDevtools({ open: true });
-    panelOpen.value = true;
+    // Default behavior on purpose: the floating Michi shield appears (bottom right)
+    // and the panel opens from it - the same first-run flow an app gets.
+    devtools = api.mountDevtools();
+    devtoolsMounted.value = true;
   }
 }
 
@@ -144,9 +147,13 @@ onBeforeUnmount(() => {
     <p v-if="loadError" class="err">Failed to load: {{ loadError }}</p>
     <div class="devtools-demo__bar">
       <button class="devtools-demo__btn" @click="toggleDevtools">
-        {{ panelOpen ? "Close devtools panel" : "Open devtools panel" }}
+        {{ devtoolsMounted ? "Remove devtools" : "Mount devtools" }}
       </button>
-      <span class="devtools-demo__hint">…then click the chart in the list. Hotkey: Ctrl/Cmd+Shift+M</span>
+      <span class="devtools-demo__hint">
+        {{ devtoolsMounted
+          ? "Now click the floating Michi shield (bottom right) or press Ctrl/Cmd+Shift+M. Drag it anywhere."
+          : "Mounts the real package: the floating Michi shield appears and toggles the panel." }}
+      </span>
     </div>
     <div ref="host" class="devtools-demo__chart"></div>
     <p class="devtools-demo__readout">

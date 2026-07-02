@@ -135,6 +135,11 @@ export default defineConfig({
     }
   },
   head: [
+    // Michi shield favicons (generated from public/michi-shield.png, centered on a
+    // transparent square; 48px default + 32px fallback + 180px apple-touch).
+    ["link", { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon.png" }],
+    ["link", { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" }],
+    ["link", { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }],
     ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
     ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
     [
@@ -148,6 +153,8 @@ export default defineConfig({
     ...gaHead,
   ],
   themeConfig: {
+    // The Michi shield next to the site title in the navbar (64px render of the crest).
+    logo: "/michi-shield-nav.png",
     nav: [
       { text: "Charts", link: "/charts/" },
       { text: "Guide", link: "/guide/why" },

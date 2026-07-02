@@ -12,7 +12,8 @@ it is one import, versioned with your app.
 
 <DevtoolsDemo />
 
-> Click **Open devtools panel** (or press `Ctrl/Cmd+Shift+M`), pick the chart in the list, and
+> Click **Mount devtools**: the floating Michi shield appears bottom right - the devtools'
+> collapsed face. Click it (or press `Ctrl/Cmd+Shift+M`) to open the panel, pick the chart in the list, and
 > walk the tabs: **Overview** (context, series, live editing), **Sizing**, **Scales**, **Diff**,
 > **Hit-test**, **Profiler**, **A11y**, and **Insights** - where ✦ **Narrate** and ✦ **Detect
 > anomalies** run real `@michi-vz/insights` plugins against the live chart (the 2022 Cost spike
@@ -28,7 +29,8 @@ npm i -D @michi-vz/devtools
 import { mountDevtools } from "@michi-vz/devtools";
 
 // Call this BEFORE mounting charts so they register themselves.
-const devtools = mountDevtools();      // floating panel, toggle with Ctrl/Cmd+Shift+M
+// The floating Michi shield button appears; click it (or Ctrl/Cmd+Shift+M) to open the panel.
+const devtools = mountDevtools();
 
 import { mountLineChart } from "@michi-vz/core";
 mountLineChart(host, { dataSet, xAxisDataType: "number" });
@@ -37,7 +39,7 @@ mountLineChart(host, { dataSet, xAxisDataType: "number" });
 devtools.destroy();
 ```
 
-Using React? There is a one-liner that mounts the panel while it is in the tree and renders
+Using React? There is a one-liner that mounts the devtools while it is in the tree and renders
 nothing (dev-only by default - production builds drop the devtools chunk entirely):
 
 ```tsx
@@ -51,14 +53,25 @@ For Vue, Svelte, Angular, or plain web components the recipe is the same three l
 where devtools must stay inert without changing the import site, the
 `@michi-vz/devtools/production` entry exports a no-op `mountDevtools`.
 
-`mountDevtools(options?)` returns a handle: `{ open, close, toggle, refresh, getRoot, destroy }`.
+## The floating button
 
-| Option      | Default            | Notes                                                                   |
-| ----------- | ------------------ | ----------------------------------------------------------------------- |
-| `container` | `document.body`    | Where the panel's shadow host is attached.                              |
-| `open`      | `true`             | Start open or collapsed to a toggle button.                             |
-| `hotkey`    | `Ctrl/Cmd+Shift+M` | Set `null` to disable the keyboard toggle.                              |
-| `theme`     | `"auto"`           | `"auto"` follows `prefers-color-scheme`; or force `"dark"` / `"light"`. |
+Mounting the devtools never covers your app: it starts as the small **Michi shield** (the
+library's crest) in a corner.
+Click it to open the panel, close the panel to get the button back, and the open/closed state
+is **remembered per browser** - reload the page and the devtools comes back exactly how you
+left it. Sharing a corner with a chat widget or another devtools button? **Drag the shield
+anywhere** - that spot is remembered too. `buttonPosition` picks the starting corner.
+
+`mountDevtools(options?)` returns a handle:
+`{ open, close, toggle, isOpen, refresh, getRoot, destroy }`.
+
+| Option           | Default            | Notes                                                                    |
+| ---------------- | ------------------ | ------------------------------------------------------------------------ |
+| `container`      | `document.body`    | Where the panel's shadow host is attached.                               |
+| `open`           | remembered         | Force `true`/`false`; default restores the last state, closed first run. |
+| `hotkey`         | `Ctrl/Cmd+Shift+M` | Set `null` to disable the keyboard toggle.                               |
+| `theme`          | `"auto"`           | `"auto"` follows `prefers-color-scheme`; or force `"dark"` / `"light"`.  |
+| `buttonPosition` | `"bottom-right"`   | Starting corner for the button; a dragged spot wins on later mounts.     |
 
 The panel renders inside its own **Shadow DOM**, so its styles cannot leak into your app (and
 your app's CSS cannot break the panel). The charts themselves stay light DOM - the panel never
