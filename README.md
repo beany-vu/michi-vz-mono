@@ -67,6 +67,8 @@ that matches your stack:
 | [@michi-vz/vue](https://www.npmjs.com/package/@michi-vz/vue) | `npm i @michi-vz/vue` | Vue 3 |
 | [@michi-vz/svelte](https://www.npmjs.com/package/@michi-vz/svelte) | `npm i @michi-vz/svelte` | Svelte |
 | [@michi-vz/angular](https://www.npmjs.com/package/@michi-vz/angular) | `npm i @michi-vz/angular` | Angular |
+| [@michi-vz/insights](https://www.npmjs.com/package/@michi-vz/insights) | `npm i @michi-vz/insights` | Opt-in AI layer: forecast, anomaly, narration, agent/MCP (experimental) |
+| [@michi-vz/devtools](https://www.npmjs.com/package/@michi-vz/devtools) | `npm i -D @michi-vz/devtools` | In-page devtools panel: inspect, diff, profile, and audit any chart |
 
 ## Install
 

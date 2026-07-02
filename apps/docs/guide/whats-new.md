@@ -10,6 +10,25 @@ The latest `@michi-vz` releases, newest first. All six packages -
 number. Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.5.0
+
+- **DevTools is here: `@michi-vz/devtools` 0.1.0, first public release.** An in-page panel
+  (no browser extension) that inspects every chart's live state across eight tabs -
+  Overview (with live editing + **Reset chart**), Sizing, Scales, Diff, Hit-test, Profiler,
+  Insights, and an A11y audit no other chart library has. Shadow-DOM isolated, resizable,
+  light + dark, dev-only by default with an inert `/production` entry, and a React
+  one-liner: `<MichiVzDevtools />`. See [DevTools](/guide/devtools).
+- **Insights 0.1.0: transparent and local-first AI.**
+  [Methodology](/guide/insights#methodology---the-exact-logic-behind-every-insight) now
+  spells out the exact logic behind every insight; `describeModelSource()` states what a
+  model backend would download and from where **before** anything loads; `modelSource`
+  redirects downloads to a mirror or self-hosted files (or forbids them entirely); and
+  `ollamaCaller` / `openaiCompatCaller` hook a local AI (Ollama, LM Studio, llama.cpp)
+  in one line with zero downloads. Anomaly results now carry their method, threshold,
+  and a plain-language explanation.
+- **Core:** the devtools hook gained high-frequency hit-test and render-timing channels
+  (zero cost when devtools is off).
+
 ## v1.4.0
 
 - **The hover crosshair is back - and configurable.** LineChart's vertical mouse line is on by default again (legacy parity; the port had silently flipped it off), snaps to the nearest data point instead of trailing the raw cursor, and hides when the cursor leaves the chart - in SVG, canvas, and WebGPU modes alike. Style it per chart with `enableMouseLine: { stroke, strokeWidth, strokeDasharray, snap }`, theme it globally with the `--michi-vz-crosshair` / `--michi-vz-crosshair-width` / `--michi-vz-crosshair-dash` CSS vars, or pass `false` to turn it off.

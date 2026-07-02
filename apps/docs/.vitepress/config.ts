@@ -107,9 +107,9 @@ export default defineConfig({
       { text: "Guide", link: "/guide/why" },
       {
         // TanStack-style version switcher (single version for now).
-        text: "v1.4.0",
+        text: "v1.5.0",
         items: [
-          { text: "What's new in v1.4.0", link: "/guide/whats-new" },
+          { text: "What's new in v1.5.0", link: "/guide/whats-new" },
           { text: "Changelog (GitHub)", link: "https://github.com/beany-vu/michi-vz-mono/releases" },
         ],
       },
