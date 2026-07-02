@@ -7,8 +7,8 @@ title: DevTools - inspect, drive, and edit any chart
 A chart draws pixels, but the bugs live in the **state behind them**: the data that actually
 reached the engine, the axis domains, the host box the chart was measured against, and which
 points are *observed* versus *forecast*. `@michi-vz/devtools` is an opt-in, in-page panel that
-surfaces all of it for **every** michi-vz chart on the page - and no other chart library ships
-anything like it. No browser extension to install: it is one import, versioned with your app.
+surfaces all of it for **every** michi-vz chart on the page. No browser extension to install:
+it is one import, versioned with your app.
 
 <DevtoolsDemo />
 

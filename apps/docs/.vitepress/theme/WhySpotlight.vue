@@ -491,7 +491,6 @@ onBeforeUnmount(() => {
                 <abbr v-else class="mv-term" tabindex="0" :title="run.title">{{ run.term }}</abbr>
               </template>
             </p>
-            <p class="mv-why-elsewhere">Elsewhere: {{ t.elsewhere }}</p>
             <div v-if="t.id === 'frameworks'" class="mv-why-fw">
               <span class="mv-why-fw-tabs" role="group" aria-label="framework">
                 <button

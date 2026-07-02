@@ -677,13 +677,6 @@
   line-height: 1.7;
   color: var(--vp-c-text-2);
 }
-.mv-why-elsewhere {
-  margin: 10px 0 0;
-  font-size: 13px;
-  line-height: 1.65;
-  font-style: italic;
-  color: var(--vp-c-text-3);
-}
 .mv-term {
   text-decoration: underline dotted;
   text-decoration-color: var(--vp-c-text-3);

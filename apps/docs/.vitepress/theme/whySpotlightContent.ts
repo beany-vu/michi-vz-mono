@@ -1,9 +1,11 @@
 // Copy for the homepage "Why michi-vz" spotlight. Pure data, no DOM: the
 // component renders `body` as runs so technical terms get a native-title
-// tooltip without any v-html. Tone rules: honest, no superlatives, name the
-// competitors the way guide/why.md already does, and never claim what the
-// code cannot do (the treemap split is real; drilldown is not, so it is not
-// mentioned). House style: plain ASCII hyphens only.
+// tooltip without any v-html. Tone rules (user rule, 2026-07-02): NEVER
+// mention or compare against other chart libraries, anywhere on the site -
+// say nice things about michi-vz only. (Crediting upstream dependencies like
+// d3-hierarchy is fine; comparison is not.) Honest claims only: never claim
+// what the code cannot do (the treemap split is real; drilldown is not, so it
+// is not mentioned). House style: plain ASCII hyphens only.
 
 export type WhyTabId = "explain" | "gaps" | "insights" | "treemap" | "webgpu" | "frameworks";
 
@@ -14,15 +16,13 @@ export interface WhyTab {
   id: WhyTabId;
   heading: string;
   body: BodyRun[];
-  /** The honest "how the incumbents do it" line, rendered under the body. */
-  elsewhere: string;
   link: { text: string; href: string };
 }
 
 export const WHY_LEDE =
   "Seventeen chart types, from stacked bars to gap charts to the fountain, drawn by one " +
-  "engine. Here are six concrete reasons to reach for michi-vz instead of Chart.js, D3, " +
-  "or ECharts. Each one is a live chart, not a screenshot.";
+  "engine. Here are the six ideas michi-vz cares about most, each one a live chart, " +
+  "not a screenshot.";
 
 export const TABS: WhyTab[] = [
   {
@@ -37,8 +37,6 @@ export const TABS: WhyTab[] = [
       },
       " that an AI agent can query, a screen reader can speak, and a test can assert on. Pixels for people, structure for everything else.",
     ],
-    elsewhere:
-      "Chart.js, D3, and ECharts hand you pixels. ECharts can auto-generate a short aria description; Chart.js and D3 leave summarizing and accessibility entirely to you.",
     link: { text: "How machines read these charts", href: "/guide/llm-context" },
   },
   {
@@ -53,8 +51,6 @@ export const TABS: WhyTab[] = [
       },
       ". Charts should admit what they do not know instead of drawing a confident line through a hole.",
     ],
-    elsewhere:
-      "Chart.js spanGaps bridges the hole with a solid line (the default leaves a blank break); a dashed gap needs a custom segment callback. In D3 you split the line generator by hand.",
     link: { text: "Gap detection on the line chart", href: "/charts/line#gap-detection" },
   },
   {
@@ -69,8 +65,6 @@ export const TABS: WhyTab[] = [
       },
       " forecast with 50% and 80% bands, computed in your browser the moment you opened this tab. No server, no upload: the data never leaves the page, and every method is a named technique you can check.",
     ],
-    elsewhere:
-      "Chart.js, D3, and ECharts draw whatever numbers you hand them. Forecasting means wiring up a separate stats library, or a server, yourself.",
     link: { text: "The insights layer, with methodology", href: "/guide/insights" },
   },
   {
@@ -85,8 +79,6 @@ export const TABS: WhyTab[] = [
       },
       ": two numbers per tile, one glance. Hierarchies nest, and on narrow screens the layout restacks instead of shrinking into slivers.",
     ],
-    elsewhere:
-      "d3-hierarchy sizes tiles, nothing more. The ECharts treemap has no split concept either, and Chart.js needs a community plugin for a treemap at all.",
     link: { text: "The treemap, in full", href: "/charts/treemap" },
   },
   {
@@ -101,8 +93,6 @@ export const TABS: WhyTab[] = [
       },
       " adapter, and falls back to canvas automatically when it does not. Flip the renderer below: same chart, same context, different painter. Honestly labeled experimental, and most dashboards never need it.",
     ],
-    elsewhere:
-      "Chart.js and D3 render SVG or canvas only. The ECharts GL extension targets 3D scenes, not a general WebGPU path for 2D marks.",
     link: { text: "The 50,000-point demo on the scatter page", href: "/charts/scatter" },
   },
   {
@@ -117,8 +107,6 @@ export const TABS: WhyTab[] = [
       },
       ". Learn the props once, use them in any stack, or in no framework at all.",
     ],
-    elsewhere:
-      "Chart.js and ECharts have framework-agnostic cores too, but their React, Vue, and Svelte bindings are separate community projects of varying freshness, not one team shipping five wrappers in lockstep.",
     link: { text: "Install for your framework", href: "/guide/installation" },
   },
 ];

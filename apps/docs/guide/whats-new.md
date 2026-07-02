@@ -15,7 +15,7 @@ number. Full per-commit detail lives in the
 - **DevTools is here: `@michi-vz/devtools` 0.1.0, first public release.** An in-page panel
   (no browser extension) that inspects every chart's live state across eight tabs -
   Overview (with live editing + **Reset chart**), Sizing, Scales, Diff, Hit-test, Profiler,
-  Insights, and an A11y audit no other chart library has. Shadow-DOM isolated, resizable,
+  Insights, and an A11y audit. Shadow-DOM isolated, resizable,
   light + dark, dev-only by default with an inert `/production` entry, and a React
   one-liner: `<MichiVzDevtools />`. See [DevTools](/guide/devtools).
 - **Insights 0.1.0: transparent and local-first AI.**

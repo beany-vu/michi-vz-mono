@@ -4,22 +4,20 @@ title: Why michi-vz - and why trust it
 
 # Why michi-vz
 
-There are excellent chart libraries already. Chart.js is everywhere, ECharts is huge,
-Highcharts is polished. So the honest question is the one you are already asking:
-**why would I start with a young library?**
+There are many excellent chart libraries already, so the honest question is the one
+you are already asking: **why would I start with a young one?**
 
 Because michi-vz is built for the part of charting the big libraries were not designed
 for: **charts that machines and all people can read** - AI agents, screen readers, and
 the developer debugging them - not just sighted humans looking at pixels.
 
-## What you get that others do not have
+## What michi-vz cares about
 
 **Every chart explains itself.** Each chart emits a structured `ChartContext`: a
 plain-language summary, per-series stats, axis domains, and a data table. That one
 artifact powers three things at once - an AI agent can read the chart
 ([and drive it over MCP](/guide/llm-context)), a screen reader gets a real text
-alternative, and you get something to assert on in tests. No other chart library
-carries this.
+alternative, and you get something to assert on in tests.
 
 **Insights, in the browser, with the math shown.** Forecasting with backtested
 accuracy, anomaly detection, narration, validation - no server, no upload, and every
@@ -27,11 +25,10 @@ method is a named textbook technique spelled out in
 [Methodology](/guide/insights#methodology---the-exact-logic-behind-every-insight).
 If a number appears on your chart, you can check how it was computed.
 
-**A real devtools.** No chart library ships one - not Chart.js, not ECharts, not
-Highcharts. [Ours](/guide/devtools) inspects any chart's live state, diagnoses the
-classic sizing bugs, diffs state between renders, streams canvas hit-tests, profiles
-renders, and audits accessibility. Debugging charts stops being `console.log`
-archaeology.
+**A real devtools.** [The panel](/guide/devtools) inspects any chart's live state,
+diagnoses the classic sizing bugs, diffs state between renders, streams canvas
+hit-tests, profiles renders, and audits accessibility. Debugging charts stops being
+`console.log` archaeology.
 
 **Accessibility by default, audited.** The summary and data table are emitted by
 every chart automatically, and the devtools A11y tab runs Chartability-inspired
@@ -70,8 +67,8 @@ Trust is not claimed, it is checkable:
 
 ## Where we are honest about limits
 
-- The library is young: fewer chart types than ECharts, a smaller ecosystem than
-  Chart.js, and the insights layer is marked **experimental** (pin a version).
+- The library is young: the chart catalog and the ecosystem around it are still
+  growing, and the insights layer is marked **experimental** (pin a version).
 - Forecasting has no seasonal term yet - a strongly seasonal series forecasts its
   trend, not its wiggle.
 - WebGPU rendering is experimental and falls back to canvas.
