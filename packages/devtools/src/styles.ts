@@ -152,13 +152,25 @@ export const DEVTOOLS_CSS = `
 .mv-devtools, .mv-devtools * { box-sizing: border-box; }
 .mv-devtools {
   position: fixed; z-index: 2147483000; right: 16px; bottom: 16px;
-  width: 460px; max-width: calc(100vw - 32px); max-height: 70vh;
+  width: var(--mvdt-w, 560px); height: var(--mvdt-h, auto);
+  max-width: calc(100vw - 32px); max-height: calc(100vh - 32px);
   display: flex; flex-direction: column;
   font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color: var(--mvdt-ink); background: var(--mvdt-bg); border: 1px solid var(--mvdt-border);
   border-radius: 10px; box-shadow: var(--mvdt-shadow); overflow: hidden;
 }
 .mv-devtools[hidden] { display: none; }
+.mv-devtools.is-max {
+  width: calc(100vw - 32px); height: calc(100vh - 32px); max-height: none;
+}
+.mv-devtools.is-max pre { max-height: 48vh; }
+.mv-devtools.is-max .mv-devtools-resize { display: none; }
+.mv-devtools-resize {
+  position: absolute; left: 0; top: 0; width: 16px; height: 16px; cursor: nwse-resize;
+  border-left: 3px solid var(--mvdt-border); border-top: 3px solid var(--mvdt-border);
+  border-top-left-radius: 10px; opacity: .8;
+}
+.mv-devtools-resize:hover { border-color: var(--mvdt-accent); opacity: 1; }
 .mv-devtools-header {
   display: flex; align-items: center; gap: 8px; padding: 8px 10px;
   background: var(--mvdt-bg-raised); border-bottom: 1px solid var(--mvdt-border); cursor: default;

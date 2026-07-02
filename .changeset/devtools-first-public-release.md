@@ -16,6 +16,7 @@ First public release of @michi-vz/devtools: the in-page chart devtools panel (no
 - New Profiler tab: per-update render durations (last/mean/max, bar strip, trending-up warning)
 - New A11y tab: Chartability-inspired audit (missing summary, incomplete a11y table, duplicate series colors, low graphic contrast on light/dark) + the a11y table itself; `auditContext`/`contrastRatio`/`findDuplicateColors` exported
 - New inert `@michi-vz/devtools/production` entry for prod-safe conditional imports
+- Panel is resizable: wider 560px default, drag the top-left corner to grow (size remembered per browser), and a maximize/restore header button
 
 @michi-vz/core: the devtools hook gained high-frequency channels - `reportHit`/`subscribeHits` (canvas hit-test stream; scatter, bubble and treemap engines report their host hit-tests via the new `reportDevtoolsHit`, zero cost when devtools is off) and `reportTiming`/`subscribeTimings` (attachDevtools times every update()).
 

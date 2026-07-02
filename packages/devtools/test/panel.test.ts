@@ -202,6 +202,52 @@ describe("mountDevtools panel", () => {
     dt.destroy();
   });
 
+  it("maximize button toggles a full-viewport panel and back", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const panel = q(r, ".mv-devtools")!;
+    const maxBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
+      (b) => b.title.toLowerCase().includes("maximize")
+    );
+    expect(maxBtn).not.toBeNull();
+    maxBtn!.click();
+    expect(panel.classList.contains("is-max")).toBe(true);
+    maxBtn!.click();
+    expect(panel.classList.contains("is-max")).toBe(false);
+    dt.destroy();
+  });
+
+  it("dragging the resize handle grows the panel and persists the size", () => {
+    localStorage.removeItem("michi-vz-devtools-size");
+    const dt = mountDevtools();
+    const r = root(dt);
+    const panel = q(r, ".mv-devtools")!;
+    const handle = q(r, ".mv-devtools-resize");
+    expect(handle).not.toBeNull();
+
+    handle!.dispatchEvent(new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }));
+    window.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 400 }));
+    window.dispatchEvent(new MouseEvent("mouseup", {}));
+
+    // dragging 200px left and 100px up grows the (right/bottom-anchored) panel
+    expect(panel.style.getPropertyValue("--mvdt-w")).toContain("px");
+    const w = parseFloat(panel.style.getPropertyValue("--mvdt-w"));
+    const h = parseFloat(panel.style.getPropertyValue("--mvdt-h"));
+    expect(w).toBeGreaterThan(560);
+    expect(h).toBeGreaterThan(0);
+
+    const saved = JSON.parse(localStorage.getItem("michi-vz-devtools-size") ?? "{}");
+    expect(saved.w).toBe(w);
+    dt.destroy();
+
+    // a fresh mount restores the saved size
+    const dt2 = mountDevtools();
+    const panel2 = q(root(dt2), ".mv-devtools")!;
+    expect(parseFloat(panel2.style.getPropertyValue("--mvdt-w"))).toBe(w);
+    dt2.destroy();
+    localStorage.removeItem("michi-vz-devtools-size");
+  });
+
   it("destroy removes the shadow host and unsubscribes", () => {
     const dt = mountDevtools();
     expect(q(document.body, ".mv-devtools-root")).not.toBeNull();

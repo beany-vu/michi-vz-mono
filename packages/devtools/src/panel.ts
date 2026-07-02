@@ -249,17 +249,80 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const detailEl = el("div", { class: "mv-devtools-detail" }, [historyNavEl, tabsEl, contentEl]);
 
   const refreshBtn = el("button", { class: "mv-devtools-btn" }, ["⟳"]);
+  const maxBtn = el("button", { class: "mv-devtools-btn", title: "Maximize / restore panel" }, ["⛶"]);
   const closeBtn = el("button", { class: "mv-devtools-btn" }, ["×"]);
   const header = el("div", { class: "mv-devtools-header" }, [
     el("span", { class: "mv-devtools-title" }, ["michi-vz devtools"]),
     countEl,
     el("span", { class: "mv-devtools-spacer" }),
     refreshBtn,
+    maxBtn,
     closeBtn,
   ]);
-  const panel = el("div", { class: "mv-devtools" }, [header, el("div", { class: "mv-devtools-body" }, [listEl, detailEl])]);
+  const resizeHandle = el("div", { class: "mv-devtools-resize", title: "Drag to resize" });
+  const panel = el("div", { class: "mv-devtools" }, [
+    resizeHandle,
+    header,
+    el("div", { class: "mv-devtools-body" }, [listEl, detailEl]),
+  ]);
 
   root.append(toggleBtn, panel);
+
+  // -- sizing: default 560px wide, drag the top-left corner to grow (the panel is
+  //    right/bottom-anchored so it grows leftward/upward), remembered per browser --
+  const SIZE_KEY = "michi-vz-devtools-size";
+  const MIN_W = 360;
+  const MIN_H = 240;
+  const clampW = (w: number): number => Math.min(Math.max(w, MIN_W), Math.max(MIN_W, window.innerWidth - 32));
+  const clampH = (h: number): number => Math.min(Math.max(h, MIN_H), Math.max(MIN_H, window.innerHeight - 32));
+  function applySize(w: number, h: number): void {
+    panel.style.setProperty("--mvdt-w", `${clampW(w)}px`);
+    panel.style.setProperty("--mvdt-h", `${clampH(h)}px`);
+  }
+  try {
+    const saved = JSON.parse(localStorage.getItem(SIZE_KEY) ?? "null") as { w?: number; h?: number } | null;
+    if (saved && typeof saved.w === "number" && typeof saved.h === "number") applySize(saved.w, saved.h);
+  } catch {
+    // storage unavailable (privacy mode) - keep defaults
+  }
+
+  maxBtn.addEventListener("click", () => panel.classList.toggle("is-max"));
+
+  let dragMove: ((e: MouseEvent) => void) | null = null;
+  let dragUp: (() => void) | null = null;
+  function endDrag(): void {
+    if (dragMove) window.removeEventListener("mousemove", dragMove);
+    if (dragUp) window.removeEventListener("mouseup", dragUp);
+    dragMove = null;
+    dragUp = null;
+  }
+  resizeHandle.addEventListener("mousedown", (e: MouseEvent) => {
+    e.preventDefault();
+    const rect = panel.getBoundingClientRect();
+    // jsdom rects are 0x0 - fall back to the current vars / defaults
+    const startW = rect.width || parseFloat(panel.style.getPropertyValue("--mvdt-w")) || 560;
+    const startH = rect.height || parseFloat(panel.style.getPropertyValue("--mvdt-h")) || 480;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    endDrag();
+    dragMove = (ev: MouseEvent) => applySize(startW + (startX - ev.clientX), startH + (startY - ev.clientY));
+    dragUp = () => {
+      endDrag();
+      try {
+        localStorage.setItem(
+          SIZE_KEY,
+          JSON.stringify({
+            w: parseFloat(panel.style.getPropertyValue("--mvdt-w")),
+            h: parseFloat(panel.style.getPropertyValue("--mvdt-h")),
+          })
+        );
+      } catch {
+        // storage unavailable - size stays session-only
+      }
+    };
+    window.addEventListener("mousemove", dragMove);
+    window.addEventListener("mouseup", dragUp);
+  });
 
   // -- entry list (hook entries first; DOM-discovered wc elements that aren't hooked) --
   function entries(): DevtoolsChartEntry[] {
@@ -995,6 +1058,7 @@ ro.observe(host);`,
       unsubscribe();
       unsubscribeHits?.();
       unsubscribeTimings?.();
+      endDrag();
       removeHitDot();
       if (onKey) window.removeEventListener("keydown", onKey);
       wrapper.remove();

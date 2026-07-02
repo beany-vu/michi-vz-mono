@@ -64,6 +64,10 @@ The panel renders inside its own **Shadow DOM**, so its styles cannot leak into 
 your app's CSS cannot break the panel). The charts themselves stay light DOM - the panel never
 touches the color contract.
 
+Working with a big context or a long series table? **Drag the panel's top-left corner** to
+resize it (the size is remembered per browser), or hit the **⛶** button in the header to
+maximize it to the full viewport and back.
+
 ## The tabs
 
 ### Sizing - "why is my chart invisible / overflowing?"
