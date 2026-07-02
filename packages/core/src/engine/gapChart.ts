@@ -3,6 +3,7 @@
 // around this. Renders into LIGHT DOM (no shadow root) so the consumer colour
 // contract + canvas probe work.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -200,10 +201,11 @@ export function mountGapChart(
   };
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("click", onHostClick);
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function render(): void {
@@ -433,6 +435,7 @@ export function mountGapChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);

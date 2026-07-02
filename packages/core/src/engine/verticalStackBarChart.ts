@@ -2,6 +2,7 @@
 // linear y; stacked rects in LIGHT DOM (SVG) or canvas. The hasOwnProperty marker
 // guard lives in the pure stack layer; this engine just orchestrates.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -249,25 +250,16 @@ export function mountVerticalStackBarChart(
     }
     baseProps.onHighlightItem?.([]);
   };
-  // Click outside the chart AND the tooltip unpins a sticky tooltip (legacy parity).
-  const onDocClick = (ev: MouseEvent): void => {
-    if (!sticky) return;
-    const t = ev.target as Node;
-    if (host.contains(t) || tooltip.contains(t)) return;
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
-    redrawHighlight([]);
-    baseProps.onHighlightItem?.([]);
-  };
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
-  if (typeof document !== "undefined") document.addEventListener("click", onDocClick);
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+      redrawHighlight([]);
+      baseProps.onHighlightItem?.([]);
+    },
   });
 
   function render(): void {
@@ -550,11 +542,11 @@ export function mountVerticalStackBarChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("mouseleave", onHostLeave);
       host.removeEventListener("click", onHostClick);
-      if (typeof document !== "undefined") document.removeEventListener("click", onDocClick);
       canvas = null;
       webgpuCanvas = null;
       clear(host);

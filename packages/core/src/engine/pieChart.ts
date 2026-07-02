@@ -4,6 +4,7 @@
 // the other engines' plugin wiring + colour-mapping dispatch; the arc geometry
 // lives in the pure layer.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -216,10 +217,11 @@ export function mountPieChart(
   };
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("click", onHostClick);
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function renderLegend(parent: SVGElement, m: PieRenderModel, x: number, y: number): void {
@@ -405,6 +407,7 @@ export function mountPieChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);

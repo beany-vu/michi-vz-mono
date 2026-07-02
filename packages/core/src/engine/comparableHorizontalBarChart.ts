@@ -1,6 +1,7 @@
 // ComparableHorizontalBar engine: mount/update/getContext/destroy. Band y +
 // linear x; two horizontal sub-bars per label in LIGHT DOM (SVG) or canvas.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -251,10 +252,11 @@ export function mountComparableHorizontalBarChart(
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function render(): void {
@@ -470,6 +472,7 @@ export function mountComparableHorizontalBarChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("mouseleave", onHostLeave);

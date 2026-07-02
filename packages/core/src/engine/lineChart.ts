@@ -3,6 +3,7 @@
 // stay uniform. Proves the remaining render styles: per-run solid/dashed lines
 // (gap detection), single-point guide line, LTTB-decimated canvas, hover line.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -248,10 +249,11 @@ export function mountLineChart(
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function render(): void {
@@ -630,6 +632,7 @@ export function mountLineChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("mouseleave", onHostLeave);

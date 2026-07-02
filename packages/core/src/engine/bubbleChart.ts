@@ -4,6 +4,7 @@
 // title, the bubbles, and an optional split legend. Mirrors the other engines'
 // plugin wiring + colour-mapping dispatch; the force layout lives in the pure layer.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -218,10 +219,11 @@ export function mountBubbleChart(
   };
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("click", onHostClick);
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function renderLegend(parent: SVGElement, m: BubbleRenderModel, x: number, y: number): void {
@@ -417,6 +419,7 @@ export function mountBubbleChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);

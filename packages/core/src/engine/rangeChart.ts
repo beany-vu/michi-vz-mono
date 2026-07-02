@@ -1,6 +1,7 @@
 // RangeChart engine: mount/update/getContext/destroy. Per-series valueMin..valueMax
 // bands (+ median lines) over a linear/time x. Reuses Line's scales. LIGHT DOM.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -159,10 +160,11 @@ export function mountRangeChart(
     if (sticky) return;
     tooltip.style.visibility = "hidden";
   };
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function render(): void {
@@ -324,6 +326,7 @@ export function mountRangeChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       canvas = null;
       webgpuCanvas = null;
