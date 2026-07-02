@@ -40,3 +40,13 @@ describe("ensureStyles - once-per-page console greeting", () => {
     spy.mockRestore();
   });
 });
+
+describe("CORE_CSS - .mv-mouse-line crosshair rule (legacy parity)", () => {
+  it("styles the crosshair SOLID via --michi-vz-crosshair with the legacy grey default", async () => {
+    const { CORE_CSS } = await import("../src/styles");
+    const rule = /\.michi-vz \.mv-mouse-line\s*\{([^}]*)\}/.exec(CORE_CSS)?.[1] ?? "";
+    expect(rule).toContain("var(--michi-vz-crosshair, #a9a9a9)");
+    expect(rule).toMatch(/stroke-width:\s*var\(--michi-vz-crosshair-width,\s*1\)/);
+    expect(rule).toMatch(/stroke-dasharray:\s*var\(--michi-vz-crosshair-dash,\s*none\)/);
+  });
+});

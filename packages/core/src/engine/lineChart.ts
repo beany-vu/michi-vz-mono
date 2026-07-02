@@ -48,6 +48,7 @@ import type {
   LineDataItem,
   Margin,
   MountOptions,
+  MouseLineConfig,
   Renderer,
   SinglePointLineConfig,
 } from "../types";
@@ -65,12 +66,17 @@ interface Resolved {
   ticks: number;
   renderer: Renderer;
   showDataPoints: boolean;
-  enableMouseLine: boolean;
+  mouseLine: MouseLineConfig | null;
   enableTransitions: boolean;
   singlePointLine: SinglePointLineConfig | null;
 }
 
 function resolveSinglePointLine(v: LineChartProps["singlePointLine"]): SinglePointLineConfig | null {
+  if (!v) return null;
+  return v === true ? {} : v;
+}
+
+function resolveMouseLine(v: LineChartProps["enableMouseLine"]): MouseLineConfig | null {
   if (!v) return null;
   return v === true ? {} : v;
 }
@@ -86,7 +92,7 @@ function resolve(p: LineChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     showDataPoints: p.showDataPoints ?? false,
-    enableMouseLine: p.enableMouseLine ?? false,
+    mouseLine: resolveMouseLine(p.enableMouseLine ?? true),
     enableTransitions: p.enableTransitions ?? true,
     singlePointLine: resolveSinglePointLine(p.singlePointLine),
   };
@@ -168,12 +174,26 @@ export function mountLineChart(
 
   const onHostMove = (ev: MouseEvent): void => {
     const r = resolve(baseProps);
-    if (r.enableMouseLine && mouseLine) {
+    if (r.mouseLine && mouseLine) {
       const svgRect = svg.getBoundingClientRect();
       const x = ev.clientX - svgRect.left;
+      // Legacy parity: snap to the nearest data point x (the old LineChartMouseLine
+      // bisector feel) unless the config opts out with snap:false. hitData covers svg
+      // AND canvas modes; empty hitData (e.g. every series disabled) = nothing to
+      // snap to, keep the line hidden rather than show it at a stale x.
+      let lineX: number | null = null;
       if (x >= r.margin.left && x <= r.width - r.margin.right) {
-        mouseLine.setAttribute("x1", String(x));
-        mouseLine.setAttribute("x2", String(x));
+        if (r.mouseLine.snap === false) {
+          lineX = x;
+        } else {
+          for (const entry of hitData)
+            for (const pt of entry.points)
+              if (lineX === null || Math.abs(pt.x - x) < Math.abs(lineX - x)) lineX = pt.x;
+        }
+      }
+      if (lineX !== null) {
+        mouseLine.setAttribute("x1", String(lineX));
+        mouseLine.setAttribute("x2", String(lineX));
         mouseLine.setAttribute("y1", String(r.margin.top));
         mouseLine.setAttribute("y2", String(r.height - r.margin.bottom));
         mouseLine.style.visibility = "visible";
@@ -219,7 +239,13 @@ export function mountLineChart(
       tooltip.classList.add("sticky");
     }
   };
+  // Legacy parity: the crosshair hides when the cursor leaves the chart. Tooltip
+  // semantics stay untouched - it keeps its own sticky/grace logic.
+  const onHostLeave = (): void => {
+    if (mouseLine) mouseLine.style.visibility = "hidden";
+  };
   host.addEventListener("mousemove", onHostMove);
+  host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
   tooltip.addEventListener("click", () => {
     sticky = false;
@@ -433,12 +459,20 @@ export function mountLineChart(
       );
     }
 
-    // Mouse crosshair line (drawn above marks, below tooltip).
-    if (r.enableMouseLine && dataState !== "nodata") {
+    // Mouse crosshair line (drawn above marks, below tooltip). Styling lives in
+    // CORE_CSS (.mv-mouse-line: solid legacy grey); a config object overrides
+    // per-instance by setting the --michi-vz-crosshair* vars the rule consumes.
+    // Inline stroke ATTRIBUTES would lose to the class rule (y-band gridline
+    // gotcha), so no presentation attrs here.
+    if (r.mouseLine && dataState !== "nodata") {
       mouseLine = svgEl("line", { class: "mv-mouse-line" }) as SVGLineElement;
-      mouseLine.setAttribute("stroke", "#999");
-      mouseLine.setAttribute("stroke-width", "1");
-      mouseLine.setAttribute("stroke-dasharray", "3,3");
+      const cfg = r.mouseLine;
+      if (cfg.stroke !== undefined)
+        mouseLine.style.setProperty("--michi-vz-crosshair", cfg.stroke);
+      if (cfg.strokeWidth !== undefined)
+        mouseLine.style.setProperty("--michi-vz-crosshair-width", String(cfg.strokeWidth));
+      if (cfg.strokeDasharray !== undefined)
+        mouseLine.style.setProperty("--michi-vz-crosshair-dash", cfg.strokeDasharray);
       mouseLine.style.visibility = "hidden";
       mouseLine.style.pointerEvents = "none";
       svg.appendChild(mouseLine);
@@ -597,6 +631,7 @@ export function mountLineChart(
     destroy() {
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
+      host.removeEventListener("mouseleave", onHostLeave);
       host.removeEventListener("click", onHostClick);
       canvas = null;
       webgpuCanvas = null;

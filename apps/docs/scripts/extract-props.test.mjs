@@ -55,6 +55,9 @@ test("defaults are read from the engine resolve()/DEFAULT_MARGIN", () => {
   assert.equal(prop("radar-chart", "rings").default, "4");
   assert.equal(prop("radar-chart", "fillOpacity").default, "0.2");
   assert.match(prop("line-chart", "margin").default, /top: 50/);
+  // Legacy-parity regression guard: the crosshair is ON by default; the default is
+  // read through the resolver-wrapped pattern `resolveMouseLine(p.enableMouseLine ?? true)`.
+  assert.equal(prop("line-chart", "enableMouseLine").default, "true");
 });
 
 test("named unions are expanded for display", () => {

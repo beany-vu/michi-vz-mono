@@ -6,6 +6,8 @@
 
 - LineChart/AreaChart x-axis: the first + last periods are never dropped, crowded labels auto-rotate then thin to ~5, and the opt-in `fillPeriodTicks` continuous-timeline mode (faded no-data ticks + a "no data" hover tooltip, customizable via `noDataTickTooltip` / `noDataTickColor`). New props forwarded by the `<michi-vz-line-chart>` / `<michi-vz-area-chart>` element (`fill-period-ticks` attribute + reactive properties).
 
+- `<michi-vz-line-chart>`: the hover crosshair (`enableMouseLine`) defaults to ON (legacy parity) and now also accepts a `MouseLineConfig` object (`{ stroke, strokeWidth, strokeDasharray, snap }`) via the `enableMouseLine` property; the `enable-mouse-line` attribute still opts in explicitly, and setting the property to `false` opts out.
+
 ### Patch Changes
 
 - Updated dependencies:

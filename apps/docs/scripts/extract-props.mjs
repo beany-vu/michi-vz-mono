@@ -84,6 +84,14 @@ function engineDefaults(engineFile) {
     const val = oneLine(m[2].replace(/\/\/.*$/, "")).replace(/[,)\s]*$/, "").trim();
     if (val) out[m[1]] = val;
   }
+  // And defaults wrapped in a resolver call where the resolved field may be renamed,
+  // e.g. `mouseLine: resolveMouseLine(p.enableMouseLine ?? true)` - key by the PROP
+  // name (m[1]), since props.json is keyed by the types.ts prop names. Additive too.
+  for (const m of text.matchAll(/\w+:\s*\w+\(\s*p\.(\w+)\s*\?\?\s*([^\n)]+)\)/g)) {
+    if (out[m[1]]) continue;
+    const val = oneLine(m[2].replace(/\/\/.*$/, "")).replace(/[,)\s]*$/, "").trim();
+    if (val) out[m[1]] = val;
+  }
   const margin = text.match(/DEFAULT_MARGIN[^=]*=\s*({[^}]*})/);
   if (margin) out.margin = oneLine(margin[1]);
   return out;

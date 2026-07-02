@@ -287,10 +287,10 @@
         },
         {
           "name": "enableMouseLine",
-          "type": "boolean",
+          "type": "boolean | MouseLineConfig",
           "optional": true,
-          "description": "Whether to show a dashed vertical crosshair line that tracks the cursor (default false)",
-          "default": "false",
+          "description": "Solid vertical crosshair line snapped to the nearest data point x on hover; pass a config object to style it (default true)",
+          "default": "true",
           "common": false
         },
         {

@@ -268,6 +268,18 @@ export interface SinglePointLineConfig {
   strokeDasharray?: string;
 }
 
+/** Vertical hover crosshair (mouse line) styling and behavior. */
+export interface MouseLineConfig {
+  /** Stroke color (default #a9a9a9 via --michi-vz-crosshair) */
+  stroke?: string;
+  /** Stroke width in px (default 1) */
+  strokeWidth?: number;
+  /** SVG dash pattern, e.g. "4,2" (default solid) */
+  strokeDasharray?: string;
+  /** Snap the line to the nearest data point x (default true); false tracks the raw cursor */
+  snap?: boolean;
+}
+
 export interface LineChartProps {
   /** Array of line series, each with its own points */
   dataSet: LineDataItem[];
@@ -321,8 +333,8 @@ export interface LineChartProps {
   expectedStep?: number;
   /** Whether to draw a marker at each data point (default false) */
   showDataPoints?: boolean;
-  /** Whether to show a dashed vertical crosshair line that tracks the cursor (default false) */
-  enableMouseLine?: boolean;
+  /** Solid vertical crosshair line snapped to the nearest data point x on hover; pass a config object to style it (default true) */
+  enableMouseLine?: boolean | MouseLineConfig;
   /** true / config draws a horizontal guide line for single-point series. */
   singlePointLine?: boolean | SinglePointLineConfig;
   /** Font family for axis/title/tooltip text (SVG + canvas). Sets the --michi-vz-font-family CSS var so both renderers resolve it. */

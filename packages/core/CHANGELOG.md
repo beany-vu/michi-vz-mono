@@ -8,6 +8,8 @@
 
 - **New opt-in `fillPeriodTicks` "continuous timeline" mode (LineChart + AreaChart).** Draws a tick for EVERY period across the range (every month/year), not just the periods present in the data. Periods with no value render faded (`.mv-tick-nodata`) and show a "no data" hover tooltip. Customize with `noDataTickTooltip(epochMs)` (tooltip text, plain string or sanitized HTML) and `noDataTickColor` (or the `--michi-vz-tick-nodata` CSS var). Exposed as `enumeratePeriods` / `periodValue` helpers and a `noDataValues` axis option internally; all five framework wrappers forward the new props.
 
+- **LineChart hover crosshair restored to legacy behavior and made configurable.** `enableMouseLine` is ON by default again (legacy `michi-vz` parity - the port had silently flipped it off, so drop-in consumers lost the line), and the vertical line now SNAPS to the nearest data point x (instead of trailing the raw cursor), hides on mouseleave, and works identically in svg, canvas, and webgpu render modes. The prop also accepts a `MouseLineConfig` object (`{ stroke, strokeWidth, strokeDasharray, snap }`), and the look themes via the new `--michi-vz-crosshair` / `--michi-vz-crosshair-width` / `--michi-vz-crosshair-dash` CSS vars (default: solid 1px `#a9a9a9`, the legacy grey). Pass `enableMouseLine={false}` to opt out.
+
 ## 1.2.1
 
 ### Patch Changes

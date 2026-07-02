@@ -30,6 +30,11 @@ export const CORE_CSS = `
 /* y=0 baseline: SOLID (not dashed) but GRAY by default (matches the previous
    version - user preference); override --michi-vz-zero-line for emphasis. */
 .michi-vz .mv-zero-line { stroke: var(--michi-vz-zero-line, var(--michi-vz-grid, lightgray)); stroke-width: 1; stroke-dasharray: none; }
+/* Vertical hover crosshair (LineChart mouse line): SOLID legacy grey, snapped to the
+   nearest data point x by the engine (enableMouseLine, default ON). Theme via the
+   --michi-vz-crosshair* vars - host-level CSS or per-instance through the
+   enableMouseLine config prop, which sets the same vars on the line element. */
+.michi-vz .mv-mouse-line { stroke: var(--michi-vz-crosshair, #a9a9a9); stroke-width: var(--michi-vz-crosshair-width, 1); stroke-dasharray: var(--michi-vz-crosshair-dash, none); }
 /* Opt-in "calm" axis theme (Nordic / lagom): a whisper-quiet grid and muted labels so
    the axis recedes and the data carries the only saturation. Add class="michi-vz-calm"
    to the chart host (or ANY ancestor - the vars cascade); pair with fewer ticks

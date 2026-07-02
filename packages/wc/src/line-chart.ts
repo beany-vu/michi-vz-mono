@@ -15,6 +15,7 @@ import type {
   MichiVzPlugin,
   XaxisDataType,
   SinglePointLineConfig,
+  MouseLineConfig,
   Margin,
   Filter,
 } from "@michi-vz/core";
@@ -76,7 +77,9 @@ export class LineChartElement extends LitElement {
   detectGaps = false;
   expectedStep?: number;
   showDataPoints = false;
-  enableMouseLine = false;
+  // No initializer: core defaults it to TRUE (legacy parity); the boolean attribute
+  // still opts in explicitly, and a MouseLineConfig object arrives via property.
+  enableMouseLine?: boolean | MouseLineConfig;
   singlePointLine?: boolean | SinglePointLineConfig;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;

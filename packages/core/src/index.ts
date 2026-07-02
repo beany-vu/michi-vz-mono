@@ -207,6 +207,7 @@ export type {
   DataPoint,
   LineDataItem,
   SinglePointLineConfig,
+  MouseLineConfig,
   LineChartProps,
   LineSeriesContext,
   LineChartContext,

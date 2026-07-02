@@ -283,3 +283,109 @@ describe("mountLineChart fillPeriodTicks (Layer 2)", () => {
     host.remove();
   });
 });
+
+describe("mountLineChart enableMouseLine crosshair (legacy mouse-line parity)", () => {
+  // Legacy michi-vz showed the vertical mouse line by DEFAULT (enableMouseLine=true),
+  // solid #a9a9a9, snapped to the nearest data point x, hidden on mouseleave. The mono
+  // port had flipped the default off and followed the raw cursor - these pin the
+  // restored contract. jsdom getBoundingClientRect() is all-zero, so clientX maps
+  // straight to the model's projected svg x.
+  const pointXs = (host: HTMLElement): number[] =>
+    Array.from(
+      new Set(
+        Array.from(host.querySelectorAll<SVGCircleElement>("circle.data-point")).map((c) =>
+          Number(c.getAttribute("cx"))
+        )
+      )
+    ).sort((a, b) => a - b);
+
+  it("renders .mv-mouse-line by default (no prop passed)", () => {
+    const { host, chart } = mount();
+    expect(host.querySelector("line.mv-mouse-line")).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("omits .mv-mouse-line when enableMouseLine is explicitly false", () => {
+    const { host, chart } = mount({ enableMouseLine: false });
+    expect(host.querySelector("line.mv-mouse-line")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("snaps the line to the nearest data point x on mousemove, not the raw cursor x", () => {
+    const { host, chart } = mount({ showDataPoints: true });
+    const xs = pointXs(host);
+    const target = xs[1]; // middle of the 3 annual ticks, safely inside the plot
+    const line = host.querySelector<SVGLineElement>("line.mv-mouse-line")!;
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: target + 4, clientY: 100, bubbles: true })
+    );
+    expect(line.style.visibility).toBe("visible");
+    expect(line.getAttribute("x1")).toBe(String(target));
+    expect(line.getAttribute("x1")).not.toBe(String(target + 4));
+    expect(line.getAttribute("x2")).toBe(line.getAttribute("x1"));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("hides the line when the cursor leaves the host", () => {
+    const { host, chart } = mount({ showDataPoints: true });
+    const xs = pointXs(host);
+    const line = host.querySelector<SVGLineElement>("line.mv-mouse-line")!;
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: xs[1], clientY: 100, bubbles: true }));
+    expect(line.style.visibility).toBe("visible");
+    host.dispatchEvent(new MouseEvent("mouseleave"));
+    expect(line.style.visibility).toBe("hidden");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("carries no inline stroke attributes - styling comes from CORE_CSS vars", () => {
+    // A class CSS rule overrides presentation attributes (y-band gridline gotcha),
+    // so inline stroke/dasharray attrs here would be dead weight at best.
+    const { host, chart } = mount();
+    const line = host.querySelector<SVGLineElement>("line.mv-mouse-line")!;
+    expect(line.getAttribute("stroke")).toBeNull();
+    expect(line.getAttribute("stroke-width")).toBeNull();
+    expect(line.getAttribute("stroke-dasharray")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("accepts a MouseLineConfig object and applies it via the crosshair CSS vars", () => {
+    const { host, chart } = mount({
+      enableMouseLine: { stroke: "red", strokeWidth: 2, strokeDasharray: "4,2" },
+    });
+    const line = host.querySelector<SVGLineElement>("line.mv-mouse-line")!;
+    expect(line.style.getPropertyValue("--michi-vz-crosshair")).toBe("red");
+    expect(line.style.getPropertyValue("--michi-vz-crosshair-width")).toBe("2");
+    expect(line.style.getPropertyValue("--michi-vz-crosshair-dash")).toBe("4,2");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("config snap:false tracks the raw cursor x instead of snapping", () => {
+    const { host, chart } = mount({ showDataPoints: true, enableMouseLine: { snap: false } });
+    const xs = pointXs(host);
+    const raw = xs[1] + 4;
+    const line = host.querySelector<SVGLineElement>("line.mv-mouse-line")!;
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: raw, clientY: 100, bubbles: true }));
+    expect(line.getAttribute("x1")).toBe(String(raw));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("stays hidden when every series is disabled (empty hit data, dataState still ready)", () => {
+    // dataState derives from the RAW dataSet while hit data derives from the processed
+    // (post-disabledItems) set - the line element mounts but must never show at a
+    // stale or arbitrary x when there is nothing to snap to.
+    const { host, chart } = mount({ disabledItems: ["Alpha One", "Beta"] });
+    const line = host.querySelector<SVGLineElement>("line.mv-mouse-line");
+    expect(line).not.toBeNull();
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 100, bubbles: true }));
+    expect(line!.style.visibility).toBe("hidden");
+    chart.destroy();
+    host.remove();
+  });
+});
