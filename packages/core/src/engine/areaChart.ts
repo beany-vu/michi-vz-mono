@@ -3,6 +3,7 @@
 // (shared renderOverlay) + a vertical hover line, with row/key hit-testing shared
 // across SVG and canvas modes.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -196,10 +197,11 @@ export function mountAreaChart(
     }
   };
 
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function render(): void {
@@ -475,6 +477,7 @@ export function mountAreaChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       canvas = null;
       webgpuCanvas = null;

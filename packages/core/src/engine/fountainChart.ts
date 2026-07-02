@@ -2,6 +2,7 @@
 // per data item; categorical x = snapshot, temporal/numeric x = trend. LIGHT DOM
 // (SVG) or canvas. Mirrors the Ribbon engine's plugin/devtools/tooltip wiring.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -207,10 +208,11 @@ export function mountFountainChart(
   };
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("click", onHostClick);
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function render(): void {
@@ -440,6 +442,7 @@ export function mountFountainChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);

@@ -1,6 +1,7 @@
 // RadarChart engine: mount/update/getContext/destroy. Polar grid + one polygon
 // per series. LIGHT DOM (SVG) or canvas. No cartesian axes.
 import DOMPurify from "dompurify";
+import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
@@ -161,10 +162,11 @@ export function mountRadarChart(
     if (sticky) return;
     tooltip.style.visibility = "hidden";
   };
-  tooltip.addEventListener("click", () => {
-    sticky = false;
-    tooltip.classList.remove("sticky");
-    tooltip.style.visibility = "hidden";
+  const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
+    isSticky: () => sticky,
+    unpin: () => {
+      sticky = false;
+    },
   });
 
   function render(): void {
@@ -400,6 +402,7 @@ export function mountRadarChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      disposeStickyDismiss();
       for (const t of teardowns) t();
       if (canvasHoverTeardown) {
         canvasHoverTeardown();
