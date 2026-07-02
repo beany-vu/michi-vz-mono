@@ -326,8 +326,15 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     maxBtn,
     closeBtn,
   ]);
+  // Resize grips: the top-left corner (both axes) plus the left and top edges
+  // (single axis each). The panel is anchored bottom-right, so all three grow
+  // the panel toward the top-left of the viewport.
   const resizeHandle = el("div", { class: "mv-devtools-resize", title: "Drag to resize" });
+  const resizeL = el("div", { class: "mv-devtools-resize-edge mv-devtools-resize-l", title: "Drag to resize width" });
+  const resizeT = el("div", { class: "mv-devtools-resize-edge mv-devtools-resize-t", title: "Drag to resize height" });
   const panel = el("div", { class: "mv-devtools" }, [
+    resizeL,
+    resizeT,
     resizeHandle,
     header,
     el("div", { class: "mv-devtools-body" }, [listWrapEl, detailEl]),
@@ -342,13 +349,15 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const MIN_H = 240;
   const clampW = (w: number): number => Math.min(Math.max(w, MIN_W), Math.max(MIN_W, window.innerWidth - 32));
   const clampH = (h: number): number => Math.min(Math.max(h, MIN_H), Math.max(MIN_H, window.innerHeight - 32));
-  function applySize(w: number, h: number): void {
-    panel.style.setProperty("--mvdt-w", `${clampW(w)}px`);
-    panel.style.setProperty("--mvdt-h", `${clampH(h)}px`);
+  // Pass null for an axis to leave it untouched (e.g. an edge drag that only
+  // changes one dimension keeps the other's current value / auto height).
+  function applySize(w: number | null, h: number | null): void {
+    if (typeof w === "number") panel.style.setProperty("--mvdt-w", `${clampW(w)}px`);
+    if (typeof h === "number") panel.style.setProperty("--mvdt-h", `${clampH(h)}px`);
   }
   try {
     const saved = JSON.parse(localStorage.getItem(SIZE_KEY) ?? "null") as { w?: number; h?: number } | null;
-    if (saved && typeof saved.w === "number" && typeof saved.h === "number") applySize(saved.w, saved.h);
+    if (saved) applySize(typeof saved.w === "number" ? saved.w : null, typeof saved.h === "number" ? saved.h : null);
   } catch {
     // storage unavailable (privacy mode) - keep defaults
   }
@@ -363,7 +372,25 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     dragMove = null;
     dragUp = null;
   }
-  resizeHandle.addEventListener("mousedown", (e: MouseEvent) => {
+  function persistSize(): void {
+    const w = parseFloat(panel.style.getPropertyValue("--mvdt-w"));
+    const h = parseFloat(panel.style.getPropertyValue("--mvdt-h"));
+    try {
+      localStorage.setItem(
+        SIZE_KEY,
+        JSON.stringify({
+          ...(Number.isFinite(w) ? { w } : {}),
+          ...(Number.isFinite(h) ? { h } : {}),
+        })
+      );
+    } catch {
+      // storage unavailable - size stays session-only
+    }
+  }
+  // Shared handler for the corner + edge grips. `horiz`/`vert` pick which axes
+  // this grip drives; the panel is anchored bottom-right so a smaller clientX/Y
+  // (dragging toward the top-left) grows it.
+  function startResize(e: MouseEvent, horiz: boolean, vert: boolean): void {
     e.preventDefault();
     const rect = panel.getBoundingClientRect();
     // jsdom rects are 0x0 - fall back to the current vars / defaults
@@ -372,24 +399,20 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     const startX = e.clientX;
     const startY = e.clientY;
     endDrag();
-    dragMove = (ev: MouseEvent) => applySize(startW + (startX - ev.clientX), startH + (startY - ev.clientY));
+    panel.classList.add("is-resizing");
+    dragMove = (ev: MouseEvent) =>
+      applySize(horiz ? startW + (startX - ev.clientX) : null, vert ? startH + (startY - ev.clientY) : null);
     dragUp = () => {
       endDrag();
-      try {
-        localStorage.setItem(
-          SIZE_KEY,
-          JSON.stringify({
-            w: parseFloat(panel.style.getPropertyValue("--mvdt-w")),
-            h: parseFloat(panel.style.getPropertyValue("--mvdt-h")),
-          })
-        );
-      } catch {
-        // storage unavailable - size stays session-only
-      }
+      panel.classList.remove("is-resizing");
+      persistSize();
     };
     window.addEventListener("mousemove", dragMove);
     window.addEventListener("mouseup", dragUp);
-  });
+  }
+  resizeHandle.addEventListener("mousedown", (e: MouseEvent) => startResize(e, true, true));
+  resizeL.addEventListener("mousedown", (e: MouseEvent) => startResize(e, true, false));
+  resizeT.addEventListener("mousedown", (e: MouseEvent) => startResize(e, false, true));
 
   // -- entry list (hook entries first; DOM-discovered wc elements that aren't hooked) --
   function entries(): DevtoolsChartEntry[] {

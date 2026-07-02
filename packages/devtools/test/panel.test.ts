@@ -356,6 +356,45 @@ describe("mountDevtools panel", () => {
     localStorage.removeItem("michi-vz-devtools-size");
   });
 
+  it("the left edge grip resizes width only, leaving height untouched", () => {
+    localStorage.removeItem("michi-vz-devtools-size");
+    const dt = mountDevtools();
+    const r = root(dt);
+    const panel = q(r, ".mv-devtools")!;
+    const handle = q(r, ".mv-devtools-resize-l");
+    expect(handle).not.toBeNull();
+
+    handle!.dispatchEvent(new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }));
+    window.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 200 }));
+    window.dispatchEvent(new MouseEvent("mouseup", {}));
+
+    expect(parseFloat(panel.style.getPropertyValue("--mvdt-w"))).toBeGreaterThan(560);
+    // height stays auto - the vertical move must not touch --mvdt-h
+    expect(panel.style.getPropertyValue("--mvdt-h")).toBe("");
+    expect(panel.classList.contains("is-resizing")).toBe(false);
+    dt.destroy();
+    localStorage.removeItem("michi-vz-devtools-size");
+  });
+
+  it("the top edge grip resizes height only, leaving width untouched", () => {
+    localStorage.removeItem("michi-vz-devtools-size");
+    const dt = mountDevtools();
+    const r = root(dt);
+    const panel = q(r, ".mv-devtools")!;
+    const handle = q(r, ".mv-devtools-resize-t");
+    expect(handle).not.toBeNull();
+
+    handle!.dispatchEvent(new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }));
+    window.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 300 }));
+    window.dispatchEvent(new MouseEvent("mouseup", {}));
+
+    expect(parseFloat(panel.style.getPropertyValue("--mvdt-h"))).toBeGreaterThan(0);
+    // width stays at its default - the horizontal move must not touch --mvdt-w
+    expect(panel.style.getPropertyValue("--mvdt-w")).toBe("");
+    dt.destroy();
+    localStorage.removeItem("michi-vz-devtools-size");
+  });
+
   it("destroy removes the shadow host and unsubscribes", () => {
     const dt = mountDevtools();
     expect(q(document.body, ".mv-devtools-root")).not.toBeNull();

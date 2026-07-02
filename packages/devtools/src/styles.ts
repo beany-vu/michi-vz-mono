@@ -164,13 +164,20 @@ export const DEVTOOLS_CSS = `
   width: calc(100vw - 32px); height: calc(100vh - 32px); max-height: none;
 }
 .mv-devtools.is-max pre { max-height: 48vh; }
-.mv-devtools.is-max .mv-devtools-resize { display: none; }
+.mv-devtools.is-max .mv-devtools-resize,
+.mv-devtools.is-max .mv-devtools-resize-edge { display: none; }
+.mv-devtools.is-resizing, .mv-devtools.is-resizing * { user-select: none; }
 .mv-devtools-resize {
-  position: absolute; left: 0; top: 0; width: 16px; height: 16px; cursor: nwse-resize;
+  position: absolute; left: 0; top: 0; z-index: 2; width: 16px; height: 16px; cursor: nwse-resize;
   border-left: 3px solid var(--mvdt-border); border-top: 3px solid var(--mvdt-border);
   border-top-left-radius: 10px; opacity: .8;
 }
 .mv-devtools-resize:hover { border-color: var(--mvdt-accent); opacity: 1; }
+/* full-length edge grips (left = width, top = height); sit under the corner grip */
+.mv-devtools-resize-edge { position: absolute; z-index: 1; }
+.mv-devtools-resize-l { left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.mv-devtools-resize-t { left: 0; right: 0; top: 0; height: 6px; cursor: ns-resize; }
+.mv-devtools-resize-edge:hover { background: var(--mvdt-accent); opacity: .4; }
 .mv-devtools-header {
   display: flex; align-items: center; gap: 8px; padding: 8px 10px;
   background: var(--mvdt-bg-raised); border-bottom: 1px solid var(--mvdt-border); cursor: default;
