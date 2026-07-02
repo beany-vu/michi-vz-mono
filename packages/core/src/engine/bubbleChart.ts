@@ -4,7 +4,7 @@
 // title, the bubbles, and an optional split legend. Mirrors the other engines'
 // plugin wiring + colour-mapping dispatch; the force layout lives in the pure layer.
 import DOMPurify from "dompurify";
-import { attachDevtools } from "../devtools/hook";
+import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
@@ -194,6 +194,7 @@ export function mountBubbleChart(
         break;
       }
     }
+    reportDevtoolsHit(host, x, y, hit ? hit.label : null);
     if (hit) {
       showTooltip(hit, ev);
       baseProps.onHighlightItem?.([hit.label]);

@@ -2,7 +2,7 @@
 // SVG marks (per-mark hover) or canvas (host-level hit-test). Title + shared
 // linear x/y axes.
 import DOMPurify from "dompurify";
-import { attachDevtools } from "../devtools/hook";
+import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
@@ -210,6 +210,7 @@ export function mountScatterChart(
         break;
       }
     }
+    reportDevtoolsHit(host, x, y, hit ? hit.label : null);
     if (hit) {
       showTooltip(hit.raw, ev);
       baseProps.onHighlightItem?.([hit.label]);

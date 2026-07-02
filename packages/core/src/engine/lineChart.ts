@@ -3,7 +3,7 @@
 // stay uniform. Proves the remaining render styles: per-run solid/dashed lines
 // (gap detection), single-point guide line, LTTB-decimated canvas, hover line.
 import DOMPurify from "dompurify";
-import { attachDevtools } from "../devtools/hook";
+import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
@@ -218,6 +218,7 @@ export function mountLineChart(
         }
       }
     }
+    reportDevtoolsHit(host, x, y, hitLabel);
     if (hitLabel) {
       showTooltip(hitLabel, ev);
       baseProps.onHighlightItem?.([hitLabel]);

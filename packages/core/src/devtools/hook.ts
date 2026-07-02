@@ -29,6 +29,22 @@ export interface DevtoolsChartEntry {
 
 type Listener = (charts: DevtoolsChartEntry[]) => void;
 
+/** One canvas-mode pointer hit-test result, streamed to the devtools Hit-test tab. */
+export interface DevtoolsHitEvent {
+  /** The chart host the pointer event fired on (maps to a DevtoolsChartEntry). */
+  host: HTMLElement;
+  /** Pointer position in the chart's plot coordinate space. */
+  x: number;
+  y: number;
+  /** The mark the hit-test resolved, or null for a miss. */
+  label: string | null;
+  /** performance.now() timestamp. */
+  t: number;
+}
+
+type HitListener = (e: DevtoolsHitEvent) => void;
+type TimingListener = (id: string, ms: number) => void;
+
 /** The singleton installed on `globalThis.__MICHI_VZ_DEVTOOLS_HOOK__`. */
 export interface MichiVzDevtoolsHook {
   /** Marks this object as a michi-vz devtools hook (so an extension can detect it). */
@@ -41,6 +57,16 @@ export interface MichiVzDevtoolsHook {
   subscribe(fn: Listener): () => void;
   /** Re-broadcast the current chart list (call after a chart re-renders). */
   notify(): void;
+  /**
+   * High-frequency channels, kept separate from subscribe/notify so a busy
+   * mousemove stream never re-renders the chart list. Nothing is stored here -
+   * a panel keeps its own ring buffer.
+   */
+  reportHit(e: DevtoolsHitEvent): void;
+  subscribeHits(fn: HitListener): () => void;
+  /** Per-update render duration, reported by attachDevtools around update(). */
+  reportTiming(id: string, ms: number): void;
+  subscribeTimings(fn: TimingListener): () => void;
 }
 
 interface DevtoolsGlobals {
@@ -54,6 +80,8 @@ let counter = 0;
 function createHook(): MichiVzDevtoolsHook {
   const charts = new Map<string, DevtoolsChartEntry>();
   const subs = new Set<Listener>();
+  const hitSubs = new Set<HitListener>();
+  const timingSubs = new Set<TimingListener>();
   const broadcast = (): void => {
     const list = [...charts.values()];
     subs.forEach((fn) => fn(list));
@@ -73,7 +101,33 @@ function createHook(): MichiVzDevtoolsHook {
       return () => subs.delete(fn);
     },
     notify: broadcast,
+    reportHit(e) {
+      hitSubs.forEach((fn) => fn(e));
+    },
+    subscribeHits(fn) {
+      hitSubs.add(fn);
+      return () => hitSubs.delete(fn);
+    },
+    reportTiming(id, ms) {
+      timingSubs.forEach((fn) => fn(id, ms));
+    },
+    subscribeTimings(fn) {
+      timingSubs.add(fn);
+      return () => timingSubs.delete(fn);
+    },
   };
+}
+
+/**
+ * Report a canvas hit-test result from an engine's host mousemove/click handler.
+ * Safe to call unconditionally: it is a no-op unless devtools is enabled, and it
+ * tolerates an older hook (version skew) that predates the hit channel.
+ */
+export function reportDevtoolsHit(host: HTMLElement, x: number, y: number, label: string | null): void {
+  const hook = g.__MICHI_VZ_DEVTOOLS_HOOK__;
+  if (!hook || typeof hook.reportHit !== "function") return;
+  const t = typeof performance !== "undefined" ? performance.now() : 0;
+  hook.reportHit({ host, x, y, label, t });
 }
 
 /** The installed hook, or null when devtools has not been enabled. */
@@ -114,22 +168,28 @@ export function attachDevtools<P>(
   if (!hook) return instance;
 
   const id = `${chartType}-${++counter}`;
+  // One timed path for BOTH the app's update() and a panel edit via setProps, so
+  // the Profiler sees every re-render regardless of who drove it.
+  const timedUpdate = (next: P): void => {
+    const timed = typeof performance !== "undefined" && typeof hook.reportTiming === "function";
+    const t0 = timed ? performance.now() : 0;
+    instance.update(next);
+    if (timed) hook.reportTiming(id, performance.now() - t0);
+    hook.notify();
+  };
   hook.register({
     id,
     chartType,
     host,
     getContext: () => instance.getContext(),
     getProps: () => getProps(),
-    setProps: (patch) => instance.update({ ...getProps(), ...(patch as Partial<P>) } as P),
+    setProps: (patch) => timedUpdate({ ...getProps(), ...(patch as Partial<P>) } as P),
     getTools: instance.getTools ? () => instance.getTools!() : undefined,
   });
 
   return {
     ...instance,
-    update(next: P) {
-      instance.update(next);
-      hook.notify();
-    },
+    update: timedUpdate,
     destroy() {
       hook.unregister(id);
       instance.destroy();

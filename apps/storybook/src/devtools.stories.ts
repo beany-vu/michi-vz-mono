@@ -48,7 +48,7 @@ const meta: Meta<DevtoolsArgs> = {
     const wrap = document.createElement("div");
     const hint = document.createElement("p");
     hint.textContent =
-      "The floating michi-vz devtools panel is bottom-right (hotkey Ctrl/Cmd+Shift+M). Walk the tabs: Overview, Sizing, Scales, Diff, Insights. Toggle the Storybook background to verify both panel themes.";
+      "The floating michi-vz devtools panel is bottom-right (hotkey Ctrl/Cmd+Shift+M). Walk the tabs: Overview, Sizing, Scales, Diff, Hit-test, Profiler, Insights, A11y. Toggle the Storybook background to verify both panel themes.";
     hint.style.cssText = "font: 13px/1.5 sans-serif; max-width: 720px;";
     wrap.append(hint, chart);
     return wrap;

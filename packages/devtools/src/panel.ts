@@ -12,9 +12,11 @@ import {
   type AgentTool,
   type ChartContext,
   type DevtoolsChartEntry,
+  type DevtoolsHitEvent,
 } from "@michi-vz/core";
 import { ensureDevtoolsStyles } from "./styles";
 import { diffObjects } from "./diff";
+import { auditContext, type AuditableContext } from "./a11y";
 
 export interface DevtoolsHotkey {
   key: string;
@@ -58,13 +60,16 @@ interface WcElement extends HTMLElement {
 
 const DEFAULT_HOTKEY: DevtoolsHotkey = { key: "m", ctrl: true, meta: true, shift: true };
 
-type TabKey = "overview" | "sizing" | "scales" | "diff" | "insights";
+type TabKey = "overview" | "sizing" | "scales" | "diff" | "hittest" | "profiler" | "insights" | "a11y";
 const TABS: Array<[TabKey, string]> = [
   ["overview", "Overview"],
   ["sizing", "Sizing"],
   ["scales", "Scales"],
   ["diff", "Diff"],
+  ["hittest", "Hit-test"],
+  ["profiler", "Profiler"],
   ["insights", "Insights"],
+  ["a11y", "A11y"],
 ];
 
 // The one-click AI actions the Insights tab knows how to surface. Tool names may be
@@ -160,6 +165,50 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const lastJson = new Map<string, string>();
   // Last AI action result per chart (survives re-renders; cleared on selection change).
   const aiState = new Map<string, { tool: string; text: string; labels?: string[] }>();
+  // Canvas hit-test event ring buffer (all hosts; filtered per selection at render).
+  const MAX_HITS = 200;
+  const hitLog: DevtoolsHitEvent[] = [];
+  let hitRenderQueued = false;
+  const onHit = (e: DevtoolsHitEvent): void => {
+    hitLog.push(e);
+    if (hitLog.length > MAX_HITS) hitLog.shift();
+    // Throttle: a mousemove stream must not re-render the panel per event.
+    if (!isOpen || selectedTab !== "hittest" || hitRenderQueued) return;
+    hitRenderQueued = true;
+    setTimeout(() => {
+      hitRenderQueued = false;
+      if (isOpen && selectedTab === "hittest") render();
+    }, 80);
+  };
+  // Per-chart render durations reported by attachDevtools around update() (ring 60).
+  const MAX_TIMINGS = 60;
+  const timings = new Map<string, number[]>();
+  const onTiming = (id: string, ms: number): void => {
+    const arr = timings.get(id) ?? [];
+    arr.push(ms);
+    if (arr.length > MAX_TIMINGS) arr.shift();
+    timings.set(id, arr);
+  };
+
+  // Marker dot placed over the chart host at the last hit position (inline-styled:
+  // it lives in the app's light DOM, outside our shadow root).
+  let hitDot: HTMLElement | null = null;
+  function removeHitDot(): void {
+    hitDot?.remove();
+    hitDot = null;
+  }
+  function placeHitDot(host: HTMLElement, e: DevtoolsHitEvent): void {
+    if (!hitDot || hitDot.parentElement !== host) {
+      removeHitDot();
+      hitDot = document.createElement("div");
+      hitDot.setAttribute("data-michi-vz-devtools-hitdot", "");
+      host.appendChild(hitDot);
+    }
+    const color = e.label ? "#2ec56f" : "#e05252";
+    hitDot.style.cssText =
+      `position:absolute;left:${e.x - 5}px;top:${e.y - 5}px;width:10px;height:10px;` +
+      `border:2px solid ${color};border-radius:999px;pointer-events:none;z-index:9999;box-sizing:border-box;`;
+  }
 
   function capture(): void {
     for (const e of entries()) {
@@ -338,9 +387,13 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       contentEl.append(el("div", { class: "empty" }, ["No chart selected"]));
       return;
     }
+    if (selectedTab !== "hittest") removeHitDot();
     if (selectedTab === "sizing") renderSizing(sel);
     else if (selectedTab === "scales") renderScales(viewedContext(sel));
     else if (selectedTab === "diff") renderDiff(sel);
+    else if (selectedTab === "hittest") renderHitTest(sel);
+    else if (selectedTab === "profiler") renderProfiler(sel);
+    else if (selectedTab === "a11y") renderA11y(viewedContext(sel));
     else renderInsights(sel, viewedContext(sel));
   }
 
@@ -577,6 +630,128 @@ ro.observe(host);`,
     }
   }
 
+  // -- Hit-test tab: live canvas pointer log (pain point #5; makes a dead/rebound
+  //    canvas listener visually obvious - the log goes silent on hover) --
+  function renderHitTest(entry: DevtoolsChartEntry): void {
+    const mine = hitLog.filter((e) => e.host === entry.host);
+    contentEl.append(el("h4", {}, ["Pointer log"]));
+    if (mine.length === 0) {
+      contentEl.append(
+        el("div", { class: "empty" }, [
+          "Waiting for pointer events. Move the mouse over the chart (canvas/webgpu mode - SVG marks are inspectable directly). If the log stays silent while you hover, the chart's canvas listener is dead.",
+        ])
+      );
+      return;
+    }
+    const last = mine[mine.length - 1];
+    placeHitDot(entry.host, last);
+    contentEl.append(
+      el("div", { class: `mv-devtools-flag ${last.label ? "ok" : "warn"}` }, [
+        last.label
+          ? `Last: hit "${last.label}" at ${Math.round(last.x)}, ${Math.round(last.y)}`
+          : `Last: miss at ${Math.round(last.x)}, ${Math.round(last.y)}`,
+      ])
+    );
+    const log = el("div", { class: "mv-devtools-hitlog" });
+    const rows = mine.slice(-50).reverse();
+    for (const e of rows) {
+      log.append(
+        el("div", { class: "row" }, [
+          el("span", { class: e.label ? "hit" : "miss" }, [e.label ? "hit " : "miss"]),
+          el("span", { class: "k" }, [`${Math.round(e.x)}, ${Math.round(e.y)}`]),
+          el("span", {}, [e.label ?? "-"]),
+          el("span", { class: "k" }, [`${Math.round(e.t)} ms`]),
+        ])
+      );
+    }
+    contentEl.append(log);
+    if (mine.length > 50) {
+      contentEl.append(el("div", { class: "empty" }, [`showing the last 50 of ${mine.length} events`]));
+    }
+  }
+
+  // -- Profiler tab: per-update render durations (pain points #6/#7) --
+  function renderProfiler(entry: DevtoolsChartEntry): void {
+    const arr = timings.get(entry.id) ?? [];
+    contentEl.append(el("h4", {}, ["Render timings"]));
+    if (arr.length === 0) {
+      contentEl.append(
+        el("div", { class: "empty" }, [
+          "No updates timed yet. Update the chart (new data, a prop change) and each update's render duration appears here.",
+        ])
+      );
+      return;
+    }
+    const last = arr[arr.length - 1];
+    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+    const max = Math.max(...arr);
+    const kv = el("div", { class: "mv-devtools-kv" });
+    const row = (k: string, v: string): void => {
+      kv.append(el("span", { class: "k" }, [k]), el("span", {}, [v]));
+    };
+    row("updates", `${arr.length} update${arr.length === 1 ? "" : "s"} timed`);
+    row("last", `${last.toFixed(1)} ms`);
+    row("mean", `${mean.toFixed(1)} ms`);
+    row("max", `${max.toFixed(1)} ms`);
+    contentEl.append(kv);
+
+    // Bar strip: one bar per update, height proportional to duration.
+    const strip = el("div", { class: "mv-devtools-profbars" });
+    for (const ms of arr.slice(-40)) {
+      const bar = el("span", { class: "bar" });
+      bar.style.height = `${Math.max(2, Math.round((ms / (max || 1)) * 36))}px`;
+      bar.title = `${ms.toFixed(1)} ms`;
+      strip.append(bar);
+    }
+    contentEl.append(strip);
+
+    // Trend check: is the recent half meaningfully slower than the early half?
+    if (arr.length >= 10) {
+      const half = Math.floor(arr.length / 2);
+      const early = arr.slice(0, half).reduce((a, b) => a + b, 0) / half;
+      const recent = arr.slice(-half).reduce((a, b) => a + b, 0) / half;
+      if (early > 0 && recent > early * 1.5) {
+        contentEl.append(
+          el("div", { class: "mv-devtools-flag warn" }, [
+            `Render time is trending up (${early.toFixed(1)} ms → ${recent.toFixed(1)} ms mean). Look for growing data, non-memoized props forcing full re-renders, or leaked listeners.`,
+          ])
+        );
+      } else {
+        contentEl.append(el("div", { class: "mv-devtools-flag ok" }, ["Render time is stable."]));
+      }
+    }
+  }
+
+  // -- A11y tab: Chartability-inspired audit of the live context --
+  function renderA11y(ctx: ChartContext | null): void {
+    if (!ctx) {
+      contentEl.append(el("div", { class: "empty" }, ["No context yet (chart not rendered)"]));
+      return;
+    }
+    contentEl.append(el("h4", {}, ["Audit"]));
+    for (const f of auditContext(ctx as unknown as AuditableContext)) {
+      contentEl.append(el("div", { class: `mv-devtools-flag ${f.kind}` }, [f.text]));
+    }
+
+    const table = (ctx as unknown as AuditableContext).a11yTable;
+    contentEl.append(el("h4", {}, ["A11y data table (what a screen reader gets)"]));
+    if (!table || table.rows.length === 0) {
+      contentEl.append(el("div", { class: "empty" }, ["This chart emits no a11y table."]));
+      return;
+    }
+    const t = el("table");
+    t.append(el("thead", {}, [el("tr", {}, table.headers.map((h) => el("th", {}, [h])))]));
+    const tbody = el("tbody");
+    for (const r of table.rows.slice(0, 30)) {
+      tbody.append(el("tr", {}, r.map((c) => el("td", {}, [String(c)]))));
+    }
+    t.append(tbody);
+    contentEl.append(t);
+    if (table.rows.length > 30) {
+      contentEl.append(el("div", { class: "empty" }, [`… ${table.rows.length - 30} more rows`]));
+    }
+  }
+
   // -- Insights tab: the chart's own summary + one-click @michi-vz/insights actions --
   function renderInsights(entry: DevtoolsChartEntry, ctx: ChartContext | null): void {
     contentEl.append(el("h4", {}, ["What the AI sees"]));
@@ -790,6 +965,9 @@ ro.observe(host);`,
   refreshBtn.addEventListener("click", refresh);
 
   const unsubscribe = hook.subscribe(() => refresh());
+  // Optional chaining: an older core (version skew) has no hit/timing channels.
+  const unsubscribeHits = hook.subscribeHits?.(onHit) ?? null;
+  const unsubscribeTimings = hook.subscribeTimings?.(onTiming) ?? null;
 
   let onKey: ((e: KeyboardEvent) => void) | null = null;
   if (hotkey) {
@@ -815,6 +993,9 @@ ro.observe(host);`,
     getRoot: () => root,
     destroy() {
       unsubscribe();
+      unsubscribeHits?.();
+      unsubscribeTimings?.();
+      removeHitDot();
       if (onKey) window.removeEventListener("keydown", onKey);
       wrapper.remove();
     },

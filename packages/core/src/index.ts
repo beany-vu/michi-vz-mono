@@ -44,8 +44,8 @@ export type { MichiVzPlugin, PluginContext, AgentTool, Annotation } from "./plug
 export type { MountOptions } from "./types";
 
 // ---- Devtools hook (opt-in page-level registry consumed by @michi-vz/devtools) ----
-export { enableDevtools, getDevtoolsHook, attachDevtools } from "./devtools/hook";
-export type { MichiVzDevtoolsHook, DevtoolsChartEntry } from "./devtools/hook";
+export { enableDevtools, getDevtoolsHook, attachDevtools, reportDevtoolsHit } from "./devtools/hook";
+export type { MichiVzDevtoolsHook, DevtoolsChartEntry, DevtoolsHitEvent } from "./devtools/hook";
 
 // ---- Styling ----
 export { CORE_CSS, ensureStyles } from "./styles";

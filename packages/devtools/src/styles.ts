@@ -261,6 +261,16 @@ export const DEVTOOLS_CSS = `
 .mv-devtools-diff .path { color: var(--mvdt-chart); word-break: break-all; white-space: normal; }
 .mv-devtools-diff .vals { grid-column: 2; color: var(--mvdt-muted); word-break: break-all; white-space: normal; }
 
+/* hit-test */
+.mv-devtools-hitlog { max-height: 220px; overflow: auto; }
+.mv-devtools-hitlog .row { gap: 10px; margin: 1px 0; }
+.mv-devtools-hitlog .hit { color: var(--mvdt-ok-ink); font-weight: 700; }
+.mv-devtools-hitlog .miss { color: var(--mvdt-err-ink); font-weight: 700; }
+
+/* profiler */
+.mv-devtools-profbars { display: flex; align-items: flex-end; gap: 2px; height: 40px; margin: 6px 0; }
+.mv-devtools-profbars .bar { width: 6px; background: var(--mvdt-chart); border-radius: 2px 2px 0 0; display: inline-block; }
+
 /* insights (AI-styled) */
 .mv-devtools-ai {
   position: relative; border-radius: 8px; padding: 8px 10px 8px 26px; margin: 6px 0;

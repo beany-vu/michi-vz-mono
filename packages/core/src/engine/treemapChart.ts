@@ -3,7 +3,7 @@
 // just a title, the tiles, and an optional split legend. Mirrors the other engines'
 // plugin wiring + colour-mapping dispatch; the tiling/geometry live in the pure layer.
 import DOMPurify from "dompurify";
-import { attachDevtools } from "../devtools/hook";
+import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
@@ -169,6 +169,7 @@ export function mountTreemapChart(
         break;
       }
     }
+    reportDevtoolsHit(host, x, y, hit ? hit.label : null);
     if (hit) {
       showTooltip(hit, ev);
       baseProps.onHighlightItem?.([hit.label]);

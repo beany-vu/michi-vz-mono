@@ -14,9 +14,9 @@ anything like it. No browser extension to install: it is one import, versioned w
 
 > Click **Open devtools panel** (or press `Ctrl/Cmd+Shift+M`), pick the chart in the list, and
 > walk the tabs: **Overview** (context, series, live editing), **Sizing**, **Scales**, **Diff**,
-> and **Insights** - where ✦ **Narrate** and ✦ **Detect anomalies** run real `@michi-vz/insights`
-> plugins against the live chart (the 2022 Cost spike gets flagged; highlight it from the result).
-> This is the real package, running in your browser.
+> **Hit-test**, **Profiler**, **A11y**, and **Insights** - where ✦ **Narrate** and ✦ **Detect
+> anomalies** run real `@michi-vz/insights` plugins against the live chart (the 2022 Cost spike
+> gets flagged; highlight it from the result). This is the real package, running in your browser.
 
 ## Quick start
 
@@ -106,6 +106,30 @@ actions discovered through `getTools()`:
 
 Anything else a plugin exposes shows under **Advanced** as a raw tool runner (JSON args in,
 JSON result out).
+
+### Hit-test - "why doesn't my tooltip fire?"
+
+Canvas marks have no DOM, so when a hover stops working there is nothing to inspect in the
+Elements panel - you cannot tell a hit-test bug from a dead listener from a CSS
+`pointer-events` problem. The Hit-test tab streams the chart's own canvas hit-test results
+live: every pointer move logs its coordinates and the mark it resolved (or a miss), and a
+green/red marker tracks the last event on the chart itself. The killer diagnostic is silence:
+if you are hovering and the log is not moving, the chart's canvas listener is dead.
+
+### Profiler - "why did this get slow?"
+
+Every `update()` is timed at the engine boundary. The Profiler tab shows the last/mean/max
+render durations with a per-update bar strip, and warns when render time is trending up -
+the usual suspects being growing data, non-memoized props forcing full re-renders, or leaked
+listeners.
+
+### A11y - the audit no chart devtool does
+
+Chartability-inspired heuristics run against the live context: a missing plain-language
+`summary` (screen readers and AI agents get nothing), an a11y table with fewer rows than
+series, two series sharing one color (indistinguishable without vision), and series colors
+below the 3:1 graphics-contrast ratio on a light or dark background. Below the audit, the tab
+renders the actual a11y data table - exactly what a screen reader gets.
 
 ### Overview - inspect, drive, edit
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mountLineChart, type LineChartProps, type ChartContext } from "@michi-vz/core";
+import { mountLineChart, mountScatterChart, type LineChartProps, type ChartContext } from "@michi-vz/core";
 import { mountDevtools, type DevtoolsHandle } from "../src/panel";
 
 interface G {
@@ -229,10 +229,63 @@ describe("devtools tabs", () => {
     return { dt, r, host, chart };
   }
 
-  it("shows a tab bar with Overview, Sizing, Scales, Diff and Insights", () => {
+  it("shows the full tab bar", () => {
     const { dt, r, chart } = mountWithChart();
     const labels = Array.from(r.querySelectorAll(".mv-devtools-tab")).map((t) => t.textContent);
-    expect(labels).toEqual(["Overview", "Sizing", "Scales", "Diff", "Insights"]);
+    expect(labels).toEqual(["Overview", "Sizing", "Scales", "Diff", "Hit-test", "Profiler", "Insights", "A11y"]);
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Profiler tab shows per-update render durations after updates", () => {
+    const { dt, r, chart } = mountWithChart();
+    clickTab(r, "Profiler");
+    expect(q(r, ".mv-devtools-detail")?.textContent?.toLowerCase()).toContain("update");
+
+    chart.update({ ...props, width: 420 });
+    chart.update({ ...props, width: 440 });
+    clickTab(r, "Profiler");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text).toContain("2 update");
+    expect(text).toContain("ms");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("A11y tab renders audit findings for the live context", () => {
+    const { dt, r, chart } = mountWithChart();
+    clickTab(r, "A11y");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    // healthy chart: table present, summary present, distinct colors
+    expect(q(r, ".mv-devtools-flag.ok")).not.toBeNull();
+    expect(text.toLowerCase()).toContain("table");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("A11y tab flags duplicate series colors", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountLineChart(host, {
+      ...props,
+      dataSet: [
+        ...props.dataSet,
+        {
+          label: "Cost",
+          series: [
+            { date: 2020, value: 10, certainty: true },
+            { date: 2021, value: 20, certainty: true },
+          ],
+        },
+      ],
+      colorsMapping: { Revenue: "#d62728", Cost: "#d62728" },
+    });
+    clickTab(r, "A11y");
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text).toContain("same color");
+    expect(q(r, ".mv-devtools-flag.warn")).not.toBeNull();
     chart.destroy();
     dt.destroy();
   });
@@ -323,6 +376,36 @@ describe("devtools tabs", () => {
     clickTab(r, "Diff");
     const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
     expect(text.toLowerCase()).toContain("snapshot");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("Hit-test tab logs canvas pointer events with the resolved label", async () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountScatterChart(host, {
+      dataSet: [
+        { label: "Point A", x: 1, y: 2, d: 5 },
+        { label: "Beta", x: 3, y: 6, d: 10 },
+      ],
+      width: 600,
+      height: 300,
+      xAxisDataType: "number",
+      renderer: "canvas",
+    });
+    clickTab(r, "Hit-test");
+    // before any pointer traffic, the tab explains what it is waiting for
+    expect(q(r, ".mv-devtools-detail")?.textContent?.toLowerCase()).toContain("pointer");
+
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 10, clientY: 10, bubbles: true }));
+    // the panel throttles hit-driven re-renders (~80ms)
+    await new Promise((res) => setTimeout(res, 150));
+    const log = q(r, ".mv-devtools-hitlog");
+    expect(log).not.toBeNull();
+    expect(log?.textContent).toContain("10");
+
     chart.destroy();
     dt.destroy();
   });

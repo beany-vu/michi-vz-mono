@@ -81,6 +81,8 @@ function mountChart() {
     height: 300,
     xAxisDataType: "number",
     showDataPoints: true,
+    // canvas renderer: the devtools Hit-test tab streams the host hit-test live
+    renderer: "canvas",
     onChartDataProcessed: () => refreshReadout(),
   });
   // Attach @michi-vz/insights so the devtools Insights tab offers one-click

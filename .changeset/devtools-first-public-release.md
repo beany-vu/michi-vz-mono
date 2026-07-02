@@ -2,6 +2,7 @@
 "@michi-vz/devtools": minor
 "@michi-vz/insights": minor
 "@michi-vz/react": minor
+"@michi-vz/core": minor
 ---
 
 First public release of @michi-vz/devtools: the in-page chart devtools panel (no browser extension needed).
@@ -11,7 +12,12 @@ First public release of @michi-vz/devtools: the in-page chart devtools panel (no
 - New Scales tab: x/y axis domains with NaN / inverted / zero-width sanity checks
 - New Diff tab: deep diff between ChartContext history snapshots (`diffObjects` exported)
 - New Insights tab: the chart summary AI-styled, plus one-click Narrate / Detect anomalies (with flagged-series highlighting) / Forecast when @michi-vz/insights is attached; raw tool runner moved under Advanced
+- New Hit-test tab: live canvas pointer log + hit/miss marker over the chart host (a dead canvas listener is visible as a silent log)
+- New Profiler tab: per-update render durations (last/mean/max, bar strip, trending-up warning)
+- New A11y tab: Chartability-inspired audit (missing summary, incomplete a11y table, duplicate series colors, low graphic contrast on light/dark) + the a11y table itself; `auditContext`/`contrastRatio`/`findDuplicateColors` exported
 - New inert `@michi-vz/devtools/production` entry for prod-safe conditional imports
+
+@michi-vz/core: the devtools hook gained high-frequency channels - `reportHit`/`subscribeHits` (canvas hit-test stream; scatter, bubble and treemap engines report their host hit-tests via the new `reportDevtoolsHit`, zero cost when devtools is off) and `reportTiming`/`subscribeTimings` (attachDevtools times every update()).
 
 @michi-vz/insights: the narrate(), anomaly() and forecast() plugins now expose their capability as agent tools via provideTools (discoverable through chart.getTools(), powering the devtools Insights tab and any agent host).
 
