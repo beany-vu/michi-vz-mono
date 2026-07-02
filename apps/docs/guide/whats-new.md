@@ -10,9 +10,12 @@ The latest `@michi-vz` releases, newest first. All six packages -
 number. Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## v1.3.0
+## v1.4.0
 
 - **The hover crosshair is back - and configurable.** LineChart's vertical mouse line is on by default again (legacy parity; the port had silently flipped it off), snaps to the nearest data point instead of trailing the raw cursor, and hides when the cursor leaves the chart - in SVG, canvas, and WebGPU modes alike. Style it per chart with `enableMouseLine: { stroke, strokeWidth, strokeDasharray, snap }`, theme it globally with the `--michi-vz-crosshair` / `--michi-vz-crosshair-width` / `--michi-vz-crosshair-dash` CSS vars, or pass `false` to turn it off.
+
+## v1.3.0
+
 - **No period left behind on the x-axis.** LineChart date axes now always keep the true first and last period (raw `d3` time ticks used to snap to round boundaries and drop them), and crowded labels auto-rotate -45° then thin to ~5 instead of silently disappearing.
 - **Continuous timelines with `fillPeriodTicks` (Line + Area, opt-in).** A tick for every period in the range, not just the ones present in the data; missing periods render faded with a "no data" hover tooltip, customizable via `noDataTickTooltip` and `noDataTickColor`.
 

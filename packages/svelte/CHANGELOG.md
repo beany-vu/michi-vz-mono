@@ -1,5 +1,16 @@
 # @michi-vz/svelte
 
+## 1.4.0
+
+### Minor Changes
+
+- LineChart hover crosshair is ON by default again (legacy `michi-vz` parity), snaps to the nearest data point x, hides on mouseleave, and `enableMouseLine` now also accepts a `MouseLineConfig` object (`{ stroke, strokeWidth, strokeDasharray, snap }`). Flows through automatically (props pass straight to the core engine).
+
+### Patch Changes
+
+- Updated dependencies:
+  - @michi-vz/core@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes

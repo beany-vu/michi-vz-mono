@@ -1,5 +1,17 @@
 # @michi-vz/angular
 
+## 1.4.0
+
+### Minor Changes
+
+- LineChart hover crosshair is ON by default again (legacy `michi-vz` parity), snaps to the nearest data point x, hides on mouseleave, and `enableMouseLine` now also accepts a `MouseLineConfig` object (`{ stroke, strokeWidth, strokeDasharray, snap }`), forwarded by `applyLineChartProps` to the `<michi-vz-line-chart>` element.
+
+### Patch Changes
+
+- Updated dependencies:
+  - @michi-vz/core@1.4.0
+  - @michi-vz/wc@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes
