@@ -86,6 +86,7 @@ export {
 export {
   createEmbedder,
   findSimilar,
+  matchLabels,
   reconcileLabels,
   cosineSimilarity,
   hashEmbed,
@@ -93,6 +94,10 @@ export {
   type EmbedBackend,
   type EmbedOptions,
   type SimilarItem,
+  type MatchOptions,
+  type MatchPair,
+  type MatchResult,
+  type UnmatchedLabel,
   type ReconcileGroup,
   type ReconcileOptions,
 } from "./embeddings";

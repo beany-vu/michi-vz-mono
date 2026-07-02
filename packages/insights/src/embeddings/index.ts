@@ -206,3 +206,137 @@ export async function reconcileLabels(
   });
   return clusters.map((c) => ({ name: medoid(c.members, c.vecs), members: c.members }));
 }
+
+export interface MatchPair {
+  /** The source label. */
+  source: string;
+  /** The target label it confidently paired with. */
+  target: string;
+  /** Cosine similarity of the pair. */
+  similarity: number;
+}
+
+/** A label with no confident match, plus its closest miss (a "did you mean" hint).
+ * `closest` is null only when the other side is empty. */
+export interface UnmatchedLabel {
+  label: string;
+  closest: string | null;
+  similarity: number;
+}
+
+export interface MatchOptions extends EmbedOptions {
+  /** Minimum cosine to consider a candidate match at all. Same default as
+   * reconcileLabels: 0.7 (transformers) / 0.6 (hash). */
+  threshold?: number;
+  /** Confidence gate, reused from reconcileLabels: a pair only counts when it is at
+   * least this much closer than the next-best candidate. Default 0.05; 0 disables. */
+  margin?: number;
+  /** Require each side to be the OTHER's single best match (a mutual best match)
+   * before calling a pair confident - the standard way to stop two source rows
+   * colliding onto the same target. Default true. Set false to allow many-to-one
+   * (or better: reconcileLabels() the messy side first, then match across). */
+  mutual?: boolean;
+  /** Reuse a prebuilt embedder instead of creating one from the EmbedOptions. */
+  embedder?: Embedder;
+}
+
+export interface MatchResult {
+  /** Confident source -> target pairs, in source-encounter order. */
+  matches: MatchPair[];
+  /** Source labels with no confident match, each with its closest target (if any). */
+  unmatchedSource: UnmatchedLabel[];
+  /** Target labels with no confident match, each with its closest source (if any). */
+  unmatchedTarget: UnmatchedLabel[];
+}
+
+/** Best and second-best cosine of `vec` against every vector in `others`. */
+function bestAndSecond(vec: number[], others: number[][]): { index: number; sim: number; secondSim: number } {
+  let index = -1;
+  let sim = -Infinity;
+  let secondSim = -Infinity;
+  for (let j = 0; j < others.length; j++) {
+    const x = cosineSimilarity(vec, others[j]);
+    if (x > sim) {
+      secondSim = sim;
+      sim = x;
+      index = j;
+    } else if (x > secondSim) {
+      secondSim = x;
+    }
+  }
+  return { index, sim, secondSim };
+}
+
+/** Link the same entities ACROSS two differently-spelled lists. Where reconcileLabels
+ * cleans duplicates within one list, matchLabels pairs a source list against a target
+ * list (a CRM export vs an ERP export), so two datasets can become one joined chart.
+ * A pair is a confident match only when it clears the similarity threshold, wins the
+ * same confidence-margin gate reconcileLabels uses, and (by default) is a MUTUAL best
+ * match - each side picks the other first - so two source rows never silently collide
+ * onto one target. Everything else is reported back as unmatched with its closest
+ * near-miss, never dropped or force-fitted.
+ *
+ * The model-free default links spelling/case/typo variants offline;
+ * `{ backend: "transformers" }` also links synonyms/abbreviations/translations. */
+export async function matchLabels(
+  source: string[],
+  target: string[],
+  options: MatchOptions = {}
+): Promise<MatchResult> {
+  const embedder = options.embedder ?? (await createEmbedder(options));
+  const threshold = options.threshold ?? (embedder.backend === "transformers" ? 0.7 : 0.6);
+  const margin = options.margin ?? 0.05;
+  const mutual = options.mutual ?? true;
+
+  if (source.length === 0 || target.length === 0) {
+    return {
+      matches: [],
+      unmatchedSource: source.map((label) => ({ label, closest: null, similarity: 0 })),
+      unmatchedTarget: target.map((label) => ({ label, closest: null, similarity: 0 })),
+    };
+  }
+
+  // Sequential embeds, matching findSimilar's pattern on a possibly-shared pipeline.
+  const srcVecs = await embedder.embed(source);
+  const tgtVecs = await embedder.embed(target);
+
+  const srcBest = srcVecs.map((v) => bestAndSecond(v, tgtVecs));
+  const tgtBest = tgtVecs.map((v) => bestAndSecond(v, srcVecs));
+
+  const matches: MatchPair[] = [];
+  const srcClaimed = new Array<boolean>(source.length).fill(false);
+  const tgtClaimed = new Array<boolean>(target.length).fill(false);
+
+  source.forEach((label, i) => {
+    const b = srcBest[i];
+    if (b.sim < threshold) return;
+    // Margin gates the SOURCE's choice among targets (is it decisively this one?).
+    // The target side needs no margin of its own: mutuality resolves collisions
+    // deterministically (the target's single best source wins; ties go to the
+    // earliest, so duplicate sources yield one match + one reported unmatched).
+    if (b.secondSim >= 0 && b.sim - b.secondSim < margin) return;
+    if (mutual) {
+      const t = tgtBest[b.index];
+      if (t.index !== i) return; // the target prefers a different source
+      if (tgtClaimed[b.index]) return; // defensive; mutual implies unique
+    }
+    matches.push({ source: label, target: target[b.index], similarity: b.sim });
+    srcClaimed[i] = true;
+    tgtClaimed[b.index] = true;
+  });
+
+  const unmatchedSource: UnmatchedLabel[] = [];
+  source.forEach((label, i) => {
+    if (srcClaimed[i]) return;
+    const b = srcBest[i];
+    unmatchedSource.push({ label, closest: b.index >= 0 ? target[b.index] : null, similarity: Math.max(0, b.sim) });
+  });
+  const unmatchedTarget: UnmatchedLabel[] = [];
+  target.forEach((label, j) => {
+    if (tgtClaimed[j]) return;
+    const b = tgtBest[j];
+    unmatchedTarget.push({ label, closest: b.index >= 0 ? source[b.index] : null, similarity: Math.max(0, b.sim) });
+  });
+
+  return { matches, unmatchedSource, unmatchedTarget };
+}

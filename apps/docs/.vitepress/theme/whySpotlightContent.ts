@@ -7,7 +7,7 @@
 // what the code cannot do (the treemap split is real; drilldown is not, so it
 // is not mentioned). House style: plain ASCII hyphens only.
 
-export type WhyTabId = "explain" | "gaps" | "insights" | "treemap" | "webgpu" | "frameworks";
+export type WhyTabId = "explain" | "gaps" | "insights" | "ribbon" | "webgpu" | "frameworks";
 
 /** A body fragment: plain text, or a term carrying a native-title tooltip. */
 export type BodyRun = string | { term: string; title: string };
@@ -63,23 +63,23 @@ export const TABS: WhyTab[] = [
         title:
           "Double exponential smoothing, a named textbook forecasting method. The insights docs spell out the exact logic behind every number, and backtesting reports the accuracy.",
       },
-      " forecast with 50% and 80% bands, computed in your browser the moment you opened this tab. No server, no upload: the data never leaves the page, and every method is a named technique you can check.",
+      " forecast with 50% and 80% bands, computed in your browser the moment you opened this tab. No server, no upload: the data never leaves the page, and every method is a named technique you can check. The same layer searches your series by meaning, merges labels that arrive spelled differently, and takes your own local model when you want richer words.",
     ],
     link: { text: "The insights layer, with methodology", href: "/guide/insights" },
   },
   {
-    id: "treemap",
-    heading: "A treemap with an inner truth",
+    id: "ribbon",
+    heading: "Ranks that weave",
     body: [
-      "Each tile is sized by its total, and the inner rectangle shows how much of that total is realized versus ",
+      "Three contenders trade places year after year, and the ",
       {
-        term: "untapped",
+        term: "ribbon chart",
         title:
-          "Every tile takes a partial value; showSplit draws it as an inner rectangle with its own legend labels (here: Realized vs Untapped).",
+          "Stacked columns per period with connector ribbons between them: follow one label's band to watch its rank and share change over time.",
       },
-      ": two numbers per tile, one glance. Hierarchies nest, and on narrow screens the layout restacks instead of shrinking into slivers.",
+      " keeps every path readable: follow one band and you follow one story. Hit Shuffle for a fresh season of numbers, as many times as you like.",
     ],
-    link: { text: "The treemap, in full", href: "/charts/treemap" },
+    link: { text: "The ribbon chart, in full", href: "/charts/ribbon" },
   },
   {
     id: "webgpu",

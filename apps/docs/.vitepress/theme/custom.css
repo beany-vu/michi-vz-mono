@@ -622,6 +622,19 @@
   letter-spacing: 0.03em;
   color: var(--vp-c-text-3);
 }
+.mv-why-shuffle {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 14px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-brand-1);
+  color: #fff;
+  cursor: pointer;
+}
+.mv-why-shuffle:hover {
+  background: var(--mv-brick-ink, var(--vp-c-brand-2));
+}
 .mv-why-tabs {
   display: flex;
   flex-direction: column;

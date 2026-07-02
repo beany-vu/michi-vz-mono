@@ -7,7 +7,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useLlm, LLM_CATALOG } from "./useLlm";
 
-const props = defineProps<{ feature?: string; chart?: string; dataset?: string }>();
+const props = defineProps<{ feature?: string; chart?: string; dataset?: string; modelExplain?: boolean }>();
 const feature = props.feature ?? "forecast";
 const chartKind = props.chart ?? "line";
 
@@ -207,10 +207,32 @@ function setRenderer(r: "canvas" | "svg") {
   else remount();
 }
 
+// Opt-in (props.modelExplain) real-model narration: the rules explanation stays the default;
+// a small in-browser LLM can add a second, model-written one. Reuses useLlm()'s module-singleton
+// state under narrate-prefixed names, so a model loaded here also lights up the agent-chat demo
+// (and vice versa). Routed through backend:"remote" + a caller wrapping the CDN-loaded engine -
+// never backend:"webllm"/"transformers" here, since @mlc-ai/web-llm isn't installed in apps/docs
+// and those backends' optionalImport would silently fall back to rules, which would be dishonest.
+const { loadedId: narrateLlmLoaded, pct: narrateLlmPct, errMsg: narrateLlmErr, load: narrateLlmLoad, generate: narrateLlmGen } = useLlm();
+const narrateReal = ref(false); // ⚡ Instant by default
+const smallestLlm = LLM_CATALOG.reduce((min, m) => (m.sizeMB < min.sizeMB ? m : min));
+const narrateLlmId = ref(smallestLlm.id);
+const selectedNarrateLlm = computed(() => LLM_CATALOG.find((m) => m.id === narrateLlmId.value) ?? LLM_CATALOG[0]);
+const narrateBusy = ref(false);
+const modelExplanation = ref("");
+const narrateExplaining = ref(false);
+
+async function loadNarrateModel() {
+  if (narrateBusy.value || narrateLlmLoaded.value === selectedNarrateLlm.value.id) return;
+  narrateBusy.value = true;
+  try { await narrateLlmLoad(selectedNarrateLlm.value); } catch { /* narrateLlmErr surfaced in the panel */ } finally { narrateBusy.value = false; }
+}
+
 async function explain() {
-  if (!chart || !api || explaining.value) return;
+  if (!chart || !api || explaining.value || narrateExplaining.value) return;
   explaining.value = true;
   explanation.value = "";
+  modelExplanation.value = "";
   // Min display time so the loader reads (a real SLM load takes seconds; rules is instant).
   const [text] = await Promise.all([
     api.explainChart(chart.getContext(), { backend: "rules" }),
@@ -218,6 +240,20 @@ async function explain() {
   ]);
   explanation.value = text;
   explaining.value = false;
+
+  // Real-model pass, appended after the rules text - only on pages that opt in, only once the
+  // user has switched to Real model AND already loaded it (never an auto-download).
+  if (props.modelExplain && narrateReal.value && narrateLlmLoaded.value === selectedNarrateLlm.value.id) {
+    narrateExplaining.value = true;
+    try {
+      modelExplanation.value = await api.explainChart(chart.getContext(), {
+        backend: "remote",
+        caller: (prompt: string) => narrateLlmGen(prompt, 150),
+      });
+    } finally {
+      narrateExplaining.value = false;
+    }
+  }
 }
 
 function runTool(q: string, tool: string, args: Record<string, unknown>) {
@@ -395,12 +431,39 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
 
       <p v-if="summary && feature !== 'validate'" class="insights-demo-summary"><strong>getContext().summary →</strong> {{ summary }}</p>
 
+      <div v-if="props.modelExplain" class="idemo-chat-engine">
+        <div class="idemo-modes" role="group" aria-label="Explain engine">
+          <button :class="{ on: !narrateReal }" @click="narrateReal = false" title="Instant: a rule-based sentence, generated offline - no download.">⚡ Instant</button>
+          <button :class="{ on: narrateReal }" @click="narrateReal = true" title="Real model: a small in-browser LLM (Qwen / Llama / Gemma) narrates the chart. Falls back to rules.">Real model</button>
+        </div>
+        <template v-if="narrateReal">
+          <select v-model="narrateLlmId" :disabled="narrateBusy" aria-label="narration model">
+            <option v-for="m in LLM_CATALOG" :key="m.id" :value="m.id">{{ m.name }} · {{ fmtSize(m.sizeMB) }}</option>
+          </select>
+          <button class="idemo-chip" :class="{ ready: narrateLlmLoaded === selectedNarrateLlm.id }" @click="loadNarrateModel" :disabled="narrateBusy">
+            <span v-if="narrateBusy && narrateLlmLoaded !== selectedNarrateLlm.id">Loading… {{ narrateLlmPct }}%</span>
+            <span v-else-if="narrateLlmLoaded === selectedNarrateLlm.id">✓ {{ selectedNarrateLlm.name }}</span>
+            <span v-else>⚡ Load {{ selectedNarrateLlm.name }}</span>
+          </button>
+        </template>
+      </div>
+      <p v-if="props.modelExplain && narrateReal && narrateLlmErr" class="idemo-chat-warn">⚠ {{ narrateLlmErr }} (needs a recent Chrome/Edge with WebGPU). The rules explanation still works.</p>
+
       <div v-if="explaining" class="ai-loading">
         <span class="ai-orb"></span>
         <span class="ai-load-text">Generating narration</span>
         <span class="ai-dots"><i></i><i></i><i></i></span>
       </div>
-      <p v-else-if="explanation" class="insights-demo-explain"><strong>explainChart() →</strong> {{ explanation }}</p>
+      <p v-else-if="explanation" class="insights-demo-explain"><strong>{{ props.modelExplain ? "Rules →" : "explainChart() →" }}</strong> {{ explanation }}</p>
+
+      <template v-if="props.modelExplain">
+        <div v-if="narrateExplaining" class="ai-loading">
+          <span class="ai-orb"></span>
+          <span class="ai-load-text">Generating narration</span>
+          <span class="ai-dots"><i></i><i></i><i></i></span>
+        </div>
+        <p v-else-if="modelExplanation" class="insights-demo-explain"><strong>Model ({{ selectedNarrateLlm.name }}) →</strong> {{ modelExplanation }}</p>
+      </template>
 
       <div v-if="feature === 'validate'" class="insights-demo-warnings">
         <strong>onDataWarning →</strong>

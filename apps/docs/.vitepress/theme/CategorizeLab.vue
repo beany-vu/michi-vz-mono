@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// SORT (3 of 3). Zero-shot categorize: a pile of free-text comments with no tags. Give embeddings
+// SORT (4 of 4). Zero-shot categorize: a pile of free-text comments with no tags. Give embeddings
 // just the theme NAMES (no keyword rules) and each comment drops into its nearest theme by meaning.
 //   - "⚡ Instant" (default): the sorted result, precomputed - shown immediately, no download.
 //   - "🔬 Real model": download MiniLM (~23 MB) and run the embedding match live in the browser.

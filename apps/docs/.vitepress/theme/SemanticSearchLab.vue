@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// FIND (2 of 3). Semantic search over a dashboard's series. Type what you want in plain
+// FIND (3 of 4). Semantic search over a dashboard's series. Type what you want in plain
 // English ("money coming in") and embeddings rank the KPIs by MEANING, not keyword - so a
 // query with no shared letters still finds the right series. Model-free matches on words
 // (good for "customer"); BERT matches on meaning (needed for "money coming in" → Revenue).

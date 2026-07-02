@@ -30,7 +30,7 @@ features simply read from it.
 
 ## What it does
 
-Three things become possible once a chart carries its own structured meaning:
+Four things become possible once a chart carries its own structured meaning:
 
 ### Read and drive charts from an AI assistant
 
@@ -91,6 +91,21 @@ chart.use(anomaly());   // flags + annotates outliers
 chart.use(narrate());   // richer plain-English summary (also feeds screen readers)
 chart.use(validate());  // warns via onDataWarning AND marks the bad points red on the chart
 ```
+
+### Clean and connect your data, too
+
+The same structured meaning also cleans up messy data and finds things by what they mean, not
+how they are spelled - all model-free by default, all opt-in to a real model when you want more:
+
+- **[Reconcile labels](#reconcile-labels)** - collapse `USA` / `united states` / `U.S.A.` into
+  one clean group, so totals stop splitting across spellings.
+- **[Match across datasets](#match-across-datasets)** - link two differently-spelled lists (a
+  CRM export and an ERP export) into one honest, joined chart.
+- **[Smart search](#smart-search)** - find a series by what you mean ("money coming in"), not
+  by its exact label.
+- **[Bring your own model](#bring-a-model)** - every model-backed feature falls back to a
+  deterministic, rule-based answer; flip **Real model** in the narration demo to compare a
+  small in-browser model's prose side by side, live.
 
 ---
 
@@ -242,6 +257,149 @@ over millions of rows). Flip the grouping and it re-rolls.
 
 <PluginLab feature="sonify" />
 
+## Clean, match, and search your data
+
+Four things AI gives your data, all in the browser: **reconcile** messy labels within one list,
+**match** two lists that spell things differently, **search** a series by meaning, and
+**categorize** free text with no rules - powered by small open models, not a giant cloud one.
+
+**Turn text into meaning.** An *embedding* is a way to turn a word or phrase into a list of numbers,
+arranged so that things that *mean* the same land close together - so a computer can tell `USA` and
+`United States` are the same place even though they share no letters. `@michi-vz/insights` invents none
+of this; it shows how to *leverage* the open-source models the community already built: small
+**embedding models** (the BERT / MiniLM family) and **small-enough open LLMs** (Qwen, Gemma, Phi), all
+running **client-side in your browser** - no server, no API key, nothing sent anywhere. Pointed at your
+chart data, they lift its **quality** and clean up **wrong, messy data**: four everyday problems become
+one trick - **merge** what means the same, **match** what two systems spell differently, **find**
+what you mean, **sort** the unsorted. The
+**model-free** default runs instantly offline (character n-grams, great for spelling and typos); **pick
+a model** from the dropdown (MiniLM ~23 MB → MPNet ~110 MB, sizes shown, loaded on demand) to go from
+matching *letters* to matching *meaning* - and bring a small LLM to **certify** the result.
+
+### Reconcile labels
+
+**The problem every analyst knows.** Your data arrives from three sources and they each spell the
+same thing differently - `United States`, `united states`, `USA`. Group by exact match and your chart
+splits one country into three short bars with **wrong totals**, and an afternoon goes to hand-writing
+a lookup table.
+
+**Embeddings fix it by meaning.** Turn each label into a vector and merge the ones that land close
+together. The **model-free** default (instant, offline) already collapses spelling, casing, spacing
+and typos. Load a real model (the dropdown shows each one's size) and it also merges abbreviations and
+translations - `USA` ≈ `United States`, `Deutschland` ≈ `Germany`, `Nippon` ≈ `Japan`. **Certify**
+then adds a small LLM that confirms each group and stamps the authoritative name.
+
+<EmbeddingsLab />
+
+> Start on **Raw labels** to feel the mess - 10 bars, split totals - then hit **Reconcile**.
+> Model-free merges the spelling variants offline; loading a model (MiniLM → MPNet) merges the
+> abbreviations and translations too, down to the 3 real countries. **Certify** hands those groups to a
+> small in-browser LLM for an authoritative name.
+
+> [!NOTE] Similarity proposes, a model *certifies*.
+> An embedding model runs fully **offline** - it has no internet and looks nothing up. It merges
+> `Deutschland` with `Germany` because their vectors landed near each other in training, not because it
+> "knows" the country. So the merge is not decided on the raw threshold alone: a label only joins a group
+> when it is **decisively closer to that group than to any other** (a confidence margin), which keeps two
+> distinct countries from collapsing just because they sit close. For an *authoritative* answer, **Certify**
+> runs a **cascade** (not a mixture-of-experts - that is internal to one model): embeddings propose the
+> merges cheaply, then a **small** in-browser LLM (Qwen / Gemma, sizes shown) confirms each group is one
+> country and returns the canonical name. That model genuinely knows countries, but it needs **WebGPU** and
+> the weights download once. (In a real app a custom caller could point at a bigger model or a local
+> **Ollama** server instead; a static website cannot call Ollama directly - the browser's CORS policy
+> blocks `localhost`. See **Agents & MCP** below.)
+
+> [!NOTE] The bet: a quick model finishes, a smarter one refines.
+> The flow above is a deliberate experiment - let a fast, naive model (the embeddings) do the bulk of
+> the work, then call a heavier, smarter model (a small LLM) only to refine what is left. It trades a
+> little up-front accuracy for speed and cost, and pays for the bigger model only where it matters. This
+> is a belief being tested here, not settled doctrine; it can be argued the other way, and the approach -
+> along with these results - will evolve as the models do.
+
+### Match across datasets
+
+**The next problem: two separate sources, not one messy list.** A CRM export and an ERP export
+each name the same customers, countries, or products - spelled a little differently in each
+system. `reconcileLabels` cleans duplicates *within* one list; `matchLabels` links entities
+*across* two lists, so two datasets become one honest chart.
+
+<MatchLab />
+
+> Two small datasets, mismatched on purpose. Hit **Match** and the confident pairs light up with
+> their similarity; the leftovers stay honestly unmatched (with a closest-miss hint) instead of
+> being force-fitted - and the joined rows draw as one chart, two sub-bars per row.
+
+### Smart search
+
+A dashboard with dozens of series and you cannot recall the exact name. Type what you *mean* and
+embeddings rank every series by similarity - no keyword has to match.
+
+<SemanticSearchLab />
+
+> Try `customer` first - model-free finds the customer KPIs by shared letters. Then `money coming in`:
+> only **BERT** reaches `Revenue`, because they share *meaning*, not spelling.
+
+### Categorize
+
+A pile of survey comments with no tags. Hand embeddings just the **theme names** (no keyword lists, no
+training) and each comment drops into its nearest theme - so unstructured text becomes a chart you can
+act on. This is the one that truly needs a model: `keeps freezing` → **Performance** shares no letters
+with any theme name.
+
+<CategorizeLab />
+
+> **Load BERT** and watch the comments snap into the right themes by meaning - `too expensive` →
+> Pricing, `love the clean new look` → Design & UX - none of which share a keyword with their theme.
+
+How to write it - reconcile first, then the other embedding uses:
+
+::: code-group
+
+```ts [Reconcile labels]
+import { reconcileLabels } from "@michi-vz/insights/embeddings";
+// one call: groups messy labels by meaning, with a confidence gate + a tidy representative name
+const groups = await reconcileLabels(rawLabels); // { backend: "transformers" } adds synonyms
+// → [{ name: "United States", members: ["United States", "USA", ...] }, ...]
+// now sum your series by group.name instead of the raw label → clean, correct totals
+```
+
+```ts [Match two datasets]
+import { matchLabels } from "@michi-vz/insights/embeddings";
+const { matches, unmatchedSource, unmatchedTarget } = await matchLabels(crmCountries, erpCountries);
+// matches → [{ source: "USA", target: "United States", similarity: 0.91 }, ...]
+const rows = matches.map((m) => ({
+  label: m.target,
+  valueBased: crmTotals[m.source],     // two sources, one row -
+  valueCompared: erpTotals[m.target],  // feeds straight into mountComparableHorizontalBarChart
+}));
+```
+
+```ts [Embed with BERT]
+import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings";
+// opt into a small in-browser BERT (MiniLM via Transformers.js, WebGPU); lazy, nothing bundled
+const e = await createEmbedder({ backend: "transformers" }); // default all-MiniLM-L6-v2
+const [a, b] = await e.embed(["USA", "United States"]);
+cosineSimilarity(a, b); // ≈ 0.8 - close, even with no letters in common
+```
+
+```ts [Search by meaning]
+import { findSimilar } from "@michi-vz/insights/embeddings";
+// rank a large chart catalog by what a query means, not how it is spelled
+const ranked = await findSimilar("revenue", chartLabels, (l) => l);
+```
+
+```ts [Dashboard RAG]
+import { findSimilar } from "@michi-vz/insights/embeddings";
+// retrieve the charts most relevant to a question, feed THEIR context to an LLM (see Agents)
+const top = (await findSimilar(question, charts, (c) => c.getContext().summary)).slice(0, 3);
+```
+
+:::
+
+Same engine, other uses: **searching** a big chart catalog by meaning, **clustering** similar series,
+and **dashboard-wide RAG** - retrieving the right charts so an agent can answer across a whole
+dashboard (see **Agents & MCP**). Embeddings are the retrieval layer; the headline is what sits on top.
+
 ## Methodology - the exact logic behind every insight
 
 Nothing here is a black box: every insight is a named, textbook method you can verify by hand.
@@ -306,13 +464,21 @@ and optionally annotated on the chart.
   (mulberry32) so runs are reproducible. Quantiles of the runs give the band; final-step
   tallies give exceedance probabilities.
 
-### Embeddings (search/merge/sort)
+### Embeddings (reconcile, match, search, sort)
 
 The default embedder is **model-free hashing** (character n-grams into a fixed-size vector,
 L2-normalized) - fully offline and deterministic; it merges spelling/case/typo variants but
 not true synonyms. `backend: "transformers"` upgrades to MiniLM (see
 [Where models come from](#where-models-come-from-and-how-to-change-it)). Similarity is cosine;
 merge thresholds default to 0.6 (hash) / 0.7 (model).
+
+`reconcileLabels` clusters *within* one list (greedy single-linkage, gated by a confidence
+margin so a label only joins a group it is decisively closest to). `matchLabels` links
+*across* two lists instead: every source label pairs with its single best target, the same
+confidence margin gates the source's choice, and by default a pair counts only as a
+**mutual best match** - each side picks the other first - which is what stops two source
+rows colliding onto the same target. Everything that does not clear the gates is reported
+back as unmatched with its closest near-miss, never silently dropped.
 
 ## Why trust it (and who it's for)
 
@@ -374,11 +540,11 @@ More pure, deterministic helpers in `@michi-vz/insights/forecast`: `forecastFan(
 
 ## Narration: customize, localize (i18n), or bring a model
 
-Here is narration - a two-series chart that writes its own sentence. Hit **Explain ▸** to
-generate it (the calm "thinking" indicator is the Nordic-style loader you would show while a real SLM
-loads; here it runs the instant rule-based path):
+Here is narration - a two-series chart that writes its own sentence. Hit **Explain ▸** for the
+instant rule-based sentence; flip **Real model** to load a small in-browser language model (its
+size shown before anything downloads) and read its prose next to the rules, side by side:
 
-<InsightsDemo feature="narrate" />
+<InsightsDemo feature="narrate" model-explain />
 
 The default `narrate()` is **rule-based** (no model). Make it yours three ways:
 
@@ -396,6 +562,9 @@ narrate({ render: (ctx) => myTemplate(ctx) });
 ```
 
 ### Bring a model
+
+Try it live in the demo above: flip **Real model**, pick a small model by its size, and compare
+its prose to the rule-based sentence, side by side.
 
 `explainChart(ctx, { backend, model })` upgrades the prose with a model and **always falls back** to
 the rule-based text. No plugin needed - call it on demand. **Small language models that run in the
@@ -500,123 +669,6 @@ await explainChart(ctx, {
 await explainChart(ctx, { backend: "remote", caller: (prompt) => fetch("/api/llm", { method: "POST", body: prompt }).then(r => r.text()) });
 ```
 
-## Michi-vz in the AI world
-
-Three things AI gives a chart, all in the browser: **merge** messy labels, **find** a series by
-meaning, **sort** free text - powered by small open models, not a giant cloud one.
-
-**Turn text into meaning.** An *embedding* is a way to turn a word or phrase into a list of numbers,
-arranged so that things that *mean* the same land close together - so a computer can tell `USA` and
-`United States` are the same place even though they share no letters. `@michi-vz/insights` invents none
-of this; it shows how to *leverage* the open-source models the community already built: small
-**embedding models** (the BERT / MiniLM family) and **small-enough open LLMs** (Qwen, Gemma, Phi), all
-running **client-side in your browser** - no server, no API key, nothing sent anywhere. Pointed at your
-chart data, they lift its **quality** and clean up **wrong, messy data**: three everyday problems become
-one trick - **merge** what means the same, **find** what you mean, **sort** the unsorted. The
-**model-free** default runs instantly offline (character n-grams, great for spelling and typos); **pick
-a model** from the dropdown (MiniLM ~23 MB → MPNet ~110 MB, sizes shown, loaded on demand) to go from
-matching *letters* to matching *meaning* - and bring a small LLM to **certify** the result.
-
-### Merge - reconcile messy labels
-
-**The problem every analyst knows.** Your data arrives from three sources and they each spell the
-same thing differently - `United States`, `united states`, `USA`. Group by exact match and your chart
-splits one country into three short bars with **wrong totals**, and an afternoon goes to hand-writing
-a lookup table.
-
-**Embeddings fix it by meaning.** Turn each label into a vector and merge the ones that land close
-together. The **model-free** default (instant, offline) already collapses spelling, casing, spacing
-and typos. Load a real model (the dropdown shows each one's size) and it also merges abbreviations and
-translations - `USA` ≈ `United States`, `Deutschland` ≈ `Germany`, `Nippon` ≈ `Japan`. **Certify**
-then adds a small LLM that confirms each group and stamps the authoritative name.
-
-<EmbeddingsLab />
-
-> Start on **Raw labels** to feel the mess - 10 bars, split totals - then hit **Reconcile**.
-> Model-free merges the spelling variants offline; loading a model (MiniLM → MPNet) merges the
-> abbreviations and translations too, down to the 3 real countries. **Certify** hands those groups to a
-> small in-browser LLM for an authoritative name.
-
-> [!NOTE] Similarity proposes, a model *certifies*.
-> An embedding model runs fully **offline** - it has no internet and looks nothing up. It merges
-> `Deutschland` with `Germany` because their vectors landed near each other in training, not because it
-> "knows" the country. So the merge is not decided on the raw threshold alone: a label only joins a group
-> when it is **decisively closer to that group than to any other** (a confidence margin), which keeps two
-> distinct countries from collapsing just because they sit close. For an *authoritative* answer, **Certify**
-> runs a **cascade** (not a mixture-of-experts - that is internal to one model): embeddings propose the
-> merges cheaply, then a **small** in-browser LLM (Qwen / Gemma, sizes shown) confirms each group is one
-> country and returns the canonical name. That model genuinely knows countries, but it needs **WebGPU** and
-> the weights download once. (In a real app a custom caller could point at a bigger model or a local
-> **Ollama** server instead; a static website cannot call Ollama directly - the browser's CORS policy
-> blocks `localhost`. See **Agents & MCP** below.)
-
-> [!NOTE] The bet: a quick model finishes, a smarter one refines.
-> The flow above is a deliberate experiment - let a fast, naive model (the embeddings) do the bulk of
-> the work, then call a heavier, smarter model (a small LLM) only to refine what is left. It trades a
-> little up-front accuracy for speed and cost, and pays for the bigger model only where it matters. This
-> is a belief being tested here, not settled doctrine; it can be argued the other way, and the approach -
-> along with these results - will evolve as the models do.
-
-### Find - search your series by meaning
-
-A dashboard with dozens of series and you cannot recall the exact name. Type what you *mean* and
-embeddings rank every series by similarity - no keyword has to match.
-
-<SemanticSearchLab />
-
-> Try `customer` first - model-free finds the customer KPIs by shared letters. Then `money coming in`:
-> only **BERT** reaches `Revenue`, because they share *meaning*, not spelling.
-
-### Sort - categorize free text with no rules
-
-A pile of survey comments with no tags. Hand embeddings just the **theme names** (no keyword lists, no
-training) and each comment drops into its nearest theme - so unstructured text becomes a chart you can
-act on. This is the one that truly needs a model: `keeps freezing` → **Performance** shares no letters
-with any theme name.
-
-<CategorizeLab />
-
-> **Load BERT** and watch the comments snap into the right themes by meaning - `too expensive` →
-> Pricing, `love the clean new look` → Design & UX - none of which share a keyword with their theme.
-
-How to write it - reconcile first, then the other embedding uses:
-
-::: code-group
-
-```ts [Reconcile labels]
-import { reconcileLabels } from "@michi-vz/insights/embeddings";
-// one call: groups messy labels by meaning, with a confidence gate + a tidy representative name
-const groups = await reconcileLabels(rawLabels); // { backend: "transformers" } adds synonyms
-// → [{ name: "United States", members: ["United States", "USA", ...] }, ...]
-// now sum your series by group.name instead of the raw label → clean, correct totals
-```
-
-```ts [Embed with BERT]
-import { createEmbedder, cosineSimilarity } from "@michi-vz/insights/embeddings";
-// opt into a small in-browser BERT (MiniLM via Transformers.js, WebGPU); lazy, nothing bundled
-const e = await createEmbedder({ backend: "transformers" }); // default all-MiniLM-L6-v2
-const [a, b] = await e.embed(["USA", "United States"]);
-cosineSimilarity(a, b); // ≈ 0.8 - close, even with no letters in common
-```
-
-```ts [Search by meaning]
-import { findSimilar } from "@michi-vz/insights/embeddings";
-// rank a large chart catalog by what a query means, not how it is spelled
-const ranked = await findSimilar("revenue", chartLabels, (l) => l);
-```
-
-```ts [Dashboard RAG]
-import { findSimilar } from "@michi-vz/insights/embeddings";
-// retrieve the charts most relevant to a question, feed THEIR context to an LLM (see Agents)
-const top = (await findSimilar(question, charts, (c) => c.getContext().summary)).slice(0, 3);
-```
-
-:::
-
-Same engine, other uses: **searching** a big chart catalog by meaning, **clustering** similar series,
-and **dashboard-wide RAG** - retrieving the right charts so an agent can answer across a whole
-dashboard (see **Agents & MCP**). Embeddings are the retrieval layer; the headline is what sits on top.
-
 ## Agents & MCP
 
 The same registry powers the demo below - each button is a real tool call against the chart
@@ -652,7 +704,7 @@ Each capability is its own tree-shakeable import:
 | `@michi-vz/insights/anomaly` | `anomaly()` / `detectAnomalies()` - z-score / IQR / forecast-band outliers | [anomaly](/api/insights/anomaly) |
 | `@michi-vz/insights/validate` | `validate()` - richer data-quality warnings | [validate](/api/insights/validate) |
 | `@michi-vz/insights/narrate` | `narrate()` / `explainChart()` - rules baseline, opt-in SLM/remote | [narrate](/api/insights/narrate) |
-| `@michi-vz/insights/embeddings` | `reconcileLabels()` / `findSimilar()` / `createEmbedder()` - hash fallback, opt-in BERT/MiniLM | [embeddings](/api/insights/embeddings) |
+| `@michi-vz/insights/embeddings` | `reconcileLabels()` / `matchLabels()` / `findSimilar()` / `createEmbedder()` - hash fallback, opt-in BERT/MiniLM | [embeddings](/api/insights/embeddings) |
 | `@michi-vz/insights/sql` | `aggregate()` - group-by/measures (opt-in DuckDB-Wasm) | [aggregate](/api/insights/sql) |
 | `@michi-vz/insights/sonify` | `sonify()` - hear a series as pitch | [sonify](/api/insights/sonify) |
 | `@michi-vz/insights/agent` | `createAgent()` + tool registry | [agent & MCP](/api/insights/agent) |

@@ -6,6 +6,7 @@ import WebgpuHeavyDemo from "./WebgpuHeavyDemo.vue";
 import NoDataTicksDemo from "./NoDataTicksDemo.vue";
 import InsightsDemo from "./InsightsDemo.vue";
 import EmbeddingsLab from "./EmbeddingsLab.vue";
+import MatchLab from "./MatchLab.vue";
 import SemanticSearchLab from "./SemanticSearchLab.vue";
 import CategorizeLab from "./CategorizeLab.vue";
 import PluginLab from "./PluginLab.vue";
@@ -28,6 +29,7 @@ export default {
     app.component("NoDataTicksDemo", NoDataTicksDemo);
     app.component("InsightsDemo", InsightsDemo);
     app.component("EmbeddingsLab", EmbeddingsLab);
+    app.component("MatchLab", MatchLab);
     app.component("SemanticSearchLab", SemanticSearchLab);
     app.component("CategorizeLab", CategorizeLab);
     app.component("PluginLab", PluginLab);

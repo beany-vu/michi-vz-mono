@@ -82,7 +82,7 @@ type Spec = {
 const SPECS: Spec[] = [
   {
     tag: "michi-vz-line-chart",
-    title: "Michi, in outline",
+    title: "Meo meo, in outline",
     sub: "Ears up, whiskers out, traced by one line series.",
     build: (w, h) => ({
       renderer: "svg",
@@ -100,7 +100,7 @@ const SPECS: Spec[] = [
   },
   {
     tag: "michi-vz-scatter-chart",
-    title: "Michi, dot by dot",
+    title: "Purr, dot by dot",
     sub: "Every point is real chart data. The eyes and nose are gold.",
     build: (w, h) => {
       const m = 12;
@@ -120,7 +120,7 @@ const SPECS: Spec[] = [
   },
   {
     tag: "michi-vz-radar-chart",
-    title: "Michi, spoke by spoke",
+    title: "Mrrp, spoke by spoke",
     sub: "Twelve axes, one polygon, two very pointed ears.",
     build: (w, h) => ({
       renderer: "svg",
@@ -136,7 +136,7 @@ const SPECS: Spec[] = [
   },
   {
     tag: "michi-vz-area-chart",
-    title: "Michi, curled up",
+    title: "Zzz, curled up",
     sub: "An area chart, loafing.",
     build: (w, h) => ({
       renderer: "svg",

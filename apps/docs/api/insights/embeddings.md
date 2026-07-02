@@ -4,15 +4,16 @@ title: Embeddings API
 
 # Embeddings API
 
-Semantic helpers for search, reconciliation, and similarity over text - model-free by default (a
-hashing embedder), with an opt-in transformers backend (MiniLM via WebGPU) for true synonym matching.
-For the story and labs, see the **[Insights guide](/guide/insights#michi-vz-in-the-ai-world)**.
+Semantic helpers for search, reconciliation, cross-dataset matching, and similarity over text -
+model-free by default (a hashing embedder), with an opt-in transformers backend (MiniLM via WebGPU)
+for true synonym matching.
+For the story and labs, see the **[Insights guide](/guide/insights#clean-match-and-search-your-data)**.
 
 ## Import
 
 ```ts
 import {
-  findSimilar, reconcileLabels, createEmbedder,
+  findSimilar, matchLabels, reconcileLabels, createEmbedder,
   cosineSimilarity, hashEmbed,
 } from "@michi-vz/insights/embeddings";
 // also re-exported from the package root: import { findSimilar } from "@michi-vz/insights";
@@ -63,6 +64,38 @@ The model-free default merges spelling/case/typos offline; `{ backend: "transfor
 synonyms, abbreviations, and translations. For authoritative canonical names (USA -> United States),
 pair it with an alias list or an LLM (see the guide's "Certify" recipe).
 
+## `matchLabels` - link the same entities across two lists
+
+Try it - two mismatched exports become confident pairs plus honestly-unmatched leftovers,
+and the joined rows draw as one chart:
+
+<MatchLab />
+
+Where `reconcileLabels` cleans duplicates *within* one list, `matchLabels` pairs a source list
+against a target list (a CRM export vs an ERP export). A pair is a confident match only when it
+clears the similarity threshold, the confidence-margin gate (on the source's choice among
+targets), and - by default - a **mutual best match**: each side picks the other first, so two
+source rows never silently collide onto one target. Everything else is reported back with its
+closest near-miss, never dropped or force-fitted.
+
+```ts
+const { matches, unmatchedSource, unmatchedTarget } = await matchLabels(crmLabels, erpLabels);
+// matches          → [{ source, target, similarity }, ...] (source order)
+// unmatchedSource  → [{ label, closest, similarity }, ...] ("did you mean" hints)
+// unmatchedTarget  → [{ label, closest, similarity }, ...]
+```
+
+| Option | Type | Default | What it does |
+| --- | --- | --- | --- |
+| `threshold` | `number` | `0.7` (transformers) / `0.6` (hash) | Minimum cosine to consider a candidate at all. |
+| `margin` | `number` | `0.05` | Confidence gate on the source's choice: its best target must beat its second-best by this much. `0` disables. |
+| `mutual` | `boolean` | `true` | Require a mutual best match. `false` allows many-to-one onto a target (or better: `reconcileLabels` the messy side first, then match across). |
+| `embedder` | `Embedder` | optional | Reuse a prebuilt embedder instead of creating one. |
+| `backend` / `model` / `dim` | `EmbedOptions` | hash | Inherited embedder options. |
+
+Duplicate source labels resolve to one winner under `mutual: true`; the loser is reported
+unmatched with its near-miss, which is your cue to reconcile that side first.
+
 ## `createEmbedder` / `cosineSimilarity` / `hashEmbed` - the primitives
 
 ```ts
@@ -80,4 +113,4 @@ hashEmbed("customer", 128); // deterministic char-ngram vector, no model
 
 `EmbedOptions` = `{ backend?: "hash" | "transformers"; model?: string; dim?: number }`.
 
-**[Insights guide](/guide/insights#michi-vz-in-the-ai-world)**
+**[Insights guide](/guide/insights#clean-match-and-search-your-data)**

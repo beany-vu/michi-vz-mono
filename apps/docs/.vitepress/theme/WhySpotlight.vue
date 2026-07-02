@@ -16,8 +16,8 @@ import {
   mountFanChart,
   mountLineChart,
   mountRadarChart,
+  mountRibbonChart,
   mountScatterChart,
-  mountTreemapChart,
 } from "@michi-vz/core";
 import { FRAMEWORK_SNIPPETS, TABS, WHY_LEDE } from "./whySpotlightContent";
 import type { WhyTabId } from "./whySpotlightContent";
@@ -83,12 +83,31 @@ const FORECAST_HISTORY = [
   { date: 2024, value: 52, certainty: true },
 ];
 
-const TREEMAP_DATA = [
-  { label: "Watch exports", value: 42, partial: 27, color: RED },
-  { label: "Banking", value: 30, partial: 11, color: GOLD },
-  { label: "Chocolate", value: 24, partial: 16, color: INK3 },
-  { label: "Tourism", value: 18, partial: 6, color: INK2 },
-];
+// ---- Ribbon tab: three cafe drinks trade ranks; Shuffle deals a new season.
+// The engine re-renders on update() (transitions are opacity-only), so a
+// shuffle is an honest snap re-weave softened by a short host fade.
+const RIBBON_KEYS = ["Espresso", "Filter", "Matcha"] as const;
+const RIBBON_COLOR: Record<string, string> = { Espresso: RED, Filter: INK3, Matcha: GOLD };
+const RIBBON_YEARS = ["2019", "2020", "2021", "2022", "2023", "2024"];
+let ribbonKeys: string[] = [...RIBBON_KEYS];
+let ribbonSeries = makeRibbonSeries();
+
+function makeRibbonSeries(): Array<Record<string, string | number>> {
+  return RIBBON_YEARS.map((date) => {
+    const row: Record<string, string | number> = { date };
+    for (const k of RIBBON_KEYS) row[k] = 8 + Math.round(Math.random() * 34);
+    return row;
+  });
+}
+
+function shuffledKeys(): string[] {
+  const keys = [...RIBBON_KEYS];
+  for (let i = keys.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [keys[i], keys[j]] = [keys[j], keys[i]];
+  }
+  return keys;
+}
 
 const RADAR_PROPS = {
   axes: ["Coffee", "Pastries", "Wifi", "View", "Price"],
@@ -206,6 +225,7 @@ async function probeWebgpu(): Promise<void> {
 function buildChartForActiveTab() {
   const host = chartHost.value;
   if (!host) return;
+  host.style.opacity = "1"; // defensive: never inherit a mid-shuffle fade
   const w = stageWidth();
   switch (active.value) {
     case "explain": {
@@ -265,19 +285,17 @@ function buildChartForActiveTab() {
       currentUpdate = (nw) => chart?.update({ ...p, width: nw });
       break;
     }
-    case "treemap": {
+    case "ribbon": {
       const p = {
-        dataSet: TREEMAP_DATA,
-        showSplit: true,
-        splitLabels: ["Realized", "Untapped"] as [string, string],
-        splitOpacity: 0.35,
-        showLegend: true,
+        keys: [...ribbonKeys],
+        colors: ribbonKeys.map((k) => RIBBON_COLOR[k]),
+        series: ribbonSeries,
         width: w,
         height: STAGE_H,
-        margin: { top: 16, right: 16, bottom: 28, left: 16 },
+        margin: { top: 16, right: 16, bottom: 36, left: 46 },
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      chart = mountTreemapChart(host, p as any);
+      chart = mountRibbonChart(host, p as any);
       currentUpdate = (nw) => chart?.update({ ...p, width: nw });
       break;
     }
@@ -352,6 +370,30 @@ function setGpuRenderer(r: "canvas" | "webgpu") {
     destroyChart();
     buildChartForActiveTab();
   }
+}
+
+function shuffleRibbon() {
+  if (active.value !== "ribbon") return;
+  ribbonSeries = makeRibbonSeries();
+  ribbonKeys = shuffledKeys();
+  const host = chartHost.value;
+  const reduced =
+    typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!host || reduced) {
+    destroyChart();
+    buildChartForActiveTab();
+    return;
+  }
+  // Short opacity dip so the snap re-weave reads as a deal, not a glitch.
+  const token = switchToken;
+  host.style.transition = "opacity 150ms ease";
+  host.style.opacity = "0.25";
+  window.setTimeout(() => {
+    if (token !== switchToken || active.value !== "ribbon") return; // tab changed mid-fade
+    destroyChart();
+    buildChartForActiveTab();
+    host.style.opacity = "1";
+  }, 150);
 }
 
 function onTablistKeydown(e: KeyboardEvent) {
@@ -433,6 +475,12 @@ onBeforeUnmount(() => {
         <p v-if="active === 'insights' && insightsError" class="mv-why-note" role="status">
           could not load the insights module ({{ insightsError }})
         </p>
+
+        <!-- Tab 4: shuffle control - deal a fresh season of ranks -->
+        <div v-if="active === 'ribbon'" class="mv-why-gpu">
+          <button class="mv-why-shuffle" @click="shuffleRibbon">Shuffle</button>
+          <span class="mv-why-gpu-status">new numbers every click, same readable bands</span>
+        </div>
 
         <!-- Tab 5: renderer toggle + honest backend status -->
         <div v-if="active === 'webgpu'" class="mv-why-gpu">

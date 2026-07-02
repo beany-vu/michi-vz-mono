@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// MERGE (1 of 3). Reconcile messy labels in three steps: Raw → Reconcile → Certify.
+// MERGE (1 of 4). Reconcile messy labels in three steps: Raw → Reconcile → Certify.
 //   - "⚡ Instant" (default): show the result a model WOULD produce, precomputed, with no
 //     download or wait - so the payoff is immediate and convincing.
 //   - "Real model": actually download the model and run it live (MiniLM ~23 MB for Reconcile;
