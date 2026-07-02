@@ -4,6 +4,7 @@
 // is a deterministic, model-free hashing embedder so similarity works offline and is
 // fully testable. (MiniLM has a training-data caveat - disclose before production use.)
 import { optionalImport } from "../internal/lazyImport";
+import { applyModelSource, type ModelSource } from "../models/source";
 
 /** Cosine similarity of two vectors (0 when either is zero-length). */
 export function cosineSimilarity(a: number[], b: number[]): number {
@@ -56,6 +57,9 @@ export interface EmbedOptions {
   backend?: EmbedBackend;
   model?: string;
   dim?: number;
+  /** Where transformers model files download from (default https://huggingface.co);
+   * mirror host, self-hosted localModelPath, or allowRemoteModels:false. */
+  modelSource?: ModelSource;
 }
 
 export interface Embedder {
@@ -73,6 +77,8 @@ export async function createEmbedder(options: EmbedOptions = {}): Promise<Embedd
     const pipeline = mod?.pipeline;
     if (pipeline) {
       try {
+        // Redirect model downloads (mirror / self-hosted / offline) BEFORE loading.
+        applyModelSource(mod, options.modelSource);
         const extractor = await pipeline("feature-extraction", options.model ?? "Xenova/all-MiniLM-L6-v2");
         return {
           backend: "transformers",

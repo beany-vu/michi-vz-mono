@@ -57,6 +57,15 @@ export {
   type ValidatePluginOptions,
 } from "./validate";
 
+// ---- Model source (where SLM/LLM files download from + how to redirect it) ----
+export {
+  describeModelSource,
+  applyModelSource,
+  DEFAULT_MODEL_HOST,
+  type ModelSource,
+  type ModelSourceInfo,
+} from "./models/source";
+
 // ---- Narration (rules baseline + i18n/custom; opt-in SLM/remote) ----
 export {
   narrate,

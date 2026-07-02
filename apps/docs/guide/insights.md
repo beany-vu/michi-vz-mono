@@ -175,9 +175,11 @@ split. Every figure is computed from the numbers, so - unlike a chatbot - it can
 
 ### Anomaly: what does not belong?
 
-An **anomaly** is a year that stands out from the rest of the series. It is found with a **z-score**
-(how many standard steps a point sits from the average; past about three, it is flagged) and marked
-with a dot - turning "did anything odd happen?" into a single glance.
+An **anomaly** is a year that stands out from the rest of the series. By default it is found with a
+**z-score** (how many standard steps a point sits from the average; past about three, it is flagged)
+and marked with a dot - turning "did anything odd happen?" into a single glance. The exact logic of
+all three detection methods (z-score, IQR fences, forecast-band), their thresholds and their limits
+is spelled out in [Methodology](#methodology---the-exact-logic-behind-every-insight).
 
 **A bank - the year card-fraud losses break out of the trend (a breach or scam wave).**
 
@@ -240,10 +242,83 @@ over millions of rows). Flip the grouping and it re-rolls.
 
 <PluginLab feature="sonify" />
 
+## Methodology - the exact logic behind every insight
+
+Nothing here is a black box: every insight is a named, textbook method you can verify by hand.
+This section states the algorithm, its defaults, and its limits, feature by feature.
+
+### Forecast
+
+- **Method (default `"holt-winters"`):** Holt's double exponential smoothing - two running
+  estimates, *level* and *trend*, updated at every point (`alpha = 0.5` for level,
+  `beta = 0.3` for trend; no seasonal term yet). The forecast extends the last level along the
+  last trend. `method: "linear"` instead fits one ordinary-least-squares line through the whole
+  series and extends it.
+- **Confidence band:** the residual standard error of the one-step-ahead in-sample fit, widened
+  by `sqrt(step)` the further out the forecast goes, times the z-value of your `level`
+  (default 95%). Wide band = the model fit the history poorly; that honesty is the feature.
+- **Accuracy (MAPE/RMSE):** a real holdout backtest - the last third of the series (up to the
+  horizon) is hidden, the model is fitted on the rest, and its predictions are scored against
+  what actually happened. Series shorter than 6 points fall back to in-sample accuracy.
+- **Limits:** numeric x-axes only; no seasonality term (a strongly seasonal series will forecast
+  its trend, not its wiggle - decompose first, see below).
+
+### Anomaly detection
+
+Three methods via `anomaly({ method, threshold })`; every flagged point carries
+`{ index, value, score, kind }` and the tool result now includes this explanation verbatim:
+
+- **`zscore` (default, threshold 3):** `score = |value - mean| / standard deviation` over the
+  series itself; flagged past the threshold (`kind: "high"` above the mean, `"low"` below).
+  3 is the conservative textbook cut; 2 flags milder spikes. Caveat: a strong trend inflates
+  the standard deviation and hides outliers - use `forecast` there.
+- **`iqr` (threshold 1.5):** Tukey's fences - flagged below `Q1 - k*IQR` or above `Q3 + k*IQR`
+  (Q1/Q3 = 25th/75th percentile). Quartiles ignore extremes, so this stays robust when the
+  data already contains wild points.
+- **`forecast`:** trend-aware - each point is tested against a one-step-ahead forecast built
+  from ONLY the history before it, flagged when outside the 95% band; `score` = standard
+  errors missed by.
+
+### Narration
+
+The default narrator is **rule-based and deterministic** - it reads only the structured
+`ChartContext` (never raw pixels, never a model): the top mover by absolute change (with its
+percentage), the up-vs-down trend split, and the largest total for categorical charts. Same
+input, same sentence, every time - and it cannot invent a number that is not in the context.
+Model-backed prose (`explainChart`) is opt-in and always falls back to the rules.
+
+### Validation
+
+Pure shape/statistics checks over the series: empty datasets, non-finite values, duplicate
+dates, and non-monotonic dates - each reported as a typed `DataWarning` with the exact index,
+and optionally annotated on the chart.
+
+### Changepoints, seasonality, Monte Carlo
+
+- **Changepoints:** for every candidate split, one OLS line is fitted before and one after;
+  the split is scored by `|slopeAfter - slopeBefore|` and only local maxima above a threshold
+  are kept. Simple, explainable trend-bend detection.
+- **Seasonality:** classical additive decomposition - a centered-moving-average trend, a
+  mean-centered per-phase seasonal component, and a residual; the period is detected by
+  autocorrelation.
+- **Monte Carlo:** the deterministic forecast is the centre path; many futures are simulated
+  by adding Gaussian residual noise scaled by `se*sqrt(step)`, with a **seeded** PRNG
+  (mulberry32) so runs are reproducible. Quantiles of the runs give the band; final-step
+  tallies give exceedance probabilities.
+
+### Embeddings (search/merge/sort)
+
+The default embedder is **model-free hashing** (character n-grams into a fixed-size vector,
+L2-normalized) - fully offline and deterministic; it merges spelling/case/typo variants but
+not true synonyms. `backend: "transformers"` upgrades to MiniLM (see
+[Where models come from](#where-models-come-from-and-how-to-change-it)). Similarity is cosine;
+merge thresholds default to 0.6 (hash) / 0.7 (model).
+
 ## Why trust it (and who it's for)
 
-- **Not a black box.** Every number is a named, textbook method (Holt-Winters, MAPE, z-score, IQR,
-  STL, Pearson…) - see **Methods & formulas** in the reference. The same primitives a stats library uses.
+- **Not a black box.** Every number is a named, textbook method (Holt, MAPE, z-score, IQR,
+  OLS…) - the exact logic per feature is spelled out in [Methodology](#methodology---the-exact-logic-behind-every-insight)
+  above. The same primitives a stats library uses.
 - **Deterministic + tested.** Statistical features give the same output for the same input and are
   covered by an extensive test suite; anything random (Monte Carlo) is seeded.
 - **Data stays in the browser.** No server, no upload. Remote model backends are strictly opt-in
@@ -351,6 +426,56 @@ await explainChart(ctx, {
   model: SLM_PRESETS.transformers.gemma,
   onProgress: (p) => setLoading(p.status, p.progress), // drive your own loading UI
 });
+```
+
+### Where models come from (and how to change it)
+
+Model downloads should never be a surprise. Here is exactly what each backend fetches, from
+where, by default:
+
+| Backend | Downloads? | Default source |
+| --- | --- | --- |
+| `rules` (default) | Nothing | Fully offline, deterministic |
+| `transformers` | Model weights, on first use | **`https://huggingface.co`** (cached in the browser after the first load) |
+| `webllm` | Model weights, on first use | WebLLM's prebuilt registry (Hugging Face-hosted), cached in the browser |
+| `remote` | Nothing | Your prompts go to **your** endpoint (the `caller` option) - e.g. a local Ollama/llama.cpp server or your API. Data leaves the page; that is the opt-in. |
+
+Ask the library itself before loading anything, and show it to your users:
+
+```ts
+import { describeModelSource, SLM_PRESETS } from "@michi-vz/insights";
+
+const src = describeModelSource("transformers", SLM_PRESETS.transformers.phi3);
+// { host: "https://huggingface.co",
+//   url:  "https://huggingface.co/Xenova/Phi-3-mini-4k-instruct/resolve/main/",
+//   downloads: true, note: "Transformers.js downloads the model files from ..." }
+```
+
+And redirect it with `modelSource` (works on `explainChart` and `createEmbedder`):
+
+```ts
+// A mirror (e.g. hf-mirror.com, or your artifact proxy):
+await explainChart(ctx, {
+  backend: "transformers",
+  modelSource: { remoteHost: "https://models.example.com" },
+});
+
+// Self-hosted, fully offline - serve the model directory from your own origin
+// and FORBID any remote download (intranet/compliance):
+await explainChart(ctx, {
+  backend: "transformers",
+  model: "my-fine-tuned-model",
+  modelSource: { localModelPath: "/models/", allowRemoteModels: false },
+});
+
+// WebLLM self-hosting: point its registry at your own weights:
+await explainChart(ctx, {
+  backend: "webllm",
+  webllmAppConfig: { model_list: [{ model: "https://your.cdn/phi3/", model_id: "phi3", model_lib_url: "https://your.cdn/phi3/lib.wasm" }] },
+});
+
+// No download at all - your own API (local or remote):
+await explainChart(ctx, { backend: "remote", caller: (prompt) => fetch("/api/llm", { method: "POST", body: prompt }).then(r => r.text()) });
 ```
 
 ## Michi-vz in the AI world

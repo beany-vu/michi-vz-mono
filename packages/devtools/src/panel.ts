@@ -234,13 +234,48 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
 
   function refresh(): void {
     capture();
-    render();
+    // Snapshots always happen (history stays complete); DOM work only when visible.
+    if (isOpen) render();
+  }
+
+  // Hook-notify coalescing for many-chart pages. Small pages keep the synchronous,
+  // instant refresh; past the threshold a burst (N charts mounting/updating in one
+  // frame, each notifying) collapses into a leading refresh + ONE trailing refresh
+  // instead of N full re-renders with N context serializations each.
+  const BURST_THRESHOLD = 8;
+  let lastRefreshAt = 0;
+  let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleRefresh(): void {
+    if (hook.charts.size <= BURST_THRESHOLD) {
+      refresh();
+      return;
+    }
+    if (refreshTimer !== null) return; // trailing refresh already queued
+    const now = Date.now();
+    if (now - lastRefreshAt > 100) {
+      lastRefreshAt = now;
+      refresh();
+      return;
+    }
+    refreshTimer = setTimeout(() => {
+      refreshTimer = null;
+      lastRefreshAt = Date.now();
+      refresh();
+    }, 100);
   }
 
   // -- structure --
   const toggleBtn = el("button", { class: "mv-devtools-toggle", title: "michi-vz devtools" }, ["◧ michi-vz"]);
   const countEl = el("span", { class: "mv-devtools-count" });
+  // Long-lived filter input (never rebuilt, so typing survives re-renders).
+  let filterText = "";
+  const filterEl = el("input", { class: "mv-devtools-filter", type: "search", placeholder: "filter charts" });
+  filterEl.addEventListener("input", () => {
+    filterText = filterEl.value.trim().toLowerCase();
+    render();
+  });
   const listEl = el("div", { class: "mv-devtools-list" });
+  const listWrapEl = el("div", { class: "mv-devtools-listwrap" }, [filterEl, listEl]);
   const historyNavEl = el("div");
   const tabsEl = el("div", { class: "mv-devtools-tabs" });
   const contentEl = el("div");
@@ -263,7 +298,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const panel = el("div", { class: "mv-devtools" }, [
     resizeHandle,
     header,
-    el("div", { class: "mv-devtools-body" }, [listEl, detailEl]),
+    el("div", { class: "mv-devtools-body" }, [listWrapEl, detailEl]),
   ]);
 
   root.append(toggleBtn, panel);
@@ -357,17 +392,45 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     renderContent(sel);
   }
 
+  // Scroll the chart into view and flash an outline so it is findable among many.
+  function locateChart(host: HTMLElement): void {
+    if (typeof host.scrollIntoView === "function") {
+      host.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    const prevOutline = host.style.outline;
+    const prevOffset = host.style.outlineOffset;
+    host.style.outline = "3px solid #7c5cff";
+    host.style.outlineOffset = "2px";
+    setTimeout(() => {
+      host.style.outline = prevOutline;
+      host.style.outlineOffset = prevOffset;
+    }, 1200);
+  }
+
   function renderList(list: DevtoolsChartEntry[]): void {
     listEl.replaceChildren();
     if (list.length === 0) {
       listEl.append(el("div", { class: "empty" }, ["No charts found"]));
       return;
     }
-    for (const e of list) {
-      const item = el("div", { class: "mv-devtools-item" + (e.id === selectedId ? " is-active" : "") }, [
-        el("span", { class: "ct" }, [e.chartType]),
-        el("div", {}, [e.id]),
-      ]);
+    const shown = filterText
+      ? list.filter((e) => e.id.toLowerCase().includes(filterText) || e.chartType.toLowerCase().includes(filterText))
+      : list;
+    if (shown.length === 0) {
+      listEl.append(el("div", { class: "empty" }, [`No charts match "${filterText}"`]));
+      return;
+    }
+    for (const e of shown) {
+      const locate = el("button", { class: "mv-devtools-btn locate", title: "Locate this chart on the page" }, ["◎"]);
+      locate.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        locateChart(e.host);
+      });
+      const renderer = e.getContext()?.renderer;
+      const children: Array<Node | string> = [el("span", { class: "ct" }, [e.chartType]), locate];
+      if (renderer) children.push(el("span", { class: "rend" }, [renderer]));
+      children.push(el("div", {}, [e.id]));
+      const item = el("div", { class: "mv-devtools-item" + (e.id === selectedId ? " is-active" : "") }, children);
       item.addEventListener("click", () => {
         selectedId = e.id;
         render();
@@ -468,6 +531,20 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       readoutEl.append(el("div", { class: "empty" }, ["No context yet (chart not rendered)"]));
       return;
     }
+
+    // Renderer - what actually paints the marks. Axes/labels/tooltips (the chrome)
+    // are ALWAYS SVG; only the data marks switch technology.
+    readoutEl.append(el("h4", {}, ["Renderer"]));
+    const rendererNote =
+      ctx.renderer === "canvas"
+        ? "canvas - data marks paint on a <canvas> (no per-mark DOM; hover uses the host hit-test, see the Hit-test tab). Axes, labels and tooltips stay SVG/DOM."
+        : ctx.renderer === "webgpu"
+          ? "webgpu - data marks paint on a GPU canvas (falls back to canvas when no adapter). Axes, labels and tooltips stay SVG/DOM."
+          : "svg - everything is vector DOM: marks, axes, labels. Every mark is inspectable in the browser's Elements panel.";
+    readoutEl.append(el("div", { class: "mv-devtools-kv" }, [
+      el("span", { class: "k" }, ["marks"]),
+      el("span", {}, [rendererNote]),
+    ]));
 
     // Summary - "what the AI sees".
     readoutEl.append(el("h4", {}, ["Summary"]));
@@ -849,9 +926,13 @@ ro.observe(host);`,
           try {
             const result = await action.tool!.run({});
             const text = typeof result === "string" ? result : safeJson(result);
-            // Anomaly results carry per-series labels we can highlight on the chart.
-            const labels = Array.isArray(result)
-              ? (result as Array<{ label?: string; anomalies?: unknown[] }>)
+            // Anomaly results carry per-series labels we can highlight on the chart
+            // (either a bare array or the self-explaining { method, series } shape).
+            const seriesList = Array.isArray(result)
+              ? result
+              : (result as { series?: unknown })?.series;
+            const labels = Array.isArray(seriesList)
+              ? (seriesList as Array<{ label?: string; anomalies?: unknown[] }>)
                   .filter((r) => r.label && Array.isArray(r.anomalies) && r.anomalies.length > 0)
                   .map((r) => String(r.label))
               : undefined;
@@ -1027,7 +1108,7 @@ ro.observe(host);`,
   closeBtn.addEventListener("click", close);
   refreshBtn.addEventListener("click", refresh);
 
-  const unsubscribe = hook.subscribe(() => refresh());
+  const unsubscribe = hook.subscribe(() => scheduleRefresh());
   // Optional chaining: an older core (version skew) has no hit/timing channels.
   const unsubscribeHits = hook.subscribeHits?.(onHit) ?? null;
   const unsubscribeTimings = hook.subscribeTimings?.(onTiming) ?? null;
@@ -1058,6 +1139,7 @@ ro.observe(host);`,
       unsubscribe();
       unsubscribeHits?.();
       unsubscribeTimings?.();
+      if (refreshTimer !== null) clearTimeout(refreshTimer);
       endDrag();
       removeHitDot();
       if (onKey) window.removeEventListener("keydown", onKey);

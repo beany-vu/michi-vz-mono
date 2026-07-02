@@ -53,27 +53,47 @@ describe("narrate() provideTools", () => {
 });
 
 describe("anomaly() provideTools", () => {
-  it("exposes an 'anomaly' tool that lists flagged points per series", () => {
+  it("exposes an 'anomaly' tool that explains its method and lists flagged points per series", () => {
     const chart = mountWith(anomaly({ method: "zscore", threshold: 2 }));
     const tool = chart.getTools!().find((t) => t.name === "anomaly");
     expect(tool).toBeDefined();
-    const out = tool!.run({}) as Array<{
-      label: string;
-      anomalies: Array<{ index: number; kind: string; date?: unknown; value?: number }>;
-    }>;
-    expect(out).toHaveLength(1);
-    expect(out[0].label).toBe("Revenue");
-    expect(out[0].anomalies).toHaveLength(1);
-    expect(out[0].anomalies[0].index).toBe(4);
-    expect(out[0].anomalies[0].kind).toBe("high");
-    expect(out[0].anomalies[0].value).toBe(50);
+    const out = tool!.run({}) as {
+      method: string;
+      threshold: number;
+      explanation: string;
+      series: Array<{
+        label: string;
+        anomalies: Array<{ index: number; kind: string; date?: unknown; value?: number }>;
+      }>;
+    };
+    expect(out.method).toBe("zscore");
+    expect(out.threshold).toBe(2);
+    expect(out.explanation).toContain("standard deviation");
+    expect(out.series).toHaveLength(1);
+    expect(out.series[0].label).toBe("Revenue");
+    expect(out.series[0].anomalies).toHaveLength(1);
+    expect(out.series[0].anomalies[0].index).toBe(4);
+    expect(out.series[0].anomalies[0].kind).toBe("high");
+    expect(out.series[0].anomalies[0].value).toBe(50);
     chart.destroy();
   });
 
-  it("returns an empty list when nothing is flagged", () => {
+  it("returns an empty series list (still with the explanation) when nothing is flagged", () => {
     const chart = mountWith(anomaly({ method: "zscore", threshold: 10 }));
     const tool = chart.getTools!().find((t) => t.name === "anomaly");
-    expect(tool!.run({})).toEqual([]);
+    const out = tool!.run({}) as { method: string; explanation: string; series: unknown[] };
+    expect(out.series).toEqual([]);
+    expect(out.method).toBe("zscore");
+    expect(out.explanation).toContain("standard deviation");
+    chart.destroy();
+  });
+
+  it("the iqr explanation names Tukey's fences", () => {
+    const chart = mountWith(anomaly({ method: "iqr" }));
+    const tool = chart.getTools!().find((t) => t.name === "anomaly");
+    const out = tool!.run({}) as { threshold: number; explanation: string };
+    expect(out.threshold).toBe(1.5);
+    expect(out.explanation).toContain("IQR");
     chart.destroy();
   });
 });

@@ -4,6 +4,7 @@
 // Every path falls back to the rule-based text, so narration never hard-fails.
 import type { ChartContext, LineChartContext, MichiVzPlugin } from "@michi-vz/core";
 import { optionalImport } from "../internal/lazyImport";
+import { applyModelSource, type ModelSource } from "../models/source";
 
 export type NarrateBackend = "rules" | "transformers" | "webllm" | "remote";
 
@@ -27,10 +28,18 @@ const DEFAULT_STRINGS: Required<NarrateStrings> = {
 
 export interface NarrateOptions {
   backend?: NarrateBackend;
-  /** backend:"remote" - your model caller (prompt -> text). Privacy: data leaves the client. */
+  /** backend:"remote" - your model caller (prompt -> text), e.g. a local Ollama/llama.cpp
+   * server or your own API. Nothing is downloaded. Privacy: data leaves the client. */
   caller?: (prompt: string) => Promise<string>;
   /** model id for transformers/webllm (default a small instruct model; see SLM presets). */
   model?: string;
+  /** Where transformers model files download from (default https://huggingface.co):
+   * a mirror host, a self-hosted localModelPath, or allowRemoteModels:false for
+   * offline-only. Use describeModelSource() to show users the source up front. */
+  modelSource?: ModelSource;
+  /** backend:"webllm" - custom model registry (model_url/model_lib_url) to self-host
+   * weights instead of WebLLM's default Hugging Face-hosted prebuilt registry. */
+  webllmAppConfig?: unknown;
   /** i18n: override the rule-based phrase builders (used by the rules path + fallback). */
   strings?: NarrateStrings;
   /** full custom narrator - replaces the rule-based text entirely (any language/wording). */
@@ -121,6 +130,8 @@ export async function explainChart(ctx: ChartContext, options: NarrateOptions = 
       );
       const pipeline = mod?.pipeline;
       if (!pipeline) return ruleText(ctx, options);
+      // Redirect model downloads (mirror / self-hosted / offline) BEFORE loading.
+      applyModelSource(mod, options.modelSource);
       const gen = await pipeline("text-generation", options.model ?? SLM_PRESETS.transformers.phi3, {
         progress_callback: options.onProgress,
       });
@@ -129,12 +140,16 @@ export async function explainChart(ctx: ChartContext, options: NarrateOptions = 
       return text?.trim() || ruleText(ctx, options);
     }
     if (backend === "webllm") {
-      const mod = await optionalImport<{ CreateMLCEngine?: (model: string, opts?: { initProgressCallback?: unknown }) => Promise<{ chat: { completions: { create: (o: unknown) => Promise<{ choices: Array<{ message: { content?: string } }> }> } } }> }>(
+      const mod = await optionalImport<{ CreateMLCEngine?: (model: string, opts?: { initProgressCallback?: unknown; appConfig?: unknown }) => Promise<{ chat: { completions: { create: (o: unknown) => Promise<{ choices: Array<{ message: { content?: string } }> }> } } }> }>(
         "@mlc-ai/web-llm"
       );
       const create = mod?.CreateMLCEngine;
       if (!create) return ruleText(ctx, options);
-      const engine = await create(options.model ?? SLM_PRESETS.webllm.phi3, { initProgressCallback: options.onProgress });
+      const engine = await create(options.model ?? SLM_PRESETS.webllm.phi3, {
+        initProgressCallback: options.onProgress,
+        // Self-hosted weights: a custom registry replaces the default HF-hosted one.
+        appConfig: options.webllmAppConfig,
+      });
       const res = await engine.chat.completions.create({ messages: [{ role: "user", content: prompt(ctx) }] });
       return res.choices[0]?.message?.content?.trim() || ruleText(ctx, options);
     }

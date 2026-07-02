@@ -184,8 +184,23 @@ export const DEVTOOLS_CSS = `
 }
 .mv-devtools-btn:hover { background: var(--mvdt-btn-hover); }
 .mv-devtools-body { display: flex; min-height: 0; flex: 1; }
-.mv-devtools-list {
-  width: 34%; border-right: 1px solid var(--mvdt-border-soft); overflow: auto; padding: 4px;
+.mv-devtools-listwrap {
+  width: 34%; border-right: 1px solid var(--mvdt-border-soft);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.mv-devtools-filter {
+  margin: 6px 6px 2px; padding: 4px 8px; font: inherit; color: var(--mvdt-ink);
+  background: var(--mvdt-bg-inset); border: 1px solid var(--mvdt-border-soft); border-radius: 6px;
+}
+.mv-devtools-filter::placeholder { color: var(--mvdt-muted); }
+.mv-devtools-list { flex: 1; overflow: auto; padding: 4px; }
+.mv-devtools-item .locate {
+  float: right; padding: 0 5px; margin-left: 6px; font-size: 11px; line-height: 1.4;
+}
+.mv-devtools-item .rend {
+  display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px;
+  font-size: 10px; background: var(--mvdt-bg-raised); color: var(--mvdt-muted);
+  border: 1px solid var(--mvdt-border-soft);
 }
 .mv-devtools-item {
   padding: 6px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap;

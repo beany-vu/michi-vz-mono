@@ -228,12 +228,25 @@ export function anomaly(options: AnomalyPluginOptions = {}): MichiVzPlugin<LineC
     },
 
     provideTools() {
+      // Plain-language description of the detection logic, so a UI showing the
+      // result (e.g. the devtools Insights tab) is never a black box.
+      const effectiveThreshold =
+        threshold ?? (method === "iqr" ? 1.5 : method === "forecast" ? 0.95 : 3);
+      const explanation =
+        method === "iqr"
+          ? `Tukey's fences: a point is flagged when it falls below Q1 - ${effectiveThreshold}*IQR or above Q3 + ${effectiveThreshold}*IQR (Q1/Q3 = 25th/75th percentile, IQR = Q3 - Q1). Quartiles ignore extreme values, so this stays robust when the data already contains wild points.`
+          : method === "forecast"
+            ? "Trend-aware: for each point, a one-step-ahead forecast is built from ONLY the history before it, and the point is flagged when it falls outside the 95% confidence band. score = how many standard errors it missed the prediction by."
+            : `z-score: a point is flagged when it sits more than ${effectiveThreshold} standard deviations from the series mean (score = that distance; kind "high" = above the mean, "low" = below). Note: a strong trend inflates the standard deviation and can hide outliers - use method "forecast" for trending series.`;
       return [
         {
           name: "anomaly",
-          description: `List the detected anomalies per series (method: ${method}). Each entry carries the flagged point's index, kind, date and value.`,
-          run: () =>
-            [...results.entries()].map(([label, sa]) => ({
+          description: `List the detected anomalies per series (method: ${method}). The result explains the detection logic and carries each flagged point's index, kind, score, date and value.`,
+          run: () => ({
+            method,
+            threshold: effectiveThreshold,
+            explanation,
+            series: [...results.entries()].map(([label, sa]) => ({
               label,
               anomalies: sa.result.anomalies.map((a) => ({
                 index: a.index,
@@ -243,6 +256,7 @@ export function anomaly(options: AnomalyPluginOptions = {}): MichiVzPlugin<LineC
                 value: sa.series[a.index]?.value,
               })),
             })),
+          }),
         },
       ];
     },

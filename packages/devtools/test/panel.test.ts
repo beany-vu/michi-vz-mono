@@ -202,6 +202,81 @@ describe("mountDevtools panel", () => {
     dt.destroy();
   });
 
+  it("shows which renderer draws the marks (and that chrome stays SVG)", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountScatterChart(host, {
+      dataSet: [{ label: "P", x: 1, y: 2, d: 3 }],
+      width: 300,
+      height: 200,
+      xAxisDataType: "number",
+      renderer: "canvas",
+    });
+    // list badge
+    expect(q(r, ".mv-devtools-item .rend")?.textContent).toBe("canvas");
+    // overview explanation: marks on canvas, chrome stays SVG
+    const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
+    expect(text).toContain("Renderer");
+    expect(text).toContain("canvas");
+    expect(text.toLowerCase()).toContain("svg");
+    chart.destroy();
+    dt.destroy();
+  });
+
+  it("filters the chart list from the filter box", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const lineHost = document.createElement("div");
+    const scatterHost = document.createElement("div");
+    document.body.append(lineHost, scatterHost);
+    const line = mountLineChart(lineHost, props);
+    const scatter = mountScatterChart(scatterHost, {
+      dataSet: [{ label: "P", x: 1, y: 2, d: 3 }],
+      width: 300,
+      height: 200,
+      xAxisDataType: "number",
+    });
+
+    expect(r.querySelectorAll(".mv-devtools-item").length).toBe(2);
+    const filter = r.querySelector<HTMLInputElement>(".mv-devtools-filter");
+    expect(filter).not.toBeNull();
+    filter!.value = "scatter";
+    filter!.dispatchEvent(new Event("input"));
+    const items = Array.from(r.querySelectorAll(".mv-devtools-item"));
+    expect(items.length).toBe(1);
+    expect(items[0].textContent).toContain("scatter-plot-chart");
+
+    filter!.value = "nope-nothing";
+    filter!.dispatchEvent(new Event("input"));
+    expect(r.querySelectorAll(".mv-devtools-item").length).toBe(0);
+    expect(q(r, ".mv-devtools-list")?.textContent?.toLowerCase()).toContain("match");
+
+    line.destroy();
+    scatter.destroy();
+    dt.destroy();
+  });
+
+  it("the locate button scrolls the chart host into view and flashes an outline", () => {
+    const dt = mountDevtools();
+    const r = root(dt);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountLineChart(host, props);
+    let scrolled = 0;
+    (host as HTMLElement & { scrollIntoView: () => void }).scrollIntoView = () => {
+      scrolled++;
+    };
+    const locate = r.querySelector<HTMLButtonElement>(".mv-devtools-item .locate");
+    expect(locate).not.toBeNull();
+    locate!.click();
+    expect(scrolled).toBe(1);
+    expect(host.style.outline).not.toBe("");
+    chart.destroy();
+    dt.destroy();
+  });
+
   it("maximize button toggles a full-viewport panel and back", () => {
     const dt = mountDevtools();
     const r = root(dt);

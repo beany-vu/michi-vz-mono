@@ -68,6 +68,12 @@ Working with a big context or a long series table? **Drag the panel's top-left c
 resize it (the size is remembered per browser), or hit the **⛶** button in the header to
 maximize it to the full viewport and back.
 
+Dashboards with many charts stay manageable: the chart list has a **filter box**, every list
+entry has a **◎ locate** button that scrolls the chart into view and flashes an outline around
+it, and past 8 charts the panel coalesces update bursts into a single re-render so a busy page
+never lags because devtools is open. The panel does no polling at all - it only reacts to the
+hook's events, and history snapshots skip charts whose context has not changed.
+
 ## The tabs
 
 ### Sizing - "why is my chart invisible / overflowing?"
