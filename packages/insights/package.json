@@ -95,7 +95,6 @@
     "jsdom": "^25.0.1",
     "vitest": "^2.1.8"
   },
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/beany-vu/michi-vz-mono.git",
