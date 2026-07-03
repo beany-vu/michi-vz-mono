@@ -31,6 +31,10 @@ export interface BuildStackModelOptions {
    * authority (which assigns by appearance order) matches the legacy chart. The
    * stack draw order (stackedData / keys) is unaffected. */
   legendOrder?: string[];
+  /** Keys currently disabled by the consumer. They stay in the legend rows
+   * (flagged disabled so the pill greys out instead of disappearing) even
+   * though their bars are excluded from the stack. */
+  disabledItems?: string[];
 }
 
 export function buildStackRenderModel(
@@ -62,12 +66,13 @@ export function buildStackRenderModel(
     }
   }
 
+  const disabledSet = new Set(o.disabledItems ?? []);
   const legendKeys = o.legendOrder ?? effectiveKeys;
   const legend: StackLegendItem[] = legendKeys.map((key, i) => ({
     label: key,
     color: colors.getColor(key),
     order: i,
-    disabled: false,
+    disabled: disabledSet.has(key),
     dataLabelSafe: sanitizeForClassName(key),
   }));
 

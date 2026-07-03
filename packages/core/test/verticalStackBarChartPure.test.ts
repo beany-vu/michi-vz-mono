@@ -11,6 +11,7 @@ import {
 import { createStackScales } from "../src/verticalStackBarChart/scales";
 import { buildStackColors } from "../src/verticalStackBarChart/colors";
 import { prepareStackedData } from "../src/verticalStackBarChart/stack";
+import { buildStackRenderModel } from "../src/verticalStackBarChart/renderModel";
 import type { VerticalStackBarDataSet } from "../src/types";
 
 function prep(
@@ -178,5 +179,81 @@ describe("VerticalStackBar numeric dates (thd consumer contract)", () => {
     const xs = prepared.stackedData.Land.map((r) => r.x);
     expect(xs.length).toBe(3);
     expect(new Set(xs).size).toBe(3); // 3 distinct x positions, not all at margin.left
+  });
+});
+
+describe("VerticalStackBar legend keeps disabled keys flagged (pill dims, not disappears)", () => {
+  // Legend contract parity with LineChart's buildLegendData: a disabled key
+  // stays in the legend rows flagged disabled:true (the consumer greys the
+  // pill and can re-enable it), while bars/keys/visibleItems still exclude it.
+  // Regression: thd DistributionOfTrade — clicking a legend pill removed it
+  // from legendData entirely, so the pill unmounted and could never be
+  // re-enabled.
+  const dataSet: VerticalStackBarDataSet[] = [
+    {
+      seriesKey: "trade",
+      seriesKeyAbbreviation: "T",
+      series: [
+        { date: 2022, Food: 5, Minerals: 2, Textiles: 1 },
+        { date: 2023, Food: 7, Minerals: 1, Textiles: 2 },
+      ],
+    },
+  ];
+
+  // Mirror the engine wiring: orderedKeys (no disabled drop) feeds the legend
+  // order + colour slots; effectiveKeys (disabled dropped) feeds the stack.
+  function modelWith(disabledItems: string[] = [], keysOrder: "topToBottom" | "bottomToTop" = "topToBottom") {
+    const dataKeys = extractDataKeys(dataSet);
+    const orderedKeys = resolveEffectiveKeys(dataKeys, undefined, []);
+    const effectiveKeys = resolveEffectiveKeys(dataKeys, undefined, disabledItems);
+    const dates = collectDates(dataSet);
+    const yDomain = computeYDomain(dataSet, effectiveKeys);
+    const scales = createStackScales(dates, yDomain, 600, 400, {
+      top: 20,
+      right: 20,
+      bottom: 40,
+      left: 40,
+    });
+    const colors = buildStackColors(orderedKeys);
+    const prepared = prepareStackedData(dataSet, effectiveKeys, scales, colors, {
+      keysOrder,
+      minBarWidth: 5,
+      minBarHeight: 15,
+      minBarHeightZero: 0,
+      disabledItems,
+    });
+    const legendKeys = keysOrder === "bottomToTop" ? [...orderedKeys].reverse() : orderedKeys;
+    return buildStackRenderModel(prepared, effectiveKeys, dates, colors, {
+      height: 400,
+      margin: { top: 20, right: 20, bottom: 40, left: 40 },
+      highlightItems: [],
+      legendOrder: legendKeys,
+      disabledItems,
+    });
+  }
+
+  it("keeps a disabled key in the legend, flagged disabled, at its original slot", () => {
+    const model = modelWith(["Minerals"]);
+    expect(model.legend.map((l) => l.label)).toEqual(["Food", "Minerals", "Textiles"]);
+    expect(model.legend.map((l) => l.disabled)).toEqual([false, true, false]);
+    // Bars and visibility still exclude the disabled key.
+    expect(model.keys).toEqual(["Food", "Textiles"]);
+    expect(model.visibleItems).toEqual(["Food", "Textiles"]);
+  });
+
+  it("keeps colour slots stable when a key is disabled (no colour shift on toggle)", () => {
+    const before = modelWith([]);
+    const after = modelWith(["Minerals"]);
+    const colorOf = (model: ReturnType<typeof modelWith>, label: string) =>
+      model.legend.find((l) => l.label === label)?.color;
+    expect(colorOf(after, "Food")).toBe(colorOf(before, "Food"));
+    expect(colorOf(after, "Textiles")).toBe(colorOf(before, "Textiles"));
+    expect(colorOf(after, "Minerals")).toBe(colorOf(before, "Minerals"));
+  });
+
+  it("bottomToTop reverses the legend order including the disabled key", () => {
+    const model = modelWith(["Minerals"], "bottomToTop");
+    expect(model.legend.map((l) => l.label)).toEqual(["Textiles", "Minerals", "Food"]);
+    expect(model.legend.find((l) => l.label === "Minerals")?.disabled).toBe(true);
   });
 });

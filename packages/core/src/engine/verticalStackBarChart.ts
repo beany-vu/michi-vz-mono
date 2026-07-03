@@ -282,18 +282,25 @@ export function mountVerticalStackBarChart(
       ? applySeriesFilter(props.dataSet, props.filter)
       : props.dataSet;
     const dataKeys = extractDataKeys(filteredDataSet);
+    // Full ordered key set BEFORE the disabled drop: the LEGEND keeps disabled
+    // keys (flagged disabled, greyed by the consumer) so a clicked pill dims
+    // instead of disappearing — same contract as LineChart's buildLegendData.
+    // Bars/stack/y-domain keep using effectiveKeys, so disabled bars still
+    // vanish and the remaining bars widen (legacy behavior).
+    const orderedKeys = resolveEffectiveKeys(dataKeys, props.keys, []);
     const effectiveKeys = resolveEffectiveKeys(dataKeys, props.keys, props.disabledItems);
     // keysOrder=bottomToTop reverses the LEGEND / colour-slot order to match the
     // legacy chart (the consumer colour authority assigns colours by appearance
     // order in legendData). The stack DRAW order is decided independently in
     // stack.ts from keysOrder and is NOT affected by this.
-    const legendKeys =
-      r.keysOrder === "bottomToTop" ? [...effectiveKeys].reverse() : effectiveKeys;
+    const legendKeys = r.keysOrder === "bottomToTop" ? [...orderedKeys].reverse() : orderedKeys;
     const dates = collectDates(filteredDataSet, props.xAxisDomain);
     const yDomain = computeYDomain(filteredDataSet, effectiveKeys, props.yAxisDomain);
 
+    // Colour slots are assigned over the FULL key set so a disabled key keeps
+    // its slot and no other key changes colour across a disable/enable toggle.
     const colors = buildStackColors(
-      effectiveKeys,
+      orderedKeys,
       props.colors,
       props.colorsMapping,
       props.skipColorMappingDispatch ?? false
@@ -356,6 +363,7 @@ export function mountVerticalStackBarChart(
       margin,
       highlightItems: props.highlightItems ?? [],
       legendOrder: legendKeys,
+      disabledItems: props.disabledItems,
     });
 
     if (props.onLegendDataChange) {
