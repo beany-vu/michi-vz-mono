@@ -1,5 +1,12 @@
 # @michi-vz/examples
 
+## 1.0.10
+
+### Patch Changes
+
+- Updated dependencies [55e21f9]
+  - @michi-vz/core@1.5.6
+
 ## 1.0.9
 
 ### Patch Changes

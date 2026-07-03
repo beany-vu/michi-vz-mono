@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/react",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "description": "React charts - SVG, canvas & WebGPU rendering, accessible by default, with an LLM-ready data context. Thin wrapper over the framework-agnostic @michi-vz engine.",
   "type": "module",
   "files": [

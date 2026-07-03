@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.5.6
+
+### Patch Changes
+
+- 55e21f9: VerticalStackBarChart: keep disabled keys in legendData flagged `disabled: true` (legend pill dims instead of disappearing, matching LineChart's contract); colour slots are assigned over the full key set so no key changes colour across a disable/enable toggle. Bars still exclude disabled keys.
+
 ## 1.5.5
 
 ### Patch Changes
