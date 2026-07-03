@@ -383,6 +383,30 @@ describe("mountGapChart legend (showLegend)", () => {
     b.chart.destroy();
     b.host.remove();
   });
+
+  it("ignores tickValues for the mark scale domain when explicit ticks are disabled", () => {
+    const { host, chart } = mountLegend({
+      dataSet: [{ label: "Overflow guard", value1: 10, value2: 0 }],
+      tickValues: [0, 1],
+      enableExplicitTickValues: false,
+    });
+
+    // If hidden explicit ticks still define the x-domain, the mark at value=10
+    // projects thousands of pixels beyond the visible/generated axis. With
+    // explicit ticks disabled, the chart falls back to the padded data domain
+    // and the marker remains inside the SVG width.
+    const marker = host.querySelector<SVGPathElement>(
+      ".gap-marker.value1-marker",
+    )!;
+    const x = Number(
+      marker.getAttribute("transform")?.match(/translate\(([-0-9.]+)/)?.[1],
+    );
+    expect(x).toBeGreaterThan(0);
+    expect(x).toBeLessThanOrEqual(600);
+
+    chart.destroy();
+    host.remove();
+  });
 });
 
 describe("mountGapChart enableExplicitTickValues threading", () => {

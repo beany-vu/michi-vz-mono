@@ -13,7 +13,11 @@ import { buildGapColors } from "../gapChart/colors";
 import { createGapScales } from "../gapChart/scales";
 import { buildGapRenderModel } from "../gapChart/renderModel";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
-import { renderGapSvg, buildGapLegendItems, renderGapLegend } from "../gapChart/renderSvg";
+import {
+  renderGapSvg,
+  buildGapLegendItems,
+  renderGapLegend,
+} from "../gapChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawGapCanvas } from "../gapChart/renderCanvas";
 import { drawGapWebgpu } from "../gapChart/renderWebgpu";
@@ -45,7 +49,8 @@ const DEFAULT_MARGIN: Margin = { top: 50, right: 150, bottom: 100, left: 150 };
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
 // the host-level hit-test path. svg does not.
 type GapRenderer = "svg" | "canvas" | "webgpu";
-const isPainted = (rr: GapRenderer): boolean => rr === "canvas" || rr === "webgpu";
+const isPainted = (rr: GapRenderer): boolean =>
+  rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
   width: number;
@@ -83,7 +88,7 @@ function resolve(p: GapChartProps): Resolved {
 export function mountGapChart(
   host: HTMLElement,
   initial: GapChartProps,
-  opts?: MountOptions<GapChartProps>
+  opts?: MountOptions<GapChartProps>,
 ): ChartInstance<GapChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-gap-chart");
@@ -146,9 +151,9 @@ export function mountGapChart(
   const showTooltip = (d: GapDataItem, ev: MouseEvent): void => {
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(d)
-      : `<strong>${d.label}</strong><br/>Value 1: ${d.value1}<br/>Value 2: ${d.value2}<br/>Difference: ${
-          d.difference ?? d.value1 - d.value2
-        }`;
+      : `<strong>${d.label}</strong><br/>Value 1: ${d.value1}<br/>Value 2: ${
+          d.value2
+        }<br/>Difference: ${d.difference ?? d.value1 - d.value2}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
     // Position AFTER content+visible so placeTooltip can measure offsetWidth/Height
@@ -163,7 +168,8 @@ export function mountGapChart(
   // Canvas-mode hit-test (no retained SVG nodes to attach handlers to).
   let canvasModel: ReturnType<typeof buildGapRenderModel> | null = null;
   const onHostMove = (ev: MouseEvent): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !canvasModel || sticky) return;
+    if (!isPainted(resolve(baseProps).renderer) || !canvasModel || sticky)
+      return;
     const rect = svg.getBoundingClientRect();
     const x = ev.clientX - rect.left;
     const y = ev.clientY - rect.top;
@@ -222,16 +228,22 @@ export function mountGapChart(
     svg.style.position = "relative";
 
     const xAxisDataType = props.xAxisDataType ?? "number";
+    const explicitTickValues =
+      props.enableExplicitTickValues === false ? undefined : props.tickValues;
     const { processedDataSet, yAxisDomain, xAxisDomain } = processGapChartData(
       props.dataSet,
       props.filter,
       disabledItems,
-      props.tickValues
+      explicitTickValues,
     );
 
     // allLabels (incl. disabled) for stable colour generation
-    const allLabels = processGapChartData(props.dataSet, props.filter, [], props.tickValues)
-      .processedDataSet.map((d) => d.label);
+    const allLabels = processGapChartData(
+      props.dataSet,
+      props.filter,
+      [],
+      explicitTickValues,
+    ).processedDataSet.map((d) => d.label);
 
     const colors = buildGapColors(
       allLabels,
@@ -239,7 +251,7 @@ export function mountGapChart(
       props.colorsMapping,
       r.colorMode,
       props.shapeColorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -256,7 +268,7 @@ export function mountGapChart(
       r.width,
       r.height,
       r.margin,
-      xAxisDataType
+      xAxisDataType,
     );
 
     const model = buildGapRenderModel(
@@ -266,16 +278,21 @@ export function mountGapChart(
       r.colorMode,
       highlightItems,
       r.shapeValue1,
-      r.shapeValue2
+      r.shapeValue2,
     );
     canvasModel = model;
 
-    const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
+    const xFormat =
+      props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
     const yFormat = props.yAxisFormat ?? ((d: number | string) => String(d));
 
     // ----- SVG layer (axes + title always; marks only in svg mode) -----
     clear(svg);
-    renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
+    renderTitle(svg, {
+      text: props.title,
+      x: r.width / 2,
+      y: r.margin.top / 2,
+    });
     renderXAxisLinear(svg, scales.xScale, {
       width: r.width,
       height: r.height,
@@ -319,13 +336,14 @@ export function mountGapChart(
             tooltip.classList.add("sticky");
             showTooltip(d, ev);
           },
-        }
+        },
       );
     }
 
     // ----- Canvas / WebGPU layer -----
     if (r.renderer === "webgpu") {
-      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("gapChart-webgpu-canvas");
+      if (!webgpuCanvas)
+        webgpuCanvas = makeLayerCanvas("gapChart-webgpu-canvas");
       const painted = drawGapWebgpu(webgpuCanvas, svg, model, {
         width: r.width,
         height: r.height,
@@ -374,7 +392,7 @@ export function mountGapChart(
         r.shapeValue1,
         r.shapeValue2,
         r.colorMode,
-        props.shapeColorsMapping
+        props.shapeColorsMapping,
       );
       renderGapLegend(svg, legendItems, {
         width: r.width,

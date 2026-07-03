@@ -1,5 +1,13 @@
 # @michi-vz/react
 
+## 1.6.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.5.4
+  - @michi-vz/devtools@0.2.2
+
 ## 1.6.1
 
 ### Patch Changes

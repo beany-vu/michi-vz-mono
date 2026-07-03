@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.5.4
+
+### Patch Changes
+
+- Fix GapChart mark/axis overflow when `tickValues` are supplied but `enableExplicitTickValues` is disabled.
+
 ## 1.5.3
 
 ### Patch Changes
