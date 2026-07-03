@@ -44,7 +44,7 @@
     "@types/d3-shape": "^3.1.7",
     "@webgpu/types": "^0.1.71",
     "jsdom": "^25.0.1",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.6"
   },
   "license": "MIT",
   "author": "Beany Vu",
