@@ -67,13 +67,33 @@ function sampleEvenlyIdx<T>(arr: T[], maxCount: number): T[] {
 }
 
 // Numeric values handed to the formatter (the number itself, or epoch ms for dates).
-function numericTickValues(scale: LinearOrTimeScale, o: XAxisLinearOptions): number[] {
-  if (o.enableExplicitTickValues !== false && o.tickValues && o.tickValues.length > 0) {
-    return o.tickValues.map((v) => (v instanceof Date ? v.valueOf() : v));
+function numericTickValues(
+  scale: LinearOrTimeScale,
+  o: XAxisLinearOptions,
+): number[] {
+  if (
+    o.enableExplicitTickValues !== false &&
+    o.tickValues &&
+    o.tickValues.length > 0
+  ) {
+    // Explicit ticks come from chart consumers, so sanitize them before labels,
+    // grid lines, and first/last tick classes are calculated. Sorting + de-duping
+    // prevents duplicate labels and reversed "first/last" visual state.
+    return Array.from(
+      new Set(
+        o.tickValues
+          .map((v) => (v instanceof Date ? v.valueOf() : v))
+          .filter(
+            (v): v is number => typeof v === "number" && Number.isFinite(v),
+          ),
+      ),
+    ).sort((a, b) => a - b);
   }
   const target = Math.min(5, o.ticks ?? 5);
   if (o.xAxisDataType !== "number") {
-    return (scale as ScaleTime<number, number>).ticks(target).map((d) => d.valueOf());
+    return (scale as ScaleTime<number, number>)
+      .ticks(target)
+      .map((d) => d.valueOf());
   }
   const [first, last] = scale.domain() as [number, number];
   if (target <= 2) return [first, last];
@@ -93,7 +113,7 @@ function numericTickValues(scale: LinearOrTimeScale, o: XAxisLinearOptions): num
 export function renderXAxisLinear(
   parent: SVGElement,
   scale: LinearOrTimeScale,
-  o: XAxisLinearOptions
+  o: XAxisLinearOptions,
 ): SVGGElement {
   const g = svgEl("g", { class: "mv-x-axis" });
   const showGrid = o.showGrid !== false;
@@ -111,7 +131,10 @@ export function renderXAxisLinear(
   let pts = numericTickValues(scale, o)
     .map((v) => ({
       v,
-      px: o.xAxisDataType === "number" ? (scale(v) as number) : (scale(new Date(v)) as number),
+      px:
+        o.xAxisDataType === "number"
+          ? (scale(v) as number)
+          : (scale(new Date(v)) as number),
       label: o.format(v),
     }))
     .filter((p) => Number.isFinite(p.px));
@@ -133,7 +156,8 @@ export function renderXAxisLinear(
       let minGap = Infinity;
       for (let i = 0; i < pts.length; i++) {
         maxW = Math.max(maxW, measureLabelWidth(pts[i].label));
-        if (i > 0) minGap = Math.min(minGap, Math.abs(pts[i].px - pts[i - 1].px));
+        if (i > 0)
+          minGap = Math.min(minGap, Math.abs(pts[i].px - pts[i - 1].px));
       }
       return { maxW, minGap };
     };
@@ -172,17 +196,27 @@ export function renderXAxisLinear(
         y2: bottom,
       });
       // A zero line (or explicitly requested) renders solid rather than dashed.
-      if (isZero && o.showZeroLine) grid.setAttribute("stroke-dasharray", "none");
+      if (isZero && o.showZeroLine)
+        grid.setAttribute("stroke-dasharray", "none");
       g.appendChild(grid);
     }
 
     g.appendChild(
-      svgEl("circle", { class: "mv-tick-dot", cx: p.px, cy: dotCy, r: 2, fill: "lightgray" })
+      svgEl("circle", {
+        class: "mv-tick-dot",
+        cx: p.px,
+        cy: dotCy,
+        r: 2,
+        fill: "lightgray",
+      }),
     );
 
     if (rotated) {
       // Tilt -45° trailing down-left from the tick (matches the band axis).
-      const tickG = svgEl("g", { class: "mv-tick", transform: `translate(${p.px}, ${bottom})` });
+      const tickG = svgEl("g", {
+        class: "mv-tick",
+        transform: `translate(${p.px}, ${bottom})`,
+      });
       const label = svgEl("text", {
         class: "mv-axis-label",
         transform: "translate(0, 18) rotate(-45)",

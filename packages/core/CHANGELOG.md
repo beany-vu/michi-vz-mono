@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.5.3
+
+### Patch Changes
+
+- Harden GapChart explicit tick handling by filtering non-finite values, sorting and de-duplicating consumer-provided ticks, and falling back to finite data domains for degenerate tick inputs.
+
 ## 1.5.2
 
 ### Patch Changes
