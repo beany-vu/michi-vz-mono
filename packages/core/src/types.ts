@@ -99,8 +99,8 @@ export interface GapChartProps {
   ticks?: number;
   /** Explicit tick values, overriding the generated ones */
   tickValues?: Array<number | Date>;
-  /** When false, ignore `tickValues` for tick PLACEMENT and let d3 pick nice ticks
-   * (the explicit values still feed the scale domain). Default true. Legacy parity. */
+  /** When false, ignore `tickValues` for tick placement and GapChart's mark-scale
+   * domain, letting the chart use its data-derived domain and generated ticks. */
   enableExplicitTickValues?: boolean;
   /** Width in px of the HTML y-axis label box, which ellipsizes longer labels (default 100) */
   tickHtmlWidth?: number;
@@ -356,13 +356,19 @@ export interface LineChartProps {
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series. */
-  isNodata?: boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean);
+  isNodata?:
+    | boolean
+    | ((dataSet: LineDataItem[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay (ignored when suppressed). */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
   suppressDefaultOverlay?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;
+  tooltipFormatter?: (
+    d: DataPoint,
+    series: DataPoint[],
+    dataSet: LineDataItem[],
+  ) => string;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */
@@ -491,7 +497,11 @@ export interface AreaChartProps {
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (row: AreaDataRow, series: AreaDataRow[], key: string) => string;
+  tooltipFormatter?: (
+    row: AreaDataRow,
+    series: AreaDataRow[],
+    key: string,
+  ) => string;
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on the data; default = empty data. */
@@ -618,7 +628,9 @@ export interface ScatterChartProps {
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on the data; default = empty data. */
-  isNodata?: boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean);
+  isNodata?:
+    | boolean
+    | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay (ignored when suppressed). */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
@@ -719,7 +731,12 @@ export interface StackTooltipData {
   /** The DataSet group this rect belongs to. */
   seriesKey: string;
   /** The hovered segment's rows across dates (same seriesKey), as {label,value,date,code}. */
-  series: Array<{ label: string; value: number | null; date: string | number | null; code?: string }>;
+  series: Array<{
+    label: string;
+    value: number | null;
+    date: string | number | null;
+    code?: string;
+  }>;
   /** true for a missing-data marker stub. */
   isMissing?: boolean;
 }
@@ -792,7 +809,9 @@ export interface VerticalStackBarChartProps {
   /** Show the loading overlay and skip the no-data check. */
   isLoading?: boolean;
   /** No-data override: boolean or predicate; default = empty / all-empty-series. */
-  isNodata?: boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean);
+  isNodata?:
+    | boolean
+    | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay. */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node. */
@@ -915,13 +934,19 @@ export interface ComparableBarChartProps {
   /** Loading overlay (stale bars hidden while true) */
   isLoading?: boolean;
   /** No-data predicate/flag; default = empty dataSet */
-  isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
+  isNodata?:
+    | boolean
+    | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
   /** Text for the built-in no-data overlay */
   noDataLabel?: string;
   /** Set by a framework wrapper passing its own overlay node - suppresses the default overlay */
   suppressDefaultOverlay?: boolean;
   /** Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc) */
-  filter?: { limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc" };
+  filter?: {
+    limit: number;
+    criteria: "valueBased" | "valueCompared";
+    sortingDir: "asc" | "desc";
+  };
   /** Labels to emphasise; all other marks dim */
   highlightItems?: string[];
   /** Labels to hide and exclude from scales/stacks */
@@ -939,7 +964,7 @@ export interface ComparableBarChartProps {
   tooltipFormatter?: (
     d: ComparableBarDataPoint,
     dataSet?: ComparableBarDataPoint[],
-    type?: "based" | "compared"
+    type?: "based" | "compared",
   ) => string;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
@@ -1017,7 +1042,11 @@ export interface DualBarChartProps {
   /** Fill opacity of the left-extending value2 bar (default 0.55) */
   value2Opacity?: number;
   /** Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "value1" or "value2", sortingDir picks highest (desc) or lowest (asc) */
-  filter?: { limit: number; criteria: "value1" | "value2"; sortingDir: "asc" | "desc" };
+  filter?: {
+    limit: number;
+    criteria: "value1" | "value2";
+    sortingDir: "asc" | "desc";
+  };
   /** Labels to emphasise; all other marks dim */
   highlightItems?: string[];
   /** Labels to hide and exclude from scales/stacks */
@@ -1106,11 +1135,17 @@ export interface BarBellChartProps {
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (row: BarBellDataRow, key: string, value: number) => string;
+  tooltipFormatter?: (
+    row: BarBellDataRow,
+    key: string,
+    value: number,
+  ) => string;
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on the data; default = empty data. */
-  isNodata?: boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
+  isNodata?:
+    | boolean
+    | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay (ignored when suppressed). */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
@@ -1250,7 +1285,11 @@ export interface RangeChartContext extends BaseChartContext {
   xAxis: { type: XaxisDataType; domain: [number, number] };
   yAxis: { domain: [number, number] };
   series: RangeSeriesContext[];
-  stats: { seriesCount: number; pointCount: number; valueRange: [number, number] };
+  stats: {
+    seriesCount: number;
+    pointCount: number;
+    valueRange: [number, number];
+  };
 }
 
 // ---- RibbonChart (stacked columns + connecting ribbons) ----

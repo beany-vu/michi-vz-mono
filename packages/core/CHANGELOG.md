@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.5.5
+
+### Patch Changes
+
+- Add range-aware GapChart domain padding so percentage baseline markers at zero do not overflow the visible axis.
+
 ## 1.5.4
 
 ### Patch Changes

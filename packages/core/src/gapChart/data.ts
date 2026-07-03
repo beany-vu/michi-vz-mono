@@ -41,6 +41,39 @@ function normalizedNumberTicks(tickValues?: Array<number | Date>): number[] {
   ).sort((a, b) => a - b);
 }
 
+function dataDomainWithPadding(values: number[]): [number, number] {
+  const dataMin = Math.min(...values);
+  const dataMax = Math.max(...values);
+
+  if (dataMin === 0 && dataMax === 0) {
+    return [-1, 1];
+  }
+
+  // Preserve the legacy zero-baseline for ordinary all-positive GapCharts whose
+  // marks do not sit at zero, but add left padding when zero is an actual mark.
+  // ATO percentage Snapshot always draws one endpoint at 0; without padding the
+  // baseline circle/square is centred on the axis edge and visually overflows it.
+  if (dataMin >= 0) {
+    const max = dataMax * 1.1;
+    const min = dataMin === 0 ? -Math.abs(dataMax) * 0.1 : 0;
+    return [min, max];
+  }
+
+  // Same for all-negative data: keep the zero baseline unless zero is an actual
+  // endpoint, then add enough right-side padding for the marker geometry.
+  if (dataMax <= 0) {
+    const min = dataMin * 1.1;
+    const max = dataMax === 0 ? Math.abs(dataMin) * 0.1 : 0;
+    return [min, max];
+  }
+
+  // Mixed-sign percentage changes can be very asymmetric (e.g. -100% and +1%).
+  // Endpoint-based 10% padding gives the tiny side sub-pixel visual room, so use
+  // the full range instead to keep bars/markers inside the visible axis.
+  const padding = (dataMax - dataMin) * 0.1;
+  return [dataMin - padding, dataMax + padding];
+}
+
 export function processGapChartData(
   dataSet: GapDataItem[],
   filter: Filter | undefined,
@@ -93,11 +126,7 @@ export function processGapChartData(
         xAxisDomain = [0, 0];
         return { processedDataSet, yAxisDomain, xAxisDomain, allLabels };
       }
-      const dataMin = Math.min(...allValues);
-      const dataMax = Math.max(...allValues);
-      const min = dataMin < 0 ? dataMin * 1.1 : 0;
-      const max = dataMax * 1.1;
-      xAxisDomain = [min, max];
+      xAxisDomain = dataDomainWithPadding(allValues);
     }
   }
 

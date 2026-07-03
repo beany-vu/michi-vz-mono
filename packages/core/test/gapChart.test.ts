@@ -27,6 +27,31 @@ describe("processGapChartData", () => {
     expect(r.xAxisDomain[1]).toBeCloseTo(55, 5);
   });
 
+  it("adds visual padding around a zero endpoint so percentage baseline markers do not sit on the axis edge", () => {
+    const r = processGapChartData(
+      [{ label: "Positive change", value1: 10, value2: 0 }],
+      undefined,
+      [],
+    );
+
+    expect(r.xAxisDomain[0]).toBeCloseTo(-1, 5);
+    expect(r.xAxisDomain[1]).toBeCloseTo(11, 5);
+  });
+
+  it("uses range-based padding for asymmetric mixed-sign percentage changes", () => {
+    const r = processGapChartData(
+      [
+        { label: "Large negative", value1: -100, value2: 0 },
+        { label: "Small positive", value1: 1, value2: 0 },
+      ],
+      undefined,
+      [],
+    );
+
+    expect(r.xAxisDomain[0]).toBeCloseTo(-110.1, 5);
+    expect(r.xAxisDomain[1]).toBeCloseTo(11.1, 5);
+  });
+
   it("applies filter sort + limit, keeping all labels for colour stability", () => {
     const r = processGapChartData(
       sample,

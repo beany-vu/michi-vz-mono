@@ -375,7 +375,7 @@
         },
         {
           "name": "isNodata",
-          "type": "boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)",
+          "type": "| boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)",
           "optional": true,
           "description": "No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series.",
           "default": "",
@@ -399,7 +399,7 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string",
+          "type": "( d: DataPoint, series: DataPoint[], dataSet: LineDataItem[], ) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
@@ -887,7 +887,7 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(row: AreaDataRow, series: AreaDataRow[], key: string) => string",
+          "type": "( row: AreaDataRow, series: AreaDataRow[], key: string, ) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
@@ -1159,7 +1159,7 @@
         },
         {
           "name": "isNodata",
-          "type": "boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean)",
+          "type": "| boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean)",
           "optional": true,
           "description": "No-data override: boolean, or a predicate on the data; default = empty data.",
           "default": "",
@@ -2175,7 +2175,7 @@
         },
         {
           "name": "isNodata",
-          "type": "boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean)",
+          "type": "| boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean)",
           "optional": true,
           "description": "No-data override: boolean or predicate; default = empty / all-empty-series.",
           "default": "",
@@ -2487,7 +2487,7 @@
         },
         {
           "name": "isNodata",
-          "type": "boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)",
+          "type": "| boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)",
           "optional": true,
           "description": "No-data predicate/flag; default = empty dataSet",
           "default": "",
@@ -2511,7 +2511,7 @@
         },
         {
           "name": "filter",
-          "type": "{ limit: number; criteria: \"valueBased\" | \"valueCompared\"; sortingDir: \"asc\" | \"desc\" }",
+          "type": "{ limit: number; criteria: \"valueBased\" | \"valueCompared\"; sortingDir: \"asc\" | \"desc\"; }",
           "optional": true,
           "description": "Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects \"valueBased\" or \"valueCompared\", sortingDir picks highest (desc) or lowest (asc)",
           "default": "",
@@ -2567,7 +2567,7 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "( d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: \"based\" | \"compared\" ) => string",
+          "type": "( d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: \"based\" | \"compared\", ) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted). `type` is the hovered sub-bar (\"based\" | \"compared\"); `dataSet` is all rows.",
           "default": "",
@@ -2727,7 +2727,7 @@
         },
         {
           "name": "filter",
-          "type": "{ limit: number; criteria: \"value1\" | \"value2\"; sortingDir: \"asc\" | \"desc\" }",
+          "type": "{ limit: number; criteria: \"value1\" | \"value2\"; sortingDir: \"asc\" | \"desc\"; }",
           "optional": true,
           "description": "Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects \"value1\" or \"value2\", sortingDir picks highest (desc) or lowest (asc)",
           "default": "",
@@ -2983,7 +2983,7 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(row: BarBellDataRow, key: string, value: number) => string",
+          "type": "( row: BarBellDataRow, key: string, value: number, ) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
           "default": "",
@@ -2999,7 +2999,7 @@
         },
         {
           "name": "isNodata",
-          "type": "boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean)",
+          "type": "| boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean)",
           "optional": true,
           "description": "No-data override: boolean, or a predicate on the data; default = empty data.",
           "default": "",
@@ -3233,7 +3233,7 @@
           "name": "enableExplicitTickValues",
           "type": "boolean",
           "optional": true,
-          "description": "When false, ignore `tickValues` for tick PLACEMENT and let d3 pick nice ticks (the explicit values still feed the scale domain). Default true. Legacy parity.",
+          "description": "When false, ignore `tickValues` for tick placement and GapChart's mark-scale domain, letting the chart use its data-derived domain and generated ticks.",
           "default": "",
           "common": false
         },
