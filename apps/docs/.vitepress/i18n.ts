@@ -39,6 +39,8 @@ export interface UiStrings {
   demoDevtoolsMount: string;
   demoDevtoolsUnmount: string;
   demoDevtoolsHint: string;
+  demoLegendMeaning: string;
+  demoLegendPairs: string;
   demoGoDeeper: string;
   demoInsightsLink: string;
   demoDevtoolsLink: string;
@@ -88,6 +90,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoDevtoolsMount: "🛠 Try DevTools on this chart",
     demoDevtoolsUnmount: "🛠 Remove DevTools",
     demoDevtoolsHint: "DevTools is live: click the floating Michi shield (bottom right) or press Ctrl/Cmd+Shift+M, then pick this chart in the panel.",
+    demoLegendMeaning: "Meaning",
+    demoLegendPairs: "Colour pairs",
     demoGoDeeper: "Go deeper:",
     demoInsightsLink: "Insights guide",
     demoDevtoolsLink: "DevTools guide",
@@ -135,6 +139,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoDevtoolsMount: "🛠 Essayer les DevTools sur ce graphique",
     demoDevtoolsUnmount: "🛠 Retirer les DevTools",
     demoDevtoolsHint: "Les DevTools sont actifs : cliquez sur le bouclier Michi flottant (en bas à droite) ou appuyez sur Ctrl/Cmd+Shift+M, puis choisissez ce graphique dans le panneau.",
+    demoLegendMeaning: "Signification",
+    demoLegendPairs: "Paires de couleurs",
     demoGoDeeper: "Aller plus loin :",
     demoInsightsLink: "Guide Insights",
     demoDevtoolsLink: "Guide DevTools",
@@ -182,6 +188,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoDevtoolsMount: "🛠 Probeer DevTools op deze grafiek",
     demoDevtoolsUnmount: "🛠 DevTools verwijderen",
     demoDevtoolsHint: "DevTools is actief: klik op het zwevende Michi-schild (rechtsonder) of druk op Ctrl/Cmd+Shift+M, en kies deze grafiek in het paneel.",
+    demoLegendMeaning: "Betekenis",
+    demoLegendPairs: "Kleurenparen",
     demoGoDeeper: "Ga dieper:",
     demoInsightsLink: "Insights-gids",
     demoDevtoolsLink: "DevTools-gids",
@@ -229,6 +237,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoDevtoolsMount: "🛠 Thử DevTools với biểu đồ này",
     demoDevtoolsUnmount: "🛠 Gỡ DevTools",
     demoDevtoolsHint: "DevTools đang chạy: bấm chiếc khiên Michi nổi ở góc dưới bên phải (hoặc Ctrl/Cmd+Shift+M), rồi chọn biểu đồ này trong bảng điều khiển.",
+    demoLegendMeaning: "Ý nghĩa",
+    demoLegendPairs: "Cặp màu",
     demoGoDeeper: "Tìm hiểu thêm:",
     demoInsightsLink: "Hướng dẫn Insights",
     demoDevtoolsLink: "Hướng dẫn DevTools",

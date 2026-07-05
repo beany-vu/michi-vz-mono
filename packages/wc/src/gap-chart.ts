@@ -28,6 +28,7 @@ export class GapChartElement extends LitElement {
     height: { type: Number },
     renderer: { type: String },
     xAxisDataType: { type: String, attribute: "x-axis-data-type" },
+    xAxisDomain: { attribute: false },
     colorsMapping: { attribute: false },
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
@@ -64,6 +65,7 @@ export class GapChartElement extends LitElement {
   height = 500;
   renderer: "svg" | "canvas" | "webgpu" = "svg";
   xAxisDataType: XaxisDataType = "number";
+  xAxisDomain?: [number, number];
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];
   disabledItems?: string[];
@@ -116,6 +118,7 @@ export class GapChartElement extends LitElement {
       height: this.height,
       renderer: this.renderer,
       xAxisDataType: this.xAxisDataType,
+      xAxisDomain: this.xAxisDomain,
       colorsMapping: this.colorsMapping,
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,

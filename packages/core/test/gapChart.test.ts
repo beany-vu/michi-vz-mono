@@ -236,6 +236,22 @@ describe("mountGapChart (jsdom)", () => {
     host.remove();
   });
 
+  it("xAxisDomain overrides the derived zero-baseline domain", () => {
+    // Derived domain is [0, 55]; forcing [4, 55] zooms in, pushing Gamma's
+    // markers (value 5) near the left edge instead of ~9% across.
+    const auto = mount();
+    const zoom = mount({ xAxisDomain: [4, 55] });
+    const gammaX = (host: HTMLElement) => {
+      const bar = host.querySelector<SVGRectElement>('rect.gap-bar[data-label="Gamma"]')!;
+      return Number(bar.getAttribute("x"));
+    };
+    expect(gammaX(zoom.host)).toBeLessThan(gammaX(auto.host));
+    auto.chart.destroy();
+    auto.host.remove();
+    zoom.chart.destroy();
+    zoom.host.remove();
+  });
+
   it("builds an a11y table mirror with one row per series", () => {
     const { host, chart } = mount();
     const rows = host.querySelectorAll(".mv-a11y table tbody tr");

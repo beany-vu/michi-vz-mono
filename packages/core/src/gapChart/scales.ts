@@ -17,14 +17,17 @@ export function createGapScales(
   width: number,
   height: number,
   margin: Margin,
-  xAxisDataType: XaxisDataType
+  xAxisDataType: XaxisDataType,
+  // Derived domains get d3 nice() rounding; an EXPLICIT consumer domain must be
+  // honoured exactly (nice() would re-expand a deliberate zoom back toward 0).
+  nice = true
 ): GapScales {
   let xScale: GapXScale;
   if (xAxisDataType === "number") {
     xScale = scaleLinear()
       .domain(xAxisDomain)
-      .range([margin.left, width - margin.right])
-      .nice();
+      .range([margin.left, width - margin.right]);
+    if (nice) (xScale as ScaleLinear<number, number>).nice();
   } else if (xAxisDataType === "date_annual") {
     const [min, max] = xAxisDomain;
     xScale = scaleTime()

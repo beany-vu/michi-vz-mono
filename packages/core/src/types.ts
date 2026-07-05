@@ -91,6 +91,9 @@ export interface GapChartProps {
   shapeValue2?: Shape;
   /** How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers */
   xAxisDataType?: XaxisDataType;
+  /** Fix the value-axis range as [min, max] instead of the derived zero-baseline domain
+   * (e.g. zoom a life-expectancy story into its 35-90 band) */
+  xAxisDomain?: [number, number];
   /** Formats an x tick value into its display label */
   xAxisFormat?: (d: number | string) => string;
   /** Formats a y tick value into its display label */

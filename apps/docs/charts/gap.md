@@ -21,48 +21,54 @@ How far apart are the two numbers that matter? Plot before and after, target and
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>
+// Life expectancy at birth, 1990 -> 2023 for ~195 countries, sorted by 2023 value
+// and coloured by region. Synthetic but shaped like the real story: nearly every
+// country gains, and the lower the 1990 start the bigger the catch-up.
 function makeGap() {
-  const countries = [
-    { label: "United States", code: "USA" },
-    { label: "Russia", code: "RUS" },
-    { label: "Germany", code: "DEU" },
-    { label: "China", code: "CHN" },
-    { label: "United Kingdom", code: "GBR" },
-    { label: "India", code: "IND" },
-    { label: "Brazil", code: "BRA" },
-    { label: "Japan", code: "JPN" },
-    { label: "France", code: "FRA" },
-    { label: "Canada", code: "CAN" },
-    { label: "Australia", code: "AUS" },
-    { label: "South Africa", code: "ZAF" },
+  const regions = [
+    { name: "Africa", color: "#e07b39", count: 54, base: 50, spread: 9, gain: 11 },
+    { name: "Asia", color: "#2a9d8f", count: 48, base: 62, spread: 8, gain: 9 },
+    { name: "Americas", color: "#457b9d", count: 35, base: 67, spread: 6, gain: 6 },
+    { name: "Europe", color: "#9b5de5", count: 44, base: 72, spread: 4, gain: 6 },
+    { name: "Oceania", color: "#d7263d", count: 14, base: 64, spread: 8, gain: 7 },
   ];
   const dataSet = [];
-  for (let i = 0; i < 120; i++) {
-    const c = countries[i % countries.length];
-    const value1 = 2 + Math.random() * 20;
-    const value2 = 2 + Math.random() * 20;
-    dataSet.push({
-      label: `${c.label} #${i}`,
-      code: c.code,
-      value1,
-      value2,
-      difference: value1 - value2,
-      date: "2023",
-    });
+  const colorsMapping = {};
+  for (const r of regions) {
+    for (let i = 0; i < r.count; i++) {
+      const v1990 = r.base + (Math.random() - 0.5) * 2 * r.spread;
+      const gain = Math.max(-1.5, r.gain * (0.35 + Math.random() * 0.9));
+      const v2023 = Math.min(86, v1990 + gain);
+      const label = `${r.name} ${i + 1}`;
+      colorsMapping[label] = r.color;
+      dataSet.push({
+        label,
+        code: r.name,
+        value1: Math.round(v1990 * 10) / 10,
+        value2: Math.round(v2023 * 10) / 10,
+        difference: Math.round((v1990 - v2023) * 10) / 10,
+        date: "2023",
+      });
+    }
   }
+  // Sorted by where each country ENDS, the wall of dumbbells reads as one sweep.
+  dataSet.sort((a, b) => b.value2 - a.value2);
   return {
+    title: "Life expectancy at birth: 1990 (circle) to 2023 (triangle), years (synthetic)",
     dataSet,
+    colorsMapping,
     xAxisDataType: "number",
+    xAxisDomain: [35, 90],
     shapeValue1: "circle",
     shapeValue2: "triangle",
-    shapesLabelsMapping: { value1: "2010", value2: "2023", gap: "Change" },
+    shapesLabelsMapping: { value1: "1990", value2: "2023", gap: "Gain" },
   };
 }
 </script>
 
 GapChart has an opt-in `renderer="webgpu"` that paints the value1/value2 markers and connecting bars as GPU-instanced shapes while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
 
-<WebgpuHeavyDemo element="michi-vz-gap-chart" :make="makeGap" caption="~120 rows" />
+<WebgpuHeavyDemo element="michi-vz-gap-chart" :make="makeGap" caption="~195 countries" />
 
 ## Usage
 

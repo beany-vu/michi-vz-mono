@@ -25,31 +25,47 @@ No split needed? Drop `partial` for a clean proportional cloud, one colour per c
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>
+// Another nod to CERN: one simulated collision event's worth of reconstructed
+// energy clusters, one bubble per cluster, area = energy. A falling power-law
+// spectrum means a few big deposits over thousands of soft ones - the gravity
+// packing turns the event's whole energy budget into one readable cloud.
 function makeBubble() {
-  const categories = [
-    { label: "Machinery", color: "#e63946" },
-    { label: "Fruits", color: "#1d3557" },
-    { label: "Oil seeds", color: "#2a9d8f" },
-    { label: "Beverages", color: "#e9c46a" },
-    { label: "Ferrous metals", color: "#9b5de5" },
-    { label: "Textiles", color: "#f4a261" },
+  const subdetectors = [
+    { label: "Tracker", color: "#457b9d", share: 0.38 },
+    { label: "ECAL", color: "#2a9d8f", share: 0.3 },
+    { label: "HCAL", color: "#e07b39", share: 0.24 },
+    { label: "Muon chambers", color: "#9b5de5", share: 0.08 },
   ];
   const dataSet = [];
-  for (let i = 0; i < 2000; i++) {
-    const c = categories[i % categories.length];
-    dataSet.push({
-      label: `${c.label} #${i}`,
-      value: 5 + Math.random() * 150,
-      color: c.color,
-    });
+  let i = 0;
+  for (const s of subdetectors) {
+    const n = Math.round(3000 * s.share);
+    for (let k = 0; k < n; k++) {
+      dataSet.push({
+        label: `${s.label} #${i++}`,
+        // Falling energy spectrum: many soft clusters, a handful of hard ones.
+        value: 2 + 200 * Math.pow(Math.random(), 3),
+        color: s.color,
+      });
+    }
   }
-  return { dataSet, gravity: 0.06, padding: 0.5 };
+  return {
+    title: "One simulated collision event: energy clusters, bubble area = energy (GeV)",
+    dataSet, gravity: 0.06, padding: 0.5,
+  };
 }
 </script>
 
 BubbleChart has an opt-in `renderer="webgpu"` that paints the bubble cloud as GPU-instanced circles while labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
 
-<WebgpuHeavyDemo element="michi-vz-bubble-chart" :make="makeBubble" caption="~2,000 bubbles" />
+Like the scatter page, the demo below borrows from particle physics: ~3,000 reconstructed energy clusters from one simulated collision event, one bubble per cluster, coloured by subdetector. The handful of hard deposits tower over thousands of soft ones, and gravity packing turns the whole event's energy budget into a single readable cloud.
+
+<WebgpuHeavyDemo element="michi-vz-bubble-chart" :make="makeBubble" :legend="[
+    { label: 'Tracker', color: '#457b9d' },
+    { label: 'ECAL', color: '#2a9d8f' },
+    { label: 'HCAL', color: '#e07b39' },
+    { label: 'Muon chambers', color: '#9b5de5' },
+  ]" caption="~3,000 simulated energy clusters" />
 
 ## Usage
 

@@ -117,6 +117,7 @@ export function applyGapChartProps(el: GapChartElement, props: GapChartProps): v
   if (props.height !== undefined) el.height = props.height;
   if (props.renderer !== undefined) el.renderer = props.renderer;
   if (props.xAxisDataType !== undefined) el.xAxisDataType = props.xAxisDataType;
+  if (props.xAxisDomain !== undefined) el.xAxisDomain = props.xAxisDomain;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;

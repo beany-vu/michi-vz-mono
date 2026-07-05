@@ -230,12 +230,15 @@ export function mountGapChart(
     const xAxisDataType = props.xAxisDataType ?? "number";
     const explicitTickValues =
       props.enableExplicitTickValues === false ? undefined : props.tickValues;
-    const { processedDataSet, yAxisDomain, xAxisDomain } = processGapChartData(
+    const { processedDataSet, yAxisDomain, xAxisDomain: derivedXDomain } = processGapChartData(
       props.dataSet,
       props.filter,
       disabledItems,
       explicitTickValues,
     );
+    // Explicit [min, max] wins over the derived zero-baseline domain (e.g. to zoom
+    // a life-expectancy story into its 35-90 band instead of anchoring at 0).
+    const xAxisDomain = props.xAxisDomain ?? derivedXDomain;
 
     // allLabels (incl. disabled) for stable colour generation
     const allLabels = processGapChartData(
@@ -269,6 +272,7 @@ export function mountGapChart(
       r.height,
       r.margin,
       xAxisDataType,
+      props.xAxisDomain === undefined, // explicit domain -> no nice() re-rounding
     );
 
     const model = buildGapRenderModel(

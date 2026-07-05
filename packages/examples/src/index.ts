@@ -51,6 +51,10 @@ const gap: Example<GapChartProps>[] = [
       "xAxisDataType": "number",
       "shapeValue1": "circle",
       "shapeValue2": "triangle",
+      // The chart's own shape legend (circle = 2010, triangle = 2023, bar = change)
+      // renders under the plot; extra bottom margin gives it air.
+      "showLegend": true,
+      "margin": { "top": 50, "right": 50, "bottom": 70, "left": 100 },
       "shapesLabelsMapping": {
         "value1": "2010",
         "value2": "2023",
@@ -1403,29 +1407,30 @@ const pie: Example<PieChartProps>[] = [
 ];
 
 const bubble: Example<BubbleChartProps>[] = [
-  // [0] Gravity-clustered bubbles with a realized/untapped split per market.
+  // [0] The split as a story everyone knows: gross salary bubble, net take-home core.
   {
-    id: "bubble-export-potential",
-    title: "Export potential by market (realized vs untapped)",
+    id: "bubble-eu-salary",
+    title: "Average salary in the EU: gross vs net",
     description:
-      "Each market is a bubble sized by its total export potential; gravity pulls them into a cluster so size comparisons read at a glance. The solid core is the realized share, the lighter ring the untapped opportunity.",
+      "One bubble per country sized by the average GROSS annual salary; the solid core is the net take-home pay and the pale ring is taxes and contributions. Belgium's thin core vs Ireland's thick one is the whole tax-wedge story at a glance.",
     element: "michi-vz-bubble-chart",
     props: {
-      title: "Export potential by market (by 2030)",
+      title: "Average salary: gross bubble, net take-home core (k EUR/year)",
       width: 720,
       height: 520,
-      splitLabels: ["Realized", "Untapped"],
+      splitLabels: ["Net (take-home)", "Taxes & contributions"],
       showLegend: true,
       dataSet: [
-        { label: "Germany", value: 120, partial: 64, color: TM_BLUE },
-        { label: "France", value: 95, partial: 32, color: TM_GOLD },
-        { label: "United States", value: 152, partial: 88, color: TM_RED },
-        { label: "China", value: 168, partial: 51, color: TM_BLUE2 },
-        { label: "Italy", value: 72, partial: 40, color: TM_TEAL },
-        { label: "Spain", value: 58, partial: 22, color: TM_CORAL },
-        { label: "Netherlands", value: 64, partial: 47, color: TM_GOLD },
-        { label: "Poland", value: 44, partial: 12, color: TM_BLUE },
-        { label: "Türkiye", value: 51, partial: 18, color: TM_RED },
+        { label: "Luxembourg", value: 78, partial: 51, color: TM_BLUE },
+        { label: "Denmark", value: 68, partial: 44, color: TM_GOLD },
+        { label: "Germany", value: 62, partial: 38, color: TM_RED },
+        { label: "Netherlands", value: 60, partial: 40, color: TM_BLUE2 },
+        { label: "Belgium", value: 58, partial: 33, color: TM_TEAL },
+        { label: "Ireland", value: 55, partial: 40, color: TM_CORAL },
+        { label: "France", value: 52, partial: 36, color: TM_GOLD },
+        { label: "Spain", value: 33, partial: 25, color: TM_BLUE },
+        { label: "Portugal", value: 24, partial: 18, color: TM_RED },
+        { label: "Poland", value: 21, partial: 15, color: TM_TEAL },
       ],
     },
   },
@@ -1448,6 +1453,32 @@ const bubble: Example<BubbleChartProps>[] = [
         { label: "Ferrous metals", value: 80, color: TM_TEAL },
         { label: "Textiles", value: 42, color: TM_CORAL },
         { label: "Dairy", value: 38, color: TM_GOLD },
+      ],
+    },
+  },
+  // [2] Gravity-clustered bubbles with a realized/untapped split per market.
+  {
+    id: "bubble-export-potential",
+    title: "Export potential by market (realized vs untapped)",
+    description:
+      "Each market is a bubble sized by its total export potential; gravity pulls them into a cluster so size comparisons read at a glance. The solid core is the realized share, the lighter ring the untapped opportunity.",
+    element: "michi-vz-bubble-chart",
+    props: {
+      title: "Export potential by market (by 2030)",
+      width: 720,
+      height: 520,
+      splitLabels: ["Realized", "Untapped"],
+      showLegend: true,
+      dataSet: [
+        { label: "Germany", value: 120, partial: 64, color: TM_BLUE },
+        { label: "France", value: 95, partial: 32, color: TM_GOLD },
+        { label: "United States", value: 152, partial: 88, color: TM_RED },
+        { label: "China", value: 168, partial: 51, color: TM_BLUE2 },
+        { label: "Italy", value: 72, partial: 40, color: TM_TEAL },
+        { label: "Spain", value: 58, partial: 22, color: TM_CORAL },
+        { label: "Netherlands", value: 64, partial: 47, color: TM_GOLD },
+        { label: "Poland", value: 44, partial: 12, color: TM_BLUE },
+        { label: "Türkiye", value: 51, partial: 18, color: TM_RED },
       ],
     },
   },

@@ -15,10 +15,11 @@ const props = defineProps<{
   /** Short human label for the dataset size, e.g. "20,000 points". */
   caption?: string;
   height?: number;
-  /** Opt-in auto legend from getContext().legendData. Most heavy demos have far too
-   * many categories for one (30 ribbons, 120 rows), but a demo with a handful of
-   * meaningful groups (the dimuon resonances) needs the colour key. */
-  legend?: boolean;
+  /** Opt-in colour key. `true` = auto from getContext().legendData (the dimuon
+   * resonances); an array = explicit rows for charts whose per-mark labels are all
+   * unique (the collision-event bubbles). Most heavy demos have far too many
+   * categories for a legend (30 ribbons, 120 rows) and leave this off. */
+  legend?: boolean | Array<{ label: string; color: string }>;
 }>();
 
 const host = ref<HTMLDivElement>();
@@ -58,7 +59,9 @@ function buildNode() {
   node.addEventListener("michi-vz:dataprocessed", (e: Event) => {
     const detail = (e as CustomEvent).detail;
     summary.value = detail?.summary ?? "";
-    if (props.legend) {
+    if (Array.isArray(props.legend)) {
+      legendRows.value = props.legend;
+    } else if (props.legend) {
       const rows = Array.isArray(detail?.legendData) ? detail.legendData : [];
       legendRows.value =
         rows.length > 1 && rows.length <= 12

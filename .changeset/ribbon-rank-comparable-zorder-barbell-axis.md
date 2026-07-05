@@ -22,6 +22,10 @@ Legacy-parity fixes for Ribbon and Comparable, a new BarBell axis option, and le
 - **RadarChart keeps pole labels out of the title band**: when a title renders,
   upward-overshooting axis labels (the straight-up pole especially) are clamped
   below it instead of colliding.
+- **New `xAxisDomain: [min, max]` on GapChartProps**: fixes the value axis instead
+  of the derived zero-baseline domain (zoom a life-expectancy story into its
+  35-90 band). An explicit domain skips d3 nice() re-rounding. Exposed on the web
+  component and `applyGapChartProps`.
 - **New `xAxisPosition: "top" | "bottom"` on BarBellChartProps** (default "top",
   the legacy header look): "bottom" moves the value-axis tick labels below the
   plot, clearing room under the title. Exposed on the web component

@@ -25,31 +25,47 @@ Pas besoin de division ? Retirez `partial` pour un nuage proportionnel épuré, 
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>
+// Another nod to CERN: one simulated collision event's worth of reconstructed
+// energy clusters, one bubble per cluster, area = energy. A falling power-law
+// spectrum means a few big deposits over thousands of soft ones - the gravity
+// packing turns the event's whole energy budget into one readable cloud.
 function makeBubble() {
-  const categories = [
-    { label: "Machinery", color: "#e63946" },
-    { label: "Fruits", color: "#1d3557" },
-    { label: "Oil seeds", color: "#2a9d8f" },
-    { label: "Beverages", color: "#e9c46a" },
-    { label: "Ferrous metals", color: "#9b5de5" },
-    { label: "Textiles", color: "#f4a261" },
+  const subdetectors = [
+    { label: "Tracker", color: "#457b9d", share: 0.38 },
+    { label: "ECAL", color: "#2a9d8f", share: 0.3 },
+    { label: "HCAL", color: "#e07b39", share: 0.24 },
+    { label: "Muon chambers", color: "#9b5de5", share: 0.08 },
   ];
   const dataSet = [];
-  for (let i = 0; i < 2000; i++) {
-    const c = categories[i % categories.length];
-    dataSet.push({
-      label: `${c.label} #${i}`,
-      value: 5 + Math.random() * 150,
-      color: c.color,
-    });
+  let i = 0;
+  for (const s of subdetectors) {
+    const n = Math.round(3000 * s.share);
+    for (let k = 0; k < n; k++) {
+      dataSet.push({
+        label: `${s.label} #${i++}`,
+        // Falling energy spectrum: many soft clusters, a handful of hard ones.
+        value: 2 + 200 * Math.pow(Math.random(), 3),
+        color: s.color,
+      });
+    }
   }
-  return { dataSet, gravity: 0.06, padding: 0.5 };
+  return {
+    title: "One simulated collision event: energy clusters, bubble area = energy (GeV)",
+    dataSet, gravity: 0.06, padding: 0.5,
+  };
 }
 </script>
 
 BubbleChart dispose d'un `renderer="webgpu"` optionnel qui peint le nuage de bulles comme des cercles instanciés sur le GPU tandis que les étiquettes et infobulles restent sur la couche SVG. C'est conditionné par les capacités du navigateur : sur un navigateur sans WebGPU, il rétrograde automatiquement vers canvas, et `getContext().renderer` indique lequel a effectivement peint.
 
-<WebgpuHeavyDemo element="michi-vz-bubble-chart" :make="makeBubble" caption="~2 000 bulles" />
+Comme la page du nuage de points, la démo ci-dessous emprunte à la physique des particules : ~3 000 amas d'énergie reconstruits d'un événement de collision simulé, une bulle par amas, colorée par sous-détecteur. La poignée de dépôts durs domine des milliers de dépôts mous, et le tassement par gravité transforme tout le budget d'énergie de l'événement en un seul nuage lisible.
+
+<WebgpuHeavyDemo element="michi-vz-bubble-chart" :make="makeBubble" :legend="[
+    { label: 'Tracker', color: '#457b9d' },
+    { label: 'ECAL', color: '#2a9d8f' },
+    { label: 'HCAL', color: '#e07b39' },
+    { label: 'Muon chambers', color: '#9b5de5' },
+  ]" caption="~3 000 amas d'énergie simulés" />
 
 ## Usage
 

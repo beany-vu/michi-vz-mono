@@ -16,6 +16,8 @@ interface DemoLegendItem {
   label: string;
   color: string;
   opacity?: number;
+  /** Second swatch: the pale companion colour (pale/solid paired encodings). */
+  pale?: string;
 }
 
 // withDefaults(legend: undefined) is LOAD-BEARING: the prop type compiles to
@@ -38,6 +40,11 @@ const title = ref<string>("");
 // Auto legend rows, derived from the context INSIDE the dataprocessed listener
 // (never a computed over the non-reactive element api).
 const autoLegend = ref<DemoLegendItem[]>([]);
+// Paired rows for pale/solid encodings (comparable's colorsBasedMapping): each
+// label with BOTH its pale and solid swatch. Users toggle between the "meaning"
+// legend the page provides and this per-label colour-pair view.
+const pairedLegend = ref<DemoLegendItem[]>([]);
+const legendMode = ref<"meaning" | "pairs">("meaning");
 const { lang } = useData();
 const t = computed(() => ui[localeKeyFromLang(lang.value)]);
 const guideLink = (page: string) =>
@@ -78,10 +85,19 @@ async function toggleDevtools() {
 }
 const legendRows = computed<DemoLegendItem[]>(() => {
   if (props.legend === false) return [];
-  if (Array.isArray(props.legend)) return props.legend;
+  if (Array.isArray(props.legend)) {
+    // Pale/solid charts get a play toggle: the page's "meaning" rows vs the
+    // per-label colour pairs read live off the element's colorsBasedMapping.
+    return legendMode.value === "pairs" && pairedLegend.value.length
+      ? pairedLegend.value
+      : props.legend;
+  }
   // Auto mode: only worth showing when there is more than one coloured series.
   return autoLegend.value.length > 1 ? autoLegend.value : [];
 });
+const hasLegendToggle = computed(
+  () => Array.isArray(props.legend) && pairedLegend.value.length > 1,
+);
 // Canvas-first: we built the canvas renderer in parallel with SVG and it is the
 // faster path, so the live demos lead with it. The toggle proves SVG/canvas parity.
 const renderer = ref<"canvas" | "svg">("canvas");
@@ -110,10 +126,16 @@ function buildNode() {
   // emission is caught.
   node.addEventListener("michi-vz:dataprocessed", (e: Event) => {
     const legend = (e as CustomEvent).detail?.legendData;
-    autoLegend.value = Array.isArray(legend)
+    const rows = Array.isArray(legend)
       ? legend
           .filter((l: any) => l && !l.disabled)
           .map((l: any) => ({ label: String(l.label), color: String(l.color || "") }))
+      : [];
+    autoLegend.value = rows;
+    // Pale companion colours live on the element (comparable's colorsBasedMapping).
+    const paleOf = (node as any).colorsBasedMapping as Record<string, string> | undefined;
+    pairedLegend.value = paleOf
+      ? rows.filter((r) => paleOf[r.label]).map((r) => ({ ...r, pale: paleOf[r.label] }))
       : [];
   });
   host.value.appendChild(node);
@@ -207,15 +229,26 @@ function toggleContext() {
       </span>
     </div>
     <div class="chart-demo-stage" ref="host"></div>
-    <ul v-if="legendRows.length" class="chart-demo-legend">
-      <li v-for="item in legendRows" :key="item.label">
-        <span
-          class="chart-demo-swatch"
-          :style="{ background: item.color, opacity: item.opacity ?? 1 }"
-        ></span>
-        {{ item.label }}
-      </li>
-    </ul>
+    <div v-if="legendRows.length" class="chart-demo-legend-row">
+      <ul class="chart-demo-legend">
+        <li v-for="item in legendRows" :key="item.label">
+          <span
+            v-if="item.pale"
+            class="chart-demo-swatch"
+            :style="{ background: item.pale }"
+          ></span>
+          <span
+            class="chart-demo-swatch"
+            :style="{ background: item.color, opacity: item.opacity ?? 1 }"
+          ></span>
+          {{ item.label }}
+        </li>
+      </ul>
+      <span v-if="hasLegendToggle" class="chart-demo-rtoggle chart-demo-ltoggle" role="group" aria-label="legend mode">
+        <button :class="{ on: legendMode === 'meaning' }" @click="legendMode = 'meaning'">{{ t.demoLegendMeaning }}</button>
+        <button :class="{ on: legendMode === 'pairs' }" @click="legendMode = 'pairs'">{{ t.demoLegendPairs }}</button>
+      </span>
+    </div>
     <div class="chart-demo-foot">
       <button class="chart-demo-btn" @click="toggleContext">
         {{ ctx ? "▴ Hide" : "▾ Show" }} LLM context · getContext()
@@ -269,17 +302,25 @@ function toggleContext() {
 .chart-demo-note { font-family: var(--vp-font-family-mono); font-size: 11px; color: var(--vp-c-text-3); letter-spacing: 0.04em; }
 .chart-demo-ctx { max-height: 300px; overflow: auto; font-size: 12px; margin: 0 16px 16px; }
 /* Auto legend - compact swatch rows for demos whose colours have no on-chart key. */
+.chart-demo-legend-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px 16px;
+  padding: 0 16px 10px;
+}
 .chart-demo-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 16px;
   list-style: none;
   margin: 0;
-  padding: 0 16px 10px;
+  padding: 0;
   font-size: 12.5px;
   color: var(--vp-c-text-2);
 }
 .chart-demo-legend li { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+.chart-demo-legend li .chart-demo-swatch + .chart-demo-swatch { margin-left: -3px; }
+.chart-demo-ltoggle { margin-left: auto; flex: none; }
 .chart-demo-swatch {
   width: 10px;
   height: 10px;
