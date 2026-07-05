@@ -3,6 +3,8 @@ import DefaultTheme from "vitepress/theme";
 import CatBand from "./CatBand.vue";
 import WhySpotlight from "./WhySpotlight.vue";
 import ChartAtlas from "./ChartAtlas.vue";
+import HeroInfo from "./HeroInfo.vue";
+import HomeFeatures from "./HomeFeatures.vue";
 
 const { Layout } = DefaultTheme;
 
@@ -16,6 +18,11 @@ const META = [
 
 <template>
   <Layout>
+    <!-- Custom hero copy: eyebrow + headline with one red accent word + sub. -->
+    <template #home-hero-info>
+      <HeroInfo />
+    </template>
+
     <!-- Factual meta line under the hero CTAs - plain text, one accent-free line -->
     <template #home-hero-actions-after>
       <div class="mv-hero-meta">
@@ -27,6 +34,7 @@ const META = [
          signature band, the "why" spotlight (live chart + selling-point tabs),
          then the chart atlas grid (kept as the centerpiece). -->
     <template #home-features-after>
+      <HomeFeatures />
       <CatBand />
       <WhySpotlight />
       <ChartAtlas />

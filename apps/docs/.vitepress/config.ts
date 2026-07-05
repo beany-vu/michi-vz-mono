@@ -1,4 +1,5 @@
 import { defineConfig, type HeadConfig } from "vitepress";
+import { ui, chartNames, prefixOf, type LocaleKey } from "./i18n";
 
 // Google Analytics is injected ONLY from a build-time env var so the tracking
 // ID never lives in this open-source repo. Set GA_MEASUREMENT_ID in the Netlify
@@ -29,26 +30,115 @@ gtag('config', '${GA_ID}');`,
     ]
   : [];
 
-// Charts in catalog order: [slug, display name, family]
-const charts: Array<[string, string, string]> = [
-  ["line", "Line Chart", "Trends"],
-  ["fan", "Fan Chart", "Trends"],
-  ["area", "Area Chart", "Composition"],
-  ["scatter", "Scatter Plot", "Correlation"],
-  ["range", "Range Chart", "Trends"],
-  ["ribbon", "Ribbon Chart", "Composition"],
-  ["radar", "Radar Chart", "Comparison"],
-  ["vertical-stack-bar", "Vertical Stack Bar", "Composition"],
-  ["comparable", "Comparable Bar", "Comparison"],
-  ["dual", "Dual Bar (Tornado)", "Comparison"],
-  ["bar-bell", "Bar-Bell", "Composition"],
-  ["gap", "Gap Chart", "Comparison"],
-  ["treemap", "Treemap", "Composition"],
-  ["pie", "Pie / Donut", "Composition"],
-  ["bubble", "Bubble Chart", "Composition"],
-  ["sankey", "Sankey", "Flow"],
-  ["fountain", "Fountain (Jet d'Eau)", "Comparison"],
+// Charts in catalog order (slug only; localized display names live in i18n.ts).
+const chartOrder: string[] = [
+  "line",
+  "fan",
+  "area",
+  "scatter",
+  "range",
+  "ribbon",
+  "radar",
+  "vertical-stack-bar",
+  "comparable",
+  "dual",
+  "bar-bell",
+  "gap",
+  "treemap",
+  "pie",
+  "bubble",
+  "sankey",
+  "fountain",
 ];
+
+// Build one locale's nav + sidebar + footer + label strings. `loc` selects the
+// translation set; `prefixOf[loc]` ("" for English, "/fr" etc.) namespaces every
+// internal link so each language stays inside its own content tree.
+function themeForLocale(loc: LocaleKey) {
+  const t = ui[loc];
+  const names = chartNames[loc];
+  const p = prefixOf[loc];
+  const link = (path: string) => `${p}${path}`;
+
+  const chartsGroup = {
+    text: t.sbCharts,
+    items: [
+      { text: t.sbOverview, link: link("/charts/") },
+      ...chartOrder.map((slug) => ({ text: names[slug], link: link(`/charts/${slug}`) })),
+    ],
+  };
+  const apiGroup = {
+    text: t.sbChartApi,
+    items: chartOrder.map((slug) => ({ text: names[slug], link: link(`/api/${slug}`) })),
+  };
+  // Insights API method names are code identifiers - left untranslated on purpose.
+  const insightsApiGroup = {
+    text: t.sbInsightsApi,
+    items: [
+      { text: "forecast", link: link("/api/insights/forecast") },
+      { text: "forecast extras", link: link("/api/insights/forecast-extras") },
+      { text: "anomaly", link: link("/api/insights/anomaly") },
+      { text: "narrate / explain", link: link("/api/insights/narrate") },
+      { text: "validate", link: link("/api/insights/validate") },
+      { text: "embeddings", link: link("/api/insights/embeddings") },
+      { text: "aggregate (sql)", link: link("/api/insights/sql") },
+      { text: "sonify", link: link("/api/insights/sonify") },
+      { text: "agent & MCP", link: link("/api/insights/agent") },
+    ],
+  };
+  const guideGroup = {
+    text: t.sbGuide,
+    items: [
+      { text: t.gWhy, link: link("/guide/why") },
+      { text: t.gWhatsNew, link: link("/guide/whats-new") },
+      { text: t.gInstallation, link: link("/guide/installation") },
+      { text: t.gGettingStarted, link: link("/guide/getting-started") },
+      { text: t.gProvider, link: link("/guide/provider") },
+      { text: t.gLlmContext, link: link("/guide/llm-context") },
+      { text: t.gInsights, link: link("/guide/insights") },
+      { text: t.gDevtools, link: link("/guide/devtools") },
+    ],
+  };
+
+  return {
+    nav: [
+      { text: t.navCharts, link: link("/charts/") },
+      { text: t.navGuide, link: link("/guide/why") },
+      {
+        text: "v1.6.0",
+        items: [
+          { text: t.navWhatsNew, link: link("/guide/whats-new") },
+          {
+            text: t.navChangelog,
+            link: "https://github.com/beany-vu/michi-vz-mono/releases",
+          },
+        ],
+      },
+    ],
+    sidebar: {
+      [link("/charts/")]: [chartsGroup, apiGroup, insightsApiGroup],
+      [link("/api/")]: [guideGroup, chartsGroup, apiGroup, insightsApiGroup],
+      [link("/guide/")]: [guideGroup, apiGroup, insightsApiGroup],
+    },
+    footer: {
+      message:
+        `<span class="mv-foot-heart">${t.footerHeart}</span>` +
+        '<span class="mv-foot-links">' +
+        `<a href="https://github.com/beany-vu/michi-vz-mono">${t.footerStar}</a>` +
+        ` · <a href="https://github.com/beany-vu/michi-vz-mono/discussions">${t.footerCommunity}</a>` +
+        ` · <a href="https://github.com/beany-vu/michi-vz-mono/blob/main/CONTRIBUTING.md">${t.footerContribute}</a>` +
+        ` · <a href="https://github.com/beany-vu/michi-vz-mono/blob/main/CONTRIBUTING.md#translations">${t.footerTranslate}</a>` +
+        "</span>",
+      copyright: t.footerCopyright,
+    },
+    docFooter: { prev: t.docPrev, next: t.docNext },
+    outline: { label: t.outline },
+    darkModeSwitchLabel: t.darkModeSwitch,
+    sidebarMenuLabel: t.sidebarMenu,
+    returnToTopLabel: t.returnToTop,
+    langMenuLabel: t.langMenu,
+  };
+}
 
 export default defineConfig({
   title: "michi-vz",
@@ -152,79 +242,46 @@ export default defineConfig({
     ...gscHead,
     ...gaHead,
   ],
+  // Four locales share one engine + theme; each gets its own translated nav,
+  // sidebar, footer, and content tree (root = English, /fr, /nl, /vi).
+  locales: {
+    root: { label: ui.root.label, lang: ui.root.lang, themeConfig: themeForLocale("root") },
+    fr: { label: ui.fr.label, lang: ui.fr.lang, link: "/fr/", themeConfig: themeForLocale("fr") },
+    nl: { label: ui.nl.label, lang: ui.nl.lang, link: "/nl/", themeConfig: themeForLocale("nl") },
+    vi: { label: ui.vi.label, lang: ui.vi.lang, link: "/vi/", themeConfig: themeForLocale("vi") },
+  },
   themeConfig: {
     // The Michi shield next to the site title in the navbar (64px render of the crest).
     logo: "/michi-shield-nav.png",
-    nav: [
-      { text: "Charts", link: "/charts/" },
-      { text: "Guide", link: "/guide/why" },
-      {
-        // Version switcher (single version for now).
-        text: "v1.6.0",
-        items: [
-          { text: "What's new in v1.6.0", link: "/guide/whats-new" },
-          { text: "Changelog (GitHub)", link: "https://github.com/beany-vu/michi-vz-mono/releases" },
-        ],
-      },
-    ],
-    sidebar: (() => {
-      // Charts (demos) + Chart API are shown together (MUI-style) on both
-      // /charts/ and /api/, so you can hop between a chart and its API.
-      const chartsGroup = {
-        text: "Charts",
-        items: [
-          { text: "Overview", link: "/charts/" },
-          ...charts.map(([slug, name]) => ({ text: name, link: `/charts/${slug}` })),
-        ],
-      };
-      const apiGroup = {
-        text: "Chart API",
-        items: charts.map(([slug, name]) => ({ text: name, link: `/api/${slug}` })),
-      };
-      const insightsApiGroup = {
-        text: "Insights API",
-        items: [
-          { text: "forecast", link: "/api/insights/forecast" },
-          { text: "forecast extras", link: "/api/insights/forecast-extras" },
-          { text: "anomaly", link: "/api/insights/anomaly" },
-          { text: "narrate / explain", link: "/api/insights/narrate" },
-          { text: "validate", link: "/api/insights/validate" },
-          { text: "embeddings", link: "/api/insights/embeddings" },
-          { text: "aggregate (sql)", link: "/api/insights/sql" },
-          { text: "sonify", link: "/api/insights/sonify" },
-          { text: "agent & MCP", link: "/api/insights/agent" },
-        ],
-      };
-      const guideGroup = {
-        text: "Guide",
-        items: [
-          { text: "Why michi-vz", link: "/guide/why" },
-          { text: "What's new", link: "/guide/whats-new" },
-          { text: "Installation", link: "/guide/installation" },
-          { text: "Getting started", link: "/guide/getting-started" },
-          { text: "Provider & shared state", link: "/guide/provider" },
-          { text: "LLM context", link: "/guide/llm-context" },
-          { text: "Insights (AI boost)", link: "/guide/insights" },
-          { text: "DevTools", link: "/guide/devtools" },
-        ],
-      };
-      // The API reference lives INSIDE the Guide navigation (no separate top-level
-      // section): every sidebar shows Guide + Chart API + Insights API together.
-      return {
-        "/charts/": [chartsGroup, apiGroup, insightsApiGroup],
-        "/api/": [guideGroup, chartsGroup, apiGroup, insightsApiGroup],
-        "/guide/": [guideGroup, apiGroup, insightsApiGroup],
-      };
-    })(),
     socialLinks: [
       { icon: "github", link: "https://github.com/beany-vu/michi-vz-mono" },
       { icon: "npm", link: "https://www.npmjs.com/org/michi-vz" },
     ],
-    footer: {
-      message: "Free and open source. MIT licensed.",
-      copyright: "© 2026 Hoang VU",
+    search: {
+      provider: "local",
+      options: {
+        locales: {
+          fr: {
+            translations: {
+              button: { buttonText: ui.fr.searchButton, buttonAriaLabel: ui.fr.searchButton },
+              modal: { noResultsText: "Aucun résultat pour", resetButtonTitle: "Réinitialiser" },
+            },
+          },
+          nl: {
+            translations: {
+              button: { buttonText: ui.nl.searchButton, buttonAriaLabel: ui.nl.searchButton },
+              modal: { noResultsText: "Geen resultaten voor", resetButtonTitle: "Wissen" },
+            },
+          },
+          vi: {
+            translations: {
+              button: { buttonText: ui.vi.searchButton, buttonAriaLabel: ui.vi.searchButton },
+              modal: { noResultsText: "Không có kết quả cho", resetButtonTitle: "Đặt lại" },
+            },
+          },
+        },
+      },
     },
-    search: { provider: "local" },
   },
   // The charts are native custom elements - tell Vue not to treat them as components.
   vue: {

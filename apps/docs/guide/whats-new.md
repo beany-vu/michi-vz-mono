@@ -33,8 +33,14 @@ svelte, angular **1.5.2**.
   multi-MB string per render at 50k points), and canvas/WebGPU scatter hover collapses each
   frame's pointer burst into one trailing `requestAnimationFrame` pass. Big dashboards stay
   responsive with nothing to configure.
-- **Docs:** the Michi shield is now the site favicon and sits beside the navbar title; every
-  page ships a unique description and social card.
+- **Docs, now in four languages.** The site speaks English, French, Dutch, and Vietnamese,
+  with a language switcher in the navbar - every guide, chart, and API page is translated.
+  Contributions to the translations are welcome; see the footer's **Help translate** link.
+- **A sharper home page.** The homepage now leads with the DevTools story and four
+  plain-language pillars - inspect everything, charts machines can read, accessible by default,
+  and runs locally. A new footer invites you to star the repo, join the community, contribute,
+  and help translate. The Michi shield is the site favicon and sits beside the navbar title,
+  and every page ships a unique description and social card.
 
 ## v1.5.0
 

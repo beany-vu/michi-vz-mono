@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useData } from "vitepress";
 import CatalogCard from "./CatalogCard.vue";
+import { atlas, localeKeyFromLang } from "../i18n";
+
+// Atlas intro copy follows the active locale (this is one shared component).
+const { lang } = useData();
+const intro = computed(() => atlas[localeKeyFromLang(lang.value)]);
 
 // Single source for the home gallery. Each card pulls its LIVE chart from
 // @michi-vz/examples by `examplesKey`, and links to its spec page by `slug`,
@@ -33,14 +39,14 @@ const visible = (family: string) => active.value === "All" || active.value === f
 
 <template>
   <section id="chart-atlas" class="mv-atlas">
-    <div class="mv-section-head">
-      <span class="mv-mark">&#10022;</span>
-      <h2>Chart atlas</h2>
+    <div class="mv-atlas-intro">
+      <p class="mv-eyebrow">{{ intro.eyebrow }}</p>
+      <h2 class="mv-atlas-title">
+        <span>{{ intro.headLead }}</span>
+        <span class="mv-head-accent"> {{ intro.headAccent }}</span>
+      </h2>
+      <p class="mv-lede">{{ intro.sub }}</p>
     </div>
-    <p class="mv-lede">
-      Pick a chart by the question you are asking. Every card is a component on real data:
-      hover to feel the interaction, click to open its full spec.
-    </p>
 
     <div class="mv-filter" role="group" aria-label="Filter charts by the question they answer">
       <button

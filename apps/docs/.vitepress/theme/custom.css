@@ -130,6 +130,110 @@
   color: var(--mv-line);
 }
 
+/* Hero headline (custom info block): the dominant element - one big display line
+   with a single red accent word (the one red moment in the hero). The sub sits
+   clearly below it in quieter, smaller ink so the hierarchy reads top-down. */
+.mv-hero-info {
+  max-width: 620px;
+}
+.mv-headline {
+  font-family: var(--mv-serif);
+  font-weight: 600;
+  font-size: clamp(38px, 5.4vw, 60px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: var(--vp-c-text-1);
+  margin: 4px 0 0;
+  text-wrap: balance;
+}
+.mv-head-accent {
+  color: var(--mv-brick);
+}
+.mv-hero-sub {
+  margin: 22px 0 0;
+  max-width: 34em;
+  font-family: "Figtree", system-ui, sans-serif;
+  font-size: clamp(15px, 1.4vw, 17.5px);
+  line-height: 1.6;
+  color: var(--mv-ink-2);
+}
+/* On dark, keep the sub legible (ink-2 is tuned for the light paper surface). */
+.dark .mv-hero-sub {
+  color: var(--vp-c-text-2);
+}
+
+/* ---------- Persona feature tiles (custom, themed icons) ---------- */
+.mv-features {
+  max-width: 1152px;
+  margin: 8px auto 0;
+  padding: 40px 24px 8px;
+}
+.mv-features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media (max-width: 860px) {
+  .mv-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .mv-features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.mv-feature {
+  padding: 22px 22px 24px;
+  border: 1px solid var(--mv-line);
+  border-radius: 14px;
+  background: var(--mv-card);
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.dark .mv-feature {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-divider);
+}
+.mv-feature:hover {
+  border-color: color-mix(in srgb, var(--mv-brick) 40%, var(--mv-line));
+  transform: translateY(-2px);
+}
+.mv-feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: rgba(163, 39, 31, 0.09);
+  color: var(--mv-brick);
+  margin-bottom: 16px;
+}
+.mv-feature-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.mv-feature-title {
+  font-family: var(--mv-serif);
+  font-weight: 600;
+  font-size: 16.5px;
+  letter-spacing: -0.01em;
+  color: var(--vp-c-text-1);
+  margin: 0 0 8px;
+  line-height: 1.25;
+}
+.mv-feature-detail {
+  font-size: 13.75px;
+  line-height: 1.6;
+  color: var(--mv-ink-2);
+  margin: 0;
+}
+.dark .mv-feature-detail {
+  color: var(--vp-c-text-2);
+}
+
 /* ---------- Atlas section ---------- */
 .mv-atlas {
   max-width: 1152px;
@@ -178,6 +282,30 @@
   line-height: 1.65;
   max-width: 62ch;
   margin: 14px 0 28px;
+}
+
+/* Atlas intro: a bolder two-line statement ("Write less. Understand more.") over
+   the calm card grid. Card layout below is untouched - Geneva vibe intact. */
+.mv-atlas-intro {
+  padding-top: 40px;
+  border-top: 1px solid var(--mv-line);
+  margin-bottom: 8px;
+}
+.mv-atlas-title {
+  font-family: var(--mv-serif);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+.mv-atlas-title span {
+  display: block;
+}
+.mv-atlas-intro .mv-lede {
+  margin-top: 18px;
 }
 
 /* ---------- Filter chips ---------- */
@@ -820,4 +948,22 @@
   border-radius: 0 8px 8px 0;
   padding: 4px 18px;
   color: var(--vp-c-text-2);
+}
+
+/* Footer: heart line above a row of community links. */
+.VPFooter .mv-foot-heart {
+  display: block;
+}
+.VPFooter .mv-foot-links {
+  display: block;
+  margin-top: 6px;
+}
+.VPFooter .mv-foot-links a {
+  color: var(--vp-c-text-2);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.VPFooter .mv-foot-links a:hover {
+  color: var(--vp-c-brand-1);
 }
