@@ -168,7 +168,9 @@ export default defineConfig({
     const base = SITE_URL;
     const path = pageData.relativePath.replace(/\.md$/, "").replace(/(^|\/)index$/, "$1");
     const url = (base + "/" + path).replace(/\/+$/, "") || base;
-    const isHome = pageData.relativePath === "index.md";
+    // Root home AND the locale homes (fr/nl/vi/index.md) are "home" for SEO:
+    // og:type website + the library-level JSON-LD, not a TechArticle.
+    const isHome = /^([a-z]{2}\/)?index\.md$/.test(pageData.relativePath);
     const title = pageData.frontmatter.title || pageData.title || "michi-vz";
     const isApi = pageData.relativePath.startsWith("api/");
     const desc =
@@ -229,6 +231,54 @@ export default defineConfig({
               license: "https://opensource.org/licenses/MIT",
               author: { "@type": "Person", name: "Hoang VU" },
             },
+          ],
+        }),
+      ]);
+    } else {
+      // Per-page structured data: a TechArticle (so search and AI crawlers get
+      // the page's topic, language, and parent library) and a BreadcrumbList
+      // (eligible for the breadcrumb trail in results). Generated, never stale.
+      const seg = pageData.relativePath.split("/");
+      const locale = ["fr", "nl", "vi"].includes(seg[0]) ? seg[0] : "en";
+      const section = locale === "en" ? seg[0] : seg[1];
+      const sectionNames: Record<string, Record<string, string>> = {
+        charts: { en: "Charts", fr: "Graphiques", nl: "Grafieken", vi: "Biểu đồ" },
+        guide: { en: "Guide", fr: "Guide", nl: "Gids", vi: "Hướng dẫn" },
+        api: { en: "Chart API", fr: "API des graphiques", nl: "Grafiek-API", vi: "API biểu đồ" },
+      };
+      const homeUrl = locale === "en" ? base + "/" : `${base}/${locale}/`;
+      const sectionName = sectionNames[section]?.[locale];
+      const crumbs = [
+        { "@type": "ListItem", position: 1, name: "michi-vz", item: homeUrl },
+        ...(sectionName
+          ? [{ "@type": "ListItem", position: 2, name: sectionName, item: `${homeUrl}${section}/` }]
+          : []),
+        { "@type": "ListItem", position: sectionName ? 3 : 2, name: title, item: url },
+      ];
+      pageData.frontmatter.head.push([
+        "script",
+        { type: "application/ld+json" },
+        JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "TechArticle",
+              headline: title,
+              description: desc,
+              url,
+              image,
+              inLanguage: locale,
+              author: { "@type": "Person", name: "Hoang VU" },
+              isPartOf: { "@type": "WebSite", name: "michi-vz", url: base + "/" },
+              about: {
+                "@type": "SoftwareSourceCode",
+                name: "michi-vz",
+                codeRepository: "https://github.com/beany-vu/michi-vz-mono",
+                programmingLanguage: "TypeScript",
+                version: LIB_VERSION,
+              },
+            },
+            { "@type": "BreadcrumbList", itemListElement: crumbs },
           ],
         }),
       ]);
