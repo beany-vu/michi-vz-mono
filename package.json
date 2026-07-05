@@ -17,6 +17,8 @@
     "build-storybook": "pnpm --filter @michi-vz/storybook build-storybook",
     "verify:playground": "node scripts/verify-playground.mjs",
     "screenshot": "node scripts/screenshot.mjs",
+    "deploy:docs": "pnpm dlx netlify-cli deploy --dir=apps/docs/.vitepress/dist --prod",
+    "deploy:docs:preview": "pnpm dlx netlify-cli deploy --dir=apps/docs/.vitepress/dist",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish"
