@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mountBubbleChart } from "../src/engine/bubbleChart";
 import { sanitizeForClassName } from "../src/math/sanitize";
 import type { BubbleChartProps, BubbleDataItem } from "../src/types";
@@ -66,6 +66,40 @@ describe("mountBubbleChart (jsdom)", () => {
       expect(germany.remainder).toBe(28);
     }
     chart.destroy();
+    host.remove();
+  });
+
+  it("layoutMode:'async' settles without blocking: overlay while running, identical layout after", async () => {
+    const syncMount = mount({ dataSet: data, showSplit: false });
+    const syncR = Array.from(syncMount.host.querySelectorAll<SVGCircleElement>("circle.bubble"))
+      .map((c) => `${c.getAttribute("data-label")}:${c.getAttribute("cx")},${c.getAttribute("cy")},${c.getAttribute("r")}`)
+      .sort();
+    syncMount.chart.destroy();
+    syncMount.host.remove();
+
+    const { host, chart } = mount({ dataSet: data, showSplit: false, layoutMode: "async" });
+    // Nothing painted yet; the chart's loading overlay covers the plot instead.
+    expect(host.querySelectorAll("circle.bubble").length).toBe(0);
+    expect(host.querySelector(".mv-loading")).toBeTruthy();
+
+    await vi.waitFor(() => {
+      expect(host.querySelectorAll("circle.bubble").length).toBe(3);
+    });
+    expect(host.querySelector(".mv-loading")).toBeNull();
+    // The chunked settle is the SAME deterministic simulation: identical layout.
+    const asyncR = Array.from(host.querySelectorAll<SVGCircleElement>("circle.bubble"))
+      .map((c) => `${c.getAttribute("data-label")}:${c.getAttribute("cx")},${c.getAttribute("cy")},${c.getAttribute("r")}`)
+      .sort();
+    expect(asyncR).toEqual(syncR);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("destroy() during an async settle is a clean no-op (no late paint)", async () => {
+    const { host, chart } = mount({ dataSet: data, layoutMode: "async" });
+    chart.destroy();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(host.querySelectorAll("circle.bubble").length).toBe(0);
     host.remove();
   });
 

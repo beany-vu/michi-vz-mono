@@ -12,8 +12,17 @@ import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle } from "../render/svg";
 import { processBubbleData } from "../bubbleChart/data";
 import { buildBubbleColors } from "../bubbleChart/colors";
-import { layoutBubbles } from "../bubbleChart/layout";
-import { buildBubbleRenderModel, type BubbleMark, type BubbleRenderModel } from "../bubbleChart/renderModel";
+import {
+  layoutBubbles,
+  layoutBubblesAsync,
+  type PackedBubble,
+} from "../bubbleChart/layout";
+import { toggleLoadingIndicator } from "../render/svg/loadingIndicator";
+import {
+  buildBubbleRenderModel,
+  type BubbleMark,
+  type BubbleRenderModel,
+} from "../bubbleChart/renderModel";
 import { renderBubbleSvg } from "../bubbleChart/renderSvg";
 import { drawBubbleCanvas } from "../bubbleChart/renderCanvas";
 import { drawBubbleWebgpu } from "../bubbleChart/renderWebgpu";
@@ -59,6 +68,8 @@ interface Resolved {
   showLegend: boolean;
   showLabels: boolean;
   enableTransitions: boolean;
+  layoutMode: "sync" | "async";
+  settleTicks: number;
 }
 
 function resolve(p: BubbleChartProps): Resolved {
@@ -79,6 +90,8 @@ function resolve(p: BubbleChartProps): Resolved {
     showLegend: p.showLegend ?? false,
     showLabels: p.showLabels ?? true,
     enableTransitions: p.enableTransitions ?? true,
+    layoutMode: p.layoutMode ?? "sync",
+    settleTicks: p.settleTicks ?? 400,
   };
 }
 
@@ -130,7 +143,9 @@ export function mountBubbleChart(
 
   let baseProps: BubbleChartProps = initial;
   let context: ChartContext | null = null;
-  const pluginList: MichiVzPlugin<BubbleChartProps>[] = [...(opts?.plugins ?? [])];
+  const pluginList: MichiVzPlugin<BubbleChartProps>[] = [
+    ...(opts?.plugins ?? []),
+  ];
   const pc: PluginContext<BubbleChartProps> = {
     chartType: "bubble-chart",
     getProps: () => baseProps,
@@ -143,6 +158,14 @@ export function mountBubbleChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: BubbleRenderModel | null = null;
+  // Async-layout state: token guards stale settles (a re-render or destroy
+  // supersedes an in-flight one); the layout memo skips re-settling entirely when
+  // the inputs are unchanged (highlight re-renders, the webgpu onReady upgrade).
+  let layoutToken = 0;
+  let cancelAsyncLayout: (() => void) | null = null;
+  let loadingEl: HTMLDivElement | null = null;
+  let lastLayoutKey = "";
+  let lastPacked: PackedBubble[] | null = null;
 
   const bubbleToContext = (b: BubbleMark): BubbleContext => ({
     label: b.label,
@@ -162,7 +185,8 @@ export function mountBubbleChart(
     if (baseProps.tooltipFormatter) {
       htmlStr = baseProps.tooltipFormatter(bubbleToContext(b));
     } else {
-      const fmt = baseProps.valueFormatter ?? defaultNumberFormatter(baseProps.locale);
+      const fmt =
+        baseProps.valueFormatter ?? defaultNumberFormatter(baseProps.locale);
       const labels = baseProps.splitLabels ?? ["Realized", "Untapped"];
       htmlStr = `<strong>${b.label}</strong><br/>${fmt(b.value)}`;
       if (b.partial != null) {
@@ -226,7 +250,12 @@ export function mountBubbleChart(
     },
   });
 
-  function renderLegend(parent: SVGElement, m: BubbleRenderModel, x: number, y: number): void {
+  function renderLegend(
+    parent: SVGElement,
+    m: BubbleRenderModel,
+    x: number,
+    y: number
+  ): void {
     const g = svgEl("g", { class: "bubble-legend" });
     let cx = x;
     for (const item of m.legend) {
@@ -282,7 +311,10 @@ export function mountBubbleChart(
     });
     const showSplit = props.showSplit ?? processed.hasPartial;
 
-    const seededMapping = { ...processed.groupColors, ...(props.colorsMapping ?? {}) };
+    const seededMapping = {
+      ...processed.groupColors,
+      ...(props.colorsMapping ?? {}),
+    };
     const colors = buildBubbleColors(
       processed.groupKeys,
       props.colors,
@@ -299,103 +331,165 @@ export function mountBubbleChart(
 
     const legendH = r.showLegend && showSplit ? 26 : 0;
     const plotW = Math.max(0, r.width - r.margin.left - r.margin.right);
-    const plotH = Math.max(0, r.height - r.margin.top - r.margin.bottom - legendH);
+    const plotH = Math.max(
+      0,
+      r.height - r.margin.top - r.margin.bottom - legendH
+    );
 
-    const packed = layoutBubbles(processed.nodes, {
+    const layoutOptions = {
       width: plotW,
       height: plotH,
       gravity: r.gravity,
       chargeStrength: r.chargeStrength,
       padding: r.padding,
       fillRatio: r.fillRatio,
-    });
+      settleTicks: r.settleTicks,
+    };
+    // The settle is the expensive part (seconds at thousands of bubbles), so it is
+    // memoised on its actual inputs; everything after this point is cheap.
+    const layoutKey = JSON.stringify([
+      props.dataSet,
+      props.disabledItems ?? [],
+      props.filter ?? null,
+      plotW,
+      plotH,
+      r.gravity,
+      r.chargeStrength,
+      r.padding,
+      r.fillRatio,
+      r.settleTicks,
+    ]);
 
-    model = buildBubbleRenderModel(packed, colors, {
-      margin: r.margin,
-      groupKeys: processed.groupKeys,
-      showSplit,
-      splitOpacity: r.splitOpacity,
-      splitLabels: r.splitLabels,
-      showLabels: r.showLabels,
-      highlightItems: props.highlightItems ?? [],
-    });
+    cancelAsyncLayout?.();
+    cancelAsyncLayout = null;
 
-    clear(svg);
-    renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
-
-    if (r.renderer === "svg") {
-      renderBubbleSvg(
-        svg,
-        model,
-        { enableTransitions: r.enableTransitions },
-        {
-          onEnter: (bubble, ev) => {
-            if (sticky) return;
-            showTooltip(bubble, ev);
-            props.onHighlightItem?.([bubble.label]);
-          },
-          onLeave: () => {
-            hideTooltip();
-            if (!sticky) props.onHighlightItem?.([]);
-          },
-          onClick: (bubble, ev) => {
-            sticky = true;
-            tooltip.classList.add("sticky");
-            showTooltip(bubble, ev);
-          },
-        }
-      );
+    if (lastPacked && layoutKey === lastLayoutKey) {
+      finishRender(lastPacked);
+      return;
     }
-
-    if (legendH > 0) renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
-
-    if (r.renderer === "webgpu") {
-      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("bubbleChart-webgpu-canvas");
-      const ready = drawBubbleWebgpu(webgpuCanvas, svg, model, {
-        width: r.width,
-        height: r.height,
-        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
-        onReady: render,
+    if (r.layoutMode === "async") {
+      layoutToken++;
+      const token = layoutToken;
+      // The chart's own loading overlay covers the plot while the settle runs.
+      loadingEl = toggleLoadingIndicator(host, true, loadingEl);
+      const job = layoutBubblesAsync(processed.nodes, layoutOptions);
+      cancelAsyncLayout = job.cancel;
+      void job.promise.then((packed) => {
+        if (token !== layoutToken || !packed) return;
+        cancelAsyncLayout = null;
+        loadingEl = toggleLoadingIndicator(host, false, loadingEl);
+        lastLayoutKey = layoutKey;
+        lastPacked = packed;
+        finishRender(packed);
       });
-      if (ready) {
-        // GPU painted - drop any first-frame 2D fallback canvas.
-        removeCanvas();
-      } else {
-        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
-        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
-        if (!canvas) canvas = makeLayerCanvas("bubble-chart-canvas");
-        drawBubbleCanvas(canvas, svg, model, { width: r.width, height: r.height });
-      }
-    } else if (r.renderer === "canvas") {
-      removeWebgpuCanvas();
-      if (!canvas) canvas = makeLayerCanvas("bubble-chart-canvas");
-      drawBubbleCanvas(canvas, svg, model, { width: r.width, height: r.height });
-    } else {
-      removeCanvas();
-      removeWebgpuCanvas();
+      return;
     }
+    const packed = layoutBubbles(processed.nodes, layoutOptions);
+    lastLayoutKey = layoutKey;
+    lastPacked = packed;
+    finishRender(packed);
 
-    context = buildBubbleContext({
-      title: props.title,
-      renderer: r.renderer,
-      nodes: processed.nodes,
-      colorsMapping: colors.generatedColorsMapping,
-      splitLabels: r.splitLabels,
-      showSplit,
-      splitOpacity: r.splitOpacity,
-    });
-    // Plugin hook #3 - enrichContext before a11y + dataprocessed.
-    context = applyEnrichContext(pluginList, context, pc);
-    renderA11yMirror(a11y, context);
-    props.onChartDataProcessed?.(context);
+    // Everything downstream of the settled layout: model, marks, legend, context.
+    function finishRender(packedBubbles: PackedBubble[]): void {
+      model = buildBubbleRenderModel(packedBubbles, colors, {
+        margin: r.margin,
+        groupKeys: processed.groupKeys,
+        showSplit,
+        splitOpacity: r.splitOpacity,
+        splitLabels: r.splitLabels,
+        showLabels: r.showLabels,
+        highlightItems: props.highlightItems ?? [],
+      });
 
-    // Plugin hook #2 - validate the USER's data, merged with plugin warnings.
-    if (baseProps.onDataWarning) {
-      const warnings = [
-        ...checkBubbleData(baseProps.dataSet),
-        ...collectValidate(pluginList, baseProps, pc),
-      ];
-      if (warnings.length > 0) baseProps.onDataWarning(warnings);
+      clear(svg);
+      renderTitle(svg, {
+        text: props.title,
+        x: r.width / 2,
+        y: r.margin.top / 2,
+      });
+
+      if (r.renderer === "svg") {
+        renderBubbleSvg(
+          svg,
+          model,
+          { enableTransitions: r.enableTransitions },
+          {
+            onEnter: (bubble, ev) => {
+              if (sticky) return;
+              showTooltip(bubble, ev);
+              props.onHighlightItem?.([bubble.label]);
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.([]);
+            },
+            onClick: (bubble, ev) => {
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(bubble, ev);
+            },
+          }
+        );
+      }
+
+      if (legendH > 0)
+        renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
+
+      if (r.renderer === "webgpu") {
+        if (!webgpuCanvas)
+          webgpuCanvas = makeLayerCanvas("bubbleChart-webgpu-canvas");
+        const ready = drawBubbleWebgpu(webgpuCanvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+          onReady: render,
+        });
+        if (ready) {
+          // GPU painted - drop any first-frame 2D fallback canvas.
+          removeCanvas();
+        } else {
+          // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+          // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+          if (!canvas) canvas = makeLayerCanvas("bubble-chart-canvas");
+          drawBubbleCanvas(canvas, svg, model, {
+            width: r.width,
+            height: r.height,
+          });
+        }
+      } else if (r.renderer === "canvas") {
+        removeWebgpuCanvas();
+        if (!canvas) canvas = makeLayerCanvas("bubble-chart-canvas");
+        drawBubbleCanvas(canvas, svg, model, {
+          width: r.width,
+          height: r.height,
+        });
+      } else {
+        removeCanvas();
+        removeWebgpuCanvas();
+      }
+
+      context = buildBubbleContext({
+        title: props.title,
+        renderer: r.renderer,
+        nodes: processed.nodes,
+        colorsMapping: colors.generatedColorsMapping,
+        splitLabels: r.splitLabels,
+        showSplit,
+        splitOpacity: r.splitOpacity,
+      });
+      // Plugin hook #3 - enrichContext before a11y + dataprocessed.
+      context = applyEnrichContext(pluginList, context, pc);
+      renderA11yMirror(a11y, context);
+      props.onChartDataProcessed?.(context);
+
+      // Plugin hook #2 - validate the USER's data, merged with plugin warnings.
+      if (baseProps.onDataWarning) {
+        const warnings = [
+          ...checkBubbleData(baseProps.dataSet),
+          ...collectValidate(pluginList, baseProps, pc),
+        ];
+        if (warnings.length > 0) baseProps.onDataWarning(warnings);
+      }
     }
   }
 
@@ -420,6 +514,11 @@ export function mountBubbleChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      // Invalidate any in-flight async settle so its completion is a no-op.
+      layoutToken++;
+      cancelAsyncLayout?.();
+      cancelAsyncLayout = null;
+      loadingEl = null; // removed with the host children below
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);

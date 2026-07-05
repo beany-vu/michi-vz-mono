@@ -22,6 +22,14 @@ Legacy-parity fixes for Ribbon and Comparable, a new BarBell axis option, and le
 - **RadarChart keeps pole labels out of the title band**: when a title renders,
   upward-overshooting axis labels (the straight-up pole especially) are clamped
   below it instead of colliding.
+- **New `layoutMode: "sync" | "async"` and `settleTicks` on BubbleChartProps**:
+  async runs the SAME deterministic force settle in ~12ms slices behind the
+  chart's loading overlay, so thousand-bubble clusters no longer freeze the page
+  (a 3k-bubble settle blocked the main thread for ~20s). The settled layout is
+  also memoised on its inputs, so re-renders with unchanged data (highlights,
+  the WebGPU upgrade pass) skip the simulation entirely, and a zero-strength
+  charge no longer pays the Barnes-Hut quadtree. Exposed on the web component
+  (`layout-mode`, `settle-ticks`) and `applyBubbleChartProps`.
 - **New `xAxisDomain: [min, max]` on GapChartProps**: fixes the value axis instead
   of the derived zero-baseline domain (zoom a life-expectancy story into its
   35-90 band). An explicit domain skips d3 nice() re-rounding. Exposed on the web

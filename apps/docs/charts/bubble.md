@@ -39,7 +39,7 @@ function makeBubble() {
   const dataSet = [];
   let i = 0;
   for (const s of subdetectors) {
-    const n = Math.round(3000 * s.share);
+    const n = Math.round(1500 * s.share);
     for (let k = 0; k < n; k++) {
       dataSet.push({
         label: `${s.label} #${i++}`,
@@ -52,20 +52,23 @@ function makeBubble() {
   return {
     title: "One simulated collision event: energy clusters, bubble area = energy (GeV)",
     dataSet, gravity: 0.06, padding: 0.5,
+    // Chunked async settle + fewer ticks: the multi-second force layout runs in
+    // ~12ms slices behind the chart's loading overlay instead of freezing the page.
+    layoutMode: "async", settleTicks: 200,
   };
 }
 </script>
 
 BubbleChart has an opt-in `renderer="webgpu"` that paints the bubble cloud as GPU-instanced circles while labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
 
-Like the scatter page, the demo below borrows from particle physics: ~3,000 reconstructed energy clusters from one simulated collision event, one bubble per cluster, coloured by subdetector. The handful of hard deposits tower over thousands of soft ones, and gravity packing turns the whole event's energy budget into a single readable cloud.
+Like the scatter page, the demo below borrows from particle physics: ~1,500 reconstructed energy clusters from one simulated collision event, one bubble per cluster, coloured by subdetector. The handful of hard deposits tower over thousands of soft ones, and gravity packing turns the whole event's energy budget into a single readable cloud.
 
 <WebgpuHeavyDemo element="michi-vz-bubble-chart" :make="makeBubble" :legend="[
     { label: 'Tracker', color: '#457b9d' },
     { label: 'ECAL', color: '#2a9d8f' },
     { label: 'HCAL', color: '#e07b39' },
     { label: 'Muon chambers', color: '#9b5de5' },
-  ]" caption="~3,000 simulated energy clusters" />
+  ]" caption="~1,500 simulated energy clusters" />
 
 ## Usage
 

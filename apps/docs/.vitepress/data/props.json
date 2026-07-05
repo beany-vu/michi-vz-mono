@@ -3950,6 +3950,22 @@
           "common": false
         },
         {
+          "name": "layoutMode",
+          "type": "\"sync\" | \"async\"",
+          "optional": true,
+          "description": "How the force layout settles: \"sync\" (default; identical layout every render, blocks until settled) or \"async\" (the SAME deterministic settle, run in ~12ms slices so thousands of bubbles never freeze the page; the loading overlay shows while it runs).",
+          "default": "\"sync\"",
+          "common": false
+        },
+        {
+          "name": "settleTicks",
+          "type": "number",
+          "optional": true,
+          "description": "Force-simulation ticks to settle (default 400); fewer = faster but looser.",
+          "default": "400",
+          "common": false
+        },
+        {
           "name": "splitLabels",
           "type": "[string, string]",
           "optional": true,

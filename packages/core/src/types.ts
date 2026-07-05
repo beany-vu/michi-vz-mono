@@ -1982,6 +1982,13 @@ export interface BubbleChartProps {
   padding?: number;
   /** Fraction of the plot area the bubbles should fill, in (0,1] (default 0.62). */
   fillRatio?: number;
+  /** How the force layout settles: "sync" (default; identical layout every render,
+   * blocks until settled) or "async" (the SAME deterministic settle, run in ~12ms
+   * slices so thousands of bubbles never freeze the page; the loading overlay
+   * shows while it runs). */
+  layoutMode?: "sync" | "async";
+  /** Force-simulation ticks to settle (default 400); fewer = faster but looser. */
+  settleTicks?: number;
   /** Names of the two split parts (default ["Realized","Untapped"]). */
   splitLabels?: [string, string];
   /** Apparent colour strength of the untapped veil in [0,1] (default 0.35);

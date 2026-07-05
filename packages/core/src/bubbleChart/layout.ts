@@ -13,7 +13,13 @@
 // The sim runs to a settled state SYNCHRONOUSLY (no animation) so SVG and canvas
 // render identical positions; d3-force's default PRNG makes the result
 // reproducible (deterministic, no Math.random).
-import { forceSimulation, forceManyBody, forceX, forceY, forceCollide } from "d3-force";
+import {
+  forceSimulation,
+  forceManyBody,
+  forceX,
+  forceY,
+  forceCollide,
+} from "d3-force";
 import type { SimulationNodeDatum } from "d3-force";
 import type { BubbleNode } from "./data";
 
@@ -41,18 +47,23 @@ export interface BubbleLayoutOptions {
   chargeStrength: number;
   padding: number;
   fillRatio: number;
+  /** Simulation ticks to settle (default 400); fewer = faster, looser cluster. */
+  settleTicks?: number;
 }
 
-export function layoutBubbles(nodes: BubbleNode[], o: BubbleLayoutOptions): PackedBubble[] {
-  if (nodes.length === 0 || o.width <= 0 || o.height <= 0) return [];
-
+// Shared sim construction: layoutBubbles (sync) and layoutBubblesAsync (chunked)
+// build the IDENTICAL simulation, so both settle to the same deterministic layout.
+function buildSim(nodes: BubbleNode[], o: BubbleLayoutOptions) {
   const cx = o.width / 2;
   const cy = o.height / 2;
   const totalValue = nodes.reduce((a, n) => a + n.value, 0);
 
   // Pick k so Σ(π·r²) = fillRatio·area, with r = k·√value (area ∝ value).
   const area = o.width * o.height;
-  const k = totalValue > 0 ? Math.sqrt((o.fillRatio * area) / (Math.PI * totalValue)) : 0;
+  const k =
+    totalValue > 0
+      ? Math.sqrt((o.fillRatio * area) / (Math.PI * totalValue))
+      : 0;
   const maxR = Math.min(o.width, o.height) / 2;
   const pad = Math.max(0, o.padding);
 
@@ -61,13 +72,17 @@ export function layoutBubbles(nodes: BubbleNode[], o: BubbleLayoutOptions): Pack
     // Deterministic phyllotaxis seed around the centre (reproducible layout).
     const angle = i * GOLDEN_ANGLE;
     const rr = 6 * Math.sqrt(i);
-    return { data, r, x: cx + rr * Math.cos(angle), y: cy + rr * Math.sin(angle) };
+    return {
+      data,
+      r,
+      x: cx + rr * Math.cos(angle),
+      y: cy + rr * Math.sin(angle),
+    };
   });
 
   // Gravity sucks the cluster together; collision (dominant: full strength, many
   // iterations) guarantees the settled cluster is overlap-free with `pad` gaps.
-  forceSimulation(sim)
-    .force("charge", forceManyBody<SimNode>().strength(o.chargeStrength))
+  const simulation = forceSimulation(sim)
     .force("x", forceX<SimNode>(cx).strength(o.gravity))
     .force("y", forceY<SimNode>(cy).strength(o.gravity))
     .force(
@@ -77,9 +92,76 @@ export function layoutBubbles(nodes: BubbleNode[], o: BubbleLayoutOptions): Pack
         .strength(1)
         .iterations(COLLIDE_ITERATIONS)
     )
-    .stop()
-    .tick(SETTLE_TICKS);
+    .stop();
+  // A zero-strength many-body still pays the Barnes-Hut quadtree every tick;
+  // only add the force when it actually does something.
+  if (o.chargeStrength !== 0) {
+    simulation.force(
+      "charge",
+      forceManyBody<SimNode>().strength(o.chargeStrength)
+    );
+  }
+  return { sim, simulation, cx, cy };
+}
 
+export function layoutBubbles(
+  nodes: BubbleNode[],
+  o: BubbleLayoutOptions
+): PackedBubble[] {
+  if (nodes.length === 0 || o.width <= 0 || o.height <= 0) return [];
+  const { sim, simulation, cx, cy } = buildSim(nodes, o);
+  simulation.tick(o.settleTicks ?? SETTLE_TICKS);
+  return fitAndCentre(sim, o, cx, cy);
+}
+
+/**
+ * Chunked variant of layoutBubbles for big clusters: runs the SAME deterministic
+ * simulation, but in ~budgetMs slices yielded to the event loop (rAF when
+ * available), so a multi-second settle never freezes the page. Resolves with the
+ * identical layout the sync path produces, or null when cancelled.
+ */
+export function layoutBubblesAsync(
+  nodes: BubbleNode[],
+  o: BubbleLayoutOptions,
+  opts: { budgetMs?: number } = {}
+): { promise: Promise<PackedBubble[] | null>; cancel: () => void } {
+  if (nodes.length === 0 || o.width <= 0 || o.height <= 0) {
+    return { promise: Promise.resolve([]), cancel: () => {} };
+  }
+  const budget = Math.max(4, opts.budgetMs ?? 12);
+  let cancelled = false;
+  const { sim, simulation, cx, cy } = buildSim(nodes, o);
+  let remaining = o.settleTicks ?? SETTLE_TICKS;
+
+  const nextFrame = (): Promise<void> =>
+    new Promise((resolve) => {
+      if (typeof requestAnimationFrame === "function")
+        requestAnimationFrame(() => resolve());
+      else setTimeout(resolve, 0);
+    });
+
+  const promise = (async () => {
+    while (remaining > 0) {
+      if (cancelled) return null;
+      const slice = Date.now() + budget;
+      while (remaining > 0 && Date.now() < slice) {
+        simulation.tick(1);
+        remaining--;
+      }
+      if (remaining > 0) await nextFrame();
+    }
+    return cancelled ? null : fitAndCentre(sim, o, cx, cy);
+  })();
+
+  return { promise, cancel: () => (cancelled = true) };
+}
+
+function fitAndCentre(
+  sim: SimNode[],
+  o: BubbleLayoutOptions,
+  cx: number,
+  cy: number
+): PackedBubble[] {
   // Tight bounding box of the settled cluster, padded by each bubble's radius so
   // the box encloses the circle outlines, not just the centres.
   let minX = Infinity;

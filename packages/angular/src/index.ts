@@ -603,6 +603,8 @@ export function applyBubbleChartProps(el: BubbleChartElement, props: BubbleChart
   if (props.chargeStrength !== undefined) el.chargeStrength = props.chargeStrength;
   if (props.padding !== undefined) el.padding = props.padding;
   if (props.fillRatio !== undefined) el.fillRatio = props.fillRatio;
+  if (props.layoutMode !== undefined) el.layoutMode = props.layoutMode;
+  if (props.settleTicks !== undefined) el.settleTicks = props.settleTicks;
   if (props.splitLabels !== undefined) el.splitLabels = props.splitLabels;
   if (props.splitOpacity !== undefined) el.splitOpacity = props.splitOpacity;
   if (props.showSplit !== undefined) el.showSplit = props.showSplit;

@@ -39,7 +39,7 @@ function makeBubble() {
   const dataSet = [];
   let i = 0;
   for (const s of subdetectors) {
-    const n = Math.round(3000 * s.share);
+    const n = Math.round(1500 * s.share);
     for (let k = 0; k < n; k++) {
       dataSet.push({
         label: `${s.label} #${i++}`,
@@ -52,20 +52,23 @@ function makeBubble() {
   return {
     title: "One simulated collision event: energy clusters, bubble area = energy (GeV)",
     dataSet, gravity: 0.06, padding: 0.5,
+    // Chunked async settle + fewer ticks: the multi-second force layout runs in
+    // ~12ms slices behind the chart's loading overlay instead of freezing the page.
+    layoutMode: "async", settleTicks: 200,
   };
 }
 </script>
 
 BubbleChart dispose d'un `renderer="webgpu"` optionnel qui peint le nuage de bulles comme des cercles instanciés sur le GPU tandis que les étiquettes et infobulles restent sur la couche SVG. C'est conditionné par les capacités du navigateur : sur un navigateur sans WebGPU, il rétrograde automatiquement vers canvas, et `getContext().renderer` indique lequel a effectivement peint.
 
-Comme la page du nuage de points, la démo ci-dessous emprunte à la physique des particules : ~3 000 amas d'énergie reconstruits d'un événement de collision simulé, une bulle par amas, colorée par sous-détecteur. La poignée de dépôts durs domine des milliers de dépôts mous, et le tassement par gravité transforme tout le budget d'énergie de l'événement en un seul nuage lisible.
+Comme la page du nuage de points, la démo ci-dessous emprunte à la physique des particules : ~1 500 amas d'énergie reconstruits d'un événement de collision simulé, une bulle par amas, colorée par sous-détecteur. La poignée de dépôts durs domine des milliers de dépôts mous, et le tassement par gravité transforme tout le budget d'énergie de l'événement en un seul nuage lisible.
 
 <WebgpuHeavyDemo element="michi-vz-bubble-chart" :make="makeBubble" :legend="[
     { label: 'Tracker', color: '#457b9d' },
     { label: 'ECAL', color: '#2a9d8f' },
     { label: 'HCAL', color: '#e07b39' },
     { label: 'Muon chambers', color: '#9b5de5' },
-  ]" caption="~3 000 amas d'énergie simulés" />
+  ]" caption="~1 500 amas d'énergie simulés" />
 
 ## Usage
 

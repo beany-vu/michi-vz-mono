@@ -25,6 +25,8 @@ export class BubbleChartElement extends LitElement {
     chargeStrength: { type: Number, attribute: "charge-strength" },
     padding: { type: Number },
     fillRatio: { type: Number, attribute: "fill-ratio" },
+    layoutMode: { type: String, attribute: "layout-mode" },
+    settleTicks: { type: Number, attribute: "settle-ticks" },
     splitLabels: { attribute: false },
     splitOpacity: { type: Number, attribute: "split-opacity" },
     showSplit: { type: Boolean, attribute: "show-split" },
@@ -53,6 +55,8 @@ export class BubbleChartElement extends LitElement {
   chargeStrength?: number;
   padding?: number;
   fillRatio?: number;
+  layoutMode?: "sync" | "async";
+  settleTicks?: number;
   splitLabels?: [string, string];
   splitOpacity?: number;
   showSplit?: boolean;
@@ -96,6 +100,8 @@ export class BubbleChartElement extends LitElement {
       chargeStrength: this.chargeStrength,
       padding: this.padding,
       fillRatio: this.fillRatio,
+      layoutMode: this.layoutMode,
+      settleTicks: this.settleTicks,
       splitLabels: this.splitLabels,
       splitOpacity: this.splitOpacity,
       showSplit: this.showSplit,
