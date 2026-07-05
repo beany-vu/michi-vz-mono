@@ -50,6 +50,13 @@ Already merged and live in these docs' demos; ships to npm with the next version
   plus new story-driven examples: the LHC dimuon spectrum on
   [Scatter](/charts/scatter), EU gross-vs-net salaries on [Bubble](/charts/bubble), and
   a ~195-country life-expectancy sweep on [Gap](/charts/gap).
+- **The Fountain learns to explain itself.** The [Fountain page](/charts/fountain) now opens
+  with an anatomy glossary (every visible part of the glyph has one stated meaning) and a
+  field guide of eleven live reads - certainty, stability, risk, AI confidence, divided
+  audiences, Philippine typhoons and more, most in the clean symmetric plume look. Symmetry now carries meaning
+  too: an explicit `lean: 0` stands a jet truly upright, a signed `lean` flags one-sided
+  risk, and a jet with no `lean` keeps its decorative Geneva wind (reported as `lean: null`
+  in `getContext()`).
 
 ## v1.6.1 - v1.6.4
 

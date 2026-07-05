@@ -21,6 +21,17 @@ Le `style: "jet"` par défaut est le Jet d'Eau fidèle : une colonne haute et é
 
 <ChartDemo chart="fountain-chart" :legend="false" />
 
+## Anatomie : comment lire une fontaine
+
+Chaque partie visible du glyphe a un sens précis. Rien d'autre ne porte de donnée.
+
+- **Le sommet** - LE chiffre. Il repose sur un véritable axe des y étiqueté et c'est la seule chose que vous mesurez.
+- **La colonne** - le corps du chiffre. Décorative ; sa largeur n'encode jamais rien.
+- **Couronne / écume** - le signal : « celui-ci est fragile / celui-ci saigne ». Large et mousseuse signifie qu'il faut y regarder de plus près ; le second chiffre exact vit dans l'infobulle et dans `getContext().jets[].spreadRatio`, jamais dans la largeur que vous voyez.
+- **Couronne symétrique vs penchée** - la symétrie est un signal. Une couronne droite indique que la dispersion est équilibrée (elle pourrait basculer d'un côté comme de l'autre). Une couronne penchée indique que la masse cachée pèse d'un côté - une queue tardive, un risque à la baisse plus lourd. Ne lisez que la direction ; le chiffre d'asymétrie est dans l'infobulle (`jets[].lean`).
+- **Le vent** - un jet qui n'encode aucun `lean` dérive tout de même doucement d'un côté. Cette dérive commune est la signature du Jet d'Eau (le vent sur le lac), purement décorative : tous ces jets dérivent dans le même sens, et `lean` vaut `null` dans le contexte.
+- **Gouttelettes et brume** (style plume) - décoration ; le nombre de gouttelettes évolue avec le champ optionnel `density`.
+
 > Un graphique, deux modes - décidés par le type de l'axe des x. Définissez `xAxisDataType: "band"` pour le **mode Instantané** : un jet par catégorie, comparant les magnitudes côte à côte (fontaines, villes, produits). Utilisez un x temporel ou numérique (`"date_annual"`, `"date_monthly"`, `"number"`) pour le **mode Tendance** : un jet par période, les sommets montants tracent la tendance tandis que chaque panache montre la volatilité de cette période, et un jet de prévision s'affiche en pointillés avec une couronne plus large et plus mousseuse.
 
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
@@ -45,7 +56,7 @@ function makeFountain() {
 }
 </script>
 
-FountainChart dispose d'un `renderer="webgpu"` optionnel qui peint la colonne et le panache effiloché de chaque jet comme des marques instanciées sur le GPU tandis que les axes, étiquettes et infobulles restent sur la couche SVG. C'est conditionné par les capacités du navigateur : sur un navigateur sans WebGPU, il rétrograde automatiquement vers canvas, et `getContext().renderer` indique lequel a effectivement peint.
+FountainChart dispose d'un `renderer="webgpu"` optionnel qui peint la colonne et le panache effiloché de chaque jet comme des marques instanciées sur le GPU tandis que les axes, étiquettes et infobulles restent sur la couche SVG. C'est conditionné par les capacités du navigateur : sur un navigateur sans WebGPU, il rétrograde automatiquement vers canvas, et `getContext().renderer` indique lequel a effectivement peint. La dérive latérale commune que vous voyez sur les jets est le vent décoratif (aucun de ces éléments n'encode de `lean`), pas une donnée.
 
 <WebgpuHeavyDemo element="michi-vz-fountain-chart" :make="makeFountain" caption="400 jets" />
 
@@ -145,6 +156,76 @@ const props = {
 Avec beaucoup de points de données, les jets se compressent et le graphique se lit comme un graphique en courbes décoré - le détail du panache est perdu. Pour les séries temporelles denses (20+ périodes), préférez le [graphique en éventail](/fr/charts/fan) qui encode l'incertitude sous forme de bandes de confiance lisses. La Fontaine brille à échelle humaine : une poignée de périodes où chaque panache peut respirer.
 :::
 
+## Guide pratique : façons de lire une fontaine
+
+La fontaine est nouvelle, voici donc le répertoire complet - chaque démo est un graphique réel et vivant avec une légende honnête. Les quatre premières sont les lectures phares (le titre et ce qui l'érode ou le porte discrètement) ; les suivantes généralisent la même grammaire à la certitude, la stabilité, le risque, l'IA et les audiences.
+
+### Ventes sécurisées vs pertes
+
+Trois magasins affichent des ventes quasi identiques, un graphique à barres les déclarerait donc égaux. Le panache épais et dense du Magasin C signale où le vol et la démarque érodent la marge, et où envoyer la prévention des pertes en priorité. Le pourcentage de pertes vit dans l'infobulle ; au-delà de 2 % des ventes, c'est le seuil d'alerte.
+
+<ChartDemo chart="fountain-chart" :index="1" :legend="false" />
+
+### Livré vs jamais facturé (tendance)
+
+Mode tendance : le volume livré continue de grimper, mais le panache qui s'élargit avertit qu'une part croissante n'est jamais facturée - fuites et usage non mesuré dépassant la croissance. Moins de 10 % d'eau non génératrice de revenus, c'est bon ; au-delà de 20 %, il faut agir.
+
+<ChartDemo chart="fountain-chart" :index="2" :legend="false" />
+
+### Une prévision élevée mais fragile
+
+La tendance monte, mais les jets de prévision s'effilochent en écume pointillée : de la croissance est projetée, et la confiance derrière elle s'amenuise vite. Pour des bandes précises, le [graphique en éventail](/fr/charts/fan) est l'outil adapté ; ceci est la version mémorable du même avertissement.
+
+<ChartDemo chart="fountain-chart" :index="3" :legend="false" />
+
+### Les étoiles que vous voyez, les mainteneurs que vous ne voyez pas
+
+L'accroche pour laquelle ce graphique a été conçu : le pic est ce que tout le monde voit et met en étoile ; l'embrun est les contributeurs invisibles sur lesquels le projet repose réellement. Notoriété similaire, fondations très différentes. De la narration, pas de la mesure.
+
+<ChartDemo chart="fountain-chart" :index="4" :legend="false" />
+
+### Même chiffre, trois niveaux de certitude
+
+Trois équipes estiment le même délai de lancement à 72 jours. Sommets identiques ; seul le panache distingue l'équipe qui a mesuré de celle qui a deviné. Le signal indique que le 72 est incertain - la fourchette exacte a sa place dans l'infobulle, et les vrais intervalles de confiance ont leur place dans le [graphique en éventail](/fr/charts/fan).
+
+<ChartDemo chart="fountain-chart" :index="6" :legend="false" />
+
+### Stable ou fragile
+
+Deux services affichent une moyenne de 120 ms et deux autres de 60 ms - un graphique à barres montre deux paires de jumeaux. Le panache distingue chaque paire : la couronne resserrée est celle sur laquelle vous pouvez poser un SLO. Ici, un sommet plus bas est préférable ; précisez-le dans la légende si vous l'utilisez. La même lecture fonctionne pour profit vs volatilité.
+
+<ChartDemo chart="fountain-chart" :index="7" :legend="false" />
+
+### Perte attendue vs pire scénario
+
+Le sommet est la perte attendue ; la couronne s'étend vers le scénario de stress (`value + spread`, le `upperBound` dans `getContext()`). Deux positions anticipent la même perte ; l'une dissimule une queue bien plus lourde. Lisez le pire scénario dans l'infobulle, jamais dans la largeur.
+
+<ChartDemo chart="fountain-chart" :index="8" :legend="false" />
+
+### Réponses d'IA : confiantes ou hasardeuses
+
+Le sommet est le score de la réponse ; le panache est l'incertitude propre au modèle, normalisée en unités de score pour que les deux partagent l'axe des y. Couronne resserrée : automatisable en toute sécurité. Couronne effilochée : à confier à un humain. La [couche insights](/fr/guide/insights) lit le même `spreadRatio` dans `getContext()` pour raconter quelles réponses méritent votre confiance.
+
+<ChartDemo chart="fountain-chart" :index="9" :legend="false" />
+
+### Même moyenne, audience divisée
+
+Deux articles affichent la même moyenne d'engagement de 5,5 minutes. L'un retient tous ses lecteurs environ ce temps-là ; l'autre partage les siens entre lecteurs pressés et lecteurs assidus. La moyenne masque cette division ; le panache la signale, et ce signal est votre indice pour segmenter avant de tirer la moindre conclusion.
+
+<ChartDemo chart="fountain-chart" :index="10" :legend="false" />
+
+### De quel côté penche le risque
+
+La symétrie comme signal : trois itinéraires partagent la même médiane et la même dispersion, mais une couronne penche - ses surprises sont unilatérales, une queue tardive (`lean: 0.8`). Droite (`lean: 0`) signifie équilibrée ; penchée signifie que la masse cachée pèse de ce côté-là. Ne lisez que la direction, jamais l'angle.
+
+<ChartDemo chart="fountain-chart" :index="11" :legend="false" />
+
+### Typhons sur les Philippines
+
+Parfois l'inclinaison est littérale. Chaque jet est un typhon : le sommet donne les vents soutenus maximaux, l'embrun s'étire vers les rafales (mêmes km/h), l'épaisseur de l'écume traduit la taille du champ de vents, et la couronne penche dans le sens du déplacement de la tempête - les typhons du Pacifique traversent les Philippines d'est en ouest, toute la ligne penche donc vers la gauche, et celui qui a bifurqué vers le Japon penche de l'autre côté. Un seul glyphe, quatre canaux honnêtes, zéro nouveau type de graphique.
+
+<ChartDemo chart="fountain-chart" :index="12" :legend="false" />
+
 ## Deux silhouettes
 
 Définissez `style` pour choisir la forme ; les deux encodent les mêmes données (sommet = `value`, canal de dispersion = `spread`).
@@ -156,11 +237,17 @@ Définissez `style` pour choisir la forme ; les deux encodent les mêmes donnée
 const props = { style: "plume", dataSet: [{ label: "Q4", value: 78, spread: 20 }] };
 ```
 
+<ChartDemo chart="fountain-chart" :index="5" :legend="false" />
+
+**Règle empirique : plume pour peu de jets, jet pour le héros et les données volumineuses.** À échelle humaine (1 à 12 jets), la couronne symétrique en couches du style plume est la forme la plus facile pour lire le symptôme - halo resserré vs écume large. Sur des centaines de jets, l'éclosion de la plume se retrouve réduite à un fragment de l'emplacement et se dégrade en simple barre, tandis que le jet à colonne dominante se dégrade avec élégance en une longue bande (voir la démo de données volumineuses ci-dessus) ; il porte aussi la marque. Pour des séries véritablement denses, arrêtez de décorer et tournez-vous vers le [graphique en éventail](/fr/charts/fan).
+
+**La symétrie porte du sens.** Une couronne droite (le style plume, ou un jet avec `lean: 0`) indique que la dispersion est équilibrée. Une couronne penchée (`lean` dans [-1, 1], seul le signe compte) indique que la dispersion penche d'un côté. Un jet **sans** `lean` conserve une légère dérive décorative - le vent de Genève - et indique `lean: null` dans le contexte, pour que les consommateurs puissent distinguer le signal de l'ornement.
+
 Les deux styles partagent `stemFraction` (demi-largeur de la base de la colonne en fraction de l'emplacement), le champ `density`, et `lean`. Les couleurs suivent vos données / `colorsMapping` ; l'écume/l'embrun ne module que l'opacité de votre teinte, pour que le graphique s'adapte aux thèmes clair et sombre.
 
 ## Quand la Fontaine trouve sa place
 
-Nous avons vérifié la littérature avant de publier ceci. La métaphore du Jet d'Eau est nouvelle en dataviz (aucun graphique fontaine/jet préexistant), et l'idée sous-jacente est une réorientation solide de la famille raincloud / violin / density-strip. Mais sa fonction honnête est la **communication, pas la mesure** - alors utilisez-la là où un titre mémorable accompagné de sa moitié cachée compte, et tournez-vous vers un graphique de précision quand vous devez comparer le second chiffre exactement.
+La littérature a été vérifiée avant la publication de ce graphique. La métaphore du Jet d'Eau est nouvelle en dataviz (aucun graphique fontaine/jet préexistant), et l'idée sous-jacente est une réorientation solide de la famille raincloud / violin / density-strip. Mais sa fonction honnête est la **communication, pas la mesure** - alors utilisez-la là où un titre mémorable accompagné de sa moitié cachée compte, et tournez-vous vers un graphique de précision quand vous devez comparer le second chiffre exactement.
 
 **Bons usages**
 

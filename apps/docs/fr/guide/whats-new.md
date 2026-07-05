@@ -58,6 +58,14 @@ Déjà fusionné et visible dans les démos de cette doc ; part sur npm avec la 
   histoire : le spectre dimuon du LHC sur [Nuage de points](/fr/charts/scatter), les salaires
   bruts vs nets de l'UE sur [Bulles](/fr/charts/bubble), et une fresque d'espérance de vie de
   ~195 pays sur [Écart](/fr/charts/gap).
+- **La Fontaine apprend à s'expliquer.** La [page Fontaine](/fr/charts/fountain) s'ouvre
+  désormais sur un glossaire d'anatomie (chaque partie visible du glyphe a un sens énoncé) et
+  un guide pratique de onze lectures en direct : certitude, stabilité, risque, confiance d'une
+  IA, audiences divisées, typhons philippins et plus, la plupart dans la silhouette symétrique
+  épurée du panache.
+  La symétrie porte aussi du sens : un `lean: 0` explicite tient le jet parfaitement droit,
+  un `lean` signé signale un risque unilatéral, et un jet sans `lean` garde sa dérive
+  décorative genevoise (rapportée comme `lean: null` dans `getContext()`).
 
 ## v1.6.1 - v1.6.4
 

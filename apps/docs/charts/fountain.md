@@ -21,6 +21,17 @@ The default `style: "jet"` is the faithful Jet d'Eau: a tall, narrow column, den
 
 <ChartDemo chart="fountain-chart" :legend="false" />
 
+## Anatomy: how to read a fountain
+
+Every visible part of the glyph has one stated meaning. Nothing else carries data.
+
+- **Apex** - THE number. It sits on a real, labelled y-axis and it is the only thing you measure.
+- **Stem** - the body of the number. Decorative; its width never encodes anything.
+- **Crown / froth** - the flag: "this one is shaky / this one is bleeding." Wide and frothy means look closer; the exact second figure lives on the tooltip and in `getContext().jets[].spreadRatio`, never in the width you see.
+- **Symmetric vs leaning crown** - symmetry is a signal. An upright crown says the spread is balanced (it could swing either way). A leaning crown says the hidden mass hangs on one side - a late tail, downside-heavy risk. Read only the direction; the skew figure is on the tooltip (`jets[].lean`).
+- **The wind** - a jet that encodes no `lean` still drifts gently to one side. That shared drift is the Jet d'Eau signature (wind over the lake), purely decorative: every such jet drifts the same way, and `lean` is `null` in the context.
+- **Droplets and mist** (plume style) - decoration; the droplet count scales with the optional `density` field.
+
 > One chart, two modes - decided by the x-axis type. Set `xAxisDataType: "band"` for **Snapshot mode**: one jet per category, comparing magnitudes side by side (fountains, cities, products). Use a temporal or numeric x (`"date_annual"`, `"date_monthly"`, `"number"`) for **Trend mode**: a jet per period, the rising apexes trace the trend while each plume shows that period's volatility, and a forecast jet renders dashed with a wider, frothier crown.
 
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
@@ -45,7 +56,7 @@ function makeFountain() {
 }
 </script>
 
-FountainChart has an opt-in `renderer="webgpu"` that paints each jet's column and frayed plume as GPU-instanced marks while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
+FountainChart has an opt-in `renderer="webgpu"` that paints each jet's column and frayed plume as GPU-instanced marks while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted. The shared sideways drift you see across the jets is the decorative wind (none of these items encode a `lean`), not data.
 
 <WebgpuHeavyDemo element="michi-vz-fountain-chart" :make="makeFountain" caption="400 jets" />
 
@@ -145,6 +156,76 @@ const props = {
 With many data points the jets compress and the chart reads like a decorated line chart - the plume detail is lost. For dense time series (20+ periods), prefer the [Fan chart](/charts/fan) which encodes uncertainty as smooth confidence bands. The Fountain shines at human scale: a handful of periods where each plume can breathe.
 :::
 
+## Field guide: ways to read a fountain
+
+The fountain is new, so here is the full repertoire - each demo is a real, live chart with an honest caption. The first four are the flagship reads (the headline and what is quietly eroding or carrying it); the rest generalize the same grammar to certainty, stability, risk, AI and audiences.
+
+### Sales secured vs shrink
+
+Three stores post near-identical sales, so a bar chart would call them equal. The fat, dense plume on Store C flags where theft and spoilage are eroding margin, and where to send loss-prevention first. The shrink percentage lives on the tooltip; over 2% of sales is the alert threshold.
+
+<ChartDemo chart="fountain-chart" :index="1" :legend="false" />
+
+### Delivered vs never billed (trend)
+
+Trend mode: volume delivered keeps climbing, but the widening plume warns that a growing share never gets billed - leaks and unmetered use outpacing growth. Under 10% non-revenue water is good; over 20% means act.
+
+<ChartDemo chart="fountain-chart" :index="2" :legend="false" />
+
+### A forecast that is high but shaky
+
+The trend rises, but the forecast jets fray into dashed froth: growth is projected, and the confidence behind it is thinning fast. For precise bands, the [Fan chart](/charts/fan) is the right tool; this is the memorable version of the same warning.
+
+<ChartDemo chart="fountain-chart" :index="3" :legend="false" />
+
+### The stars you see, the maintainers you don't
+
+The hook the chart was built for: the spike is what everyone sees and stars; the spray is the invisible contributors the project actually rests on. Similar fame, very different foundations. Storytelling, not measurement.
+
+<ChartDemo chart="fountain-chart" :index="4" :legend="false" />
+
+### Same number, three certainties
+
+Three teams estimate the same 72 days to launch. Identical apexes; only the plume separates the team that measured from the team that guessed. The flag says the 72 is soft - the exact range belongs on the tooltip, and real confidence intervals belong to the [Fan chart](/charts/fan).
+
+<ChartDemo chart="fountain-chart" :index="6" :legend="false" />
+
+### Stable or shaky
+
+Two services average 120 ms and two average 60 ms - a bar chart shows two pairs of twins. The plume splits each pair: the tight crown is the one you can put an SLO on. Lower apex is better here; say so in the caption when you use it. The same read works for profit vs volatility.
+
+<ChartDemo chart="fountain-chart" :index="7" :legend="false" />
+
+### Expected loss vs the worst case
+
+The apex is the expected loss; the crown reaches toward the stress-case (`value + spread`, the `upperBound` in `getContext()`). Two positions expect the same loss; one hides a far heavier tail. Read the worst-case number off the tooltip, never off the width.
+
+<ChartDemo chart="fountain-chart" :index="8" :legend="false" />
+
+### AI answers: confident or guessing
+
+The apex is the answer score; the plume is the model's own uncertainty, normalised into score units so both share the y-axis. Tight crown: safe to automate. Fraying crown: hand it to a human. The [insights layer](/guide/insights) reads the same `spreadRatio` out of `getContext()` to narrate which answers to trust.
+
+<ChartDemo chart="fountain-chart" :index="9" :legend="false" />
+
+### Same average, divided audience
+
+Two articles average the same 5.5 minutes of engagement. One holds everyone for about that long; the other splits its readers between skimmers and devourers. The average hides the division; the plume flags it, and the flag is your cue to segment before concluding anything.
+
+<ChartDemo chart="fountain-chart" :index="10" :legend="false" />
+
+### Which side does the risk hang on
+
+Symmetry as a signal: three routes share the same median and the same spread, but one crown leans - its surprises are one-sided, a late tail (`lean: 0.8`). Upright (`lean: 0`) means balanced; leaning means the hidden mass hangs on that side. Read only the direction, never the angle.
+
+<ChartDemo chart="fountain-chart" :index="11" :legend="false" />
+
+### Typhoons over the Philippines
+
+Sometimes the lean is literal. Each jet is a typhoon: the apex its peak sustained winds, the spray reaching toward the gusts (same km/h), the froth thickness its wind-field size, and the crown leaning the way the storm travelled - Pacific typhoons cross the Philippines east to west, so the whole line leans left, and the one that recurved toward Japan leans the other way. One glyph, four honest channels, zero new chart types.
+
+<ChartDemo chart="fountain-chart" :index="12" :legend="false" />
+
 ## Two silhouettes
 
 Set `style` to pick the shape; both encode the same data (apex = `value`, spread channel = `spread`).
@@ -156,11 +237,17 @@ Set `style` to pick the shape; both encode the same data (apex = `value`, spread
 const props = { style: "plume", dataSet: [{ label: "Q4", value: 78, spread: 20 }] };
 ```
 
+<ChartDemo chart="fountain-chart" :index="5" :legend="false" />
+
+**Rule of thumb: plume for few jets, jet for the hero and for heavy data.** At human scale (1 to 12 jets) the plume's symmetric layered crown is the easiest shape to read the symptom from - tight halo vs wide froth. At hundreds of jets the plume's bloom gets clamped to a sliver of the slot and it degrades into a plain bar, while the stem-dominant jet degrades gracefully into a tall strip (see the heavy-data demo above); it also carries the brand. For genuinely dense series, stop decorating and reach for the [Fan chart](/charts/fan).
+
+**Symmetry carries meaning.** An upright crown (the plume style, or a jet with `lean: 0`) says the spread is balanced. A leaning crown (`lean` in [-1, 1], sign only) says the spread hangs on one side. A jet with **no** `lean` keeps a gentle decorative drift - the Geneva wind - and reports `lean: null` in the context, so consumers can tell flag from flourish.
+
 Both styles share `stemFraction` (column base half-width as a fraction of the slot), the `density` field, and `lean`. Colours follow your data/`colorsMapping`; the froth/spray only modulate opacity of your hue, so the chart adapts to light and dark themes.
 
 ## When the Fountain earns its place
 
-We checked the literature before shipping this. The Jet d'Eau metaphor is novel in dataviz (no prior fountain/jet chart exists), and the underlying idea is a sound re-orientation of the raincloud / violin / density-strip family. But its honest job is **communication, not measurement** - so use it where a memorable headline-plus-its-hidden-half matters, and reach for a precision chart when you need to compare the second number exactly.
+The literature was checked before this chart shipped. The Jet d'Eau metaphor is novel in dataviz (no prior fountain/jet chart exists), and the underlying idea is a sound re-orientation of the raincloud / violin / density-strip family. But its honest job is **communication, not measurement** - so use it where a memorable headline-plus-its-hidden-half matters, and reach for a precision chart when you need to compare the second number exactly.
 
 **Strong fits**
 

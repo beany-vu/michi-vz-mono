@@ -3,10 +3,14 @@ import { examples } from "@michi-vz/examples";
 import "@michi-vz/wc/fountain-chart";
 import { renderElement } from "./render";
 
-// Famous fountain snapshot + forecast trend - the docs demo data.
+// Docs demo data: SaaS snapshot (0), forecast trend (3), and the field-guide reads.
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const snapshot = reg["fountain-chart"][0].props;
-const trend = reg["fountain-chart"][1].props;
+const trend = reg["fountain-chart"][3].props;
+const certainty = reg["fountain-chart"][6].props;
+const latency = reg["fountain-chart"][7].props;
+const skew = reg["fountain-chart"][11].props;
+const storm = reg["fountain-chart"][12].props;
 
 const meta: Meta = {
   title: "Charts/Fountain",
@@ -50,4 +54,24 @@ export const TightColumn: Story = {
 /** No droplets, no mist - minimal look. */
 export const Minimal: Story = {
   args: { ...snapshot, width: 820, height: 500, showDroplets: false, showMist: false, renderer: "svg" },
+};
+
+/** Same apex, three plumes: the "same number, three certainties" field-guide read. */
+export const Certainty: Story = {
+  args: { ...certainty, width: 820, height: 500, renderer: "svg" },
+};
+
+/** Level x stability 2x2: two latency pairs split by their plumes. */
+export const Latency: Story = {
+  args: { ...latency, width: 820, height: 500, renderer: "svg" },
+};
+
+/** Symmetry as meaning: lean 0 stands upright, a leaning crown flags one-sided risk. */
+export const Skew: Story = {
+  args: { ...skew, width: 820, height: 500, renderer: "svg" },
+};
+
+/** Literal lean: typhoons over the Philippines, crowns bent along each storm's track. */
+export const Storm: Story = {
+  args: { ...storm, width: 820, height: 500, renderer: "svg" },
 };

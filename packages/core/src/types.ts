@@ -1507,6 +1507,12 @@ export interface FountainJetContext {
   upperBound: number;
   /** spread / value, the relative uncertainty (0 when value is 0 and spread is 0) */
   spreadRatio: number;
+  /**
+   * The sign-only skew flag: which side the spread hangs on (negative = left/downside,
+   * positive = right/upside, 0 = balanced). Null when the item did not encode a lean
+   * (the jet's gentle drift is then purely decorative wind, not data).
+   */
+  lean: number | null;
   predicted: boolean;
   /** x position in trend mode (the raw date/number), or null in snapshot mode */
   xPosition: number | string | null;

@@ -54,6 +54,13 @@ Al gemerged en live in de demo's van deze docs; gaat naar npm met de volgende ve
   [Spreidingsdiagram](/nl/charts/scatter), bruto-vs-nettosalarissen in de EU op
   [Bellen](/nl/charts/bubble), en een levensverwachtingsgolf van ~195 landen op
   [Verschil](/nl/charts/gap).
+- **De Fontein leert zichzelf uitleggen.** De [Fontein-pagina](/nl/charts/fountain) opent nu
+  met een anatomie-woordenlijst (elk zichtbaar deel van de glyph heeft een uitgesproken
+  betekenis) en een veldgids met elf live leeswijzen: zekerheid, stabiliteit, risico,
+  AI-vertrouwen, verdeelde doelgroepen, Filipijnse tyfoons en meer, meestal in het strakke
+  symmetrische pluimsilhouet. Symmetrie draagt nu ook betekenis: een expliciete `lean: 0` zet de straal
+  echt rechtop, een `lean` met teken markeert eenzijdig risico, en een straal zonder `lean`
+  houdt zijn decoratieve Geneefse wind (gerapporteerd als `lean: null` in `getContext()`).
 
 ## v1.6.1 - v1.6.4
 

@@ -72,6 +72,10 @@ export function buildFountainContext(input: BuildFountainContextInput): Fountain
       spread: round(spread),
       upperBound: round(value + spread),
       spreadRatio: round(spreadRatio),
+      lean:
+        d.lean === undefined || d.lean === null || !Number.isFinite(Number(d.lean))
+          ? null
+          : round(Math.min(1, Math.max(-1, Number(d.lean)))),
       predicted: isPredicted({ date: d.date ?? 0, certainty: d.certainty, predicted: d.predicted }),
       xPosition: input.mode === "trend" ? (d.date ?? null) : null,
     };

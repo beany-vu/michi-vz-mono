@@ -134,7 +134,12 @@ export function buildFountainRenderModel(
     const yApex = scales.yScale(safeValue);
     const stemHalf = Math.max(2, slotWidth * o.stemFraction);
     const spreadPx = safeSpread * pxPerUnit;
-    const lean = clamp(Number(item.lean) || 0, -1, 1);
+    // lean is a sign-only flag: absent = no data (jet keeps its decorative wind),
+    // 0 = truly upright, +/-x = the spread hangs on that side.
+    const lean =
+      item.lean === undefined || item.lean === null || !Number.isFinite(Number(item.lean))
+        ? null
+        : clamp(Number(item.lean), -1, 1);
     const predicted = isPredicted({ date: item.date ?? 0, certainty: item.certainty, predicted: item.predicted });
     const dimmed = anyHighlight && !highlightSet.has(item.label);
 
@@ -175,10 +180,11 @@ export function buildFountainRenderModel(
     frothLayers = clamp(frothLayers, 1, 20);
 
     // Crown drift: the jet leans into the wind strongly (a fraction of its height),
-    // the plume only nudges. A jet with no explicit lean still drifts gently.
+    // the plume only nudges. A jet with NO lean drifts gently (decorative wind);
+    // an explicit lean of 0 stands the jet upright.
     const crownDrift = isJet
-      ? (lean !== 0 ? lean : 0.2) * H * 0.16
-      : lean * bloomHalf * 0.3;
+      ? (lean === null ? 0.2 : lean) * H * 0.16
+      : (lean ?? 0) * bloomHalf * 0.3;
 
     const geom: JetGeometryInput = { xCenter, yApex, yBase, stemHalf, bloomHalf, crownDrift, bloomExponent: o.bloomExponent };
     const baseOpacity = predicted ? PREDICTED_BASE_OPACITY : SOLID_BASE_OPACITY;

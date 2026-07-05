@@ -21,6 +21,17 @@ Vì vậy đây là một biểu đồ **kể chuyện và quy kết** trung th�
 
 <ChartDemo chart="fountain-chart" :legend="false" />
 
+## Giải phẫu: đọc một đài phun nước thế nào
+
+Mỗi phần nhìn thấy được của hình đều mang đúng một ý nghĩa đã định. Không có gì khác chứa dữ liệu.
+
+- **Đỉnh (apex)** - CHÍNH LÀ con số. Nó nằm trên một trục y có nhãn thật, và là thứ duy nhất bạn đo.
+- **Thân (stem)** - phần thân của con số. Chỉ mang tính trang trí; độ rộng của nó không bao giờ mã hóa gì cả.
+- **Vòng vương miện / bọt (crown / froth)** - lá cờ báo hiệu: "cái này đang lung lay / cái này đang chảy máu." Rộng và sủi bọt nghĩa là hãy nhìn kỹ hơn; con số thứ hai chính xác nằm trong tooltip và trong `getContext().jets[].spreadRatio`, không bao giờ nằm ở độ rộng bạn thấy.
+- **Vòng vương miện đối xứng hay nghiêng** - đối xứng là một tín hiệu. Vòng vương miện thẳng đứng nói rằng độ trải cân bằng (có thể lệch về bên nào cũng được). Vòng vương miện nghiêng nói rằng khối ẩn nghiêng về một phía, một cái đuôi trễ, rủi ro thiên về phía dưới. Chỉ đọc hướng nghiêng thôi; con số lệch nằm trong tooltip (`jets[].lean`).
+- **Gió** - một tia không mã hóa `lean` vẫn trôi nhẹ về một phía. Đó là dấu ấn Jet d'Eau chung (gió thổi trên mặt hồ), thuần túy trang trí: mọi tia như vậy đều trôi theo cùng một hướng, và `lean` là `null` trong context.
+- **Giọt nước và sương mù (kiểu plume)** - trang trí; số lượng giọt nước tỉ lệ theo trường `density` tùy chọn.
+
 > Một biểu đồ, hai chế độ - quyết định bởi kiểu trục x. Đặt `xAxisDataType: "band"` cho **chế độ Ảnh chụp nhanh**: một tia cho mỗi danh mục, so sánh độ lớn cạnh nhau (đài phun, thành phố, sản phẩm). Dùng một trục x theo thời gian hoặc số (`"date_annual"`, `"date_monthly"`, `"number"`) cho **chế độ Xu hướng**: một tia cho mỗi kỳ, các đỉnh đang tăng dần vẽ nên xu hướng trong khi mỗi chùm tia thể hiện độ biến động của kỳ đó, và một tia dự báo hiển thị nét đứt với vòng vương miện rộng hơn, sủi bọt hơn.
 
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
@@ -45,7 +56,7 @@ function makeFountain() {
 }
 </script>
 
-FountainChart có tùy chọn `renderer="webgpu"` để vẽ cột và chùm tia tơi của mỗi tia dưới dạng các mark theo instance trên GPU trong khi trục, nhãn và tooltip vẫn ở lớp SVG. Tính năng này được kiểm soát theo khả năng: trên trình duyệt không có WebGPU, nó sẽ tự động hạ cấp xuống canvas, và `getContext().renderer` báo cáo bất kỳ renderer nào thực sự đã vẽ.
+FountainChart có tùy chọn `renderer="webgpu"` để vẽ cột và chùm tia tơi của mỗi tia dưới dạng các mark theo instance trên GPU trong khi trục, nhãn và tooltip vẫn ở lớp SVG. Tính năng này được kiểm soát theo khả năng: trên trình duyệt không có WebGPU, nó sẽ tự động hạ cấp xuống canvas, và `getContext().renderer` báo cáo bất kỳ renderer nào thực sự đã vẽ. Độ trôi ngang chung mà bạn thấy giữa các tia chỉ là gió trang trí (không tia nào trong số này mã hóa `lean`), không phải dữ liệu.
 
 <WebgpuHeavyDemo element="michi-vz-fountain-chart" :make="makeFountain" caption="400 jets" />
 
@@ -145,6 +156,76 @@ const props = {
 Với nhiều điểm dữ liệu, các tia bị nén lại và biểu đồ trông giống như một biểu đồ đường được trang trí - chi tiết chùm tia bị mất đi. Với chuỗi thời gian dày đặc (20+ kỳ), hãy ưu tiên [biểu đồ Fan](/vi/charts/fan) vốn mã hóa độ bất định thành các dải tin cậy mượt mà. Đài phun tỏa sáng ở quy mô con người: một vài kỳ nơi mỗi chùm tia có không gian để "thở".
 :::
 
+## Cẩm nang: các cách đọc một đài phun nước
+
+Đài phun còn mới, nên đây là toàn bộ kho cách đọc: mỗi demo là một biểu đồ sống thật với một chú thích trung thực. Bốn cái đầu là cách đọc chủ lực (con số nổi bật và thứ đang âm thầm bào mòn hoặc nâng đỡ nó); phần còn lại tổng quát hóa cùng một ngữ pháp đó cho độ chắc chắn, độ ổn định, rủi ro, AI và đối tượng khán giả.
+
+### Doanh số đã chốt so với hao hụt
+
+Ba cửa hàng ghi nhận doanh số gần như giống hệt nhau, nên một biểu đồ cột sẽ coi chúng ngang nhau. Chùm tia dày, đặc ở Store C báo hiệu nơi trộm cắp và hư hỏng hàng đang bào mòn biên lợi nhuận, và nơi cần ưu tiên gửi đội chống thất thoát tới trước. Tỷ lệ hao hụt nằm trong tooltip; trên 2% doanh số là ngưỡng cảnh báo.
+
+<ChartDemo chart="fountain-chart" :index="1" :legend="false" />
+
+### Đã giao so với chưa từng lập hóa đơn (xu hướng)
+
+Chế độ xu hướng: lượng giao hàng vẫn tăng đều, nhưng chùm tia ngày càng rộng cảnh báo rằng một phần ngày càng lớn không bao giờ được lập hóa đơn, rò rỉ và sử dụng không đo đếm được đang vượt qua tốc độ tăng trưởng. Dưới 10% nước phi doanh thu là tốt; trên 20% nghĩa là cần hành động.
+
+<ChartDemo chart="fountain-chart" :index="2" :legend="false" />
+
+### Một dự báo cao nhưng lung lay
+
+Xu hướng đang tăng, nhưng các tia dự báo tơi ra thành bọt nét đứt: tăng trưởng được dự báo, còn độ tin cậy đằng sau nó đang mỏng dần nhanh chóng. Muốn có dải chính xác, [biểu đồ Fan](/vi/charts/fan) mới là công cụ phù hợp; đây là phiên bản dễ nhớ của cùng một lời cảnh báo đó.
+
+<ChartDemo chart="fountain-chart" :index="3" :legend="false" />
+
+### Ngôi sao bạn thấy, người bảo trì bạn không thấy
+
+Cái hook mà biểu đồ này được sinh ra để kể: đỉnh tia là thứ ai cũng thấy và gắn sao; bụi nước là những contributor vô hình mà dự án thực sự đang dựa vào. Danh tiếng tương đồng, nền tảng rất khác nhau. Kể chuyện, không phải đo lường.
+
+<ChartDemo chart="fountain-chart" :index="4" :legend="false" />
+
+### Cùng một con số, ba mức độ chắc chắn
+
+Ba đội ước tính cùng một con số 72 ngày để ra mắt. Đỉnh giống hệt nhau; chỉ có chùm tia phân biệt đội đã đo đạc thật với đội chỉ đoán mò. Lá cờ báo hiệu nói rằng con số 72 đó không chắc chắn, khoảng chính xác thuộc về tooltip, còn các khoảng tin cậy thật sự thuộc về [biểu đồ Fan](/vi/charts/fan).
+
+<ChartDemo chart="fountain-chart" :index="6" :legend="false" />
+
+### Ổn định hay lung lay
+
+Hai service có latency trung bình 120 ms và hai service khác trung bình 60 ms, một biểu đồ cột sẽ cho thấy hai cặp song sinh. Chùm tia tách từng cặp ra: vòng vương miện thắt chặt là cái bạn có thể đặt SLO lên. Ở đây đỉnh thấp hơn là tốt hơn; hãy ghi rõ điều đó trong chú thích khi bạn dùng cách đọc này. Cách đọc tương tự áp dụng cho lợi nhuận so với độ biến động.
+
+<ChartDemo chart="fountain-chart" :index="7" :legend="false" />
+
+### Tổn thất dự kiến so với trường hợp xấu nhất
+
+Đỉnh là tổn thất dự kiến; vòng vương miện vươn tới trường hợp căng thẳng (`value + spread`, chính là `upperBound` trong `getContext()`). Hai vị thế dự kiến cùng một mức tổn thất; một trong hai ẩn giấu một cái đuôi nặng hơn nhiều. Đọc con số xấu nhất trên tooltip, không bao giờ đọc trên độ rộng.
+
+<ChartDemo chart="fountain-chart" :index="8" :legend="false" />
+
+### Câu trả lời AI: chắc chắn hay đang đoán
+
+Đỉnh là điểm số của câu trả lời; chùm tia là độ bất định của chính model, được chuẩn hóa về cùng đơn vị điểm số để cả hai chia sẻ chung trục y. Vòng vương miện thắt chặt: an toàn để tự động hóa. Vòng vương miện tơi ra: nên giao cho con người xử lý. [Lớp insights](/vi/guide/insights) đọc cùng `spreadRatio` từ `getContext()` để kể lại câu trả lời nào đáng tin.
+
+<ChartDemo chart="fountain-chart" :index="9" :legend="false" />
+
+### Cùng mức trung bình, khán giả bị chia tách
+
+Hai bài viết có cùng mức trung bình 5.5 phút thời gian đọc. Một bài giữ chân gần như mọi độc giả trong khoảng đó; bài kia lại chia độc giả ra thành nhóm lướt nhanh và nhóm đọc say sưa. Con số trung bình che giấu sự chia tách; chùm tia báo hiệu nó, và tín hiệu đó là gợi ý để bạn phân khúc trước khi kết luận bất cứ điều gì.
+
+<ChartDemo chart="fountain-chart" :index="10" :legend="false" />
+
+### Rủi ro nghiêng về phía nào
+
+Đối xứng như một tín hiệu: ba tuyến đường có cùng trung vị và cùng độ trải, nhưng một vòng vương miện nghiêng, những bất ngờ của nó thiên về một phía, một cái đuôi trễ (`lean: 0.8`). Thẳng đứng (`lean: 0`) nghĩa là cân bằng; nghiêng nghĩa là khối ẩn nghiêng về phía đó. Chỉ đọc hướng nghiêng thôi, đừng bao giờ đọc góc nghiêng.
+
+<ChartDemo chart="fountain-chart" :index="11" :legend="false" />
+
+### Bão trên Philippines
+
+Đôi khi độ nghiêng mang nghĩa đen. Mỗi cột nước là một cơn bão: apex là sức gió duy trì cực đại, phần spray vươn tới gió giật (cùng đơn vị km/h), độ dày của froth thể hiện độ rộng trường gió, còn vương miện nghiêng theo hướng bão di chuyển - bão Thái Bình Dương quét qua Philippines từ đông sang tây nên cả hàng nghiêng về trái, riêng cơn bão đổi hướng lên Nhật Bản nghiêng về phía kia. Một glyph, bốn kênh trung thực, không cần thêm loại biểu đồ mới nào.
+
+<ChartDemo chart="fountain-chart" :index="12" :legend="false" />
+
 ## Hai hình dạng
 
 Đặt `style` để chọn hình dạng; cả hai đều mã hóa cùng dữ liệu (đỉnh = `value`, kênh độ trải = `spread`).
@@ -156,11 +237,17 @@ Với nhiều điểm dữ liệu, các tia bị nén lại và biểu đồ tr�
 const props = { style: "plume", dataSet: [{ label: "Q4", value: 78, spread: 20 }] };
 ```
 
+<ChartDemo chart="fountain-chart" :index="5" :legend="false" />
+
+**Nguyên tắc chung: plume cho ít tia, jet cho hero và cho dữ liệu lớn.** Ở quy mô con người (1 đến 12 tia), vòng vương miện đối xứng nhiều lớp của plume là hình dạng dễ đọc triệu chứng nhất, quầng thắt chặt so với bọt trải rộng. Với hàng trăm tia, phần nở của plume bị ép lại thành một lát mỏng trong ô chứa và suy biến thành một cột đơn giản, trong khi jet với thân chiếm ưu thế lại suy biến một cách duyên dáng thành một dải cao (xem demo dữ liệu lớn ở trên); nó cũng mang thương hiệu riêng. Với chuỗi dữ liệu thực sự dày đặc, hãy ngừng trang trí và dùng [biểu đồ Fan](/vi/charts/fan).
+
+**Đối xứng mang ý nghĩa.** Một vòng vương miện thẳng đứng (kiểu plume, hoặc một tia với `lean: 0`) nói rằng độ trải cân bằng. Một vòng vương miện nghiêng (`lean` trong khoảng [-1, 1], chỉ dấu của nó mới quan trọng) nói rằng độ trải nghiêng về một phía. Một tia **không có** `lean` vẫn giữ một độ trôi trang trí nhẹ nhàng, gió Geneva, và báo cáo `lean: null` trong context, để consumer phân biệt được đâu là lá cờ và đâu chỉ là trang trí.
+
 Cả hai kiểu đều dùng chung `stemFraction` (nửa độ rộng đáy cột như một phân số của ô chứa), trường `density`, và `lean`. Màu sắc theo dữ liệu/`colorsMapping` của bạn; bọt/bụi nước chỉ điều biến độ mờ của tông màu của bạn, nên biểu đồ thích ứng với cả chủ đề sáng lẫn tối.
 
 ## Khi nào Đài phun xứng đáng có mặt
 
-Chúng tôi đã kiểm tra các tài liệu học thuật trước khi phát hành tính năng này. Ẩn dụ Jet d'Eau là mới mẻ trong dataviz (chưa có biểu đồ đài phun/tia nước nào từng tồn tại), và ý tưởng nền tảng là một cách định hướng lại hợp lý cho họ raincloud / violin / density-strip. Nhưng công việc trung thực của nó là **truyền đạt, không phải đo lường** - vì vậy hãy dùng nó ở nơi một tiêu điểm dễ nhớ cộng với nửa ẩn của nó quan trọng, và dùng một biểu đồ chính xác khi bạn cần so sánh chính xác con số thứ hai.
+Tài liệu học thuật đã được rà soát trước khi biểu đồ này phát hành. Ẩn dụ Jet d'Eau là mới mẻ trong dataviz (chưa có biểu đồ đài phun/tia nước nào từng tồn tại), và ý tưởng nền tảng là một cách định hướng lại hợp lý cho họ raincloud / violin / density-strip. Nhưng công việc trung thực của nó là **truyền đạt, không phải đo lường** - vì vậy hãy dùng nó ở nơi một tiêu điểm dễ nhớ cộng với nửa ẩn của nó quan trọng, và dùng một biểu đồ chính xác khi bạn cần so sánh chính xác con số thứ hai.
 
 **Phù hợp mạnh**
 

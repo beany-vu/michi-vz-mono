@@ -105,6 +105,30 @@ describe("fountain render model", () => {
     for (const jet of model.jets) expect(jet.yBase).toBeCloseTo(plotBottom, 0);
   });
 
+  it("lean semantics: absent = decorative wind, 0 = truly upright, sign picks the side", () => {
+    const data: FountainDataItem[] = [
+      { label: "Wind", value: 100, spread: 10 },
+      { label: "Upright", value: 100, spread: 10, lean: 0 },
+      { label: "Right", value: 100, spread: 10, lean: 0.8 },
+      { label: "Left", value: 100, spread: 10, lean: -0.8 },
+    ];
+    const { model } = buildModel(data, { style: "jet" });
+    const bias = (j: (typeof model.jets)[number]) =>
+      (j.hit.right - j.xCenter) - (j.xCenter - j.hit.left);
+    const [wind, upright, right, left] = model.jets;
+    expect(bias(upright)).toBeCloseTo(0, 5); // explicit 0 stands straight
+    expect(bias(wind)).toBeGreaterThan(0); // no lean keeps the signature drift
+    expect(bias(right)).toBeGreaterThan(bias(wind)); // data lean outdrifts the wind
+    expect(bias(left)).toBeLessThan(0); // negative lean bends the other way
+    expect(upright.outlinePath).not.toEqual(wind.outlinePath);
+  });
+
+  it("plume stays upright when lean is absent", () => {
+    const { model } = buildModel([{ label: "P", value: 100, spread: 20 }], { style: "plume" });
+    const j = model.jets[0];
+    expect((j.hit.right - j.xCenter) - (j.xCenter - j.hit.left)).toBeCloseTo(0, 5);
+  });
+
   it("trend slot width comes from the MIN date gap, so clustered dates do not collide", () => {
     // three clustered years + one far outlier; average spacing would be huge.
     const data: FountainDataItem[] = [
@@ -198,6 +222,20 @@ describe("mountFountainChart (jsdom)", () => {
       chart.destroy();
       host.remove();
     }
+  });
+
+  it("context carries the lean flag: null when not encoded, the signed value when it is", () => {
+    const { host, chart } = mount([
+      { label: "Wind", value: 100, spread: 10 },
+      { label: "Late tail", value: 100, spread: 10, lean: 0.8 },
+    ]);
+    const ctx = chart.getContext()!;
+    if (ctx.chartType === "fountain-chart") {
+      expect(ctx.jets[0].lean).toBeNull();
+      expect(ctx.jets[1].lean).toBe(0.8);
+    }
+    chart.destroy();
+    host.remove();
   });
 
   it("context is identical in SVG and canvas (renderer aside)", () => {

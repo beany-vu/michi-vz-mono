@@ -1582,7 +1582,7 @@ const fountain: Example<FountainChartProps>[] = [
     id: "fountain-forecast",
     title: "Forecast: a number that is high but shaky",
     description:
-      "The trend rises, but the forecast spikes fray into froth: the same apex with a far wider, dashed plume says 'we project growth, but our confidence is thinning fast.' A deliberate don't-trust-this-to-the-decimal signal - for precise bands, use the Fan chart.",
+      "The trend rises, but the forecast spikes fray into froth: the same apex with a far wider, dashed plume says growth is projected, but the confidence behind it is thinning fast. A deliberate don't-trust-this-to-the-decimal signal - for precise bands, the Fan chart is the right tool.",
     element: "michi-vz-fountain-chart",
     props: {
       title: "Projected MRR ($K), spray = forecast spread (P10-P90); dashed = forecast",
@@ -1626,6 +1626,144 @@ const fountain: Example<FountainChartProps>[] = [
         { label: "Q2", value: 55, spread: 9, density: 7 },
         { label: "Q3", value: 61, spread: 12, density: 8 },
         { label: "Q4", value: 78, spread: 20, density: 9, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-certainty",
+    title: "Same number, three certainties",
+    description:
+      "Three teams estimate the same launch date: 72 days. Identical apexes, so a bar chart would show three identical bars. The plume is what separates them: Team A has measured every task (tight crown), Team C is guessing (wide froth). The plume is a flag that the 72 is soft; the exact range (say 72 plus or minus 20) belongs on the tooltip. For real confidence intervals, use the Fan chart.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Estimated days to launch, spray = how sure each team is",
+      xAxisDataType: "band",
+      style: "plume",
+      showDroplets: false,
+      showMist: false,
+      bloomExponent: 1.8,
+      dataSet: [
+        { label: "Team A", value: 72, spread: 3, density: 0.2 },
+        { label: "Team B", value: 72, spread: 9, density: 0.5 },
+        { label: "Team C", value: 72, spread: 20, density: 0.9, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-latency",
+    title: "Stable or shaky: the 2x2 a bar chart cannot show",
+    description:
+      "Four services, two latency levels, and the plume splits each pair: Checkout and Search both average 120 ms, but Search swings wildly under load; Auth and Cart both average 60 ms, but Cart spikes. Lower apex is better here, and the tight crown is the one you can put an SLO on. The p95 figure lives on the tooltip; the froth just tells you where to look first. The same read works for profit vs volatility, or any level-times-stability pair.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Median latency (ms), spray = variability under load (p95 gap)",
+      xAxisDataType: "band",
+      style: "plume",
+      showDroplets: false,
+      showMist: false,
+      bloomExponent: 1.8,
+      dataSet: [
+        { label: "Checkout", value: 120, spread: 6, density: 0.2 },
+        { label: "Search", value: 120, spread: 45, density: 0.9, color: "#D4AF37" },
+        { label: "Auth", value: 60, spread: 4, density: 0.2 },
+        { label: "Cart", value: 60, spread: 30, density: 0.8 },
+      ],
+    },
+  },
+  {
+    id: "fountain-risk",
+    title: "Expected loss vs the worst case",
+    description:
+      "Each apex is the expected loss on a position; the crown reaches toward the stress-test worst case (value plus spread, the upperBound in getContext()). Positions B and D expect the same loss, but D's plume flags a far heavier tail. Read the exact worst-case number off the tooltip, never off the plume width; the froth only tells you which position deserves the second look.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Expected loss ($M), spray reaches toward the stress-case loss",
+      xAxisDataType: "band",
+      style: "plume",
+      showDroplets: false,
+      showMist: false,
+      bloomExponent: 1.8,
+      dataSet: [
+        { label: "Position A", value: 4, spread: 1.5, density: 0.3 },
+        { label: "Position B", value: 10, spread: 2, density: 0.3 },
+        { label: "Position C", value: 5, spread: 6, density: 0.7 },
+        { label: "Position D", value: 10, spread: 9, density: 0.9, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-ai",
+    title: "AI answers: confident or guessing",
+    description:
+      "Three model answers with their scores. The apex is the score; the plume is the model's own uncertainty, normalised into score units so both share the y-axis. The 0.92 with a tight crown is safe to automate; the 0.28 fraying into froth is a hand-off to a human. Pairs naturally with the insights layer, which reads the same spreadRatio out of getContext() to narrate which answers to trust.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Answer score (0 to 1), spray = model uncertainty in score units",
+      xAxisDataType: "band",
+      style: "plume",
+      showDroplets: false,
+      showMist: false,
+      bloomExponent: 1.8,
+      yAxisDomain: [0, 1.2],
+      dataSet: [
+        { label: "Answer 1", value: 0.92, spread: 0.04, density: 0.2 },
+        { label: "Answer 2", value: 0.62, spread: 0.15, density: 0.5 },
+        { label: "Answer 3", value: 0.28, spread: 0.3, density: 0.9, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-attention",
+    title: "Same average, divided audience",
+    description:
+      "Two articles average the same 5.5 minutes of engagement. Article A holds everyone for about that long (tight crown); Article B splits its readers between skimmers who bounce and devourers who finish (wide froth). The average hides that division; the plume flags it. The per-decile numbers belong on the tooltip, and the flag is the cue to segment before drawing conclusions.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Average engagement (minutes), spray = variation across readers",
+      xAxisDataType: "band",
+      style: "plume",
+      showDroplets: false,
+      showMist: false,
+      bloomExponent: 1.8,
+      dataSet: [
+        { label: "Article A", value: 5.5, spread: 0.5, density: 0.2 },
+        { label: "Article B", value: 5.5, spread: 3, density: 0.9, color: "#D4AF37" },
+        { label: "Video A", value: 2.2, spread: 0.4, density: 0.3 },
+        { label: "Video B", value: 2.2, spread: 1.6, density: 0.8 },
+      ],
+    },
+  },
+  {
+    id: "fountain-skew",
+    title: "Which side does the risk hang on",
+    description:
+      "Symmetry is the signal here. Three delivery routes share the same median time and the same spread, but Harbour's crown leans right: its surprises are one-sided, a late tail (lean: 0.8). An upright crown (lean: 0) says the number can swing either way; a leaning crown says the hidden mass hangs on one side. Read only the direction, never the angle; the skew figure itself lives on the tooltip and in getContext().",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Median delivery time (min); a leaning crown = one-sided (late) risk",
+      xAxisDataType: "band",
+      dataSet: [
+        { label: "City", value: 32, spread: 6, density: 0.3, lean: 0 },
+        { label: "Suburb", value: 41, spread: 7, density: 0.3, lean: 0 },
+        { label: "Harbour", value: 38, spread: 7, density: 0.8, lean: 0.8, color: "#D4AF37" },
+      ],
+    },
+  },
+  {
+    id: "fountain-storm",
+    title: "Typhoons over the Philippines",
+    description:
+      "Each jet is a typhoon (approximate figures). The apex is peak sustained wind; the spray reaches toward the gusts above it, in the same km/h. The crowns lean the way each storm travelled: Pacific typhoons cross the Philippines east to west, so they lean left; Hagibis recurved northeast toward Japan and leans the other way. Thicker froth = a wider wind field. Direction and thickness are flags; the exact gust and size figures live on the tooltip.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Peak sustained winds (km/h); spray = gusts, lean = track direction",
+      xAxisDataType: "band",
+      dataSet: [
+        { label: "Haiyan 2013", value: 230, spread: 85, density: 0.8, lean: -0.7, color: "#D4AF37" },
+        { label: "Hagibis 2019", value: 195, spread: 75, density: 1, lean: 0.6 },
+        { label: "Goni 2020", value: 225, spread: 85, density: 0.5, lean: -0.7 },
+        { label: "Rai 2021", value: 195, spread: 75, density: 0.6, lean: -0.6 },
+        { label: "Noru 2022", value: 195, spread: 45, density: 0.4, lean: -0.7 },
       ],
     },
   },

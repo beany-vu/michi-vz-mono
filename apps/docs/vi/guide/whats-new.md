@@ -50,6 +50,14 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
   [Biểu đồ phân tán](/vi/charts/scatter), lương gross vs net ở EU trên
   [Biểu đồ bong bóng](/vi/charts/bubble), và dải tuổi thọ ~195 quốc gia trên
   [Biểu đồ khoảng cách](/vi/charts/gap).
+- **Đài phun nước giờ tự giải thích được mình.** [Trang Fountain](/vi/charts/fountain) mở đầu
+  bằng mục giải phẫu (mỗi phần nhìn thấy của glyph có đúng một ý nghĩa được nêu rõ) và một
+  field guide gồm mười một cách đọc chạy trực tiếp: độ chắc chắn, độ ổn định, rủi ro, độ tự
+  tin của AI, khán giả phân cực, bão trên Philippines và hơn nữa, phần lớn dùng dáng plume
+  đối xứng gọn gàng. Tính đối
+  xứng giờ cũng mang nghĩa: `lean: 0` tường minh giữ cột nước thẳng đứng, `lean` có dấu cảnh
+  báo rủi ro lệch một phía, còn cột nước không khai báo `lean` giữ độ nghiêng trang trí kiểu
+  Geneva (báo về là `lean: null` trong `getContext()`).
 
 ## v1.6.1 - v1.6.4
 
