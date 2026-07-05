@@ -1793,7 +1793,31 @@
           "name": "isLoading",
           "type": "boolean",
           "optional": true,
-          "description": "Show a loading state (adds the mv-loading class to the host).",
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: RadarDataItem[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on series; default = empty series.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
           "default": "",
           "common": false
         },
@@ -3630,6 +3654,38 @@
           "common": true
         },
         {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: TreemapNode[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on dataSet; default = empty dataSet.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "valueFormatter",
           "type": "(n: number) => string",
           "optional": true,
@@ -4324,6 +4380,38 @@
           "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: SankeyNodeItem[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on nodes; default = empty nodes.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
+          "default": "",
+          "common": false
         },
         {
           "name": "valueFormatter",

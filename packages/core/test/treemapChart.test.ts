@@ -225,3 +225,48 @@ describe("mountTreemapChart (jsdom)", () => {
     host.remove();
   });
 });
+
+describe("TreemapChart chrome (loading/no-data quad)", () => {
+  it("isLoading: shows the loading overlay, data-mv-state=loading", () => {
+    const { host, chart } = mount({ dataSet: flat, isLoading: true });
+    expect(host.getAttribute("data-mv-state")).toBe("loading");
+    expect(host.querySelector(".mv-loading")).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("nodata (empty dataSet): no tiles, data-mv-state=nodata, default overlay text", () => {
+    const { host, chart } = mount({ dataSet: [] });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelectorAll("rect.tile").length).toBe(0);
+    const overlay = host.querySelector(".mv-nodata");
+    expect(overlay).not.toBeNull();
+    expect(overlay!.textContent).toBe("No data available");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("noDataLabel overrides the default no-data text", () => {
+    const { host, chart } = mount({ dataSet: [], noDataLabel: "Nothing to show" });
+    expect(host.querySelector(".mv-nodata")!.textContent).toBe("Nothing to show");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("suppressDefaultOverlay hides the default overlay while data-mv-state is still set", () => {
+    const { host, chart } = mount({ dataSet: [], suppressDefaultOverlay: true });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelector(".mv-nodata")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("ready: non-empty dataSet, no overlay, data-mv-state=ready", () => {
+    const { host, chart } = mount({ dataSet: flat });
+    expect(host.getAttribute("data-mv-state")).toBe("ready");
+    expect(host.querySelector(".mv-loading")).toBeNull();
+    expect(host.querySelector(".mv-nodata")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+});

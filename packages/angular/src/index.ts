@@ -504,6 +504,8 @@ export function applyRadarChartProps(el: RadarChartElement, props: RadarChartPro
   if (props.tooltipContainerStyle !== undefined)
     el.tooltipContainerStyle = props.tooltipContainerStyle;
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
+  if (props.isNodata !== undefined) el.isNodata = props.isNodata;
+  if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.margin !== undefined) el.margin = props.margin;
   if (props.colors !== undefined) el.colors = props.colors;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
@@ -568,6 +570,9 @@ export function applyTreemapChartProps(el: TreemapChartElement, props: TreemapCh
   if (props.paddingTop !== undefined) el.paddingTop = props.paddingTop;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.isLoading !== undefined) el.isLoading = props.isLoading;
+  if (props.isNodata !== undefined) el.isNodata = props.isNodata;
+  if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
 }
 
 /** Apply engine props onto a <michi-vz-pie-chart> element (property binding). */
@@ -655,6 +660,9 @@ export function applySankeyChartProps(el: SankeyChartElement, props: SankeyChart
   if (props.margin !== undefined) el.margin = props.margin;
   if (props.colors !== undefined) el.colors = props.colors;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.isLoading !== undefined) el.isLoading = props.isLoading;
+  if (props.isNodata !== undefined) el.isNodata = props.isNodata;
+  if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
 }
 
 /** Apply engine props onto a <michi-vz-fountain-chart> element (property binding). */

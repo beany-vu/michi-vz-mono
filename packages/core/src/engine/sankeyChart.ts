@@ -8,6 +8,7 @@ import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { renderTitle } from "../render/svg";
 import { processSankeyData } from "../sankeyChart/data";
 import { buildSankeyColors } from "../sankeyChart/colors";
@@ -115,6 +116,7 @@ export function mountSankeyChart(
     },
   };
   let sticky = false;
+  const chrome = createChromeRefs();
   let lastColorMappingSent: Record<string, string> = {};
   let model: SankeyRenderModel | null = null;
 
@@ -250,6 +252,9 @@ export function mountSankeyChart(
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
+
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    applyChartChrome(host, props, props.nodes, chrome);
 
     const processed = processSankeyData(props.nodes ?? [], props.links ?? [], {
       disabledItems: props.disabledItems,

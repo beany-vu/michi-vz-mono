@@ -8,6 +8,7 @@ import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { renderTitle } from "../render/svg";
 import { processTreemapData } from "../treemapChart/data";
 import { buildTreemapColors } from "../treemapChart/colors";
@@ -114,6 +115,7 @@ export function mountTreemapChart(
     },
   };
   let sticky = false;
+  const chrome = createChromeRefs();
   let lastColorMappingSent: Record<string, string> = {};
   let model: TreemapRenderModel | null = null;
 
@@ -252,6 +254,9 @@ export function mountTreemapChart(
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
+
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    applyChartChrome(host, props, props.dataSet, chrome);
 
     const processed = processTreemapData(props.dataSet ?? [], {
       disabledItems: props.disabledItems,

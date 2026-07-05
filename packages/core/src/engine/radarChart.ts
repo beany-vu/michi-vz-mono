@@ -5,6 +5,7 @@ import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { renderTitle } from "../render/svg";
 import { placeTooltip } from "../render/placeTooltip";
 import { processRadarData } from "../radarChart/data";
@@ -130,6 +131,7 @@ export function mountRadarChart(
     },
   };
   let sticky = false;
+  const chrome = createChromeRefs();
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
   // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
@@ -182,14 +184,15 @@ export function mountRadarChart(
     // - this is what lets the radar use a larger radius with labels right up to the edge.
     svg.style.overflow = "visible";
 
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    applyChartChrome(host, props, props.series, chrome);
+
     // Resolve axes (axes prop or legacy poles.labels) + normalise the series shape
     // (derive `values` from a legacy data:[{date,value}] array). Stored on module vars
     // so the hover tooltip can read them outside render().
     resolvedAxes = resolveAxes(props);
     normalizedSeries = normalizeSeries(props.series, resolvedAxes);
 
-    if (props.isLoading) host.classList.add("mv-loading");
-    else host.classList.remove("mv-loading");
     if (props.tooltipContainerStyle) Object.assign(tooltip.style, props.tooltipContainerStyle);
 
     const { items, maxValue } = processRadarData(normalizedSeries, props.disabledItems, props.maxValue);

@@ -41,6 +41,9 @@ export class SankeyChartElement extends LitElement {
     valueFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
   };
 
   nodes: SankeyNodeItem[] = [];
@@ -67,6 +70,9 @@ export class SankeyChartElement extends LitElement {
   valueFormatter?: (n: number) => string;
   plugins?: MichiVzPlugin<SankeyChartProps>[];
   locale?: string;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: SankeyNodeItem[] | null | undefined) => boolean);
+  noDataLabel?: string;
 
   private chart?: ChartInstance<SankeyChartProps>;
 
@@ -107,6 +113,9 @@ export class SankeyChartElement extends LitElement {
       tooltipFormatter: this.tooltipFormatter,
       valueFormatter: this.valueFormatter,
       locale: this.locale,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

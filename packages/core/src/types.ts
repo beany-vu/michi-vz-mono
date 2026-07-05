@@ -1580,8 +1580,14 @@ export interface RadarChartProps {
   poleLabelFormatter?: (axis: string) => string;
   /** Inline style merged onto the tooltip container div. */
   tooltipContainerStyle?: Record<string, string | number>;
-  /** Show a loading state (adds the mv-loading class to the host). */
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on series; default = empty series. */
+  isNodata?: boolean | ((dataSet: RadarDataItem[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Optional chart title rendered above the plot */
   title?: string;
   /** Chart width in pixels */
@@ -1827,6 +1833,14 @@ export interface TreemapChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on dataSet; default = empty dataSet. */
+  isNodata?: boolean | ((dataSet: TreemapNode[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Formats numeric values shown in the default tooltip (defaults to a locale number formatter) */
   valueFormatter?: (n: number) => string;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
@@ -2157,6 +2171,14 @@ export interface SankeyChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on nodes; default = empty nodes. */
+  isNodata?: boolean | ((dataSet: SankeyNodeItem[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
   /** Formats a numeric value for labels and tooltips */
   valueFormatter?: (n: number) => string;
   /** Returns custom tooltip HTML for a hovered datum/mark (sanitized before it is inserted) */

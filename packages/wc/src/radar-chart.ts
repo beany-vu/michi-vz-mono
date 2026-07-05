@@ -36,6 +36,8 @@ export class RadarChartElement extends LitElement {
     poleLabelFormatter: { attribute: false },
     tooltipContainerStyle: { attribute: false },
     isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
     margin: { attribute: false },
     colors: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
@@ -64,6 +66,8 @@ export class RadarChartElement extends LitElement {
   poleLabelFormatter?: (axis: string) => string;
   tooltipContainerStyle?: Record<string, string | number>;
   isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: RadarDataItem[] | null | undefined) => boolean);
+  noDataLabel?: string;
   margin?: Margin;
   colors?: string[];
   enableTransitions?: boolean;
@@ -106,6 +110,8 @@ export class RadarChartElement extends LitElement {
       poleLabelFormatter: this.poleLabelFormatter,
       tooltipContainerStyle: this.tooltipContainerStyle,
       isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
       margin: this.margin,
       colors: this.colors,
       enableTransitions: this.enableTransitions,

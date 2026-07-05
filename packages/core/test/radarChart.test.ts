@@ -244,3 +244,48 @@ describe("mountRadarChart - drop-in features (data shape, colours, hover)", () =
     document.body.removeChild(svg);
   });
 });
+
+describe("RadarChart chrome (loading/no-data quad)", () => {
+  it("isLoading: shows the loading overlay, data-mv-state=loading", () => {
+    const { host, chart } = mount({ isLoading: true });
+    expect(host.getAttribute("data-mv-state")).toBe("loading");
+    expect(host.querySelector(".mv-loading")).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("nodata (empty series): no polygons, data-mv-state=nodata, default overlay text", () => {
+    const { host, chart } = mount({ series: [] });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelectorAll("polygon.radar-area").length).toBe(0);
+    const overlay = host.querySelector(".mv-nodata");
+    expect(overlay).not.toBeNull();
+    expect(overlay!.textContent).toBe("No data available");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("noDataLabel overrides the default no-data text", () => {
+    const { host, chart } = mount({ series: [], noDataLabel: "Nothing to show" });
+    expect(host.querySelector(".mv-nodata")!.textContent).toBe("Nothing to show");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("suppressDefaultOverlay hides the default overlay while data-mv-state is still set", () => {
+    const { host, chart } = mount({ series: [], suppressDefaultOverlay: true });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelector(".mv-nodata")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("ready: non-empty series, no overlay, data-mv-state=ready", () => {
+    const { host, chart } = mount();
+    expect(host.getAttribute("data-mv-state")).toBe("ready");
+    expect(host.querySelector(".mv-loading")).toBeNull();
+    expect(host.querySelector(".mv-nodata")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+});

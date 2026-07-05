@@ -43,6 +43,9 @@ export class TreemapChartElement extends LitElement {
     paddingTop: { type: Number, attribute: "padding-top" },
     filter: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    isLoading: { type: Boolean, attribute: "is-loading" },
+    isNodata: { attribute: false },
+    noDataLabel: { type: String, attribute: "no-data-label" },
   };
 
   dataSet: TreemapNode[] = [];
@@ -71,6 +74,9 @@ export class TreemapChartElement extends LitElement {
   paddingTop?: number;
   filter?: { limit: number; sortingDir: "asc" | "desc" };
   enableTransitions?: boolean;
+  isLoading?: boolean;
+  isNodata?: boolean | ((dataSet: TreemapNode[] | null | undefined) => boolean);
+  noDataLabel?: string;
 
   private chart?: ChartInstance<TreemapChartProps>;
 
@@ -113,6 +119,9 @@ export class TreemapChartElement extends LitElement {
       paddingTop: this.paddingTop,
       filter: this.filter,
       enableTransitions: this.enableTransitions,
+      isLoading: this.isLoading,
+      isNodata: this.isNodata,
+      noDataLabel: this.noDataLabel,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
