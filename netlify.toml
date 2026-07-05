@@ -1,13 +1,15 @@
-# Netlify build config for the @michi-vz docs site.
-# Netlify reads this automatically - no need to set the build command / publish
-# directory in the UI. pnpm is auto-detected from pnpm-lock.yaml.
+# Netlify config for the @michi-vz docs site.
 #
-# `--filter "docs..."` builds the docs package AND its workspace dependencies
-# (@michi-vz/examples, @michi-vz/wc, @michi-vz/core) in topological order, so
-# their dist/ entries exist before VitePress resolves them. Plain
-# `--filter docs` would build docs alone and fail to resolve @michi-vz/examples.
+# Deploy model: the site is BUILT LOCALLY (via docker, due to a WSL root-owned
+# dist quirk) and UPLOADED prebuilt with `pnpm deploy:docs` (netlify deploy
+# --dir=...). So Netlify itself must NOT build - it just serves the folder we
+# send. The build command is therefore a no-op.
+#
+# To switch back to Netlify's own git-triggered build, restore:
+#   command = "pnpm install --frozen-lockfile && pnpm --filter \"docs...\" build"
+# ("--filter docs..." builds the docs package AND its workspace deps in order.)
 [build]
-  command = "pnpm install --frozen-lockfile && pnpm --filter \"docs...\" build"
+  command = "echo 'Prebuilt locally and uploaded via the Netlify CLI - skipping Netlify build.'"
   publish = "apps/docs/.vitepress/dist"
 
 [build.environment]
