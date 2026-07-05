@@ -28,6 +28,7 @@ export class AreaChartElement extends LitElement {
     disabledItems: { attribute: false },
     curve: { type: String },
     forcePercentageScale: { type: Boolean, attribute: "force-percentage-scale" },
+    stackOffset: { type: String, attribute: "stack-offset" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
@@ -60,6 +61,7 @@ export class AreaChartElement extends LitElement {
   disabledItems?: string[];
   curve?: CurveType;
   forcePercentageScale = false;
+  stackOffset?: "none" | "expand";
   skipColorMappingDispatch = false;
   tooltipFormatter?: (row: AreaDataRow, series: AreaDataRow[], key: string) => string;
   plugins?: MichiVzPlugin<AreaChartProps>[];
@@ -107,6 +109,7 @@ export class AreaChartElement extends LitElement {
       disabledItems: this.disabledItems,
       curve: this.curve,
       forcePercentageScale: this.forcePercentageScale,
+      stackOffset: this.stackOffset,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,

@@ -484,6 +484,13 @@ export interface AreaChartProps {
   yAxisDomain?: [number, number];
   /** Fix the y-axis to [0,100] regardless of data (display only; data not normalized). */
   forcePercentageScale?: boolean;
+  /** Stacking normalization, named after d3-shape's own `stackOffsetExpand`. `"none"`
+   * (default) stacks absolute values, unchanged. `"expand"` NORMALIZES each x-slice so
+   * its band heights sum to 1 (a true 100%-stacked chart, unlike the display-only
+   * `forcePercentageScale`): the y domain becomes [0,1] and y-axis ticks render as
+   * percentages unless an explicit `yAxisFormat` is given. A slice whose keys are all
+   * zero/null renders as an empty (zero-height) band rather than `NaN`. */
+  stackOffset?: "none" | "expand";
   /** Approximate number of axis ticks to generate */
   ticks?: number;
   /** Explicit tick values, overriding the generated ones */

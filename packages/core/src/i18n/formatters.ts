@@ -13,6 +13,16 @@ export function defaultNumberFormatter(locale?: string): (d: number | string) =>
   };
 }
 
+// Backs AreaChart's `stackOffset: "expand"` (100%-stacked) default y tick label;
+// values live in [0,1] and Intl's percent style does the *100 + "%" for us.
+export function defaultPercentFormatter(locale?: string): (d: number | string) => string {
+  const nf = new Intl.NumberFormat(locale, { style: "percent" });
+  return (d) => {
+    const n = typeof d === "number" ? d : Number(d);
+    return Number.isFinite(n) ? nf.format(n) : String(d);
+  };
+}
+
 export function defaultXAxisFormatter(
   xAxisDataType: XaxisDataType,
   locale?: string

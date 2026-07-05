@@ -1,7 +1,7 @@
 // AreaChart data pipeline: d3.stack over the active keys, plus x/y domains.
 // activeKeys = keys minus disabledItems (disabling reflows the stack, matching
 // the legacy chart). Pure.
-import { stack as d3stack } from "d3-shape";
+import { stack as d3stack, stackOffsetExpand } from "d3-shape";
 import { parseXValue } from "../lineChart/lineUtils";
 import type { AreaDataRow, XaxisDataType } from "../types";
 
@@ -22,6 +22,10 @@ export interface ProcessAreaOptions {
   xAxisDataType: XaxisDataType;
   yAxisDomain?: [number, number];
   forcePercentageScale?: boolean;
+  /** "expand" normalizes each x-slice to sum to 1 via d3-shape's stackOffsetExpand
+   * (which itself guards the divide-by-zero case, leaving zero-total slices at 0
+   * rather than NaN). Default "none" - today's absolute stacking. */
+  stackOffset?: "none" | "expand";
 }
 
 export interface ProcessedArea {
@@ -41,6 +45,7 @@ export function processAreaChartData(
   const gen = d3stack<AreaDataRow, string>()
     .keys(activeKeys)
     .value((d, key) => Number(d[key]) || 0);
+  if (opts.stackOffset === "expand") gen.offset(stackOffsetExpand);
   const layers = gen(series);
   const stacked: AreaDatum[] = layers.map((layer, i) => ({
     key: activeKeys[i],
@@ -69,9 +74,15 @@ export function processAreaChartData(
     for (const k of activeKeys) s += Number(row[k]) || 0;
     if (s > maxSum) maxSum = s;
   }
-  const yAxisDomain: [number, number] = opts.forcePercentageScale
-    ? [0, 100]
-    : opts.yAxisDomain ?? [0, Math.max(100, maxSum)];
+  // expand normalizes every slice to sum to 1, so the y domain is always [0,1] -
+  // it wins over forcePercentageScale/yAxisDomain (an absolute-scale request makes
+  // no sense once the values themselves are fractions).
+  const yAxisDomain: [number, number] =
+    opts.stackOffset === "expand"
+      ? [0, 1]
+      : opts.forcePercentageScale
+        ? [0, 100]
+        : opts.yAxisDomain ?? [0, Math.max(100, maxSum)];
 
   return { activeKeys, stacked, xAxisDomain: [xlo, xhi], yAxisDomain };
 }

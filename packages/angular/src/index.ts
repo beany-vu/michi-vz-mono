@@ -239,6 +239,7 @@ export function applyAreaChartProps(el: AreaChartElement, props: AreaChartProps)
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.curve !== undefined) el.curve = props.curve;
   if (props.forcePercentageScale !== undefined) el.forcePercentageScale = props.forcePercentageScale;
+  if (props.stackOffset !== undefined) el.stackOffset = props.stackOffset;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;

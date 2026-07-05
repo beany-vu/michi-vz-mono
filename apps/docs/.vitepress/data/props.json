@@ -798,6 +798,14 @@
           "common": false
         },
         {
+          "name": "stackOffset",
+          "type": "\"none\" | \"expand\"",
+          "optional": true,
+          "description": "Stacking normalization, named after d3-shape's own `stackOffsetExpand`. `\"none\"` (default) stacks absolute values, unchanged. `\"expand\"` NORMALIZES each x-slice so its band heights sum to 1 (a true 100%-stacked chart, unlike the display-only `forcePercentageScale`): the y domain becomes [0,1] and y-axis ticks render as percentages unless an explicit `yAxisFormat` is given. A slice whose keys are all zero/null renders as an empty (zero-height) band rather than `NaN`.",
+          "default": "\"none\"",
+          "common": false
+        },
+        {
           "name": "ticks",
           "type": "number",
           "optional": true,

@@ -18,7 +18,8 @@ export function createAreaScales(
   height: number,
   margin: Margin,
   xAxisDataType: XaxisDataType,
-  forcePercentageScale = false
+  forcePercentageScale = false,
+  stackOffset?: "none" | "expand"
 ): AreaScales {
   const [xlo, xhi] = xDomain;
   let xScale: AreaXScale;
@@ -38,7 +39,10 @@ export function createAreaScales(
     .domain(yDomain)
     .range([height - margin.bottom, margin.top])
     .clamp(true);
-  if (!forcePercentageScale) yScale.nice();
+  // "nice"-ing a fixed [0,100]/[0,1] domain would round it away from the exact
+  // scale the caller asked for (percentage display), same reasoning as the
+  // existing forcePercentageScale skip.
+  if (!forcePercentageScale && stackOffset !== "expand") yScale.nice();
 
   return { xScale, yScale };
 }

@@ -134,6 +134,127 @@ describe("mountAreaChart (jsdom)", () => {
   });
 });
 
+describe("processAreaChartData stackOffset (Task B1.2)", () => {
+  const twoSeries: AreaDataRow[] = [
+    { date: 2020, A: 10, B: 5 }, // total 15: A -> [0, 2/3], B -> [2/3, 1]
+    { date: 2021, A: 0, B: 0 }, // zero-total slice: must render as 0s, not NaN
+  ];
+
+  it('defaults to "none" - byte-identical to today\'s absolute stack', () => {
+    const withDefault = processAreaChartData(series, { keys, xAxisDataType: "number" });
+    const withNone = processAreaChartData(series, {
+      keys,
+      xAxisDataType: "number",
+      stackOffset: "none",
+    });
+    expect(withNone).toEqual(withDefault);
+    // and it's still the plain d3.stack cumulative sum, e.g. Veg on top of Fruit Sales.
+    const veg = withDefault.stacked.find((s) => s.key === "Veg")!;
+    expect(veg.values[0]).toEqual({ 0: 10, 1: 15, data: series[0] });
+  });
+
+  it('"expand" normalizes a two-series slice to fractions summing to 1', () => {
+    const r = processAreaChartData(twoSeries, {
+      keys: ["A", "B"],
+      xAxisDataType: "number",
+      stackOffset: "expand",
+    });
+    const a = r.stacked.find((s) => s.key === "A")!;
+    const b = r.stacked.find((s) => s.key === "B")!;
+    // Row 0 (10, 5 / total 15): A is the bottom band [0, 10/15]; B stacks on top [10/15, 1].
+    expect(a.values[0][0]).toBe(0);
+    expect(a.values[0][1]).toBeCloseTo(10 / 15, 10);
+    expect(b.values[0][0]).toBeCloseTo(10 / 15, 10);
+    expect(b.values[0][1]).toBe(1);
+    // the two bands' heights sum to exactly the whole slice.
+    const heightA = a.values[0][1] - a.values[0][0];
+    const heightB = b.values[0][1] - b.values[0][0];
+    expect(heightA + heightB).toBeCloseTo(1, 10);
+  });
+
+  it('"expand" leaves a zero-total slice at 0 (no NaN) - matches d3 stackOffsetExpand\'s own divide-by-zero guard', () => {
+    const r = processAreaChartData(twoSeries, {
+      keys: ["A", "B"],
+      xAxisDataType: "number",
+      stackOffset: "expand",
+    });
+    const a = r.stacked.find((s) => s.key === "A")!;
+    const b = r.stacked.find((s) => s.key === "B")!;
+    expect(a.values[1][0]).toBe(0);
+    expect(a.values[1][1]).toBe(0);
+    expect(b.values[1][0]).toBe(0);
+    expect(b.values[1][1]).toBe(0);
+    expect(Number.isNaN(a.values[1][1])).toBe(false);
+    expect(Number.isNaN(b.values[1][1])).toBe(false);
+  });
+
+  it('"expand" forces the y-axis domain to [0,1], overriding yAxisDomain/forcePercentageScale', () => {
+    const r = processAreaChartData(twoSeries, {
+      keys: ["A", "B"],
+      xAxisDataType: "number",
+      stackOffset: "expand",
+      forcePercentageScale: true,
+      yAxisDomain: [0, 50],
+    });
+    expect(r.yAxisDomain).toEqual([0, 1]);
+  });
+});
+
+describe("mountAreaChart stackOffset expand (jsdom)", () => {
+  const twoSeries: AreaDataRow[] = [
+    { date: 2020, A: 10, B: 5 },
+    { date: 2021, A: 8, B: 8 },
+  ];
+
+  it("reports a [0,1] y-axis domain in the context", () => {
+    const { host, chart } = mount({ series: twoSeries, keys: ["A", "B"], stackOffset: "expand" });
+    const ctx = chart.getContext()!;
+    expect(ctx.chartType).toBe("area-chart");
+    if (ctx.chartType === "area-chart") expect(ctx.yAxis.domain).toEqual([0, 1]);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("formats y-axis ticks as percentages by default", () => {
+    const { host, chart } = mount({ series: twoSeries, keys: ["A", "B"], stackOffset: "expand" });
+    const labels = Array.from(host.querySelectorAll(".mv-y-axis .mv-axis-label")).map(
+      (n) => n.textContent
+    );
+    expect(labels.some((l) => l?.includes("%"))).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("an explicit yAxisFormat overrides the default percent formatter in expand mode", () => {
+    const { host, chart } = mount({
+      series: twoSeries,
+      keys: ["A", "B"],
+      stackOffset: "expand",
+      yAxisFormat: (d) => `custom:${d}`,
+    });
+    const labels = Array.from(host.querySelectorAll(".mv-y-axis .mv-axis-label")).map(
+      (n) => n.textContent
+    );
+    expect(labels.every((l) => l?.startsWith("custom:"))).toBe(true);
+    expect(labels.some((l) => l?.includes("%"))).toBe(false);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("exposes an identical expand-mode context across SVG and canvas renderers", () => {
+    const a = mount({ series: twoSeries, keys: ["A", "B"], stackOffset: "expand", renderer: "svg" });
+    const b = mount({ series: twoSeries, keys: ["A", "B"], stackOffset: "expand", renderer: "canvas" });
+    const ca = a.chart.getContext()!;
+    const cb = b.chart.getContext()!;
+    const strip = (c: typeof ca) => ({ ...c, renderer: undefined });
+    expect(strip(ca)).toEqual(strip(cb));
+    a.chart.destroy();
+    a.host.remove();
+    b.chart.destroy();
+    b.host.remove();
+  });
+});
+
 describe("mountAreaChart fillPeriodTicks (Layer 2)", () => {
   it("marks a missing period (2022) as a faded no-data tick", () => {
     const host = document.createElement("div");

@@ -7,7 +7,11 @@ import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
-import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
+import {
+  defaultXAxisFormatter,
+  defaultNumberFormatter,
+  defaultPercentFormatter,
+} from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisLinear, renderOverlay } from "../render/svg";
 import { processAreaChartData } from "../areaChart/data";
 import { buildAreaColors } from "../areaChart/colors";
@@ -58,6 +62,7 @@ interface Resolved {
   renderer: Renderer;
   enableTransitions: boolean;
   forcePercentageScale: boolean;
+  stackOffset: "none" | "expand";
 }
 
 function resolve(p: AreaChartProps): Resolved {
@@ -72,6 +77,7 @@ function resolve(p: AreaChartProps): Resolved {
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
     forcePercentageScale: p.forcePercentageScale ?? false,
+    stackOffset: p.stackOffset ?? "none",
   };
 }
 
@@ -223,6 +229,7 @@ export function mountAreaChart(
       xAxisDataType,
       yAxisDomain: props.yAxisDomain,
       forcePercentageScale: r.forcePercentageScale,
+      stackOffset: r.stackOffset,
     });
 
     const colors = buildAreaColors(
@@ -247,7 +254,8 @@ export function mountAreaChart(
       r.height,
       r.margin,
       xAxisDataType,
-      r.forcePercentageScale
+      r.forcePercentageScale,
+      r.stackOffset
     );
 
     const model = buildAreaRenderModel(stacked, scales, colors, {
@@ -271,7 +279,13 @@ export function mountAreaChart(
     hitRows = [...rowMap.values()];
 
     const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
-    const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
+    // expand mode's y domain is [0,1] fractions - default to percentage display,
+    // but an explicit yAxisFormat always wins.
+    const yFormat =
+      props.yAxisFormat ??
+      (r.stackOffset === "expand"
+        ? defaultPercentFormatter(props.locale)
+        : defaultNumberFormatter(props.locale));
 
     // ----- SVG layer -----
     clear(svg);
