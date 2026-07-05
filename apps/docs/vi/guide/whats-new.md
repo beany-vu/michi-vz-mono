@@ -10,6 +10,39 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## Sắp có trong bản phát hành tới <span class="vp-badge warning">Đã lên main, chưa phát hành</span>
+
+Đã merge và chạy ngay trong các demo của trang docs này; sẽ lên npm cùng đợt version tiếp theo.
+
+- **RibbonChart cuối cùng cũng biết đổi ngôi.** Cột chồng của mỗi kỳ giờ được xếp hạng lại theo
+  giá trị: một nhóm vượt lên sẽ thấy rõ các dải bắt chéo nhau trên đường đi lên - đúng cái hồn
+  của biểu đồ dải, khôi phục từ thư viện gốc. Xem ngay trên [trang Biểu đồ dải](/vi/charts/ribbon):
+  doanh thu âm nhạc Mỹ, nơi streaming vượt tất cả và đĩa than leo ngược qua mặt CD.
+- **Cột so sánh đọc được thật sự.** Cột con ngắn hơn lại được vẽ đè lên trên (cột đã tăng không
+  còn che mất phần "trước"), và prop mới `colorsBasedMapping` cho cột "trước" một màu riêng:
+  kết hợp tông màu sáng không trong suốt với `valueBasedOpacity: 1` để tương phản nhạt/đậm
+  rõ nét trên cả hai theme. Xem [Biểu đồ cột so sánh](/vi/charts/comparable).
+- **Đám mây bong bóng không còn đứng hình.** `layoutMode: "async"` chạy đúng mô phỏng lực
+  deterministic đó nhưng cắt thành từng lát ~12 ms sau lớp overlay loading của biểu đồ: cụm
+  3.000 bong bóng từng chặn trang ~20 giây giờ tốn nhiều nhất một frame 50 ms. `settleTicks`
+  chỉnh độ lắng, dữ liệu không đổi thì bỏ qua luôn mô phỏng, và bố cục được memo giữa các lần
+  render. Xem demo sự kiện va chạm trên [Biểu đồ bong bóng](/vi/charts/bubble).
+- **Chỉnh nhỏ, dễ chịu lớn.** Trục giá trị của biểu đồ quả tạ chuyển được xuống dưới
+  (`xAxisPosition: "bottom"`), GapChart nhận `xAxisDomain` tường minh (zoom câu chuyện tuổi thọ
+  vào đúng dải 35-90), và nhãn cực của radar không còn chạm tiêu đề.
+- **Cái gì cũng có chú giải.** Mọi context biểu đồ giờ đều mang `legendData`, và các biểu đồ
+  tách phần (treemap, bong bóng, cột so sánh) còn lộ màu nhạt đi kèm của từng nhãn qua
+  `LegendItem.paleColor` - demo trong docs dùng nó cho chú giải màu và nút chuyển
+  "Ý nghĩa | Cặp màu".
+- **Trục band dày đặc tự thưa bớt.** Nhãn hàng của gap/so sánh/kép/quả tạ (và trục snapshot
+  của đài phun) tự lấy mẫu thành một tập đọc được thay vì nhòe thành vệt khi 100+ hàng.
+- **Docs: cứ bấm thử đi.** Mỗi trang biểu đồ giờ có nút chạy trực tiếp "✦ Giải thích biểu đồ
+  này" (engine luật thật của insights, ngay trong trình duyệt) và "🛠 Thử DevTools với biểu đồ
+  này", kèm các ví dụ kể chuyện mới: phổ dimuon của LHC trên
+  [Biểu đồ phân tán](/vi/charts/scatter), lương gross vs net ở EU trên
+  [Biểu đồ bong bóng](/vi/charts/bubble), và dải tuổi thọ ~195 quốc gia trên
+  [Biểu đồ khoảng cách](/vi/charts/gap).
+
 ## v1.6.0
 
 Phiên bản gói: react **1.6.0** · devtools **0.2.0** · insights **0.2.0** · core, wc, vue,

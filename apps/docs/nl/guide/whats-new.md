@@ -10,6 +10,44 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## Binnenkort in de volgende release <span class="vp-badge warning">Op main, nog niet uitgebracht</span>
+
+Al gemerged en live in de demo's van deze docs; gaat naar npm met de volgende versiegolf.
+
+- **RibbonChart wisselt eindelijk van plaats.** De stapel van elke periode wordt nu per waarde
+  opnieuw gerangschikt: een categorie die een andere inhaalt, kruist zichtbaar de linten op weg
+  omhoog - precies waar een lintdiagram voor bestaat, hersteld uit de oorspronkelijke
+  bibliotheek. Bekijk het op de [Lint-pagina](/nl/charts/ribbon): Amerikaanse muziekomzet,
+  waar streaming alles inhaalt en vinyl de cd weer voorbijgaat.
+- **Vergelijkbare staven die je echt kunt lezen.** De kortste subbalk wordt weer bovenop
+  getekend (een gegroeide balk verbergt zijn "voor" niet meer), en het nieuwe
+  `colorsBasedMapping` geeft de voor-balk een eigen kleur: combineer een dekkende lichte tint
+  met `valueBasedOpacity: 1` voor een scherp licht/vol-contrast in beide thema's.
+  Zie [Vergelijkbare staven](/nl/charts/comparable).
+- **Belwolken zonder bevriezen.** `layoutMode: "async"` draait dezelfde deterministische
+  krachtensimulatie in stukjes van ~12 ms achter de laad-overlay van de grafiek: een cluster
+  van 3.000 bellen dat de pagina ~20 seconden blokkeerde, kost nu hooguit één frame van 50 ms.
+  `settleTicks` regelt het settelen, ongewijzigde invoer slaat de simulatie helemaal over, en
+  de lay-out wordt gememoïseerd tussen renders. Zie de botsings-demo op
+  [Bellen](/nl/charts/bubble).
+- **Kleine knoppen, groot comfort.** De waarde-as van het halterdiagram kan onder het plot
+  (`xAxisPosition: "bottom"`), GapChart accepteert een expliciete `xAxisDomain` (zoom een
+  levensverwachtingsverhaal in op zijn band 35-90), en radar-poollabels blijven vrij van de
+  titel.
+- **Een legenda voor alles.** Elke grafiekcontext draagt nu `legendData`, en split-grafieken
+  (treemap, bellen, vergelijkbare staven) tonen ook de lichte partnerkleur van elk label via
+  `LegendItem.paleColor` - de docs-demo's gebruiken het voor hun legenda's en de schakelaar
+  "Betekenis | Kleurenparen".
+- **Dichte band-assen dunnen zichzelf uit.** Rijlabels van gap/vergelijkbaar/dubbel/halter
+  (en de momentopname-as van de fontein) bemonsteren naar een leesbare subset in plaats van
+  te versmeren bij 100+ rijen.
+- **Docs: druk op de knoppen.** Elke grafiekpagina heeft nu live acties "✦ Leg deze grafiek
+  uit" (de echte insights-regelmotor, in je browser) en "🛠 Probeer DevTools op deze grafiek",
+  plus nieuwe voorbeelden met een verhaal: het LHC-dimuonspectrum op
+  [Spreidingsdiagram](/nl/charts/scatter), bruto-vs-nettosalarissen in de EU op
+  [Bellen](/nl/charts/bubble), en een levensverwachtingsgolf van ~195 landen op
+  [Verschil](/nl/charts/gap).
+
 ## v1.6.0
 
 Pakketversies: react **1.6.0** · devtools **0.2.0** · insights **0.2.0** · core, wc, vue,

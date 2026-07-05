@@ -10,6 +10,39 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## Coming in the next release <span class="vp-badge warning">On main, unreleased</span>
+
+Already merged and live in these docs' demos; ships to npm with the next version wave.
+
+- **RibbonChart finally trades places.** Each period's stack is now re-ranked by value, so
+  a category that overtakes another visibly crosses ribbons on its way up - the whole point
+  of a ribbon chart, restored from the legacy library. See it on the
+  [Ribbon page](/charts/ribbon): US music revenue, where streaming overtakes everything and
+  vinyl climbs back past the CD.
+- **Comparable bars you can actually read.** The shorter sub-bar draws on top again (a grown
+  bar no longer hides its "before"), and the new `colorsBasedMapping` gives the before-bar
+  its own colour - pair an opaque light tint with `valueBasedOpacity: 1` for a crisp
+  pale-vs-solid read in light and dark. See [Comparable](/charts/comparable).
+- **Bubble clusters without the freeze.** `layoutMode: "async"` runs the same deterministic
+  force settle in ~12ms slices behind the chart's loading overlay - a 3,000-bubble cluster
+  that used to block the page for ~20 seconds now costs at most a 50ms frame. `settleTicks`
+  tunes the settle, unchanged inputs skip the simulation entirely, and the layout is
+  memoised across re-renders. See the collision-event demo on [Bubble](/charts/bubble).
+- **Small controls, big comfort.** BarBell's value axis can move below the plot
+  (`xAxisPosition: "bottom"`), GapChart accepts an explicit `xAxisDomain` (zoom a
+  life-expectancy story into its 35-90 band), and Radar pole labels stay clear of the title.
+- **A legend for everything.** Every chart context now carries `legendData`, and split
+  charts (treemap, bubble, comparable) also expose each label's pale companion via
+  `LegendItem.paleColor` - the docs demos use it for their colour legends and the
+  "Meaning | Colour pairs" toggle.
+- **Dense band axes thin themselves.** Row labels on gap/comparable/dual/bar-bell (and the
+  fountain snapshot axis) sample to a readable subset instead of smearing at 100+ rows.
+- **Docs: press the buttons.** Every chart page now has live "✦ Explain this chart" (the
+  real insights rules engine, in your browser) and "🛠 Try DevTools on this chart" actions,
+  plus new story-driven examples: the LHC dimuon spectrum on
+  [Scatter](/charts/scatter), EU gross-vs-net salaries on [Bubble](/charts/bubble), and
+  a ~195-country life-expectancy sweep on [Gap](/charts/gap).
+
 ## v1.6.0
 
 Package versions: react **1.6.0** · devtools **0.2.0** · insights **0.2.0** · core, wc, vue,

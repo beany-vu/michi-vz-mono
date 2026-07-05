@@ -12,6 +12,44 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## À venir dans la prochaine version <span class="vp-badge warning">Sur main, non publié</span>
+
+Déjà fusionné et visible dans les démos de cette doc ; part sur npm avec la prochaine vague de versions.
+
+- **RibbonChart échange enfin les places.** La pile de chaque période est désormais reclassée
+  par valeur : une catégorie qui en dépasse une autre croise visiblement les rubans en montant,
+  tout l'intérêt d'un graphique en ruban, restauré depuis la bibliothèque d'origine. À voir sur
+  la [page Ruban](/fr/charts/ribbon) : les revenus de la musique aux États-Unis, où le streaming
+  dépasse tout et le vinyle repasse devant le CD.
+- **Des barres comparables enfin lisibles.** La sous-barre la plus courte se dessine de nouveau
+  au-dessus (une barre qui a grandi ne cache plus son « avant »), et le nouveau
+  `colorsBasedMapping` donne sa propre couleur à la barre « avant » : associez une teinte claire
+  opaque à `valueBasedOpacity: 1` pour un contraste pâle/plein net dans les deux thèmes.
+  Voir [Barres comparables](/fr/charts/comparable).
+- **Des nuages de bulles sans blocage.** `layoutMode: "async"` exécute le même tassement de
+  forces déterministe en tranches d'environ 12 ms derrière l'overlay de chargement du
+  graphique : un amas de 3 000 bulles qui gelait la page pendant ~20 secondes ne coûte plus
+  qu'une frame de 50 ms au pire. `settleTicks` règle le tassement, des entrées inchangées
+  sautent entièrement la simulation, et la disposition est mémoïsée entre les rendus.
+  Voir la démo « événement de collision » sur [Bulles](/fr/charts/bubble).
+- **Petits réglages, grand confort.** L'axe des valeurs du Barre-haltère peut passer sous le
+  tracé (`xAxisPosition: "bottom"`), le GapChart accepte un `xAxisDomain` explicite (zoomer une
+  histoire d'espérance de vie dans sa bande 35-90), et les libellés des pôles du radar ne
+  touchent plus le titre.
+- **Une légende pour tout.** Chaque contexte de graphique porte désormais `legendData`, et les
+  graphiques à division (treemap, bulles, comparables) exposent aussi la couleur pâle compagne
+  de chaque étiquette via `LegendItem.paleColor` : les démos de la doc s'en servent pour leurs
+  légendes et la bascule « Signification | Paires de couleurs ».
+- **Les axes denses s'allègent seuls.** Les libellés de lignes de gap/comparable/dual/barre-haltère
+  (et l'axe instantané de la fontaine) s'échantillonnent en un sous-ensemble lisible au lieu de
+  se superposer à 100+ lignes.
+- **Doc : appuyez sur les boutons.** Chaque page de graphique propose désormais les actions en
+  direct « ✦ Expliquer ce graphique » (le vrai moteur de règles insights, dans votre navigateur)
+  et « 🛠 Essayer les DevTools sur ce graphique », plus de nouveaux exemples qui racontent une
+  histoire : le spectre dimuon du LHC sur [Nuage de points](/fr/charts/scatter), les salaires
+  bruts vs nets de l'UE sur [Bulles](/fr/charts/bubble), et une fresque d'espérance de vie de
+  ~195 pays sur [Écart](/fr/charts/gap).
+
 ## v1.6.0
 
 Versions des packages : react **1.6.0** · devtools **0.2.0** · insights **0.2.0** · core, wc,
