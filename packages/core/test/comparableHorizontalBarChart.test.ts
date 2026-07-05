@@ -80,6 +80,18 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     host.remove();
   });
 
+  it("interactiveRowLabels: scrubbing the gutter draws a leader line and shows the tooltip", () => {
+    const { host, chart } = mount({ interactiveRowLabels: true });
+    const strip = host.querySelector<SVGRectElement>(".mv-row-scrub")!;
+    strip.dispatchEvent(new MouseEvent("pointermove", { clientY: 60, bubbles: true }));
+    expect(host.querySelector(".mv-row-leader")).toBeTruthy();
+    expect(host.querySelector<HTMLDivElement>(".tooltip")!.style.visibility).toBe("visible");
+    strip.dispatchEvent(new MouseEvent("pointerleave", { bubbles: true }));
+    expect(host.querySelector(".mv-row-leader")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
   it("excludes disabled labels and applies top-N filter", () => {
     const off = mount({ disabledItems: ["Gamma"] });
     expect(off.host.querySelectorAll("rect.bar").length).toBe(4); // 2 labels x 2

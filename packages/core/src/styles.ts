@@ -35,6 +35,11 @@ export const CORE_CSS = `
    --michi-vz-crosshair* vars - host-level CSS or per-instance through the
    enableMouseLine config prop, which sets the same vars on the line element. */
 .michi-vz .mv-mouse-line { stroke: var(--michi-vz-crosshair, #a9a9a9); stroke-width: var(--michi-vz-crosshair-width, 1); stroke-dasharray: var(--michi-vz-crosshair-dash, none); }
+/* Row-label leader line (interactiveRowLabels on band-row charts): connects a
+   hovered/focused y-axis label to its row's marks. Same theme vars as the crosshair. */
+.michi-vz .mv-row-leader { stroke: var(--michi-vz-crosshair, #a9a9a9); stroke-width: var(--michi-vz-crosshair-width, 1); stroke-dasharray: 3 3; pointer-events: none; }
+/* The scrubbed row's popped-up label (rows the dense-axis thinning left unlabelled). */
+.michi-vz .mv-ylabel-popup { font-weight: 600; pointer-events: none; }
 /* Opt-in "calm" axis theme (Nordic / lagom): a whisper-quiet grid and muted labels so
    the axis recedes and the data carries the only saturation. Add class="michi-vz-calm"
    to the chart host (or ANY ancestor - the vars cascade); pair with fewer ticks

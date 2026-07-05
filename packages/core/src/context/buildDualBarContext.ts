@@ -21,10 +21,23 @@ export function buildDualBarContext(input: BuildDualContextInput): DualBarChartC
   const total1 = round(series.reduce((a, s) => a + s.value1, 0));
   const total2 = round(series.reduce((a, s) => a + s.value2, 0));
 
+  // The headline finding of a tornado is which row leans hardest to one side.
+  let largestImbalance: { label: string; value1: number; value2: number; difference: number } | null =
+    null;
+  for (const s of series) {
+    const difference = round(s.value1 - s.value2);
+    if (!largestImbalance || Math.abs(difference) > Math.abs(largestImbalance.difference)) {
+      largestImbalance = { label: s.label, value1: s.value1, value2: s.value2, difference };
+    }
+  }
+
   const titlePart = input.title ? `"${input.title}" ` : "";
-  const summary =
+  let summary =
     `Dual (diverging) horizontal bar chart ${titlePart}compares value1 (right) vs value2 (left) ` +
     `across ${series.length} item${series.length === 1 ? "" : "s"}. Totals: ${total1} vs ${total2}.`;
+  if (largestImbalance && series.length > 1) {
+    summary += ` Largest imbalance: ${largestImbalance.label} (${largestImbalance.value1} vs ${largestImbalance.value2}).`;
+  }
 
   return {
     chartType: "dual-horizontal-bar-chart",
@@ -33,7 +46,7 @@ export function buildDualBarContext(input: BuildDualContextInput): DualBarChartC
     xAxis: { domain: input.xAxisDomain },
     yAxis: { labels: series.map((s) => s.label) },
     series,
-    stats: { count: series.length, total1, total2 },
+    stats: { count: series.length, total1, total2, largestImbalance },
     colorsMapping: input.colorsMapping,
     summary,
     a11yTable: {

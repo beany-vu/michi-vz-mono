@@ -60,6 +60,7 @@ interface Resolved {
   shapeValue2: Shape;
   ticks: number;
   tickHtmlWidth: number;
+  interactiveRowLabels: boolean;
   squareRadius: number;
   colorMode: "label" | "shape";
   renderer: GapRenderer;
@@ -75,6 +76,7 @@ function resolve(p: GapChartProps): Resolved {
     shapeValue2: p.shapeValue2 ?? "circle",
     ticks: p.ticks ?? 5,
     tickHtmlWidth: p.tickHtmlWidth ?? 100,
+    interactiveRowLabels: p.interactiveRowLabels ?? false,
     squareRadius: p.squareRadius ?? 2,
     colorMode: p.colorMode ?? "label",
     // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
@@ -307,12 +309,47 @@ export function mountGapChart(
       tickValues: props.tickValues,
       enableExplicitTickValues: props.enableExplicitTickValues ?? true,
     });
+    // interactiveRowLabels: label hover/focus = leader line + row tooltip +
+    // highlight; click pins (same sticky contract as the marks). Composed from the
+    // row model, so it works in svg, canvas, and webgpu modes alike.
+    const rowByLabel = new Map(model.elements.map((el) => [el.d.label, el]));
+    const labelTooltipEvent = (x: number, rowCenterY: number): MouseEvent => {
+      const hostRect = host.getBoundingClientRect();
+      return { clientX: hostRect.left + x, clientY: hostRect.top + rowCenterY } as MouseEvent;
+    };
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
       margin: r.margin,
       format: (label) => yFormat(label),
       tickHtmlWidth: r.tickHtmlWidth,
       showGrid: true,
+      interactions: r.interactiveRowLabels
+        ? {
+            leaderToX: (label) => {
+              const el = rowByLabel.get(label);
+              // The row's nearest mark edge (either endpoint marker).
+              return el ? Math.min(el.value1X, el.value2X) : r.margin.left;
+            },
+            onEnter: (label, rowCenterY) => {
+              if (sticky) return;
+              const el = rowByLabel.get(label);
+              if (!el) return;
+              showTooltip(el.d, labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY));
+              props.onHighlightItem?.(el.d);
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.(null);
+            },
+            onClick: (label, rowCenterY) => {
+              const el = rowByLabel.get(label);
+              if (!el) return;
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(el.d, labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY));
+            },
+          }
+        : undefined,
     });
 
     if (r.renderer === "svg") {

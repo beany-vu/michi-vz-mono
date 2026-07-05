@@ -54,6 +54,7 @@ const gap: Example<GapChartProps>[] = [
       // The chart's own shape legend (circle = 2010, triangle = 2023, bar = change)
       // renders under the plot; extra bottom margin gives it air.
       "showLegend": true,
+      "interactiveRowLabels": true,
       "margin": { "top": 50, "right": 50, "bottom": 70, "left": 100 },
       "shapesLabelsMapping": {
         "value1": "2010",
@@ -642,6 +643,7 @@ const comparable: Example<ComparableBarChartProps>[] = [
       // page legend instead of the generic Based/Compared wording.
       "tooltipFormatter": (d) =>
         `<strong>${d.label}</strong><br/>2019: ${d.valueBased.toLocaleString()} bn<br/>2024: ${d.valueCompared.toLocaleString()} bn`,
+      "interactiveRowLabels": true,
       "valueBasedOpacity": 1,
       "valueComparedOpacity": 1,
       "colorsBasedMapping": {
@@ -711,6 +713,8 @@ const dual: Example<DualBarChartProps>[] = [
       "title": "Population by age band: male vs female, Japan 2023 (millions)",
       // Age-band labels in the left margin, clear of the left-extending bars.
       "yAxisPosition": "left",
+      // Hover or focus a label: leader line + row tooltip; click pins.
+      "interactiveRowLabels": true,
       "dataSet": [
         {
           "label": "0-9 years",

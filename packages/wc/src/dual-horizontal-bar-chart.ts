@@ -36,6 +36,7 @@ export class DualHorizontalBarChartElement extends LitElement {
     ticks: { type: Number },
     tickHtmlWidth: { type: Number, attribute: "tick-html-width" },
     yAxisPosition: { type: String, attribute: "y-axis-position" },
+    interactiveRowLabels: { type: Boolean, attribute: "interactive-row-labels" },
     filter: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
@@ -62,6 +63,7 @@ export class DualHorizontalBarChartElement extends LitElement {
   ticks?: number;
   tickHtmlWidth?: number;
   yAxisPosition?: "center" | "left";
+  interactiveRowLabels?: boolean;
   filter?: { limit: number; criteria: "value1" | "value2"; sortingDir: "asc" | "desc" };
   enableTransitions?: boolean;
 
@@ -102,6 +104,7 @@ export class DualHorizontalBarChartElement extends LitElement {
       ticks: this.ticks,
       tickHtmlWidth: this.tickHtmlWidth,
       yAxisPosition: this.yAxisPosition,
+      interactiveRowLabels: this.interactiveRowLabels,
       filter: this.filter,
       enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),

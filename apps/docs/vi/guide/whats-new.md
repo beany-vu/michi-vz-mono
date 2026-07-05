@@ -31,6 +31,10 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
   (`xAxisPosition: "bottom"`), GapChart nhận `xAxisDomain` tường minh (zoom câu chuyện tuổi thọ
   vào đúng dải 35-90), nhãn hàng của biểu đồ tornado chuyển được sang trái vùng vẽ
   (`yAxisPosition: "left"`), và nhãn cực của radar không còn chạm tiêu đề.
+- **Nhãn hàng cầm nắm được.** Trên Gap, biểu đồ so sánh và tornado, tùy chọn
+  `interactiveRowLabels` biến mỗi nhãn hàng thành một control thật: rê chuột hoặc focus
+  vào nhãn là một đường nối chạy tới đúng hàng đó kèm tooltip và highlight; bấm để ghim.
+  Thử ngay trên demo của các trang này.
 - **Cái gì cũng có chú giải.** Mọi context biểu đồ giờ đều mang `legendData`, và các biểu đồ
   tách phần (treemap, bong bóng, cột so sánh) còn lộ màu nhạt đi kèm của từng nhãn qua
   `LegendItem.paleColor` - demo trong docs dùng nó cho chú giải màu và nút chuyển

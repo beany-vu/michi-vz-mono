@@ -31,6 +31,17 @@ export interface YAxisBandOptions {
   onHover?: (label: string | null) => void;
   /** Currently hovered band; null = no hover (all labels full opacity). */
   hoveredItem?: string | null;
+  /** Opt-in row-label interactions (the chart-level `interactiveRowLabels` prop):
+   * hovering/focusing a label draws a leader line from the label to its row's
+   * marks and notifies the engine (tooltip + highlight); clicking pins. Labels
+   * become keyboard-focusable buttons. */
+  interactions?: {
+    /** X the leader line ends at for a row (the row's nearest mark edge). */
+    leaderToX: (label: string) => number;
+    onEnter: (label: string, rowCenterY: number) => void;
+    onLeave: () => void;
+    onClick?: (label: string, rowCenterY: number) => void;
+  };
 }
 
 export function renderYAxisBand(
@@ -59,6 +70,66 @@ export function renderYAxisBand(
       sampleBandTicks(domain, bandwidth, MIN_LABEL_HEIGHT, o.maxTicks ?? DEFAULT_MAX_TICKS)
     );
   }
+
+  // One leader line + one popped-up label at a time. The leader runs from the
+  // label box's right edge to the row's marks (engine-supplied x); the popup shows
+  // the row's label when thinning hid it. Both live on the axis group, so every
+  // renderer (svg, canvas, webgpu - axes are always SVG) gets them for free.
+  const ia = o.interactions;
+  const labelBoxX = o.margin.left - tickHtmlWidth + (o.tickLabelOffset?.x ?? 0);
+  let leader: SVGElement | null = null;
+  let popup: SVGElement | null = null;
+  const clearScrubMarks = (): void => {
+    leader?.remove();
+    leader = null;
+    popup?.remove();
+    popup = null;
+  };
+  const showScrubMarks = (label: string, rowCenterY: number): void => {
+    if (!ia) return;
+    clearScrubMarks();
+    leader = svgEl("line", {
+      class: "mv-row-leader",
+      x1: o.margin.left - 2 + (o.tickLabelOffset?.x ?? 0),
+      y1: rowCenterY,
+      x2: ia.leaderToX(label),
+      y2: rowCenterY,
+    });
+    // Inline, not only CSS: the leader/popup materialise UNDER the live pointer,
+    // and if they catch it the strip fires pointerleave and clears them instantly.
+    (leader as SVGElement & { style: CSSStyleDeclaration }).style.pointerEvents = "none";
+    g.appendChild(leader);
+    // Pop the row's label up when the thinned axis is not showing it.
+    if (!o.hideTickLabels && visible && !visible.has(label)) {
+      const fo = svgEl("foreignObject", {
+        class: "mv-ylabel-fo",
+        x: labelBoxX,
+        y: rowCenterY - MIN_LABEL_HEIGHT / 2 + (o.tickLabelOffset?.y ?? 0),
+        width: tickHtmlWidth,
+        height: MIN_LABEL_HEIGHT,
+        style: "overflow: visible; pointer-events: none",
+      });
+      const div = htmlEl("div", { class: "mv-ylabel mv-ylabel-popup", title: label });
+      const span = htmlEl("span");
+      span.textContent = format(label);
+      div.appendChild(span);
+      fo.appendChild(div);
+      g.appendChild(fo);
+      popup = fo;
+    }
+  };
+  // The row under a pointer y: the whole gutter scrubs like a slider, reaching
+  // every row - including the ones dense-axis thinning left unlabelled.
+  const rangeTop = Math.min(...scale.range());
+  const step = scale.step() || 1;
+  const rowAt = (clientY: number): { label: string; center: number } | null => {
+    const rect = parent.getBoundingClientRect();
+    const y = clientY - rect.top;
+    const i = Math.max(0, Math.min(domain.length - 1, Math.floor((y - rangeTop) / step)));
+    const label = domain[i];
+    if (label === undefined) return null;
+    return { label, center: (scale(label) || 0) + bandwidth / 2 };
+  };
 
   for (const label of domain) {
     if (visible && !visible.has(label)) continue;
@@ -113,8 +184,68 @@ export function renderYAxisBand(
       div.addEventListener("mouseenter", () => o.onHover?.(label));
       div.addEventListener("mouseleave", () => o.onHover?.(null));
     }
+    if (ia) {
+      // Keyboard path: labels are focusable buttons (pointer interaction goes
+      // through the scrub strip below, which covers the whole gutter).
+      div.setAttribute("role", "button");
+      div.setAttribute("tabindex", "0");
+      div.addEventListener("focus", () => {
+        showScrubMarks(label, center);
+        ia.onEnter(label, center);
+      });
+      div.addEventListener("blur", () => {
+        clearScrubMarks();
+        ia.onLeave();
+      });
+      if (ia.onClick) {
+        div.addEventListener("keydown", (e: KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            ia.onClick?.(label, center);
+          }
+        });
+      }
+    }
     fo.appendChild(div);
     g.appendChild(fo);
+  }
+
+  // Scrub strip: the whole label gutter behaves like a slider. Gliding or
+  // dragging along it selects the row under the pointer - popping up its label
+  // when thinning hid it - and fires the same enter/leave/click contract as the
+  // keyboard path. Appended last so it sits above the labels for pointer input.
+  if (ia && !o.hideTickLabels && domain.length > 0) {
+    const strip = svgEl("rect", {
+      class: "mv-row-scrub",
+      x: labelBoxX,
+      y: rangeTop,
+      width: tickHtmlWidth,
+      height: step * domain.length,
+      fill: "transparent",
+    });
+    strip.style.cursor = "grab";
+    let current: string | null = null;
+    const scrubTo = (clientY: number): void => {
+      const row = rowAt(clientY);
+      if (!row || row.label === current) return;
+      current = row.label;
+      showScrubMarks(row.label, row.center);
+      ia.onEnter(row.label, row.center);
+    };
+    strip.addEventListener("pointermove", (e: PointerEvent) => scrubTo(e.clientY));
+    strip.addEventListener("pointerdown", (e: PointerEvent) => scrubTo(e.clientY));
+    strip.addEventListener("pointerleave", () => {
+      current = null;
+      clearScrubMarks();
+      ia.onLeave();
+    });
+    if (ia.onClick) {
+      strip.addEventListener("click", (e: MouseEvent) => {
+        const row = rowAt(e.clientY);
+        if (row) ia.onClick?.(row.label, row.center);
+      });
+    }
+    g.appendChild(strip);
   }
 
   parent.appendChild(g);

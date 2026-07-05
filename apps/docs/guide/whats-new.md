@@ -32,6 +32,10 @@ Already merged and live in these docs' demos; ships to npm with the next version
   (`xAxisPosition: "bottom"`), GapChart accepts an explicit `xAxisDomain` (zoom a
   life-expectancy story into its 35-90 band), the tornado's row labels can sit left of the
   plot (`yAxisPosition: "left"`), and Radar pole labels stay clear of the title.
+- **Row labels you can grab.** On Gap, Comparable, and the tornado, opt-in
+  `interactiveRowLabels` makes every row label a real control: hover or focus it and a
+  leader line runs to its row with the tooltip and highlight; click pins. Try it on the
+  demos above each of those pages.
 - **A legend for everything.** Every chart context now carries `legendData`, and split
   charts (treemap, bubble, comparable) also expose each label's pale companion via
   `LegendItem.paleColor` - the docs demos use it for their colour legends and the

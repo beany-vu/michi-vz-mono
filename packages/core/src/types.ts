@@ -94,6 +94,10 @@ export interface GapChartProps {
   /** Fix the value-axis range as [min, max] instead of the derived zero-baseline domain
    * (e.g. zoom a life-expectancy story into its 35-90 band) */
   xAxisDomain?: [number, number];
+  /** Make the row labels interactive: hovering or focusing a label draws a leader
+   * line to its row's marks, highlights the row, and shows its tooltip; clicking
+   * pins the tooltip. Labels become keyboard-focusable. Default false. */
+  interactiveRowLabels?: boolean;
   /** Formats an x tick value into its display label */
   xAxisFormat?: (d: number | string) => string;
   /** Formats a y tick value into its display label */
@@ -912,6 +916,10 @@ export interface ComparableBarChartProps {
    * colour). Pair an opaque light tint here with valueBasedOpacity 1 to make before vs
    * after unmistakable in both themes (legacy michi-vz parity). */
   colorsBasedMapping?: Record<string, string>;
+  /** Make the row labels interactive: hovering or focusing a label draws a leader
+   * line to its row's marks, highlights the row, and shows its tooltip; clicking
+   * pins the tooltip. Labels become keyboard-focusable. Default false. */
+  interactiveRowLabels?: boolean;
   /** Fill opacity of the two sub-bars (historical look: 0.45 / 0.9). */
   valueBasedOpacity?: number;
   /** Fill opacity of the front valueCompared sub-bar (default 0.9) */
@@ -1052,6 +1060,10 @@ export interface DualBarChartProps {
    * over the left-extending bars) or "left" (in the left margin, clear of the plot -
    * the classic population-pyramid look). */
   yAxisPosition?: "center" | "left";
+  /** Make the row labels interactive: hovering or focusing a label draws a leader
+   * line to its row's marks, highlights the row, and shows its tooltip; clicking
+   * pins the tooltip. Labels become keyboard-focusable. Default false. */
+  interactiveRowLabels?: boolean;
   /** value1 (right) / value2 (left) fill opacities. */
   value1Opacity?: number;
   /** Fill opacity of the left-extending value2 bar (default 0.55) */
@@ -1099,7 +1111,13 @@ export interface DualBarChartContext extends BaseChartContext {
   xAxis: { domain: [number, number] };
   yAxis: { labels: string[] };
   series: DualBarSeriesContext[];
-  stats: { count: number; total1: number; total2: number };
+  stats: {
+    count: number;
+    total1: number;
+    total2: number;
+    /** Row leaning hardest to one side (difference = value1 - value2). */
+    largestImbalance: { label: string; value1: number; value2: number; difference: number } | null;
+  };
 }
 
 // ---- BarBellChart (cumulative horizontal bar + end-cap circles) ----

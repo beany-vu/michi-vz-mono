@@ -59,6 +59,7 @@ function makeGap() {
     colorsMapping,
     xAxisDataType: "number",
     xAxisDomain: [35, 90],
+    interactiveRowLabels: true,
     shapeValue1: "circle",
     shapeValue2: "triangle",
     shapesLabelsMapping: { value1: "1990", value2: "2023", gap: "Gain" },

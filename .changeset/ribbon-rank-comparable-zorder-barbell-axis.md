@@ -34,6 +34,14 @@ Legacy-parity fixes for Ribbon and Comparable, a new BarBell axis option, and le
   of the derived zero-baseline domain (zoom a life-expectancy story into its
   35-90 band). An explicit domain skips d3 nice() re-rounding. Exposed on the web
   component and `applyGapChartProps`.
+- **New `interactiveRowLabels` on Gap, Comparable, and Dual (tornado)**: hovering
+  or keyboard-focusing a row label draws a leader line to the row's marks, shows
+  the row's tooltip, and highlights it; clicking pins the tooltip (the same
+  sticky contract as the marks). Labels become focusable buttons, and the leader
+  lives on the SVG axis layer so it works in svg, canvas, and webgpu modes.
+  Theme it via the `--michi-vz-crosshair*` vars (`.mv-row-leader`). Default off.
+  The dual chart's context summary now also names the largest imbalance
+  (`stats.largestImbalance`).
 - **New `yAxisPosition: "center" | "left"` on DualBarChartProps** (default "center",
   the legacy tornado look): "left" moves the row labels into the left margin,
   clear of the left-extending bars - the classic population-pyramid layout.

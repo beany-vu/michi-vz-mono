@@ -44,6 +44,7 @@ function makeDual() {
     title: "120 diverging rows (synthetic)",
     // Labels in the left margin, clear of the left-extending bars.
     yAxisPosition: "left",
+    interactiveRowLabels: true,
     margin: { top: 50, right: 50, bottom: 50, left: 120 },
   };
 }

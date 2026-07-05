@@ -48,6 +48,7 @@ interface Resolved {
   margin: Margin;
   tickHtmlWidth: number;
   yAxisPosition: "center" | "left";
+  interactiveRowLabels: boolean;
   renderer: Renderer;
   value1Opacity: number;
   value2Opacity: number;
@@ -61,6 +62,7 @@ function resolve(p: DualBarChartProps): Resolved {
     margin: p.margin ?? DEFAULT_MARGIN,
     tickHtmlWidth: p.tickHtmlWidth ?? 100,
     yAxisPosition: p.yAxisPosition ?? "center",
+    interactiveRowLabels: p.interactiveRowLabels ?? false,
     // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
     // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
     // reflects what actually painted.
@@ -250,12 +252,50 @@ export function mountDualHorizontalBarChart(
     // Legacy "center" anchors the label column to the shared centre line (labels sit
     // over the left-extending bars); "left" keeps them in the left margin, clear of
     // the plot - the classic population-pyramid look.
+    // interactiveRowLabels: label hover/focus = leader line + row tooltip +
+    // highlight; click pins (same sticky contract as the bars). Composed from the
+    // row model, so it works in svg, canvas, and webgpu modes alike.
+    const rowByLabel = new Map(model.bars.map((b) => [b.label, b]));
+    const labelTooltipEvent = (rowCenterY: number): MouseEvent => {
+      const hostRect = host.getBoundingClientRect();
+      return {
+        clientX: hostRect.left + scales.center + 12,
+        clientY: hostRect.top + rowCenterY,
+      } as MouseEvent;
+    };
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
       margin: r.yAxisPosition === "center" ? { ...r.margin, left: scales.center } : r.margin,
       format: (label) => yFormat(label),
       tickHtmlWidth: r.tickHtmlWidth,
       showGrid: false,
+      interactions: r.interactiveRowLabels
+        ? {
+            leaderToX: (label) => {
+              const b = rowByLabel.get(label);
+              // The row's full extent starts at the left bar's left edge.
+              return b && b.bar2.width > 0 ? b.bar2.x : scales.center;
+            },
+            onEnter: (label, rowCenterY) => {
+              if (sticky) return;
+              const b = rowByLabel.get(label);
+              if (!b) return;
+              showTooltip(b.raw, labelTooltipEvent(rowCenterY));
+              props.onHighlightItem?.([label]);
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.([]);
+            },
+            onClick: (label, rowCenterY) => {
+              const b = rowByLabel.get(label);
+              if (!b) return;
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(b.raw, labelTooltipEvent(rowCenterY));
+            },
+          }
+        : undefined,
     });
 
     if (r.renderer === "svg") {

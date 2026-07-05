@@ -2390,6 +2390,14 @@
           "common": false
         },
         {
+          "name": "interactiveRowLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Make the row labels interactive: hovering or focusing a label draws a leader line to its row's marks, highlights the row, and shows its tooltip; clicking pins the tooltip. Labels become keyboard-focusable. Default false.",
+          "default": "false",
+          "common": false
+        },
+        {
           "name": "valueBasedOpacity",
           "type": "number",
           "optional": true,
@@ -2723,6 +2731,14 @@
           "optional": true,
           "description": "Where the row labels sit: \"center\" (default, legacy: on the shared centre line, over the left-extending bars) or \"left\" (in the left margin, clear of the plot - the classic population-pyramid look).",
           "default": "\"center\"",
+          "common": false
+        },
+        {
+          "name": "interactiveRowLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Make the row labels interactive: hovering or focusing a label draws a leader line to its row's marks, highlights the row, and shows its tooltip; clicking pins the tooltip. Labels become keyboard-focusable. Default false.",
+          "default": "false",
           "common": false
         },
         {
@@ -3227,6 +3243,14 @@
           "optional": true,
           "description": "Fix the value-axis range as [min, max] instead of the derived zero-baseline domain (e.g. zoom a life-expectancy story into its 35-90 band)",
           "default": "",
+          "common": false
+        },
+        {
+          "name": "interactiveRowLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Make the row labels interactive: hovering or focusing a label draws a leader line to its row's marks, highlights the row, and shows its tooltip; clicking pins the tooltip. Labels become keyboard-focusable. Default false.",
+          "default": "false",
           "common": false
         },
         {

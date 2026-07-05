@@ -34,7 +34,7 @@ function makeComparable() {
       color: colors[i % colors.length],
     });
   }
-  return { title: "Merchandise exports: 2019 vs 2024, US$ bn (synthetic)", dataSet };
+  return { title: "Merchandise exports: 2019 vs 2024, US$ bn (synthetic)", dataSet, interactiveRowLabels: true };
 }
 </script>
 

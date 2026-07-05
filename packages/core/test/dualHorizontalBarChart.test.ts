@@ -52,6 +52,49 @@ describe("mountDualHorizontalBarChart (jsdom)", () => {
     left.host.remove();
   });
 
+  it("interactiveRowLabels: scrubbing the gutter selects rows (leader + tooltip + highlight); click pins", () => {
+    const highlights: unknown[] = [];
+    const { host, chart } = mount({
+      interactiveRowLabels: true,
+      yAxisPosition: "left",
+      onHighlightItem: (l) => highlights.push(l),
+    });
+    // Keyboard path: labels are focusable buttons.
+    const label = host.querySelector<HTMLDivElement>(".mv-ylabel")!;
+    expect(label.getAttribute("role")).toBe("button");
+    // Pointer path: the gutter is one scrub strip (jsdom rects are 0, so clientY
+    // maps straight onto the band range: margin.top 50, 3 rows over height 300).
+    const strip = host.querySelector<SVGRectElement>(".mv-row-scrub")!;
+    const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
+    strip.dispatchEvent(new MouseEvent("pointermove", { clientY: 60, bubbles: true }));
+    expect(host.querySelector(".mv-row-leader")).toBeTruthy();
+    expect(tooltip.style.visibility).toBe("visible");
+    expect(highlights.at(-1)).toEqual(["Alpha One"]);
+    // Dragging further down scrubs to a different row.
+    strip.dispatchEvent(new MouseEvent("pointermove", { clientY: 240, bubbles: true }));
+    expect(highlights.at(-1)).toEqual(["Gamma"]);
+    strip.dispatchEvent(new MouseEvent("pointerleave", { bubbles: true }));
+    expect(host.querySelector(".mv-row-leader")).toBeNull();
+    expect(tooltip.style.visibility).toBe("hidden");
+    // Click pins: the tooltip goes sticky and survives pointerleave.
+    strip.dispatchEvent(new MouseEvent("pointermove", { clientY: 60, bubbles: true }));
+    strip.dispatchEvent(new MouseEvent("click", { clientY: 60, bubbles: true }));
+    strip.dispatchEvent(new MouseEvent("pointerleave", { bubbles: true }));
+    expect(tooltip.classList.contains("sticky")).toBe(true);
+    expect(tooltip.style.visibility).toBe("visible");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("row labels are inert without interactiveRowLabels (default)", () => {
+    const { host, chart } = mount();
+    const label = host.querySelector<HTMLDivElement>(".mv-ylabel")!;
+    expect(label.getAttribute("role")).toBeNull();
+    expect(host.querySelector(".mv-row-scrub")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
   it("builds an a11y mirror with one row per label", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(3);

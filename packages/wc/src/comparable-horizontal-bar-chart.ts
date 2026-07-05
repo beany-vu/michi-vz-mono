@@ -21,6 +21,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
     renderer: { type: String },
     colorsMapping: { attribute: false },
     colorsBasedMapping: { attribute: false },
+    interactiveRowLabels: { type: Boolean, attribute: "interactive-row-labels" },
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
     valueBasedOpacity: { type: Number, attribute: "value-based-opacity" },
@@ -60,6 +61,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
   renderer: "svg" | "canvas" | "webgpu" = "svg";
   colorsMapping?: Record<string, string>;
   colorsBasedMapping?: Record<string, string>;
+  interactiveRowLabels?: boolean;
   highlightItems?: string[];
   disabledItems?: string[];
   valueBasedOpacity?: number;
@@ -114,6 +116,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
       renderer: this.renderer,
       colorsMapping: this.colorsMapping,
       colorsBasedMapping: this.colorsBasedMapping,
+      interactiveRowLabels: this.interactiveRowLabels,
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,
       valueBasedOpacity: this.valueBasedOpacity,

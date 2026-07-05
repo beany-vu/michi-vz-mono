@@ -118,6 +118,7 @@ export function applyGapChartProps(el: GapChartElement, props: GapChartProps): v
   if (props.renderer !== undefined) el.renderer = props.renderer;
   if (props.xAxisDataType !== undefined) el.xAxisDataType = props.xAxisDataType;
   if (props.xAxisDomain !== undefined) el.xAxisDomain = props.xAxisDomain;
+  if (props.interactiveRowLabels !== undefined) el.interactiveRowLabels = props.interactiveRowLabels;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
@@ -353,6 +354,7 @@ export function applyComparableHorizontalBarChartProps(
   if (props.renderer !== undefined) el.renderer = props.renderer;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.colorsBasedMapping !== undefined) el.colorsBasedMapping = props.colorsBasedMapping;
+  if (props.interactiveRowLabels !== undefined) el.interactiveRowLabels = props.interactiveRowLabels;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.valueBasedOpacity !== undefined) el.valueBasedOpacity = props.valueBasedOpacity;
@@ -415,6 +417,7 @@ export function applyDualHorizontalBarChartProps(
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickHtmlWidth !== undefined) el.tickHtmlWidth = props.tickHtmlWidth;
   if (props.yAxisPosition !== undefined) el.yAxisPosition = props.yAxisPosition;
+  if (props.interactiveRowLabels !== undefined) el.interactiveRowLabels = props.interactiveRowLabels;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
 }

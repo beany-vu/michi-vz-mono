@@ -48,6 +48,7 @@ interface Resolved {
   margin: Margin;
   ticks: number;
   tickHtmlWidth: number;
+  interactiveRowLabels: boolean;
   renderer: "svg" | "canvas" | "webgpu";
   valueBasedOpacity: number;
   valueComparedOpacity: number;
@@ -72,6 +73,7 @@ function resolve(p: ComparableBarChartProps): Resolved {
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
     tickHtmlWidth: p.tickHtmlWidth ?? 100,
+    interactiveRowLabels: p.interactiveRowLabels ?? false,
     // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
     // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
     // reflects what actually painted.
@@ -331,6 +333,18 @@ export function mountComparableHorizontalBarChart(
       showGrid: r.showGrid,
       showZeroLine: r.showZeroLineForXAxis,
     });
+    // interactiveRowLabels: label hover/focus = leader line + row tooltip +
+    // highlight; click pins (same sticky contract as the bars). Composed from the
+    // row model, so it works in svg, canvas, and webgpu modes alike.
+    const rowByLabel = new Map(model.bars.map((b) => [b.label, b]));
+    const rowStartX = (label: string): number => {
+      const b = rowByLabel.get(label);
+      return b ? Math.min(b.based.x, b.compared.x) : r.margin.left;
+    };
+    const labelTooltipEvent = (x: number, rowCenterY: number): MouseEvent => {
+      const hostRect = host.getBoundingClientRect();
+      return { clientX: hostRect.left + x, clientY: hostRect.top + rowCenterY } as MouseEvent;
+    };
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
       margin: r.margin,
@@ -339,6 +353,29 @@ export function mountComparableHorizontalBarChart(
       showGrid: false,
       hideTickLabels: r.hideTickLabels,
       tickLabelOffset: r.horizontalTickPosition,
+      interactions: r.interactiveRowLabels
+        ? {
+            leaderToX: rowStartX,
+            onEnter: (label, rowCenterY) => {
+              if (sticky) return;
+              const b = rowByLabel.get(label);
+              if (!b) return;
+              showTooltip(b.raw, labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
+              props.onHighlightItem?.([label]);
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.([]);
+            },
+            onClick: (label, rowCenterY) => {
+              const b = rowByLabel.get(label);
+              if (!b) return;
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(b.raw, labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
+            },
+          }
+        : undefined,
     });
 
     if (r.renderer === "svg") {

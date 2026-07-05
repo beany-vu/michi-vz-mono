@@ -37,6 +37,10 @@ Déjà fusionné et visible dans les démos de cette doc ; part sur npm avec la 
   histoire d'espérance de vie dans sa bande 35-90), les libellés de lignes du tornado peuvent
   passer à gauche du tracé (`yAxisPosition: "left"`), et les libellés des pôles du radar ne
   touchent plus le titre.
+- **Des libellés de lignes que l'on peut saisir.** Sur Gap, Comparable et le tornado,
+  l'option `interactiveRowLabels` fait de chaque libellé de ligne un vrai contrôle :
+  survolez-le ou donnez-lui le focus et une ligne de rappel court jusqu'à sa ligne avec
+  l'infobulle et la mise en évidence ; un clic épingle. À essayer sur les démos de ces pages.
 - **Une légende pour tout.** Chaque contexte de graphique porte désormais `legendData`, et les
   graphiques à division (treemap, bulles, comparables) exposent aussi la couleur pâle compagne
   de chaque étiquette via `LegendItem.paleColor` : les démos de la doc s'en servent pour leurs
