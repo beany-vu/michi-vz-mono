@@ -12,6 +12,14 @@ export interface ProcessLineOptions {
   expectedStep?: number;
   xAxisDataType: XaxisDataType;
   yAxisDomain?: [number, number];
+  yAxisScale?: "linear" | "log";
+}
+
+// A base-10 log scale is undefined for value <= 0 (Math.log of a non-positive number is
+// NaN or -Infinity). Shared by processLineChartData's point-dropping below and
+// validate/lineWarnings.ts's dropped-count warning, so the two never drift apart.
+export function isNonPositiveLogValue(value: number): boolean {
+  return value <= 0;
 }
 
 export interface ProcessedLine {
@@ -44,12 +52,24 @@ export function processLineChartData(
       .slice(0, limit);
   }
 
+  // Log mode: non-positive points are treated as missing (like any other gap) -
+  // dropped BEFORE detectGaps runs, so an existing time-based gap check (when opted
+  // in) naturally dashes the segment spanning the hole; the y domain below then only
+  // ever sees the remaining positive values.
+  const logSafeItems: LineDataItem[] =
+    opts.yAxisScale === "log"
+      ? items.map((it) => ({
+          ...it,
+          series: it.series.filter((d) => !isNonPositiveLogValue(d.value)),
+        }))
+      : items;
+
   const processedDataSet: LineDataItem[] = opts.detectGaps
-    ? items.map((it) => ({
+    ? logSafeItems.map((it) => ({
         ...it,
         series: applyGapDetection(it.series, opts.xAxisDataType, opts.expectedStep),
       }))
-    : items;
+    : logSafeItems;
 
   const xAxisDomain = getXScaleDomain(processedDataSet, opts.xAxisDataType);
   const yAxisDomain = opts.yAxisDomain ?? getYScaleDomain(processedDataSet);

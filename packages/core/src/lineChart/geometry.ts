@@ -5,8 +5,7 @@ import type { CurveFactory } from "d3-shape";
 import { resolveCurveFactory } from "./curve";
 import { parseXValue } from "./lineUtils";
 import type { CurveType, DataPoint, XaxisDataType } from "../types";
-import type { LineXScale } from "./scales";
-import type { ScaleLinear } from "d3-scale";
+import type { LineXScale, LineYScale } from "./scales";
 
 export interface SeriesRun {
   points: DataPoint[];
@@ -47,7 +46,7 @@ export function projectX(d: DataPoint, xScale: LineXScale, t: XaxisDataType): nu
 // Build a reusable d3-line generator (SVG path string for an array of points).
 export function makeLineGenerator(
   xScale: LineXScale,
-  yScale: ScaleLinear<number, number>,
+  yScale: LineYScale,
   xAxisDataType: XaxisDataType,
   curve?: CurveType
 ): (points: DataPoint[]) => string | null {

@@ -183,6 +183,7 @@ export function applyLineChartProps(el: LineChartElement, props: LineChartProps)
   if (props.margin !== undefined) el.margin = props.margin;
   if (props.colors !== undefined) el.colors = props.colors;
   if (props.yAxisDomain !== undefined) el.yAxisDomain = props.yAxisDomain;
+  if (props.yAxisScale !== undefined) el.yAxisScale = props.yAxisScale;
   if (props.xAxisFormat !== undefined) el.xAxisFormat = props.xAxisFormat;
   if (props.yAxisFormat !== undefined) el.yAxisFormat = props.yAxisFormat;
   if (props.ticks !== undefined) el.ticks = props.ticks;

@@ -4,8 +4,7 @@ import { area as d3area, line as d3line } from "d3-shape";
 import { resolveCurveFactory } from "../lineChart/curve";
 import { parseXValue } from "../lineChart/lineUtils";
 import type { CurveType, RangeDataPoint, XaxisDataType } from "../types";
-import type { LineXScale } from "../lineChart/scales";
-import type { ScaleLinear } from "d3-scale";
+import type { LineXScale, LineYScale } from "../lineChart/scales";
 
 function projectX(d: RangeDataPoint, xScale: LineXScale, t: XaxisDataType): number {
   const v = parseXValue(d.date, t);
@@ -14,7 +13,7 @@ function projectX(d: RangeDataPoint, xScale: LineXScale, t: XaxisDataType): numb
 
 export function makeRangeAreaGenerator(
   xScale: LineXScale,
-  yScale: ScaleLinear<number, number>,
+  yScale: LineYScale,
   xAxisDataType: XaxisDataType,
   curve?: CurveType
 ): (points: RangeDataPoint[]) => string | null {
@@ -28,7 +27,7 @@ export function makeRangeAreaGenerator(
 
 export function makeRangeMedianGenerator(
   xScale: LineXScale,
-  yScale: ScaleLinear<number, number>,
+  yScale: LineYScale,
   xAxisDataType: XaxisDataType,
   curve?: CurveType
 ): (points: RangeDataPoint[]) => string | null {

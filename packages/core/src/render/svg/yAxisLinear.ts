@@ -3,8 +3,14 @@
 // Used by value-axis charts (LineChart, AreaChart, …); band charts use
 // renderYAxisBand instead.
 import { svgEl } from "../../dom";
-import type { ScaleLinear } from "d3-scale";
+import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
 import type { Margin } from "../../types";
+
+// Mirrors xAxisLinear.ts's LinearOrTimeScale: a chart-agnostic local alias (this
+// render layer stays decoupled from any one chart's pure-layer types) covering the
+// two y-scale kinds a value axis can be built with (LineChart's log mode being the
+// only current source of the log branch).
+export type LinearOrLogScale = ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
 
 export interface YAxisLinearOptions {
   width: number;
@@ -19,7 +25,7 @@ export interface YAxisLinearOptions {
 
 export function renderYAxisLinear(
   parent: SVGElement,
-  scale: ScaleLinear<number, number>,
+  scale: LinearOrLogScale,
   o: YAxisLinearOptions
 ): SVGGElement {
   const g = svgEl("g", { class: "mv-y-axis mv-y-axis-linear" });

@@ -13,7 +13,7 @@ export { renderYAxisBand } from "./yAxisBand";
 export type { YAxisBandOptions } from "./yAxisBand";
 
 export { renderYAxisLinear } from "./yAxisLinear";
-export type { YAxisLinearOptions } from "./yAxisLinear";
+export type { YAxisLinearOptions, LinearOrLogScale } from "./yAxisLinear";
 
 export { renderXAxisBand } from "./xAxisBand";
 export type { XAxisBandOptions } from "./xAxisBand";

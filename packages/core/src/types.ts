@@ -308,6 +308,11 @@ export interface LineChartProps {
   colorsMapping?: Record<string, string>;
   /** Fix the y-axis range as [min, max] instead of deriving it from the data */
   yAxisDomain?: [number, number];
+  /** Y-axis scale: "linear" (default) or a base-10 "log" scale. In "log" mode, a
+   * non-positive value (<= 0) can't be plotted, so those points are dropped as missing
+   * (reported via `onDataWarning`); a dataSet with no positive values at all renders
+   * the no-data state instead. */
+  yAxisScale?: "linear" | "log";
   /** How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers */
   xAxisDataType?: XaxisDataType;
   /** Formats an x tick value into its display label */
@@ -2229,7 +2234,8 @@ export interface DataWarning {
     | "empty-dataset"
     | "non-monotonic-date"
     | "duplicate-date"
-    | "layout-overflow";
+    | "layout-overflow"
+    | "non-positive-log-value";
   message: string;
   label?: string;
 }

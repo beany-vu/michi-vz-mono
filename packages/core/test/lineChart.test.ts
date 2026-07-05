@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { scaleLinear, scaleLog } from "d3-scale";
 import { mountLineChart } from "../src/engine/lineChart";
 import { sanitizeForClassName } from "../src/math/sanitize";
 import type { LineChartProps, LineDataItem } from "../src/types";
@@ -387,5 +388,180 @@ describe("mountLineChart enableMouseLine crosshair (legacy mouse-line parity)", 
     expect(line!.style.visibility).toBe("hidden");
     chart.destroy();
     host.remove();
+  });
+});
+
+describe("mountLineChart yAxisScale (log y-axis)", () => {
+  // Round powers of 10 so the expected pixel math is exact and easy to eyeball.
+  const powersOfTen: LineDataItem[] = [
+    {
+      label: "Powers",
+      color: "#00f",
+      series: [
+        { date: 2016, value: 10, certainty: true },
+        { date: 2017, value: 100, certainty: true },
+        { date: 2018, value: 1000, certainty: true },
+      ],
+    },
+  ];
+  const margin = { top: 20, right: 20, bottom: 20, left: 40 };
+
+  it("maps known values to the pixel positions of an equivalently-built d3 scaleLog", () => {
+    const { host, chart } = mount({
+      dataSet: powersOfTen,
+      yAxisScale: "log",
+      showDataPoints: true,
+      width: 600,
+      height: 300,
+      margin,
+    });
+    const expected = scaleLog()
+      .domain([10, 1000])
+      .range([300 - margin.bottom, margin.top])
+      .clamp(true)
+      .nice();
+    const dots = host.querySelectorAll<SVGCircleElement>('circle.data-point[data-label="Powers"]');
+    expect(dots.length).toBe(3);
+    expect(Number(dots[0].getAttribute("cy"))).toBe(expected(10));
+    expect(Number(dots[1].getAttribute("cy"))).toBe(expected(100));
+    expect(Number(dots[2].getAttribute("cy"))).toBe(expected(1000));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("defaults to a linear y-axis when yAxisScale is omitted (unchanged pixel math)", () => {
+    const { host, chart } = mount({
+      dataSet: powersOfTen,
+      showDataPoints: true,
+      width: 600,
+      height: 300,
+      margin,
+    });
+    const expected = scaleLinear()
+      .domain([10, 1000])
+      .range([300 - margin.bottom, margin.top])
+      .clamp(true)
+      .nice();
+    const dots = host.querySelectorAll<SVGCircleElement>('circle.data-point[data-label="Powers"]');
+    expect(Number(dots[1].getAttribute("cy"))).toBe(expected(100));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("drops non-positive values (incl. exactly zero) in log mode, keeps only the positives, and warns with the dropped count", () => {
+    const mixed: LineDataItem[] = [
+      {
+        label: "Mixed",
+        color: "#f00",
+        series: [
+          { date: 2016, value: -5, certainty: true },
+          { date: 2017, value: 0, certainty: true },
+          { date: 2018, value: 20, certainty: true },
+          { date: 2019, value: 40, certainty: true },
+        ],
+      },
+    ];
+    let warned: unknown[] = [];
+    const { host, chart } = mount({
+      dataSet: mixed,
+      yAxisScale: "log",
+      showDataPoints: true,
+      onDataWarning: (w) => (warned = w),
+    });
+    // Only the 2 positive points (20, 40) are drawn - the negative and the zero are dropped.
+    const dots = host.querySelectorAll('circle.data-point[data-label="Mixed"]');
+    expect(dots.length).toBe(2);
+    const warning = warned.find(
+      (w) => (w as { type: string }).type === "non-positive-log-value"
+    ) as { type: string; message: string; label?: string } | undefined;
+    expect(warning).toBeDefined();
+    expect(warning!.label).toBe("Mixed");
+    expect(warning!.message).toContain("2");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("does NOT drop non-positive values or warn about them in default linear mode", () => {
+    const mixed: LineDataItem[] = [
+      {
+        label: "Mixed",
+        series: [
+          { date: 2016, value: -5, certainty: true },
+          { date: 2017, value: 20, certainty: true },
+        ],
+      },
+    ];
+    let warned: unknown[] = [];
+    const { host, chart } = mount({
+      dataSet: mixed,
+      showDataPoints: true,
+      onDataWarning: (w) => (warned = w),
+    });
+    expect(host.querySelectorAll('circle.data-point[data-label="Mixed"]').length).toBe(2);
+    expect(warned.some((w) => (w as { type: string }).type === "non-positive-log-value")).toBe(false);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("falls back to the no-data state (no crash) when every value in the dataSet is non-positive", () => {
+    const allNonPositive: LineDataItem[] = [
+      {
+        label: "AllBad",
+        series: [
+          { date: 2016, value: 0, certainty: true },
+          { date: 2017, value: -3, certainty: true },
+        ],
+      },
+    ];
+    expect(() => {
+      const { host, chart } = mount({ dataSet: allNonPositive, yAxisScale: "log" });
+      expect(host.getAttribute("data-mv-state")).toBe("nodata");
+      expect(host.querySelector(".mv-nodata")).not.toBeNull();
+      expect(host.querySelectorAll("path.line").length).toBe(0);
+      chart.destroy();
+      host.remove();
+    }).not.toThrow();
+  });
+
+  it("still fires the dropped-value warning even when the fallback renders no-data", () => {
+    const allNonPositive: LineDataItem[] = [
+      { label: "AllBad", series: [{ date: 2016, value: 0, certainty: true }] },
+    ];
+    let warned: unknown[] = [];
+    const { host, chart } = mount({
+      dataSet: allNonPositive,
+      yAxisScale: "log",
+      onDataWarning: (w) => (warned = w),
+    });
+    expect(warned.some((w) => (w as { type: string }).type === "non-positive-log-value")).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("exposes an identical line-chart context in SVG and canvas with yAxisScale=log (renderer aside)", () => {
+    // Extends the existing svg/canvas context-parity test with a dropped-point case,
+    // proving buildLineContext stays renderer-agnostic in log mode too.
+    const mixed: LineDataItem[] = [
+      {
+        label: "Mixed",
+        series: [
+          { date: 2016, value: -5, certainty: true },
+          { date: 2017, value: 20, certainty: true },
+          { date: 2018, value: 40, certainty: true },
+        ],
+      },
+    ];
+    const a = mount({ dataSet: mixed, yAxisScale: "log", renderer: "svg" });
+    const b = mount({ dataSet: mixed, yAxisScale: "log", renderer: "canvas" });
+    const ca = a.chart.getContext()!;
+    const cb = b.chart.getContext()!;
+    expect(ca.renderer).toBe("svg");
+    expect(cb.renderer).toBe("canvas");
+    const strip = (c: typeof ca) => ({ ...c, renderer: undefined });
+    expect(strip(ca)).toEqual(strip(cb));
+    a.chart.destroy();
+    a.host.remove();
+    b.chart.destroy();
+    b.host.remove();
   });
 });

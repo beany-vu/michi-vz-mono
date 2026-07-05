@@ -71,6 +71,7 @@ interface Resolved {
   mouseLine: MouseLineConfig | null;
   enableTransitions: boolean;
   singlePointLine: SinglePointLineConfig | null;
+  yAxisScale: "linear" | "log";
 }
 
 function resolveSinglePointLine(v: LineChartProps["singlePointLine"]): SinglePointLineConfig | null {
@@ -97,6 +98,7 @@ function resolve(p: LineChartProps): Resolved {
     mouseLine: resolveMouseLine(p.enableMouseLine ?? true),
     enableTransitions: p.enableTransitions ?? true,
     singlePointLine: resolveSinglePointLine(p.singlePointLine),
+    yAxisScale: p.yAxisScale ?? "linear",
   };
 }
 
@@ -264,13 +266,10 @@ export function mountLineChart(
     const r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
     const highlightItems = props.highlightItems ?? [];
-    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
-    const dataState = applyChartChrome(host, props, props.dataSet, chrome);
 
-    svg.setAttribute("width", String(r.width));
-    svg.setAttribute("height", String(r.height));
-    svg.style.position = "relative";
-
+    // Computed up front (pure - no host/DOM dependency) so a log y-axis with no
+    // positive values anywhere can force the no-data state below instead of asking
+    // d3 for a degenerate/zero-inclusive log scale.
     const { processedDataSet, xAxisDomain, yAxisDomain } = processLineChartData(props.dataSet, {
       disabledItems: props.disabledItems,
       filter: props.filter,
@@ -278,7 +277,22 @@ export function mountLineChart(
       expectedStep: props.expectedStep,
       xAxisDataType,
       yAxisDomain: props.yAxisDomain,
+      yAxisScale: r.yAxisScale,
     });
+    const logHasNoPositiveValues =
+      r.yAxisScale === "log" && processedDataSet.every((item) => item.series.length === 0);
+
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    const dataState = applyChartChrome(
+      host,
+      logHasNoPositiveValues ? { ...props, isNodata: true } : props,
+      props.dataSet,
+      chrome
+    );
+
+    svg.setAttribute("width", String(r.width));
+    svg.setAttribute("height", String(r.height));
+    svg.style.position = "relative";
 
     const colors = buildLineColors(
       props.dataSet,
@@ -301,7 +315,8 @@ export function mountLineChart(
       r.width,
       r.height,
       r.margin,
-      xAxisDataType
+      xAxisDataType,
+      r.yAxisScale
     );
 
     // Build hit-test data from the FULL (undecimated) processed points.
@@ -605,7 +620,7 @@ export function mountLineChart(
     // USER's data (baseProps), not the plugin-synthesised points.
     if (baseProps.onDataWarning) {
       const warnings = [
-        ...checkLineData(baseProps.dataSet, xAxisDataType),
+        ...checkLineData(baseProps.dataSet, xAxisDataType, r.yAxisScale),
         ...collectValidate(pluginList, baseProps, pc),
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);

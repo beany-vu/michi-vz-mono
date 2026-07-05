@@ -52,6 +52,7 @@ export class LineChartElement extends LitElement {
     margin: { attribute: false },
     colors: { attribute: false },
     yAxisDomain: { attribute: false },
+    yAxisScale: { type: String, attribute: "y-axis-scale" },
     xAxisFormat: { attribute: false },
     yAxisFormat: { attribute: false },
     ticks: { type: Number },
@@ -96,6 +97,7 @@ export class LineChartElement extends LitElement {
   margin?: Margin;
   colors?: string[];
   yAxisDomain?: [number, number];
+  yAxisScale?: "linear" | "log";
   xAxisFormat?: (d: number | string) => string;
   yAxisFormat?: (d: number | string) => string;
   ticks?: number;
@@ -152,6 +154,7 @@ export class LineChartElement extends LitElement {
       margin: this.margin,
       colors: this.colors,
       yAxisDomain: this.yAxisDomain,
+      yAxisScale: this.yAxisScale,
       xAxisFormat: this.xAxisFormat,
       yAxisFormat: this.yAxisFormat,
       ticks: this.ticks,

@@ -158,6 +158,14 @@
           "common": false
         },
         {
+          "name": "yAxisScale",
+          "type": "\"linear\" | \"log\"",
+          "optional": true,
+          "description": "Y-axis scale: \"linear\" (default) or a base-10 \"log\" scale. In \"log\" mode, a non-positive value (<= 0) can't be plotted, so those points are dropped as missing (reported via `onDataWarning`); a dataSet with no positive values at all renders the no-data state instead.",
+          "default": "\"linear\"",
+          "common": false
+        },
+        {
           "name": "xAxisDataType",
           "type": "\"date_annual\" | \"date_monthly\" | \"number\"",
           "optional": true,
