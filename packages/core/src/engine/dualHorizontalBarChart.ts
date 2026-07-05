@@ -125,6 +125,9 @@ export function mountDualHorizontalBarChart(
     },
   };
   let sticky = false;
+  // While the pointer is on the row-label scrub gutter, the host-level canvas
+  // hit-test must stand down (it would miss and hide the scrub tooltip).
+  let scrubbing = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildDualRenderModel> | null = null;
 
@@ -144,6 +147,7 @@ export function mountDualHorizontalBarChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
+    if (scrubbing) return;
     if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
@@ -276,23 +280,25 @@ export function mountDualHorizontalBarChart(
               // The row's full extent starts at the left bar's left edge.
               return b && b.bar2.width > 0 ? b.bar2.x : scales.center;
             },
-            onEnter: (label, rowCenterY) => {
+            onEnter: (label, rowCenterY, pointer) => {
+              scrubbing = true;
               if (sticky) return;
               const b = rowByLabel.get(label);
               if (!b) return;
-              showTooltip(b.raw, labelTooltipEvent(rowCenterY));
+              showTooltip(b.raw, (pointer as MouseEvent) ?? labelTooltipEvent(rowCenterY));
               props.onHighlightItem?.([label]);
             },
             onLeave: () => {
+              scrubbing = false;
               hideTooltip();
               if (!sticky) props.onHighlightItem?.([]);
             },
-            onClick: (label, rowCenterY) => {
+            onClick: (label, rowCenterY, pointer) => {
               const b = rowByLabel.get(label);
               if (!b) return;
               sticky = true;
               tooltip.classList.add("sticky");
-              showTooltip(b.raw, labelTooltipEvent(rowCenterY));
+              showTooltip(b.raw, (pointer as MouseEvent) ?? labelTooltipEvent(rowCenterY));
             },
           }
         : undefined,

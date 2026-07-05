@@ -120,6 +120,9 @@ export function mountGapChart(
     },
   };
   let sticky = false;
+  // While the pointer is on the row-label scrub gutter, the host-level canvas
+  // hit-test must stand down (it would miss and hide the scrub tooltip).
+  let scrubbing = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
   // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
@@ -170,6 +173,7 @@ export function mountGapChart(
   // Canvas-mode hit-test (no retained SVG nodes to attach handlers to).
   let canvasModel: ReturnType<typeof buildGapRenderModel> | null = null;
   const onHostMove = (ev: MouseEvent): void => {
+    if (scrubbing) return;
     if (!isPainted(resolve(baseProps).renderer) || !canvasModel || sticky)
       return;
     const rect = svg.getBoundingClientRect();
@@ -330,23 +334,31 @@ export function mountGapChart(
               // The row's nearest mark edge (either endpoint marker).
               return el ? Math.min(el.value1X, el.value2X) : r.margin.left;
             },
-            onEnter: (label, rowCenterY) => {
+            onEnter: (label, rowCenterY, pointer) => {
+              scrubbing = true;
               if (sticky) return;
               const el = rowByLabel.get(label);
               if (!el) return;
-              showTooltip(el.d, labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY));
+              showTooltip(
+                el.d,
+                (pointer as MouseEvent) ?? labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY)
+              );
               props.onHighlightItem?.(el.d);
             },
             onLeave: () => {
+              scrubbing = false;
               hideTooltip();
               if (!sticky) props.onHighlightItem?.(null);
             },
-            onClick: (label, rowCenterY) => {
+            onClick: (label, rowCenterY, pointer) => {
               const el = rowByLabel.get(label);
               if (!el) return;
               sticky = true;
               tooltip.classList.add("sticky");
-              showTooltip(el.d, labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY));
+              showTooltip(
+                el.d,
+                (pointer as MouseEvent) ?? labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY)
+              );
             },
           }
         : undefined,

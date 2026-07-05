@@ -144,6 +144,9 @@ export function mountComparableHorizontalBarChart(
     },
   };
   let sticky = false;
+  // While the pointer is on the row-label scrub gutter, the host-level canvas
+  // hit-test must stand down (it would miss and hide the scrub tooltip).
+  let scrubbing = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Signature of the last context emitted, so onChartDataProcessed only fires when
   // the context actually changes. A consumer colour authority (thd setMetadata)
@@ -209,6 +212,7 @@ export function mountComparableHorizontalBarChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
+    if (scrubbing) return;
     if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
@@ -356,23 +360,25 @@ export function mountComparableHorizontalBarChart(
       interactions: r.interactiveRowLabels
         ? {
             leaderToX: rowStartX,
-            onEnter: (label, rowCenterY) => {
+            onEnter: (label, rowCenterY, pointer) => {
+              scrubbing = true;
               if (sticky) return;
               const b = rowByLabel.get(label);
               if (!b) return;
-              showTooltip(b.raw, labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
+              showTooltip(b.raw, (pointer as MouseEvent) ?? labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
               props.onHighlightItem?.([label]);
             },
             onLeave: () => {
+              scrubbing = false;
               hideTooltip();
               if (!sticky) props.onHighlightItem?.([]);
             },
-            onClick: (label, rowCenterY) => {
+            onClick: (label, rowCenterY, pointer) => {
               const b = rowByLabel.get(label);
               if (!b) return;
               sticky = true;
               tooltip.classList.add("sticky");
-              showTooltip(b.raw, labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
+              showTooltip(b.raw, (pointer as MouseEvent) ?? labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
             },
           }
         : undefined,

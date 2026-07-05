@@ -38,9 +38,11 @@ export interface YAxisBandOptions {
   interactions?: {
     /** X the leader line ends at for a row (the row's nearest mark edge). */
     leaderToX: (label: string) => number;
-    onEnter: (label: string, rowCenterY: number) => void;
+    /** pointer = the live cursor position when scrubbing (absent on keyboard focus),
+     * so the engine can pop the tooltip right where the user is looking. */
+    onEnter: (label: string, rowCenterY: number, pointer?: { clientX: number; clientY: number }) => void;
     onLeave: () => void;
-    onClick?: (label: string, rowCenterY: number) => void;
+    onClick?: (label: string, rowCenterY: number, pointer?: { clientX: number; clientY: number }) => void;
   };
 }
 
@@ -78,12 +80,9 @@ export function renderYAxisBand(
   const ia = o.interactions;
   const labelBoxX = o.margin.left - tickHtmlWidth + (o.tickLabelOffset?.x ?? 0);
   let leader: SVGElement | null = null;
-  let popup: SVGElement | null = null;
   const clearScrubMarks = (): void => {
     leader?.remove();
     leader = null;
-    popup?.remove();
-    popup = null;
   };
   const showScrubMarks = (label: string, rowCenterY: number): void => {
     if (!ia) return;
@@ -95,31 +94,10 @@ export function renderYAxisBand(
       x2: ia.leaderToX(label),
       y2: rowCenterY,
     });
-    // Inline, not only CSS: the leader/popup materialise UNDER the live pointer,
-    // and if they catch it the strip fires pointerleave and clears them instantly.
+    // Inline, not only CSS: the leader materialises UNDER the live pointer, and
+    // if it caught the pointer the strip would fire pointerleave and clear it.
     (leader as SVGElement & { style: CSSStyleDeclaration }).style.pointerEvents = "none";
     g.appendChild(leader);
-    // Pop the row's label up when the thinned axis is not showing it. The chip
-    // sits ABOVE the row line (clamped at the top): the cursor glyph extends
-    // down-right from its hotspot on the row, so on the line it would cover the
-    // text exactly where the user is looking.
-    if (!o.hideTickLabels && visible && !visible.has(label)) {
-      const fo = svgEl("foreignObject", {
-        class: "mv-ylabel-fo",
-        x: labelBoxX,
-        y: Math.max(2, rowCenterY - MIN_LABEL_HEIGHT - 6 + (o.tickLabelOffset?.y ?? 0)),
-        width: tickHtmlWidth,
-        height: MIN_LABEL_HEIGHT,
-        style: "overflow: visible; pointer-events: none",
-      });
-      const div = htmlEl("div", { class: "mv-ylabel mv-ylabel-popup", title: label });
-      const span = htmlEl("span");
-      span.textContent = format(label);
-      div.appendChild(span);
-      fo.appendChild(div);
-      g.appendChild(fo);
-      popup = fo;
-    }
   };
   // The row under a pointer y: the whole gutter scrubs like a slider, reaching
   // every row - including the ones dense-axis thinning left unlabelled.
@@ -228,15 +206,18 @@ export function renderYAxisBand(
     });
     strip.style.cursor = "grab";
     let current: string | null = null;
-    const scrubTo = (clientY: number): void => {
-      const row = rowAt(clientY);
-      if (!row || row.label === current) return;
-      current = row.label;
-      showScrubMarks(row.label, row.center);
-      ia.onEnter(row.label, row.center);
+    const scrubTo = (e: { clientX: number; clientY: number }): void => {
+      const row = rowAt(e.clientY);
+      if (!row) return;
+      if (row.label !== current) {
+        current = row.label;
+        showScrubMarks(row.label, row.center);
+      }
+      // Refire on EVERY move (not just row changes) so the tooltip tracks the cursor.
+      ia.onEnter(row.label, row.center, { clientX: e.clientX, clientY: e.clientY });
     };
-    strip.addEventListener("pointermove", (e: PointerEvent) => scrubTo(e.clientY));
-    strip.addEventListener("pointerdown", (e: PointerEvent) => scrubTo(e.clientY));
+    strip.addEventListener("pointermove", (e: PointerEvent) => scrubTo(e));
+    strip.addEventListener("pointerdown", (e: PointerEvent) => scrubTo(e));
     strip.addEventListener("pointerleave", () => {
       current = null;
       clearScrubMarks();
@@ -245,7 +226,7 @@ export function renderYAxisBand(
     if (ia.onClick) {
       strip.addEventListener("click", (e: MouseEvent) => {
         const row = rowAt(e.clientY);
-        if (row) ia.onClick?.(row.label, row.center);
+        if (row) ia.onClick?.(row.label, row.center, { clientX: e.clientX, clientY: e.clientY });
       });
     }
     g.appendChild(strip);
