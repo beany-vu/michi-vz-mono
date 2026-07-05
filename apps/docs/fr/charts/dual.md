@@ -39,7 +39,13 @@ function makeDual() {
       color: "#3F7CAC",
     });
   }
-  return { dataSet, title: "120 diverging rows (synthetic)" };
+  return {
+    dataSet,
+    title: "120 diverging rows (synthetic)",
+    // Labels in the left margin, clear of the left-extending bars.
+    yAxisPosition: "left",
+    margin: { top: 50, right: 50, bottom: 50, left: 120 },
+  };
 }
 </script>
 
