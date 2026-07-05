@@ -2,6 +2,7 @@
 // label (based behind at valueBasedOpacity, compared in front at
 // valueComparedOpacity), each with data-label + data-label-safe. Hover per group.
 import { svgEl } from "../dom";
+import { comparableDrawOrder } from "./renderModel";
 import type { ComparableBarModel, ComparableRenderModel } from "./renderModel";
 
 export interface ComparableSvgOptions {
@@ -30,11 +31,11 @@ export function renderComparableSvg(
     g.style.opacity = bar.dimmed ? "0.3" : "1";
     g.style.transition = transition;
 
-    for (const part of [
-      { seg: bar.based, opacity: o.valueBasedOpacity, cls: "value-based" },
-      { seg: bar.compared, opacity: o.valueComparedOpacity, cls: "value-compared" },
-    ]) {
-      const type = part.cls === "value-based" ? "based" : "compared";
+    for (const type of comparableDrawOrder(bar)) {
+      const part =
+        type === "based"
+          ? { seg: bar.based, opacity: o.valueBasedOpacity, cls: "value-based", fill: bar.basedColor }
+          : { seg: bar.compared, opacity: o.valueComparedOpacity, cls: "value-compared", fill: bar.color };
       const rect = svgEl("rect", {
         class: `bar ${part.cls}`,
         "data-label": bar.label,
@@ -43,7 +44,7 @@ export function renderComparableSvg(
         y: bar.y,
         width: part.seg.width,
         height: bar.height,
-        fill: bar.color,
+        fill: part.fill,
         opacity: part.opacity,
         rx: 5,
         ry: 5,

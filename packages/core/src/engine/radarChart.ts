@@ -218,6 +218,9 @@ export function mountRadarChart(
       highlightItems: props.highlightItems ?? [],
       poleLabelFormatter: props.poleLabelFormatter,
       radialLabelFormatter: props.radialLabelFormatter,
+      // Title renders at margin.top/2; keep the top pole's label clear of it
+      // (baseline + descent + a small gap).
+      minLabelY: props.title ? r.margin.top / 2 + 18 : undefined,
     });
 
     clear(svg);

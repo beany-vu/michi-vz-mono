@@ -8,7 +8,7 @@ description: "Graphique d'écart : tracez deux valeurs par étiquette (avant et 
 
 À quel point les deux chiffres qui comptent sont-ils éloignés ? Tracez avant et après, cible et réel, hommes et femmes, et la barre entre eux est l'histoire - plus l'écart est large, plus fort il résonne.
 
-<ChartDemo chart="gap-chart" />
+<ChartDemo chart="gap-chart" :legend="false" />
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 

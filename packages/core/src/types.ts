@@ -901,6 +901,10 @@ export interface ComparableBarChartProps {
   ticks?: number;
   /** Width in px reserved for each y-axis (label) tick's HTML (default 100) */
   tickHtmlWidth?: number;
+  /** Optional label -> colour map for the value-based sub-bar ONLY (falls back to the row
+   * colour). Pair an opaque light tint here with valueBasedOpacity 1 to make before vs
+   * after unmistakable in both themes (legacy michi-vz parity). */
+  colorsBasedMapping?: Record<string, string>;
   /** Fill opacity of the two sub-bars (historical look: 0.45 / 0.9). */
   valueBasedOpacity?: number;
   /** Fill opacity of the front valueCompared sub-bar (default 0.9) */
@@ -1122,6 +1126,8 @@ export interface BarBellChartProps {
   ticks?: number;
   /** Width in px reserved for each y-axis (date) tick's HTML (default 80) */
   tickHtmlWidth?: number;
+  /** Where the cumulative value axis renders its tick labels: "top" (default, legacy header look) or "bottom" (clears room under the title) */
+  xAxisPosition?: "top" | "bottom";
   /** Labels to emphasise; all other marks dim */
   highlightItems?: string[];
   /** Labels to hide and exclude from scales/stacks */

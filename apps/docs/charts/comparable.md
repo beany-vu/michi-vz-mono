@@ -8,7 +8,13 @@ description: "Comparable bar chart: before and after side by side on one bar per
 
 Did it get better or worse? Put before and after side by side on one bar per label, and the gap that closed (or opened) is the first thing the reader sees.
 
-<ChartDemo chart="comparable-horizontal-bar-chart" />
+<ChartDemo
+  chart="comparable-horizontal-bar-chart"
+  :legend="[
+    { label: '2019 (before, pale tint)', color: '#b1b1b1' },
+    { label: '2024 (after, solid)', color: '#6e6e6e' },
+  ]"
+/>
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
@@ -102,7 +108,7 @@ Props are typed as `ComparableHorizontalBarChartProps` in [`@michi-vz/core`](htt
 
 ### Two sub-bars per row
 
-Each row draws `valueBased` (behind) and `valueCompared` (in front), diverging from x=0. `valueBasedOpacity` / `valueComparedOpacity` set their fill opacity. A sub-bar whose resolved fill is `transparent` is **skipped** (consumers hide one half via CSS). `minBarWidth` (default 5) floors a non-zero bar so near-zero values stay visible.
+Each row draws `valueBased` (pale) and `valueCompared` (solid), diverging from x=0; the shorter sub-bar is drawn on top so both stay visible whichever way the value moved. `colorsBasedMapping` gives the value-based sub-bar its own colour per label: pair an opaque light tint with `valueBasedOpacity: 1` (as the demo above does) for the crispest before/after contrast in both themes. `valueBasedOpacity` / `valueComparedOpacity` set their fill opacity. A sub-bar whose resolved fill is `transparent` is **skipped** (consumers hide one half via CSS). `minBarWidth` (default 5) floors a non-zero bar so near-zero values stay visible.
 
 ### `patternsMapping` - hatch / image fills
 

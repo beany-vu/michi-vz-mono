@@ -157,6 +157,8 @@ describe("mountFountainChart (jsdom)", () => {
       expect(ctx.xAxis.type).toBe("band");
       expect(ctx.jets[0].upperBound).toBe(175);
       expect(ctx.summary).toContain("uncertainty");
+      // Snapshot mode carries one legend row per jet.
+      expect(ctx.legendData!.map((l) => l.label)).toEqual(["Jet d'Eau"]);
     }
     expect(host.querySelector(".mv-x-axis-band")).toBeTruthy();
     chart.destroy();

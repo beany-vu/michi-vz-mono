@@ -8,7 +8,7 @@ description: "Gap chart: plot two values per label (before and after, target and
 
 How far apart are the two numbers that matter? Plot before and after, target and actual, men and women, and the bar between them is the story - the wider the gap, the louder it reads.
 
-<ChartDemo chart="gap-chart" />
+<ChartDemo chart="gap-chart" :legend="false" />
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 

@@ -8,7 +8,7 @@ description: "Biểu đồ khoảng cách: vẽ hai giá trị cho mỗi nhãn (
 
 Hai con số quan trọng cách nhau bao xa? Vẽ trước và sau, mục tiêu và thực tế, nam và nữ, và thanh nối giữa chúng chính là câu chuyện - khoảng cách càng rộng, nó càng nói lên nhiều điều.
 
-<ChartDemo chart="gap-chart" />
+<ChartDemo chart="gap-chart" :legend="false" />
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 

@@ -47,6 +47,39 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     host.remove();
   });
 
+  it("draws the shorter sub-bar on top so both stay visible (legacy z-order)", () => {
+    const { host, chart } = mount();
+    const order = (label: string) => {
+      const rects = Array.from(
+        host.querySelectorAll<SVGRectElement>(`g.data-group[data-label="${label}"] rect.bar`)
+      );
+      return rects.map((r) => (r.classList.contains("value-based") ? "based" : "compared"));
+    };
+    // Alpha One grew (10 -> 18): the shorter "based" bar must be drawn LAST (on top).
+    expect(order("Alpha One")).toEqual(["compared", "based"]);
+    // Beta shrank (30 -> 22): the shorter "compared" bar stays on top (legacy default).
+    expect(order("Beta")).toEqual(["based", "compared"]);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("fills the value-based sub-bar from colorsBasedMapping (legacy tint hook)", () => {
+    const { host, chart } = mount({
+      colorsMapping: { "Alpha One": "#c0392b" },
+      colorsBasedMapping: { "Alpha One": "#e9bab5" },
+    });
+    const g = host.querySelector('g.data-group[data-label="Alpha One"]')!;
+    expect(g.querySelector("rect.value-based")!.getAttribute("fill")).toBe("#e9bab5");
+    expect(g.querySelector("rect.value-compared")!.getAttribute("fill")).toBe("#c0392b");
+    // Unmapped labels keep the row colour for both sub-bars.
+    const beta = host.querySelector('g.data-group[data-label="Beta"]')!;
+    expect(beta.querySelector("rect.value-based")!.getAttribute("fill")).toBe(
+      beta.querySelector("rect.value-compared")!.getAttribute("fill")
+    );
+    chart.destroy();
+    host.remove();
+  });
+
   it("excludes disabled labels and applies top-N filter", () => {
     const off = mount({ disabledItems: ["Gamma"] });
     expect(off.host.querySelectorAll("rect.bar").length).toBe(4); // 2 labels x 2

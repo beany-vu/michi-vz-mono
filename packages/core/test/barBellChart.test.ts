@@ -29,6 +29,26 @@ describe("mountBarBellChart (jsdom)", () => {
     host.remove();
   });
 
+  it("places the value-axis labels above the plot by default and below with xAxisPosition:'bottom'", () => {
+    const margin = { top: 50, right: 50, bottom: 50, left: 100 };
+    const top = mount({ margin });
+    const bottom = mount({ margin, xAxisPosition: "bottom" });
+    const labelYs = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll<SVGTextElement>(".mv-x-axis text")).map((t) =>
+        Number(t.getAttribute("y"))
+      );
+    // Default (legacy header look): labels sit in the top margin, above the rows.
+    expect(labelYs(top.host).length).toBeGreaterThan(0);
+    expect(labelYs(top.host).every((y) => y < margin.top)).toBe(true);
+    // Bottom: labels clear the title area entirely and sit under the plot.
+    expect(labelYs(bottom.host).length).toBeGreaterThan(0);
+    expect(labelYs(bottom.host).every((y) => y > 300 - margin.bottom)).toBe(true);
+    top.chart.destroy();
+    top.host.remove();
+    bottom.chart.destroy();
+    bottom.host.remove();
+  });
+
   it("dodges only the cap (capCy) - bars stay on the row line, caps fan centred on it", () => {
     // B is zero-valued → its cap coincides with A's at the same x → they dodge apart.
     const { host, chart } = mount({

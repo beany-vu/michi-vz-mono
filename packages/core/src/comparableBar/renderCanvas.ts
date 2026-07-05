@@ -7,6 +7,7 @@
 // createHatchPattern), tiled via ctx.createPattern. jsdom → no-op.
 import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSubBarProbe } from "../canvas/resolveMarkColors";
+import { comparableDrawOrder } from "./renderModel";
 import type { ComparableRenderModel } from "./renderModel";
 
 export interface ComparableCanvasOptions {
@@ -73,16 +74,18 @@ export function drawComparableCanvas(
 
   const labels = model.bars.map((b) => b.label);
   const fb = (l: string) => model.bars.find((b) => b.label === l)?.color || "transparent";
-  const basedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-based"), ["fill", "stroke"]);
+  const fbBased = (l: string) => model.bars.find((b) => b.label === l)?.basedColor || "transparent";
+  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), ["fill", "stroke"]);
   const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), ["fill", "stroke"]);
 
   for (const bar of model.bars) {
     const groupAlpha = bar.dimmed ? 0.3 : 1;
     const patSrc = o.patternsMapping?.[bar.label] ?? o.patternsMapping?.[bar.safe];
-    const parts = [
-      { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.color, pattern: patSrc },
-      { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color, pattern: undefined as string | undefined },
-    ];
+    const parts = comparableDrawOrder(bar).map((type) =>
+      type === "based"
+        ? { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.basedColor, pattern: patSrc }
+        : { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color, pattern: undefined as string | undefined }
+    );
     for (const part of parts) {
       // transparent-skip: a consumer hides a sub-bar with fill:transparent - don't
       // paint it (unless it's pattern-filled).

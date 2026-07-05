@@ -15,16 +15,22 @@ const props = defineProps<{
   /** Short human label for the dataset size, e.g. "20,000 points". */
   caption?: string;
   height?: number;
+  /** Opt-in auto legend from getContext().legendData. Most heavy demos have far too
+   * many categories for one (30 ribbons, 120 rows), but a demo with a handful of
+   * meaningful groups (the dimuon resonances) needs the colour key. */
+  legend?: boolean;
 }>();
 
 const host = ref<HTMLDivElement>();
 const el = shallowRef<any>(null);
 const status = ref<"pending" | "webgpu" | "canvas">("pending");
 const fellBack = ref(false);
-// At this density no legend or per-row label can work, so the chart's own
-// ChartContext summary stands in: the same deterministic sentence an AI agent
-// (or a screen reader) gets from getContext().
+// At this density a per-row label can't work, so the chart's own ChartContext
+// summary stands in: the same deterministic sentence an AI agent (or a screen
+// reader) gets from getContext(). Pages whose heavy data has a FEW meaningful
+// groups opt into a colour legend via the `legend` prop (capped at 12 rows).
 const summary = ref("");
+const legendRows = ref<Array<{ label: string; color: string }>>([]);
 let ro: ResizeObserver | null = null;
 let io: IntersectionObserver | null = null;
 let raf = 0;
@@ -50,7 +56,15 @@ function buildNode() {
   node.style.display = "block";
   node.width = Math.max(280, host.value.clientWidth);
   node.addEventListener("michi-vz:dataprocessed", (e: Event) => {
-    summary.value = (e as CustomEvent).detail?.summary ?? "";
+    const detail = (e as CustomEvent).detail;
+    summary.value = detail?.summary ?? "";
+    if (props.legend) {
+      const rows = Array.isArray(detail?.legendData) ? detail.legendData : [];
+      legendRows.value =
+        rows.length > 1 && rows.length <= 12
+          ? rows.map((l: any) => ({ label: String(l.label), color: String(l.color || "") }))
+          : [];
+    }
   });
   host.value.appendChild(node);
   el.value = node;
@@ -166,6 +180,12 @@ onBeforeUnmount(() => {
       </span>
     </div>
     <div class="gpu-stage michi-vz-calm" ref="host"></div>
+    <ul v-if="legendRows.length" class="gpu-legend">
+      <li v-for="item in legendRows" :key="item.label">
+        <span class="gpu-swatch" :style="{ background: item.color }"></span>
+        {{ item.label }}
+      </li>
+    </ul>
     <p v-if="summary" class="gpu-summary">
       <span class="gpu-summary-tag">ChartContext summary</span>
       {{ summary }}
@@ -215,6 +235,19 @@ onBeforeUnmount(() => {
   color: var(--vp-c-text-2);
   white-space: nowrap;
 }
+/* Opt-in colour key (same compact swatch rows as ChartDemo's legend). */
+.gpu-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0 16px 10px;
+  font-size: 12.5px;
+  color: var(--vp-c-text-2);
+}
+.gpu-legend li { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+.gpu-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
 .gpu-pill.on {
   background: var(--vp-c-brand-1);
   color: #fff;

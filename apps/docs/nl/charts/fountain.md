@@ -19,7 +19,7 @@ Het is dus een eerlijke **storytelling- en attributiegrafiek**: geboekte omzet v
 
 De standaard `style: "jet"` is de getrouwe Jet d'Eau: een hoge, smalle kolom, dicht aan de basis, die uitrafelt in een zachte kroon die met de wind meedrijft. Een symmetrischere `style: "plume"` (een rechtopstaande kolom met een vederachtige bloei en een nevelrand) is ook beschikbaar - zie [Twee silhouetten](#two-silhouettes).
 
-<ChartDemo chart="fountain-chart" />
+<ChartDemo chart="fountain-chart" :legend="false" />
 
 > Eén grafiek, twee modi - bepaald door het type x-as. Stel `xAxisDataType: "band"` in voor **Momentopname-modus**: één fontein per categorie, waarbij groottes naast elkaar worden vergeleken (fonteinen, steden, producten). Gebruik een temporele of numerieke x (`"date_annual"`, `"date_monthly"`, `"number"`) voor **Trendmodus**: een fontein per periode, waarbij de stijgende toppen de trend volgen terwijl elke pluim de volatiliteit van die periode toont, en een voorspellende fontein gestippeld wordt weergegeven met een bredere, schuimigere kroon.
 

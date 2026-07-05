@@ -9,6 +9,7 @@
 // use renderer="canvas"/"svg" for exact rounded-rect + pattern rendering).
 import { emptyBatch, pushRect, markColor, drawMarksWebgpu } from "../webgpu/marks";
 import { resolveMarkColors, makeSubBarProbe } from "../canvas/resolveMarkColors";
+import { comparableDrawOrder } from "./renderModel";
 import type { ComparableRenderModel } from "./renderModel";
 
 export interface ComparableWebgpuOptions {
@@ -33,16 +34,18 @@ export function drawComparableBarWebgpu(
   // mode uses (descendant consumer CSS like `.bar[data-label-safe="X"] .value-based`).
   const labels = model.bars.map((b) => b.label);
   const fb = (l: string) => model.bars.find((b) => b.label === l)?.color || "transparent";
-  const basedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-based"), ["fill", "stroke"]);
+  const fbBased = (l: string) => model.bars.find((b) => b.label === l)?.basedColor || "transparent";
+  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), ["fill", "stroke"]);
   const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), ["fill", "stroke"]);
 
   const batch = emptyBatch();
   for (const bar of model.bars) {
     const groupAlpha = bar.dimmed ? 0.3 : 1;
-    const parts = [
-      { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.color },
-      { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color },
-    ];
+    const parts = comparableDrawOrder(bar).map((type) =>
+      type === "based"
+        ? { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.basedColor }
+        : { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color }
+    );
     for (const part of parts) {
       // transparent-skip: a consumer hides a sub-bar with fill:transparent.
       if (isTransparent(part.color)) continue;

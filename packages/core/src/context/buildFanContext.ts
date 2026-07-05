@@ -1,5 +1,6 @@
 // Renderer-agnostic semantic context for FanChart. Derived from the data model
 // (history + median forecast line + nested bands), so identical in SVG and canvas.
+import { buildLegendData } from "./legend";
 import type { FanChartContext, FanDataItem, FanSeriesContext, XaxisDataType } from "../types";
 import { provenanceCounts } from "../math/provenance";
 
@@ -56,6 +57,13 @@ export function buildFanContext(input: BuildFanContextInput): FanChartContext {
     summary += ".";
   }
 
+  // Flat legend rows keyed to the SAME resolved colours as the series contexts,
+  // so consumer colour authorities and the docs demo legend match the marks.
+  const legendData = buildLegendData({
+    labels: series.map((s) => s.label),
+    colorsMapping: Object.fromEntries(series.filter((s) => s.color).map((s) => [s.label, s.color])),
+  });
+
   return {
     chartType: "fan-chart",
     title: input.title,
@@ -63,6 +71,7 @@ export function buildFanContext(input: BuildFanContextInput): FanChartContext {
     xAxis: { type: input.xAxisDataType, domain: input.xAxisDomain },
     yAxis: { domain: input.yAxisDomain },
     series,
+    legendData,
     stats: { seriesCount: series.length, forecastHorizon },
     colorsMapping: input.colorsMapping,
     summary,

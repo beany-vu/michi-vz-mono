@@ -8,7 +8,13 @@ description: "Graphique en barres comparables : avant et après côte à côte s
 
 Est-ce que ça s'est amélioré ou dégradé ? Placez avant et après côte à côte sur une barre par étiquette, et l'écart qui s'est réduit (ou creusé) est la première chose que voit le lecteur.
 
-<ChartDemo chart="comparable-horizontal-bar-chart" />
+<ChartDemo
+  chart="comparable-horizontal-bar-chart"
+  :legend="[
+    { label: '2019 (avant, teinte pâle)', color: '#b1b1b1' },
+    { label: '2024 (après, plein)', color: '#6e6e6e' },
+  ]"
+/>
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
@@ -102,7 +108,7 @@ Les props sont typées comme `ComparableHorizontalBarChartProps` dans [`@michi-v
 
 ### Deux sous-barres par ligne
 
-Chaque ligne dessine `valueBased` (derrière) et `valueCompared` (devant), divergeant depuis x=0. `valueBasedOpacity` / `valueComparedOpacity` définissent leur opacité de remplissage. Une sous-barre dont le remplissage résolu est `transparent` est **ignorée** (les consommateurs cachent une moitié via CSS). `minBarWidth` (5 par défaut) impose un plancher à une barre non nulle pour que les valeurs proches de zéro restent visibles.
+Chaque ligne dessine `valueBased` (pâle) et `valueCompared` (plein), divergeant depuis x=0 ; la sous-barre la plus courte est dessinée au-dessus, si bien que les deux valeurs restent visibles quel que soit le sens de l'évolution. `colorsBasedMapping` donne à la sous-barre valueBased sa propre couleur par étiquette : associez une teinte claire opaque à `valueBasedOpacity: 1` (comme dans la démo ci-dessus) pour le contraste avant/après le plus net dans les deux thèmes. `valueBasedOpacity` / `valueComparedOpacity` définissent leur opacité de remplissage. Une sous-barre dont le remplissage résolu est `transparent` est **ignorée** (les consommateurs cachent une moitié via CSS). `minBarWidth` (5 par défaut) impose un plancher à une barre non nulle pour que les valeurs proches de zéro restent visibles.
 
 ### `patternsMapping` - remplissages hachurés / image
 

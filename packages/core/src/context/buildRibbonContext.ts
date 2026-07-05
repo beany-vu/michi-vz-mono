@@ -1,4 +1,5 @@
 // Renderer-agnostic semantic context for RibbonChart.
+import { buildLegendData } from "./legend";
 import type { RibbonChartContext, RibbonDataRow, RibbonSeriesContext } from "../types";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
@@ -30,6 +31,13 @@ export function buildRibbonContext(input: BuildRibbonContextInput): RibbonChartC
   if (largest) summary += ` Largest series: ${largest.key} (total ${largest.total}).`;
   summary += ` Combined total ${grandTotal}.`;
 
+  // Flat legend rows (label/color/dataLabelSafe) so consumer colour authorities
+  // and the docs demo legend can key off the context like every other chart.
+  const legendData = buildLegendData({
+    labels: input.activeKeys,
+    colorsMapping: input.colorsMapping,
+  });
+
   return {
     chartType: "ribbon-chart",
     title: input.title,
@@ -38,6 +46,7 @@ export function buildRibbonContext(input: BuildRibbonContextInput): RibbonChartC
     yAxis: { domain: input.yAxisDomain },
     keys: input.activeKeys,
     series,
+    legendData,
     stats: { keyCount: series.length, dateCount: input.dates.length, grandTotal },
     colorsMapping: input.colorsMapping,
     summary,

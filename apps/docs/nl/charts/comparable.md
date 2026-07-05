@@ -8,7 +8,13 @@ description: "Vergelijkbare staven: voor en na naast elkaar op één balk per la
 
 Werd het beter of slechter? Zet voor en na naast elkaar op één balk per label, en het verschil dat gedicht (of geopend) is, is het eerste wat de lezer ziet.
 
-<ChartDemo chart="comparable-horizontal-bar-chart" />
+<ChartDemo
+  chart="comparable-horizontal-bar-chart"
+  :legend="[
+    { label: '2019 (voor, lichte tint)', color: '#b1b1b1' },
+    { label: '2024 (na, vol)', color: '#6e6e6e' },
+  ]"
+/>
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
 
@@ -102,7 +108,7 @@ Props zijn getypeerd als `ComparableHorizontalBarChartProps` in [`@michi-vz/core
 
 ### Twee subbalken per rij
 
-Elke rij tekent `valueBased` (achter) en `valueCompared` (voor), divergerend vanaf x=0. `valueBasedOpacity` / `valueComparedOpacity` stellen hun vulopaciteit in. Een subbalk waarvan de opgeloste vulling `transparent` is, wordt **overgeslagen** (consumenten verbergen zo de helft via CSS). `minBarWidth` (standaard 5) zorgt voor een ondergrens op een niet-nul balk, zodat waarden dicht bij nul zichtbaar blijven.
+Elke rij tekent `valueBased` (licht) en `valueCompared` (vol), divergerend vanaf x=0; de kortste subbalk wordt bovenop getekend, zodat beide waarden zichtbaar blijven welke kant de waarde ook op ging. `colorsBasedMapping` geeft de valueBased-subbalk per label een eigen kleur: combineer een dekkende lichte tint met `valueBasedOpacity: 1` (zoals de demo hierboven) voor het scherpste voor/na-contrast in beide thema's. `valueBasedOpacity` / `valueComparedOpacity` stellen hun vulopaciteit in. Een subbalk waarvan de opgeloste vulling `transparent` is, wordt **overgeslagen** (consumenten verbergen zo de helft via CSS). `minBarWidth` (standaard 5) zorgt voor een ondergrens op een niet-nul balk, zodat waarden dicht bij nul zichtbaar blijven.
 
 ### `patternsMapping` - arcering / afbeeldingsvullingen
 

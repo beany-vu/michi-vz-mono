@@ -20,6 +20,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
     height: { type: Number },
     renderer: { type: String },
     colorsMapping: { attribute: false },
+    colorsBasedMapping: { attribute: false },
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
     valueBasedOpacity: { type: Number, attribute: "value-based-opacity" },
@@ -58,6 +59,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
   height = 480;
   renderer: "svg" | "canvas" | "webgpu" = "svg";
   colorsMapping?: Record<string, string>;
+  colorsBasedMapping?: Record<string, string>;
   highlightItems?: string[];
   disabledItems?: string[];
   valueBasedOpacity?: number;
@@ -111,6 +113,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
       height: this.height,
       renderer: this.renderer,
       colorsMapping: this.colorsMapping,
+      colorsBasedMapping: this.colorsBasedMapping,
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,
       valueBasedOpacity: this.valueBasedOpacity,

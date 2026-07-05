@@ -63,12 +63,30 @@ describe("mountRibbonChart (jsdom)", () => {
       expect(ca.keys).toEqual(keys);
       expect(ca.series.find((s) => s.key === "Fruit Sales")!.total).toBe(33); // 10+14+9
     }
+    // legendData rows per active key (consumer colour-authority / docs legend hook).
+    expect(ca.legendData!.map((l) => l.label)).toEqual(keys);
+    expect(ca.legendData![0].dataLabelSafe).toBe(sanitizeForClassName("Fruit Sales"));
     const strip = (c: typeof ca) => ({ ...c, renderer: undefined });
     expect(strip(ca)).toEqual(strip(cb));
     a.chart.destroy();
     a.host.remove();
     b.chart.destroy();
     b.host.remove();
+  });
+
+  it("re-ranks the stack per date so a key's vertical position follows its value (legacy parity)", () => {
+    const { host, chart } = mount();
+    const rects = Array.from(host.querySelectorAll<SVGRectElement>("rect.bar"));
+    // Columns are emitted date-major: [0,1] = 2001, [2,3] = 2002, [4,5] = 2003.
+    const byDate = (i: number, label: string) =>
+      rects.slice(i * 2, i * 2 + 2).find((r) => r.getAttribute("data-label") === label)!;
+    const y = (r: SVGRectElement) => Number(r.getAttribute("y"));
+    // 2001: Fruit (10) outranks Veg (5) -> Fruit on top (smaller y), Veg at the bottom.
+    expect(y(byDate(0, "Fruit Sales"))).toBeLessThan(y(byDate(0, "Veg")));
+    // 2003: Veg (12) outranks Fruit (9) -> the stack order flips.
+    expect(y(byDate(2, "Veg"))).toBeLessThan(y(byDate(2, "Fruit Sales")));
+    chart.destroy();
+    host.remove();
   });
 
   it("fires onDataWarning for empty data and update/destroy work", () => {

@@ -40,6 +40,9 @@ describe("mountPieChart (jsdom)", () => {
       expect(ctx.stats.largestSlice).toEqual({ label: "Coffee", value: 100, share: 0.5 });
       const tea = ctx.slices.find((s) => s.label === "Tea")!;
       expect(tea.share).toBeCloseTo(0.3, 5);
+      // legendData names each slice colour (on-slice text is the % only).
+      expect(ctx.legendData!.map((l) => l.label)).toEqual(ctx.slices.map((s) => s.label));
+      expect(ctx.legendData![0].color).toBe(ctx.slices[0].color);
     }
     chart.destroy();
     host.remove();

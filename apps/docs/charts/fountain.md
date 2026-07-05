@@ -19,7 +19,7 @@ So it is an honest **storytelling and attribution** chart: revenue booked vs rev
 
 The default `style: "jet"` is the faithful Jet d'Eau: a tall, narrow column, dense at the base, fraying into a soft crown that drifts downwind. A more symmetric `style: "plume"` (an upright column with a feathery bloom and a mist skirt) is also available - see [Two silhouettes](#two-silhouettes).
 
-<ChartDemo chart="fountain-chart" />
+<ChartDemo chart="fountain-chart" :legend="false" />
 
 > One chart, two modes - decided by the x-axis type. Set `xAxisDataType: "band"` for **Snapshot mode**: one jet per category, comparing magnitudes side by side (fountains, cities, products). Use a temporal or numeric x (`"date_annual"`, `"date_monthly"`, `"number"`) for **Trend mode**: a jet per period, the rising apexes trace the trend while each plume shows that period's volatility, and a forecast jet renders dashed with a wider, frothier crown.
 

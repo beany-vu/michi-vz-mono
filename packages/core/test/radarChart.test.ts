@@ -29,6 +29,28 @@ describe("mountRadarChart (jsdom)", () => {
     host.remove();
   });
 
+  it("keeps the top pole label clear of the title band (clamped when a title renders)", () => {
+    // Wide chart -> height-limited radius -> the top label naturally overshoots
+    // into the title band (y = cy - radius - 25 < margin.top/2 + 18).
+    const margin = { top: 60, right: 80, bottom: 60, left: 80 };
+    const titled = mount({ margin, width: 800 });
+    const untitled = mount({ margin, width: 800, title: undefined });
+    const topLabelY = (host: HTMLElement) =>
+      Math.min(
+        ...Array.from(host.querySelectorAll<SVGTextElement>(".pole-label")).map((t) =>
+          Number(t.getAttribute("y"))
+        )
+      );
+    // With a title (baseline at margin.top/2) the top label may not climb into it.
+    expect(topLabelY(titled.host)).toBeGreaterThanOrEqual(margin.top / 2 + 18);
+    // Without a title the label keeps its natural radius+25 overshoot position.
+    expect(topLabelY(untitled.host)).toBeLessThan(margin.top / 2 + 18);
+    titled.chart.destroy();
+    titled.host.remove();
+    untitled.chart.destroy();
+    untitled.host.remove();
+  });
+
   it("renders a polar grid (rings + spokes + axis labels)", () => {
     const { host, chart } = mount({ rings: 4 });
     expect(host.querySelectorAll(".mv-radar-grid circle").length).toBe(4); // 4 rings (dashed circles)

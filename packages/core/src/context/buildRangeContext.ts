@@ -1,4 +1,5 @@
 // Renderer-agnostic semantic context for RangeChart.
+import { buildLegendData } from "./legend";
 import type { RangeChartContext, RangeDataItem, RangeSeriesContext, XaxisDataType } from "../types";
 import { provenanceCounts } from "../math/provenance";
 
@@ -43,6 +44,13 @@ export function buildRangeContext(input: BuildRangeContextInput): RangeChartCont
       pointCount === 1 ? "" : "s"
     }. Value range ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
 
+  // Flat legend rows keyed to the SAME resolved colours as the series contexts,
+  // so consumer colour authorities and the docs demo legend match the marks.
+  const legendData = buildLegendData({
+    labels: series.map((s) => s.label),
+    colorsMapping: Object.fromEntries(series.filter((s) => s.color).map((s) => [s.label, s.color])),
+  });
+
   return {
     chartType: "range-chart",
     title: input.title,
@@ -50,6 +58,7 @@ export function buildRangeContext(input: BuildRangeContextInput): RangeChartCont
     xAxis: { type: input.xAxisDataType, domain: input.xAxisDomain },
     yAxis: { domain: input.yAxisDomain },
     series,
+    legendData,
     stats: {
       seriesCount: series.length,
       pointCount,

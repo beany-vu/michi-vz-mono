@@ -48,9 +48,13 @@ function drawMark(ctx: CanvasRenderingContext2D, p: ScatterPointModel, color: st
   }
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#fff";
-  ctx.stroke();
+  // Match renderSvg: no outline on outline-sized marks - in dense clouds the white
+  // strokes of later points erase earlier fills into a washed-out mush.
+  if (p.r >= 4) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#fff";
+    ctx.stroke();
+  }
 }
 
 export function drawScatterCanvas(

@@ -19,7 +19,7 @@ Vì vậy đây là một biểu đồ **kể chuyện và quy kết** trung th�
 
 `style: "jet"` mặc định là Jet d'Eau trung thực: một cột cao, hẹp, đặc ở đáy, tơi dần thành một vòng vương miện mềm mại trôi theo chiều gió. Một `style: "plume"` đối xứng hơn (một cột thẳng đứng với một chùm hoa mềm mại và một váy sương mù) cũng có sẵn - xem [Hai hình dạng](#two-silhouettes).
 
-<ChartDemo chart="fountain-chart" />
+<ChartDemo chart="fountain-chart" :legend="false" />
 
 > Một biểu đồ, hai chế độ - quyết định bởi kiểu trục x. Đặt `xAxisDataType: "band"` cho **chế độ Ảnh chụp nhanh**: một tia cho mỗi danh mục, so sánh độ lớn cạnh nhau (đài phun, thành phố, sản phẩm). Dùng một trục x theo thời gian hoặc số (`"date_annual"`, `"date_monthly"`, `"number"`) cho **chế độ Xu hướng**: một tia cho mỗi kỳ, các đỉnh đang tăng dần vẽ nên xu hướng trong khi mỗi chùm tia thể hiện độ biến động của kỳ đó, và một tia dự báo hiển thị nét đứt với vòng vương miện rộng hơn, sủi bọt hơn.
 

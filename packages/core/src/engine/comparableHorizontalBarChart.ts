@@ -312,6 +312,7 @@ export function mountComparableHorizontalBarChart(
     model = buildComparableRenderModel(points, scales, colors, {
       highlightItems: props.highlightItems ?? [],
       minBarWidth: r.minBarWidth,
+      colorsBasedMapping: props.colorsBasedMapping,
     });
 
     const xFormat = props.xAxisFormat ?? defaultNumberFormatter(props.locale);

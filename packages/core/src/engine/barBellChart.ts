@@ -46,6 +46,7 @@ interface Resolved {
   margin: Margin;
   ticks: number;
   tickHtmlWidth: number;
+  xAxisPosition: "top" | "bottom";
   renderer: "svg" | "canvas" | "webgpu";
   enableTransitions: boolean;
 }
@@ -61,6 +62,7 @@ function resolve(p: BarBellChartProps): Resolved {
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
     tickHtmlWidth: p.tickHtmlWidth ?? 80,
+    xAxisPosition: p.xAxisPosition ?? "top",
     // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
     // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
     // reflects what actually painted.
@@ -264,8 +266,9 @@ export function mountBarBellChart(
       format: (v) => xFormat(v),
       ticks: r.ticks,
       enableExplicitTickValues: false,
-      // Legacy BarBell renders the value axis as a header ABOVE the date rows.
-      position: "top",
+      // Legacy BarBell renders the value axis as a header ABOVE the date rows;
+      // xAxisPosition:"bottom" moves the labels below the plot instead.
+      position: r.xAxisPosition,
     });
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,

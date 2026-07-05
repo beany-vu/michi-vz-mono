@@ -33,6 +33,7 @@ export class BarBellChartElement extends LitElement {
     yAxisDomain: { attribute: false },
     ticks: { type: Number },
     tickHtmlWidth: { type: Number },
+    xAxisPosition: { type: String, attribute: "x-axis-position" },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
@@ -60,6 +61,7 @@ export class BarBellChartElement extends LitElement {
   yAxisDomain?: [number, number];
   ticks?: number;
   tickHtmlWidth?: number;
+  xAxisPosition?: "top" | "bottom";
   enableTransitions?: boolean;
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
@@ -101,6 +103,7 @@ export class BarBellChartElement extends LitElement {
       yAxisDomain: this.yAxisDomain,
       ticks: this.ticks,
       tickHtmlWidth: this.tickHtmlWidth,
+      xAxisPosition: this.xAxisPosition,
       enableTransitions: this.enableTransitions,
       isLoading: this.isLoading,
       isNodata: this.isNodata,

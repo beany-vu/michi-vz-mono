@@ -34,6 +34,14 @@ export interface UiStrings {
   gLlmContext: string;
   gInsights: string;
   gDevtools: string;
+  demoExplain: string;
+  demoExplainBusy: string;
+  demoDevtoolsMount: string;
+  demoDevtoolsUnmount: string;
+  demoDevtoolsHint: string;
+  demoGoDeeper: string;
+  demoInsightsLink: string;
+  demoDevtoolsLink: string;
   footerHeart: string;
   footerStar: string;
   footerCommunity: string;
@@ -75,6 +83,14 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gLlmContext: "LLM context",
     gInsights: "Insights (AI boost)",
     gDevtools: "DevTools",
+    demoExplain: "✦ Explain this chart",
+    demoExplainBusy: "Reading the chart...",
+    demoDevtoolsMount: "🛠 Try DevTools on this chart",
+    demoDevtoolsUnmount: "🛠 Remove DevTools",
+    demoDevtoolsHint: "DevTools is live: click the floating Michi shield (bottom right) or press Ctrl/Cmd+Shift+M, then pick this chart in the panel.",
+    demoGoDeeper: "Go deeper:",
+    demoInsightsLink: "Insights guide",
+    demoDevtoolsLink: "DevTools guide",
     footerHeart: "❤️ Open source and built with care",
     footerStar: "Star on GitHub",
     footerCommunity: "Join our community",
@@ -114,6 +130,14 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gLlmContext: "Contexte LLM",
     gInsights: "Insights (boost IA)",
     gDevtools: "DevTools",
+    demoExplain: "✦ Expliquer ce graphique",
+    demoExplainBusy: "Lecture du graphique...",
+    demoDevtoolsMount: "🛠 Essayer les DevTools sur ce graphique",
+    demoDevtoolsUnmount: "🛠 Retirer les DevTools",
+    demoDevtoolsHint: "Les DevTools sont actifs : cliquez sur le bouclier Michi flottant (en bas à droite) ou appuyez sur Ctrl/Cmd+Shift+M, puis choisissez ce graphique dans le panneau.",
+    demoGoDeeper: "Aller plus loin :",
+    demoInsightsLink: "Guide Insights",
+    demoDevtoolsLink: "Guide DevTools",
     footerHeart: "❤️ Open source, conçu avec soin",
     footerStar: "Star sur GitHub",
     footerCommunity: "Rejoindre la communauté",
@@ -153,6 +177,14 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gLlmContext: "LLM-context",
     gInsights: "Insights (AI-boost)",
     gDevtools: "DevTools",
+    demoExplain: "✦ Leg deze grafiek uit",
+    demoExplainBusy: "Grafiek wordt gelezen...",
+    demoDevtoolsMount: "🛠 Probeer DevTools op deze grafiek",
+    demoDevtoolsUnmount: "🛠 DevTools verwijderen",
+    demoDevtoolsHint: "DevTools is actief: klik op het zwevende Michi-schild (rechtsonder) of druk op Ctrl/Cmd+Shift+M, en kies deze grafiek in het paneel.",
+    demoGoDeeper: "Ga dieper:",
+    demoInsightsLink: "Insights-gids",
+    demoDevtoolsLink: "DevTools-gids",
     footerHeart: "❤️ Open source, met zorg gebouwd",
     footerStar: "Ster op GitHub",
     footerCommunity: "Word lid van de community",
@@ -192,6 +224,14 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gLlmContext: "Ngữ cảnh LLM",
     gInsights: "Insights (tăng cường AI)",
     gDevtools: "DevTools",
+    demoExplain: "✦ Giải thích biểu đồ này",
+    demoExplainBusy: "Đang đọc biểu đồ...",
+    demoDevtoolsMount: "🛠 Thử DevTools với biểu đồ này",
+    demoDevtoolsUnmount: "🛠 Gỡ DevTools",
+    demoDevtoolsHint: "DevTools đang chạy: bấm chiếc khiên Michi nổi ở góc dưới bên phải (hoặc Ctrl/Cmd+Shift+M), rồi chọn biểu đồ này trong bảng điều khiển.",
+    demoGoDeeper: "Tìm hiểu thêm:",
+    demoInsightsLink: "Hướng dẫn Insights",
+    demoDevtoolsLink: "Hướng dẫn DevTools",
     footerHeart: "❤️ Mã nguồn mở, xây dựng bằng sự tận tâm",
     footerStar: "Gắn sao trên GitHub",
     footerCommunity: "Tham gia cộng đồng",

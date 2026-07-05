@@ -2382,6 +2382,14 @@
           "common": false
         },
         {
+          "name": "colorsBasedMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Optional label -> colour map for the value-based sub-bar ONLY (falls back to the row colour). Pair an opaque light tint here with valueBasedOpacity 1 to make before vs after unmistakable in both themes (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "valueBasedOpacity",
           "type": "number",
           "optional": true,
@@ -2931,6 +2939,14 @@
           "optional": true,
           "description": "Width in px reserved for each y-axis (date) tick's HTML (default 80)",
           "default": "80",
+          "common": false
+        },
+        {
+          "name": "xAxisPosition",
+          "type": "\"top\" | \"bottom\"",
+          "optional": true,
+          "description": "Where the cumulative value axis renders its tick labels: \"top\" (default, legacy header look) or \"bottom\" (clears room under the title)",
+          "default": "\"top\"",
           "common": false
         },
         {

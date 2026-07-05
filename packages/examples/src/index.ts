@@ -634,6 +634,21 @@ const comparable: Example<ComparableBarChartProps>[] = [
     "element": "michi-vz-comparable-horizontal-bar-chart",
     "props": {
       "title": "Merchandise exports: 2019 vs 2024, US$ bn",
+      // Name the two sub-bars what they ARE (2019/2024) so the tooltip matches the
+      // page legend instead of the generic Based/Compared wording.
+      "tooltipFormatter": (d) =>
+        `<strong>${d.label}</strong><br/>2019: ${d.valueBased.toLocaleString()} bn<br/>2024: ${d.valueCompared.toLocaleString()} bn`,
+      "valueBasedOpacity": 1,
+      "valueComparedOpacity": 1,
+      "colorsBasedMapping": {
+        "China": "#e9bab5",
+        "United States": "#b5cde7",
+        "Germany": "#c6c9cd",
+        "Japan": "#f4d1ba",
+        "India": "#b6d6c4",
+        "Russia": "#d7bee2",
+        "Vietnam": "#addfd4"
+      },
       "dataSet": [
         {
           "label": "China",
@@ -651,7 +666,7 @@ const comparable: Example<ComparableBarChartProps>[] = [
           "label": "Germany",
           "valueBased": 1489,
           "valueCompared": 1697,
-          "color": "#1f1f1f"
+          "color": "#5b6470"
         },
         {
           "label": "Japan",
@@ -746,6 +761,7 @@ const barBell: Example<BarBellChartProps>[] = [
     "element": "michi-vz-bar-bell-chart",
     "props": {
       "title": "Cumulative installed solar PV capacity by region, GW",
+      "xAxisPosition": "bottom",
       "keys": [
         "Asia-Pacific",
         "Europe",
@@ -1013,58 +1029,59 @@ const range: Example<RangeChartProps>[] = [
 const ribbon: Example<RibbonChartProps>[] = [
   {
     "id": "ribbon-basic",
-    "title": "Electricity generation by source, % of total",
-    "description": "Stacked columns per year linked by connecting ribbons showing how the global electricity mix re-ranks as wind & solar climb past nuclear.",
+    "title": "US recorded music revenue by format, % of total",
+    "description": "Stacked columns per year re-ranked by value and linked by crossing ribbons: downloads overtake the CD, streaming overtakes everything, and vinyl climbs back past the CD.",
     "element": "michi-vz-ribbon-chart",
     "props": {
-      "title": "Global electricity generation by source, % of total (2010-2023)",
+      "title": "US recorded music revenue by format, % of total (2008-2023)",
       "keys": [
-        "Coal",
-        "Natural gas",
-        "Hydro",
-        "Nuclear",
-        "Wind & solar"
+        "CD",
+        "Downloads",
+        "Streaming",
+        "Vinyl"
       ],
       "series": [
         {
-          "date": "2010",
-          "Coal": 40.4,
-          "Natural gas": 22.1,
-          "Hydro": 16.2,
-          "Nuclear": 12.9,
-          "Wind & solar": 8.4
+          "date": "2008",
+          "CD": 62,
+          "Downloads": 30,
+          "Streaming": 4,
+          "Vinyl": 1
         },
         {
-          "date": "2014",
-          "Coal": 40.8,
-          "Natural gas": 21.6,
-          "Hydro": 16.4,
-          "Nuclear": 10.6,
-          "Wind & solar": 10.6
+          "date": "2012",
+          "CD": 37,
+          "Downloads": 41,
+          "Streaming": 15,
+          "Vinyl": 2
         },
         {
-          "date": "2018",
-          "Coal": 38,
-          "Natural gas": 23,
-          "Hydro": 15.8,
-          "Nuclear": 10.1,
-          "Wind & solar": 13.1
+          "date": "2016",
+          "CD": 17,
+          "Downloads": 24,
+          "Streaming": 51,
+          "Vinyl": 5
+        },
+        {
+          "date": "2020",
+          "CD": 4,
+          "Downloads": 6,
+          "Streaming": 83,
+          "Vinyl": 5.5
         },
         {
           "date": "2023",
-          "Coal": 35.5,
-          "Natural gas": 22.5,
-          "Hydro": 14.3,
-          "Nuclear": 9.1,
-          "Wind & solar": 18.6
+          "CD": 6,
+          "Downloads": 3,
+          "Streaming": 84,
+          "Vinyl": 8
         }
       ],
       "colorsMapping": {
-        "Coal": "#5D5D5D",
-        "Natural gas": "#E8A33D",
-        "Hydro": "#2A6F97",
-        "Nuclear": "#9B5DE5",
-        "Wind & solar": "#4CB944"
+        "CD": "#5D5D5D",
+        "Downloads": "#2A6F97",
+        "Streaming": "#4CB944",
+        "Vinyl": "#D7263D"
       }
     }
   },

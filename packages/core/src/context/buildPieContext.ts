@@ -3,6 +3,7 @@
 import type { PieNode } from "../pieChart/data";
 import type { PieArc } from "../pieChart/geometry";
 import type { PieChartContext, PieSliceContext } from "../types";
+import { buildLegendData } from "./legend";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -50,6 +51,13 @@ export function buildPieContext(input: BuildPieContextInput): PieChartContext {
   const headers = ["Label", "Value", "Share"];
   const rows = slices.map((s) => [s.label, s.value, `${Math.round(s.share * 100)}%`]);
 
+  // Flat legend rows keyed to the SAME resolved colours as the slice contexts
+  // (on-slice text is the % share only, so the name -> colour key lives here).
+  const legendData = buildLegendData({
+    labels: slices.map((s) => s.label),
+    colorsMapping: Object.fromEntries(slices.filter((s) => s.color).map((s) => [s.label, s.color])),
+  });
+
   return {
     chartType: "pie-chart",
     title: input.title,
@@ -57,6 +65,7 @@ export function buildPieContext(input: BuildPieContextInput): PieChartContext {
     mode: input.mode,
     innerRadiusRatio: input.innerRadiusRatio,
     slices,
+    legendData,
     stats: {
       sliceCount: slices.length,
       total: round(total),

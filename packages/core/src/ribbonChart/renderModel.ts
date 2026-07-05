@@ -68,7 +68,14 @@ export function buildRibbonRenderModel(
     const colX = (scales.xScale(date) ?? 0) + bandwidth / 2 - width / 2;
     let y0 = 0;
     const map = new Map<string, Seg>();
-    for (const key of o.activeKeys) {
+    // Legacy parity: each date's stack is re-sorted ascending by that date's value
+    // (smallest at the bottom, largest on top), so a key's vertical position tracks
+    // its rank and the connecting ribbons cross when ranks swap. activeKeys itself
+    // stays untouched - context/a11y key order is the caller's.
+    const rankedKeys = [...o.activeKeys].sort(
+      (a, b) => (Number(row[a]) || 0) - (Number(row[b]) || 0)
+    );
+    for (const key of rankedKeys) {
       const value = Number(row[key]) || 0;
       const y1 = y0 + value;
       map.set(key, {

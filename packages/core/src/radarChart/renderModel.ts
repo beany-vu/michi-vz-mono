@@ -49,6 +49,9 @@ export interface BuildRadarModelOptions {
   highlightItems: string[];
   poleLabelFormatter?: (axis: string) => string;
   radialLabelFormatter?: (value: number) => string;
+  /** Floor for axis-label y (px). The engine passes the title band's bottom edge when a
+   * title is rendered, so the top pole's label can't climb into the title. */
+  minLabelY?: number;
 }
 
 export function buildRadarRenderModel(
@@ -82,7 +85,10 @@ export function buildRadarRenderModel(
     const p = pt(radius + 25, i);
     const cos = Math.cos(angleOf(i));
     const anchor: "start" | "middle" | "end" = cos > 0.3 ? "start" : cos < -0.3 ? "end" : "middle";
-    return { x: p.x, y: p.y, text: o.poleLabelFormatter ? o.poleLabelFormatter(axis) : axis, anchor };
+    // Keep upward-overshooting labels (the straight-up pole especially) out of the
+    // title band; side/bottom labels are already lower so the clamp is a no-op there.
+    const y = o.minLabelY !== undefined ? Math.max(p.y, o.minLabelY) : p.y;
+    return { x: p.x, y, text: o.poleLabelFormatter ? o.poleLabelFormatter(axis) : axis, anchor };
   });
   // Radial (ring-value) labels along the top spoke (axis 0 points straight up).
   const radialLabels: Array<{ x: number; y: number; text: string }> = [];

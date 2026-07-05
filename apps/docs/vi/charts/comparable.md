@@ -8,7 +8,13 @@ description: "Biểu đồ cột so sánh: trước và sau được đặt cạ
 
 Nó đã trở nên tốt hơn hay tệ hơn? Đặt trước và sau cạnh nhau trên một cột cho mỗi nhãn, và khoảng cách đã thu hẹp (hoặc mở rộng) là điều đầu tiên người đọc nhìn thấy.
 
-<ChartDemo chart="comparable-horizontal-bar-chart" />
+<ChartDemo
+  chart="comparable-horizontal-bar-chart"
+  :legend="[
+    { label: '2019 (trước, màu nhạt)', color: '#b1b1b1' },
+    { label: '2024 (sau, màu đậm)', color: '#6e6e6e' },
+  ]"
+/>
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
@@ -102,7 +108,7 @@ Các prop được định kiểu là `ComparableHorizontalBarChartProps` trong 
 
 ### Hai cột con cho mỗi hàng
 
-Mỗi hàng vẽ `valueBased` (phía sau) và `valueCompared` (phía trước), phân kỳ từ x=0. `valueBasedOpacity` / `valueComparedOpacity` đặt độ mờ tô của chúng. Một cột con có màu tô đã phân giải là `transparent` sẽ bị **bỏ qua** (consumer ẩn một nửa qua CSS). `minBarWidth` (mặc định 5) đặt sàn cho một cột khác không để các giá trị gần bằng không vẫn hiển thị được.
+Mỗi hàng vẽ `valueBased` (màu nhạt) và `valueCompared` (màu đậm), phân kỳ từ x=0; cột con ngắn hơn luôn được vẽ đè lên trên nên cả hai giá trị đều nhìn thấy được, dù tăng hay giảm. `colorsBasedMapping` cho cột con valueBased một màu riêng theo từng nhãn: kết hợp một tông màu sáng không trong suốt với `valueBasedOpacity: 1` (như demo ở trên) để tương phản trước/sau rõ nhất trên cả hai theme. `valueBasedOpacity` / `valueComparedOpacity` đặt độ mờ tô của chúng. Một cột con có màu tô đã phân giải là `transparent` sẽ bị **bỏ qua** (consumer ẩn một nửa qua CSS). `minBarWidth` (mặc định 5) đặt sàn cho một cột khác không để các giá trị gần bằng không vẫn hiển thị được.
 
 ### `patternsMapping` - tô bằng hoa văn / ảnh
 

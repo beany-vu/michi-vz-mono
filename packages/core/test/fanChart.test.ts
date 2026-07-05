@@ -64,6 +64,9 @@ describe("FanChart", () => {
     expect(ctx.series[0].bandLevels).toEqual([0.5, 0.95]);
     expect(ctx.stats.forecastHorizon).toBe(2);
     expect(ctx.summary).toContain("Fan chart");
+    // legendData rows mirror the resolved series colours (docs legend hook).
+    expect(ctx.legendData!.map((l) => l.label)).toEqual(ctx.series.map((s) => s.label));
+    expect(ctx.legendData![0].color).toBe(ctx.series[0].color);
     expect(h.querySelector(".mv-a11y")!.getAttribute("aria-label")).toContain("Fan chart");
 
     chart.destroy();

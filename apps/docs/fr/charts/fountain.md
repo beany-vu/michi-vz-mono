@@ -19,7 +19,7 @@ C'est donc un graphique honnête de **narration et d'attribution** : chiffre d'a
 
 Le `style: "jet"` par défaut est le Jet d'Eau fidèle : une colonne haute et étroite, dense à la base, s'effilochant en une couronne douce qui dérive sous le vent. Un `style: "plume"` plus symétrique (une colonne droite avec une éclosion plumeuse et une jupe de brume) est aussi disponible - voir [Deux silhouettes](#deux-silhouettes).
 
-<ChartDemo chart="fountain-chart" />
+<ChartDemo chart="fountain-chart" :legend="false" />
 
 > Un graphique, deux modes - décidés par le type de l'axe des x. Définissez `xAxisDataType: "band"` pour le **mode Instantané** : un jet par catégorie, comparant les magnitudes côte à côte (fontaines, villes, produits). Utilisez un x temporel ou numérique (`"date_annual"`, `"date_monthly"`, `"number"`) pour le **mode Tendance** : un jet par période, les sommets montants tracent la tendance tandis que chaque panache montre la volatilité de cette période, et un jet de prévision s'affiche en pointillés avec une couronne plus large et plus mousseuse.
 

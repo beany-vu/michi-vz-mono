@@ -21,7 +21,10 @@ function mark(p: ScatterPointModel): SVGElement {
     "data-label-safe": p.safe,
     fill: p.color,
     stroke: "#fff",
-    "stroke-width": 2,
+    // A 2px outline on a tiny mark is wider than the mark itself - in dense clouds
+    // (50k-point demos) later outlines erase earlier fills into a washed-out mush.
+    // Skip the outline once the mark is outline-sized.
+    "stroke-width": p.r >= 4 ? 2 : 0,
     opacity: p.dimmed ? 0.1 : 0.9,
   };
   if (p.shape === "square") {

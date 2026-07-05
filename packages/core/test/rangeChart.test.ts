@@ -64,6 +64,12 @@ describe("mountRangeChart (jsdom)", () => {
       expect(rA.minValue).toBe(5);
       expect(rA.maxValue).toBe(16);
     }
+    // legendData mirrors the resolved series colours (consumer colour-authority hook).
+    expect(ca.legendData!.map((l) => [l.label, l.color])).toEqual([
+      ["Region A", "#f00"],
+      ["Region B", "#0a0"],
+    ]);
+    expect(ca.legendData![0].dataLabelSafe).toBe(sanitizeForClassName("Region A"));
     const strip = (c: typeof ca) => ({ ...c, renderer: undefined });
     expect(strip(ca)).toEqual(strip(cb));
     a.chart.destroy();

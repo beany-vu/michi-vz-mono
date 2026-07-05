@@ -8,7 +8,7 @@ description: "Verschildiagram: zet twee waarden per label uit (voor en na, doel 
 
 Hoe ver liggen de twee waarden die ertoe doen uit elkaar? Zet voor en na, doel en werkelijk, mannen en vrouwen uit, en de balk daartussen vertelt het verhaal - hoe breder het verschil, hoe luider het spreekt.
 
-<ChartDemo chart="gap-chart" />
+<ChartDemo chart="gap-chart" :legend="false" />
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
 

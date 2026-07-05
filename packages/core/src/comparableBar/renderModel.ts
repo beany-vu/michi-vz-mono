@@ -10,6 +10,8 @@ export interface ComparableBarModel {
   label: string;
   safe: string;
   color: string;
+  /** Fill for the value-based sub-bar (colorsBasedMapping, else the row colour). */
+  basedColor: string;
   y: number;
   height: number;
   based: { x: number; width: number };
@@ -25,6 +27,15 @@ export interface BuildComparableModelOptions {
   highlightItems: string[];
   /** Floor a sub-bar's pixel width so near-zero values stay visible (default 5). */
   minBarWidth?: number;
+  /** Per-label colour override for the value-based sub-bar (legacy colorsBasedMapping). */
+  colorsBasedMapping?: Record<string, string>;
+}
+
+// Legacy z-order: the LONGER sub-bar is drawn first and the shorter one last (on
+// top), so both stay visible when one contains the other. Ties keep the historical
+// based-then-compared order.
+export function comparableDrawOrder(bar: ComparableBarModel): ["based" | "compared", "based" | "compared"] {
+  return bar.based.width < bar.compared.width ? ["compared", "based"] : ["based", "compared"];
 }
 
 export function buildComparableRenderModel(
@@ -52,6 +63,7 @@ export function buildComparableRenderModel(
     label: d.label,
     safe: sanitizeForClassName(d.label),
     color: colors.getColor(d.label),
+    basedColor: o.colorsBasedMapping?.[d.label] ?? colors.getColor(d.label),
     y: scales.yScale(d.label) ?? 0,
     height: bandHeight,
     based: seg(d.valueBased),

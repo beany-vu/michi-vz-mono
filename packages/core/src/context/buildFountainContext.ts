@@ -4,6 +4,7 @@
 // summary the insights/a11y layers read for free.
 import { isPredicted } from "../math/provenance";
 import { parseXValue } from "../lineChart/lineUtils";
+import { buildLegendData } from "./legend";
 import type {
   FountainChartContext,
   FountainDataItem,
@@ -123,6 +124,13 @@ export function buildFountainContext(input: BuildFountainContextInput): Fountain
       : [j.label, j.value, j.spread, j.spreadRatio];
   });
 
+  // Snapshot mode: one legend row per jet (categories). Trend mode is a single
+  // conceptual series over time - per-period legend rows would be noise.
+  const legendData =
+    input.mode === "snapshot"
+      ? buildLegendData({ labels: jets.map((j) => j.label), colorsMapping: input.colorsMapping })
+      : undefined;
+
   return {
     chartType: "fountain-chart",
     title: input.title,
@@ -131,6 +139,7 @@ export function buildFountainContext(input: BuildFountainContextInput): Fountain
     xAxis: { type: input.xAxisType, domain: input.mode === "trend" ? input.xDomain : input.labels },
     yAxis: { domain: input.yAxisDomain },
     jets,
+    legendData,
     stats: {
       jetCount: jets.length,
       tallest,

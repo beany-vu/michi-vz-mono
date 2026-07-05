@@ -351,6 +351,7 @@ export function applyComparableHorizontalBarChartProps(
   if (props.height !== undefined) el.height = props.height;
   if (props.renderer !== undefined) el.renderer = props.renderer;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
+  if (props.colorsBasedMapping !== undefined) el.colorsBasedMapping = props.colorsBasedMapping;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.valueBasedOpacity !== undefined) el.valueBasedOpacity = props.valueBasedOpacity;
@@ -524,6 +525,7 @@ export function applyBarBellChartProps(el: BarBellChartElement, props: BarBellCh
   if (props.yAxisDomain !== undefined) el.yAxisDomain = props.yAxisDomain;
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickHtmlWidth !== undefined) el.tickHtmlWidth = props.tickHtmlWidth;
+  if (props.xAxisPosition !== undefined) el.xAxisPosition = props.xAxisPosition;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
