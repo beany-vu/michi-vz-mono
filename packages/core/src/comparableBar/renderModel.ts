@@ -4,6 +4,8 @@ import { sanitizeForClassName } from "../math/sanitize";
 import type { ComparableBarDataPoint } from "../types";
 import type { ComparableScales } from "./scales";
 import type { ComparableColorResolver } from "./colors";
+import { computeComparableDelta } from "./delta";
+import type { ComparableDeltaGeometryOptions, ComparableDeltaModel } from "./delta";
 
 export interface ComparableBarSegment {
   x: number;
@@ -27,6 +29,8 @@ export interface ComparableBarModel {
   based: ComparableBarSegment;
   compared: ComparableBarSegment;
   dimmed: boolean;
+  /** Set only when DeltaIndicatorConfig.show is true; undefined is a provable no-op. */
+  delta?: ComparableDeltaModel;
 }
 
 export interface ComparableRenderModel {
@@ -43,6 +47,9 @@ export interface BuildComparableModelOptions {
    * other. "grouped": valueBased occupies the top half of the band, valueCompared the
    * bottom half - no overlap. Omitted/"overlay" is byte-identical to pre-layout output. */
   layout?: "overlay" | "grouped";
+  /** Resolved row-level delta indicator geometry options; undefined (the default -
+   * prop omitted or `show: false`) computes zero delta geometry (provable no-op). */
+  deltaIndicator?: ComparableDeltaGeometryOptions;
 }
 
 // Legacy z-order: the LONGER sub-bar is drawn first and the shorter one last (on
@@ -76,6 +83,12 @@ export function buildComparableRenderModel(
 
   const bars: ComparableBarModel[] = points.map((d) => {
     const y = scales.yScale(d.label) ?? 0;
+    // grouped: valueBased = top half, valueCompared = bottom half, no overlap.
+    // overlay (default): both spans equal the full row band - identical to pre-layout output.
+    const based = grouped ? seg(d.valueBased, y, halfHeight) : seg(d.valueBased, y, bandHeight);
+    const compared = grouped
+      ? seg(d.valueCompared, y + halfHeight, halfHeight)
+      : seg(d.valueCompared, y, bandHeight);
     return {
       raw: d,
       label: d.label,
@@ -84,11 +97,13 @@ export function buildComparableRenderModel(
       basedColor: o.colorsBasedMapping?.[d.label] ?? colors.getColor(d.label),
       y,
       height: bandHeight,
-      // grouped: valueBased = top half, valueCompared = bottom half, no overlap.
-      // overlay (default): both spans equal the full row band - identical to pre-layout output.
-      based: grouped ? seg(d.valueBased, y, halfHeight) : seg(d.valueBased, y, bandHeight),
-      compared: grouped ? seg(d.valueCompared, y + halfHeight, halfHeight) : seg(d.valueCompared, y, bandHeight),
+      based,
+      compared,
       dimmed: anyHighlight && !highlightSet.has(d.label),
+      // rowY/rowHeight passed here are the FULL row band (y, bandHeight), not the
+      // (possibly half-height, grouped-layout) segments, so the glyph stays
+      // centred on the row regardless of layout.
+      delta: o.deltaIndicator ? computeComparableDelta(d, based, compared, y, bandHeight, o.deltaIndicator) : undefined,
     };
   });
 

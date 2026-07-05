@@ -361,3 +361,107 @@ describe("processComparableBarData - symmetricXDomain", () => {
     expect(asym.xAxisDomain).toEqual([-25, 32]);
   });
 });
+
+describe("deltaIndicator", () => {
+  // Alpha One: 10 -> 18 (diff = valueCompared - valueBased = +8)
+  // Beta:      30 -> 22 (diff = -8)
+  // Gamma:     15 -> 15 (diff = 0)
+
+  it("absent prop: zero .mv-delta nodes and bar markup is byte-identical to a mount with no deltaIndicator key at all", () => {
+    const withoutKey = mount();
+    const withShowFalse = mount({ deltaIndicator: { show: false } });
+    expect(withoutKey.host.querySelectorAll(".mv-delta").length).toBe(0);
+    expect(withShowFalse.host.querySelectorAll(".mv-delta").length).toBe(0);
+    const rectAttrs = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll("rect.bar")).map((r) => r.outerHTML);
+    expect(rectAttrs(withShowFalse.host)).toEqual(rectAttrs(withoutKey.host));
+    withoutKey.chart.destroy();
+    withoutKey.host.remove();
+    withShowFalse.chart.destroy();
+    withShowFalse.host.remove();
+  });
+
+  it("show:true renders one .mv-delta per row with the formatted label", () => {
+    const { host, chart } = mount({ deltaIndicator: { show: true } });
+    const deltas = host.querySelectorAll(".mv-delta");
+    expect(deltas.length).toBe(3);
+    const alpha = host.querySelector('.mv-delta[data-label="Alpha One"]')!;
+    expect(alpha.querySelector(".mv-delta-label")!.textContent).toBe("+8");
+    chart.destroy();
+    host.remove();
+  });
+
+  it.each([
+    // [positiveIsGood, positiveIsUp, alphaDirection(+8), alphaColorIsGood, betaDirection(-8), betaColorIsGood]
+    [true, true, "up", true, "down", false],
+    [true, false, "down", true, "up", false],
+    [false, true, "up", false, "down", true],
+    [false, false, "down", false, "up", true],
+  ])(
+    "positiveIsGood=%s positiveIsUp=%s -> Alpha(+8)=%s/good:%s, Beta(-8)=%s/good:%s",
+    (positiveIsGood, positiveIsUp, alphaDir, alphaGood, betaDir, betaGood) => {
+      const { host, chart } = mount({ deltaIndicator: { show: true, positiveIsGood, positiveIsUp } });
+      const GOOD = "#009688";
+      const BAD = "#e91e63";
+      const alphaArrow = host.querySelector('.mv-delta[data-label="Alpha One"] .mv-delta-arrow')!;
+      expect(alphaArrow.classList.contains(`mv-delta-arrow--${alphaDir}`)).toBe(true);
+      expect(alphaArrow.getAttribute("fill")).toBe(alphaGood ? GOOD : BAD);
+
+      const betaArrow = host.querySelector('.mv-delta[data-label="Beta"] .mv-delta-arrow')!;
+      expect(betaArrow.classList.contains(`mv-delta-arrow--${betaDir}`)).toBe(true);
+      expect(betaArrow.getAttribute("fill")).toBe(betaGood ? GOOD : BAD);
+
+      // Zero delta (Gamma) is always neutral + flat, regardless of the flags.
+      const gammaArrow = host.querySelector('.mv-delta[data-label="Gamma"] .mv-delta-arrow')!;
+      expect(gammaArrow.classList.contains("mv-delta-arrow--flat")).toBe(true);
+      expect(gammaArrow.getAttribute("fill")).toBe("#B2B2B2");
+
+      chart.destroy();
+      host.remove();
+    }
+  );
+
+  it("formatter override takes full control of the label (no automatic +/- prefix)", () => {
+    const { host, chart } = mount({
+      deltaIndicator: { show: true, formatter: (diff) => `Δ${diff}` },
+    });
+    const alpha = host.querySelector('.mv-delta[data-label="Alpha One"] .mv-delta-label')!;
+    expect(alpha.textContent).toBe("Δ8");
+    const beta = host.querySelector('.mv-delta[data-label="Beta"] .mv-delta-label')!;
+    expect(beta.textContent).toBe("Δ-8");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("default formatter uses xAxisFormat when provided", () => {
+    const { host, chart } = mount({
+      deltaIndicator: { show: true },
+      xAxisFormat: (d) => `${d}kg`,
+    });
+    const alpha = host.querySelector('.mv-delta[data-label="Alpha One"] .mv-delta-label')!;
+    expect(alpha.textContent).toBe("+8kg");
+    const beta = host.querySelector('.mv-delta[data-label="Beta"] .mv-delta-label')!;
+    expect(beta.textContent).toBe("-8kg");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("default formatter falls back to a locale number formatter when xAxisFormat is absent", () => {
+    const { host, chart } = mount({ deltaIndicator: { show: true } });
+    const alpha = host.querySelector('.mv-delta[data-label="Alpha One"] .mv-delta-label')!;
+    expect(alpha.textContent).toBe("+8");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("renders in both layout: overlay and layout: grouped", () => {
+    const overlay = mount({ deltaIndicator: { show: true }, layout: "overlay" });
+    const grouped = mount({ deltaIndicator: { show: true }, layout: "grouped" });
+    expect(overlay.host.querySelectorAll(".mv-delta").length).toBe(3);
+    expect(grouped.host.querySelectorAll(".mv-delta").length).toBe(3);
+    overlay.chart.destroy();
+    overlay.host.remove();
+    grouped.chart.destroy();
+    grouped.host.remove();
+  });
+});

@@ -8,6 +8,7 @@ import type {
   ComparableBarDataPoint,
   ChartContext,
   ChartInstance,
+  DeltaIndicatorConfig,
   Margin,
   MichiVzPlugin,
 } from "@michi-vz/core";
@@ -48,6 +49,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
     maxBarHeight: { type: Number, attribute: "max-bar-height" },
     symmetricXDomain: { type: Boolean, attribute: "symmetric-x-domain" },
     layout: { type: String },
+    deltaIndicator: { attribute: false },
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
@@ -89,6 +91,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
   maxBarHeight?: number;
   symmetricXDomain?: boolean;
   layout?: "overlay" | "grouped";
+  deltaIndicator?: DeltaIndicatorConfig;
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
   noDataLabel?: string;
@@ -144,6 +147,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
       maxBarHeight: this.maxBarHeight,
       symmetricXDomain: this.symmetricXDomain,
       layout: this.layout,
+      deltaIndicator: this.deltaIndicator,
       isLoading: this.isLoading,
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,

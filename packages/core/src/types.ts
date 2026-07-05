@@ -899,6 +899,60 @@ export interface ComparableBarDataPoint {
   valueCompared: number;
 }
 
+/**
+ * Shared, reusable row-level change indicator: an arrow glyph + formatted
+ * difference label showing how `valueCompared` differs from `valueBased`
+ * (`diff = valueCompared - valueBased`; `valueCompared` is treated as the
+ * "current"/latest value, `valueBased` as the reference it moved from - this
+ * matches `ComparableBarSeriesContext.difference`, already computed the same
+ * way for the a11y table/summary).
+ *
+ * This is the REFERENCE implementation (first landed on
+ * ComparableHorizontalBarChart); the upcoming ComparableVerticalBarChart
+ * mirrors this exact contract for consumer parity with the legacy sdg-trade
+ * `BarchartVertical` red/green change arrow.
+ *
+ * Ported decision logic from legacy sdg-trade `BarchartVertical/Chart.js`
+ * (`diffStatus`/`diffColorLabel`): sign of `diff` picks the arrow direction and
+ * good/bad color via two independent boolean twiddles. One deliberate
+ * divergence from the legacy chart: the legacy `positiveChangeGood` flag maps
+ * a positive diff to RED (and negative to GREEN) - inverted from what the name
+ * suggests, consistently across `Chart.js` and `Legend.js`. This config's
+ * `positiveIsGood` uses the semantically correct (non-inverted) mapping
+ * instead, since it is a brand-new, sanely-named contract, not a byte-for-byte
+ * port of that quirk. The arrow-direction twiddle (`positiveIsUp`) mirrors the
+ * legacy `positiveChangeUpward` exactly.
+ *
+ * Colors are fixed defaults (not independently configurable - YAGNI), read
+ * from the legacy sdg-trade `constants/style.js`: good = `colors.GREEN`
+ * (`teal['500']` = #009688), bad = `colors.RED` (`pink['500']` = #e91e63). A
+ * zero diff always renders neutral gray (legacy `colors.BLACK_300` = #B2B2B2)
+ * with a flat/straight glyph, regardless of `positiveIsGood`/`positiveIsUp`.
+ *
+ * Presentational-only: this does NOT feed the renderer-agnostic ChartContext
+ * (`series[].difference` already exists there independently) - a11y/context
+ * reflection of the indicator itself is deliberately deferred to
+ * ComparableVerticalBarChart, which owns the real consumer use case.
+ *
+ * Absent prop, or `show: false`, is a byte-for-byte no-op: zero geometry is
+ * computed and zero `.mv-delta` DOM nodes are ever created.
+ */
+export interface DeltaIndicatorConfig {
+  /** Master switch; false (or the prop being omitted) is a provable no-op. */
+  show: boolean;
+  /** Positive diff renders "good" (green); default true. */
+  positiveIsGood?: boolean;
+  /** Positive diff's arrow points up (else down); default true. */
+  positiveIsUp?: boolean;
+  /**
+   * Formats the label. Called with the SIGNED diff (`valueCompared -
+   * valueBased`, no automatic +/- prefix) and the row's datum - full control.
+   * Default: a `+`/`-`-prefixed absolute value via `xAxisFormat` when set,
+   * else a locale (`Intl.NumberFormat`) number formatter.
+   */
+  formatter?: (diff: number, d: ComparableBarDataPoint) => string;
+}
+
 export interface ComparableBarChartProps {
   /** Array of horizontal-bar rows; each renders two overlaid sub-bars (valueBased behind, valueCompared in front) for one label */
   dataSet: ComparableBarDataPoint[];
@@ -970,6 +1024,11 @@ export interface ComparableBarChartProps {
    * (scales, colours, patternsMapping, tooltips, maxBarHeight, symmetricXDomain) is
    * identical between modes. */
   layout?: "overlay" | "grouped";
+  /** Row-level change indicator (arrow + formatted diff label) comparing
+   * valueCompared to valueBased. Omitted, or `{ show: false }`, is a provable
+   * no-op (zero geometry, zero `.mv-delta` DOM). See DeltaIndicatorConfig JSDoc
+   * for the full decision-logic contract. */
+  deltaIndicator?: DeltaIndicatorConfig;
   /** Loading overlay (stale bars hidden while true) */
   isLoading?: boolean;
   /** No-data predicate/flag; default = empty dataSet */

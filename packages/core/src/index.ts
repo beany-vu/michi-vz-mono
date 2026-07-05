@@ -230,6 +230,7 @@ export type {
   ComparableBarChartProps,
   ComparableBarSeriesContext,
   ComparableBarChartContext,
+  DeltaIndicatorConfig,
   DualBarDataPoint,
   DualBarChartProps,
   DualBarSeriesContext,

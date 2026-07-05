@@ -16,6 +16,8 @@ import type { ComparableBarModel } from "../comparableBar/renderModel";
 import { renderComparableSvg } from "../comparableBar/renderSvg";
 import { drawComparableCanvas } from "../comparableBar/renderCanvas";
 import { drawComparableBarWebgpu } from "../comparableBar/renderWebgpu";
+import { renderComparableDeltaSvg } from "../comparableBar/renderDeltaSvg";
+import type { ComparableDeltaGeometryOptions } from "../comparableBar/delta";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildComparableBarContext } from "../context/buildComparableBarContext";
 import { renderA11yMirror } from "../context/a11yMirror";
@@ -61,6 +63,19 @@ interface Resolved {
   horizontalTickPosition?: { x: number; y: number };
   maxBarHeight?: number;
   layout: "overlay" | "grouped";
+  /** Resolved from props.deltaIndicator; undefined when the prop is omitted or
+   * `show: false` (provable no-op - no geometry computed, no DOM painted). */
+  deltaIndicator?: ComparableDeltaGeometryOptions;
+}
+
+function defaultDeltaFormatter(
+  p: ComparableBarChartProps
+): (diff: number, d: ComparableBarDataPoint) => string {
+  const fmt = p.xAxisFormat ?? defaultNumberFormatter(p.locale);
+  return (diff) => {
+    const sign = diff > 0 ? "+" : diff < 0 ? "-" : "";
+    return `${sign}${fmt(Math.abs(diff))}`;
+  };
 }
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
@@ -90,6 +105,13 @@ function resolve(p: ComparableBarChartProps): Resolved {
     horizontalTickPosition: p.horizontalTickPosition,
     maxBarHeight: p.maxBarHeight,
     layout: p.layout ?? "overlay",
+    deltaIndicator: p.deltaIndicator?.show
+      ? {
+          positiveIsGood: p.deltaIndicator.positiveIsGood ?? true,
+          positiveIsUp: p.deltaIndicator.positiveIsUp ?? true,
+          formatter: p.deltaIndicator.formatter ?? defaultDeltaFormatter(p),
+        }
+      : undefined,
   };
 }
 
@@ -326,6 +348,7 @@ export function mountComparableHorizontalBarChart(
       minBarWidth: r.minBarWidth,
       colorsBasedMapping: props.colorsBasedMapping,
       layout: r.layout,
+      deltaIndicator: r.deltaIndicator,
     });
 
     const xFormat = props.xAxisFormat ?? defaultNumberFormatter(props.locale);
@@ -471,6 +494,15 @@ export function mountComparableHorizontalBarChart(
     } else {
       removeCanvas();
       removeWebgpuCanvas();
+    }
+
+    // Delta indicator: painted on the SVG scaffold layer unconditionally (same
+    // treatment as title/axis text above), so it appears identically whichever
+    // `renderer` painted the bars themselves. No-op when the prop is absent /
+    // `show: false` (r.deltaIndicator is undefined -> model.bars[].delta is
+    // undefined -> the loop below draws nothing).
+    if (r.deltaIndicator) {
+      renderComparableDeltaSvg(svg, model.bars);
     }
 
     context = buildComparableBarContext({

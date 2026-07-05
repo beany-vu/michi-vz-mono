@@ -2542,6 +2542,14 @@
           "common": false
         },
         {
+          "name": "deltaIndicator",
+          "type": "DeltaIndicatorConfig",
+          "optional": true,
+          "description": "Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased. Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero `.mv-delta` DOM). See DeltaIndicatorConfig JSDoc for the full decision-logic contract.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "isLoading",
           "type": "boolean",
           "optional": true,

@@ -386,6 +386,7 @@ export function applyComparableHorizontalBarChartProps(
   if (props.maxBarHeight !== undefined) el.maxBarHeight = props.maxBarHeight;
   if (props.symmetricXDomain !== undefined) el.symmetricXDomain = props.symmetricXDomain;
   if (props.layout !== undefined) el.layout = props.layout;
+  if (props.deltaIndicator !== undefined) el.deltaIndicator = props.deltaIndicator;
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
