@@ -300,15 +300,22 @@ describe("layout: overlay (default) vs grouped", () => {
     host.remove();
   });
 
-  it('layout: "grouped" produces the same renderer-agnostic context as overlay (geometry-independent)', () => {
-    const overlay = mount({ renderer: "canvas" });
-    const grouped = mount({ layout: "grouped", renderer: "canvas" });
-    const strip = (c: NonNullable<ReturnType<typeof overlay.chart.getContext>>) => ({ ...c, renderer: undefined });
-    expect(strip(overlay.chart.getContext()!)).toEqual(strip(grouped.chart.getContext()!));
-    overlay.chart.destroy();
-    overlay.host.remove();
-    grouped.chart.destroy();
-    grouped.host.remove();
+  it('layout: "grouped" exposes a comparable-bar context identical in SVG and canvas (extends the svg-vs-canvas parity test above to grouped mode)', () => {
+    const a = mount({ layout: "grouped", renderer: "svg" });
+    const b = mount({ layout: "grouped", renderer: "canvas" });
+    const ca = a.chart.getContext()!;
+    const cb = b.chart.getContext()!;
+    expect(ca.chartType).toBe("comparable-horizontal-bar-chart");
+    if (ca.chartType === "comparable-horizontal-bar-chart") {
+      expect(ca.stats.count).toBe(3);
+      expect(ca.series.find((s) => s.label === "Alpha One")!.difference).toBe(8); // 18-10
+    }
+    const strip = (c: typeof ca) => ({ ...c, renderer: undefined });
+    expect(strip(ca)).toEqual(strip(cb));
+    a.chart.destroy();
+    a.host.remove();
+    b.chart.destroy();
+    b.host.remove();
   });
 });
 
