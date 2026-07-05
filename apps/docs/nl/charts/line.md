@@ -86,7 +86,7 @@ function makeNoDataLine() {
 
 De optionele `renderer="webgpu"` van het lijndiagram tekent de lijn-/markergeometrie op de GPU, terwijl assen, labels en tooltips op de SVG-laag blijven; dit is capability-gated met automatische terugval naar canvas wanneer WebGPU niet beschikbaar is.
 
-<WebgpuHeavyDemo element="michi-vz-line-chart" :make="makeLine" caption="~16,000 points" />
+<WebgpuHeavyDemo legend element="michi-vz-line-chart" :make="makeLine" caption="~16,000 points" />
 
 ## Detectie van hiaten
 

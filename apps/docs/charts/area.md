@@ -73,7 +73,7 @@ function makeNoDataArea() {
 
 AreaChart has an opt-in `renderer="webgpu"` that paints the stacked bands on the GPU while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically.
 
-<WebgpuHeavyDemo element="michi-vz-area-chart" :make="makeArea" caption="~7,500 points" />
+<WebgpuHeavyDemo legend element="michi-vz-area-chart" :make="makeArea" caption="~7,500 points" />
 
 ## Continuous timeline & no-data ticks
 

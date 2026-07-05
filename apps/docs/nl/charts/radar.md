@@ -40,7 +40,7 @@ function makeRadar() {
 
 RadarChart heeft een optionele `renderer="webgpu"` die de veelhoekvullingen en polmarkers tekent als GPU-instanced marks, terwijl assen, labels en tooltips op de SVG-laag blijven. Dit is capability-gated: in een browser zonder WebGPU wordt automatisch teruggevallen op canvas, en `getContext().renderer` rapporteert wat daadwerkelijk is getekend.
 
-<WebgpuHeavyDemo element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
+<WebgpuHeavyDemo legend element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
 
 ## Gebruik
 

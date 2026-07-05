@@ -68,7 +68,16 @@ function makeGap() {
 
 GapChart có tùy chọn `renderer="webgpu"` để vẽ các marker value1/value2 và các thanh nối dưới dạng hình theo instance trên GPU trong khi trục, nhãn và tooltip vẫn ở lớp SVG. Tính năng này được kiểm soát theo khả năng: trên trình duyệt không có WebGPU, nó sẽ tự động hạ cấp xuống canvas, và `getContext().renderer` báo cáo bất kỳ renderer nào thực sự đã vẽ.
 
-<WebgpuHeavyDemo element="michi-vz-gap-chart" :make="makeGap" caption="~195 quốc gia" />
+<WebgpuHeavyDemo
+  element="michi-vz-gap-chart"
+  :make="makeGap"
+  :legend="[
+    { label: 'Africa', color: '#e07b39' },
+    { label: 'Asia', color: '#2a9d8f' },
+    { label: 'Americas', color: '#457b9d' },
+    { label: 'Europe', color: '#9b5de5' },
+    { label: 'Oceania', color: '#d7263d' },
+  ]" caption="~195 quốc gia" />
 
 ## Cách dùng
 

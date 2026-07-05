@@ -68,7 +68,16 @@ function makeGap() {
 
 GapChart has an opt-in `renderer="webgpu"` that paints the value1/value2 markers and connecting bars as GPU-instanced shapes while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
 
-<WebgpuHeavyDemo element="michi-vz-gap-chart" :make="makeGap" caption="~195 countries" />
+<WebgpuHeavyDemo
+  element="michi-vz-gap-chart"
+  :make="makeGap"
+  :legend="[
+    { label: 'Africa', color: '#e07b39' },
+    { label: 'Asia', color: '#2a9d8f' },
+    { label: 'Americas', color: '#457b9d' },
+    { label: 'Europe', color: '#9b5de5' },
+    { label: 'Oceania', color: '#d7263d' },
+  ]" caption="~195 countries" />
 
 ## Usage
 

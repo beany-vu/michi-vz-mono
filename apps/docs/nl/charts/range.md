@@ -57,7 +57,7 @@ function makeRange() {
 
 RangeChart heeft een optionele `renderer="webgpu"` die de min/max-banden tekent als GPU-instanced geometrie, terwijl assen, labels en tooltips op de SVG-laag blijven. Dit is capability-gated: in een browser zonder WebGPU wordt automatisch teruggevallen op canvas, en `getContext().renderer` rapporteert wat daadwerkelijk is getekend.
 
-<WebgpuHeavyDemo element="michi-vz-range-chart" :make="makeRange" caption="~200 bands" />
+<WebgpuHeavyDemo legend element="michi-vz-range-chart" :make="makeRange" caption="~200 bands" />
 
 ## Gebruik
 

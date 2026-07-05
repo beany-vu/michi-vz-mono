@@ -73,7 +73,7 @@ function makeNoDataArea() {
 
 AreaChart có tùy chọn `renderer="webgpu"` để vẽ các dải chồng trên GPU trong khi trục, nhãn và tooltip vẫn ở lớp SVG. Tính năng này được kiểm soát theo khả năng: trên trình duyệt không có WebGPU, nó sẽ tự động hạ cấp xuống canvas.
 
-<WebgpuHeavyDemo element="michi-vz-area-chart" :make="makeArea" caption="~7,500 points" />
+<WebgpuHeavyDemo legend element="michi-vz-area-chart" :make="makeArea" caption="~7,500 points" />
 
 ## Trục thời gian liên tục & các mốc không có dữ liệu
 

@@ -71,7 +71,15 @@ function makeSankey() {
 
 Le `renderer="webgpu"` optionnel de ce graphique dessine ses marques sur le GPU tandis que les axes/libellés/infobulles restent sur SVG ; conditionné aux capacités du navigateur, avec repli automatique sur canvas.
 
-<WebgpuHeavyDemo element="michi-vz-sankey-chart" :make="makeSankey" caption="~150 links" />
+<WebgpuHeavyDemo
+  element="michi-vz-sankey-chart"
+  :make="makeSankey"
+  :legend="[
+    { label: 'Sources', color: '#e63946' },
+    { label: 'Hubs', color: '#1d3557' },
+    { label: 'Regions', color: '#2a9d8f' },
+    { label: 'Markets', color: '#e9c46a' },
+  ]" caption="~150 links" />
 
 ## Utilisation
 

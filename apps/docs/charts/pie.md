@@ -8,11 +8,11 @@ description: "Pie and donut chart: wedges sized by value, labelled with percenta
 
 "What share does each part take of the whole?" The oldest question in charting, and a pie still answers it best when there are only a handful of slices. Each wedge is sized by value and labelled with its percentage; slices sort by value so the biggest reads first. Want a donut instead? It is the **same chart** - set `innerRadiusRatio` above 0 to carve out the hole (the context then reports `mode: "donut"`).
 
-<ChartDemo chart="pie-chart" />
+<ChartDemo chart="pie-chart" :legend="false" />
 
 The donut variant is one prop away - here the same shares with `innerRadiusRatio: 0.6`, a small `padAngle`, and rounded corners:
 
-<ChartDemo chart="pie-chart" :index="1" />
+<ChartDemo chart="pie-chart" :index="1" :legend="false" />
 
 > Keep slice counts low (≈ 6 or fewer). For many categories, a [bar](/charts/comparable) or [treemap](/charts/treemap) reads more precisely than a pie.
 

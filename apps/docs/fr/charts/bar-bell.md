@@ -47,7 +47,7 @@ function makeBarBell() {
 
 BarBellChart dispose d'un `renderer="webgpu"` optionnel qui peint les barres de segment et les cercles d'extrémité comme des marques instanciées sur le GPU tandis que les axes, étiquettes et infobulles restent sur la couche SVG. C'est conditionné par les capacités du navigateur : sur un navigateur sans WebGPU, il rétrograde automatiquement vers canvas, et `getContext().renderer` indique lequel a effectivement peint.
 
-<WebgpuHeavyDemo element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 lignes" />
+<WebgpuHeavyDemo legend element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 lignes" />
 
 ## Usage
 

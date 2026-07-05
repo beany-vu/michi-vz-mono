@@ -57,7 +57,7 @@ function makeRange() {
 
 RangeChart có `renderer="webgpu"` tùy chọn, vẽ các dải min/max bằng hình học do GPU dựng hàng loạt trong khi trục, nhãn và tooltip vẫn nằm trên lớp SVG. Tính năng này được kiểm soát theo khả năng phần cứng: trên trình duyệt không có WebGPU, nó tự động hạ cấp về canvas, và `getContext().renderer` báo cáo bộ dựng thực sự đã vẽ.
 
-<WebgpuHeavyDemo element="michi-vz-range-chart" :make="makeRange" caption="~200 dải" />
+<WebgpuHeavyDemo legend element="michi-vz-range-chart" :make="makeRange" caption="~200 dải" />
 
 ## Cách dùng
 

@@ -47,7 +47,7 @@ function makeBarBell() {
 
 BarBellChart heeft een optionele `renderer="webgpu"` die de segmentbalken en eindkapcirkels tekent als GPU-instanced marks, terwijl assen, labels en tooltips op de SVG-laag blijven. Dit is capability-gated: in een browser zonder WebGPU schakelt het automatisch terug naar canvas, en `getContext().renderer` meldt welke renderer daadwerkelijk heeft getekend.
 
-<WebgpuHeavyDemo element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 rows" />
+<WebgpuHeavyDemo legend element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 rows" />
 
 ## Gebruik
 

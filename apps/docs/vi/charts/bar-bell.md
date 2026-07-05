@@ -47,7 +47,7 @@ function makeBarBell() {
 
 BarBellChart có tùy chọn `renderer="webgpu"` để vẽ các thanh đoạn và vòng tròn nắp đầu dưới dạng các mark theo instance trên GPU trong khi trục, nhãn và tooltip vẫn ở lớp SVG. Tính năng này được kiểm soát theo khả năng: trên trình duyệt không có WebGPU, nó sẽ tự động hạ cấp xuống canvas, và `getContext().renderer` báo cáo bất kỳ renderer nào thực sự đã vẽ.
 
-<WebgpuHeavyDemo element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 rows" />
+<WebgpuHeavyDemo legend element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 rows" />
 
 ## Cách dùng
 

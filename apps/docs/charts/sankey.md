@@ -71,7 +71,15 @@ function makeSankey() {
 
 This chart's opt-in `renderer="webgpu"` paints its marks on the GPU while axes/labels/tooltips stay on SVG; capability-gated with automatic canvas fallback.
 
-<WebgpuHeavyDemo element="michi-vz-sankey-chart" :make="makeSankey" caption="~150 links" />
+<WebgpuHeavyDemo
+  element="michi-vz-sankey-chart"
+  :make="makeSankey"
+  :legend="[
+    { label: 'Sources', color: '#e63946' },
+    { label: 'Hubs', color: '#1d3557' },
+    { label: 'Regions', color: '#2a9d8f' },
+    { label: 'Markets', color: '#e9c46a' },
+  ]" caption="~150 links" />
 
 ## Usage
 

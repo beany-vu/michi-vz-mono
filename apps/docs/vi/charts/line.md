@@ -86,7 +86,7 @@ function makeNoDataLine() {
 
 `renderer="webgpu"` tùy chọn của biểu đồ đường vẽ hình học đường/marker trên GPU, trong khi trục, nhãn và tooltip vẫn nằm trên lớp SVG; tính năng này được kiểm soát theo khả năng phần cứng, tự động chuyển về canvas khi WebGPU không khả dụng.
 
-<WebgpuHeavyDemo element="michi-vz-line-chart" :make="makeLine" caption="~16.000 điểm" />
+<WebgpuHeavyDemo legend element="michi-vz-line-chart" :make="makeLine" caption="~16.000 điểm" />
 
 ## Phát hiện khoảng trống
 

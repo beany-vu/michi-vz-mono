@@ -47,7 +47,7 @@ function makeBarBell() {
 
 BarBellChart has an opt-in `renderer="webgpu"` that paints the segment bars and end-cap circles as GPU-instanced marks while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
 
-<WebgpuHeavyDemo element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 rows" />
+<WebgpuHeavyDemo legend element="michi-vz-bar-bell-chart" :make="makeBarBell" caption="~120 rows" />
 
 ## Usage
 

@@ -86,7 +86,7 @@ function makeNoDataLine() {
 
 The line chart's opt-in `renderer="webgpu"` paints its line/marker geometry on the GPU while axes, labels and tooltips stay on the SVG layer; it is capability-gated with automatic canvas fallback when WebGPU is unavailable.
 
-<WebgpuHeavyDemo element="michi-vz-line-chart" :make="makeLine" caption="~16,000 points" />
+<WebgpuHeavyDemo legend element="michi-vz-line-chart" :make="makeLine" caption="~16,000 points" />
 
 ## Gap detection
 

@@ -71,7 +71,15 @@ function makeSankey() {
 
 `renderer="webgpu"` tùy chọn của biểu đồ này vẽ các mark trên GPU trong khi trục/nhãn/tooltip vẫn nằm trên SVG; được kiểm soát theo khả năng phần cứng với tự động chuyển về canvas.
 
-<WebgpuHeavyDemo element="michi-vz-sankey-chart" :make="makeSankey" caption="~150 liên kết" />
+<WebgpuHeavyDemo
+  element="michi-vz-sankey-chart"
+  :make="makeSankey"
+  :legend="[
+    { label: 'Sources', color: '#e63946' },
+    { label: 'Hubs', color: '#1d3557' },
+    { label: 'Regions', color: '#2a9d8f' },
+    { label: 'Markets', color: '#e9c46a' },
+  ]" caption="~150 liên kết" />
 
 ## Cách dùng
 

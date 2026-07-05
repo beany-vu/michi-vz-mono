@@ -8,11 +8,11 @@ description: "Biểu đồ tròn và vành khuyên: các múi được vẽ theo
 
 "Mỗi phần chiếm bao nhiêu tỷ trọng trong tổng thể?" Câu hỏi lâu đời nhất trong ngành biểu đồ, và một biểu đồ tròn vẫn trả lời tốt nhất khi chỉ có một số ít múi. Mỗi múi được vẽ theo kích thước giá trị và gắn nhãn phần trăm; các múi được sắp xếp theo giá trị để múi lớn nhất đọc trước tiên. Muốn dùng vành khuyên thay vào đó? Đó là **cùng một biểu đồ** - chỉ cần đặt `innerRadiusRatio` lớn hơn 0 để khoét lỗ giữa (khi đó context sẽ báo `mode: "donut"`).
 
-<ChartDemo chart="pie-chart" />
+<ChartDemo chart="pie-chart" :legend="false" />
 
 Biến thể vành khuyên chỉ cách một prop - đây là cùng các tỷ trọng đó với `innerRadiusRatio: 0.6`, một `padAngle` nhỏ, và các góc bo tròn:
 
-<ChartDemo chart="pie-chart" :index="1" />
+<ChartDemo chart="pie-chart" :index="1" :legend="false" />
 
 > Giữ số lượng múi ở mức thấp (khoảng 6 hoặc ít hơn). Với nhiều danh mục hơn, [biểu đồ cột](/vi/charts/comparable) hoặc [treemap](/vi/charts/treemap) đọc chính xác hơn một biểu đồ tròn.
 

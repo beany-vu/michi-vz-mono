@@ -86,7 +86,7 @@ function makeNoDataLine() {
 
 Le `renderer="webgpu"` optionnel du graphique en courbes dessine la géométrie des lignes/marqueurs sur le GPU, tandis que les axes, les libellés et les infobulles restent sur la couche SVG ; il est conditionné aux capacités du navigateur, avec repli automatique sur canvas lorsque WebGPU n'est pas disponible.
 
-<WebgpuHeavyDemo element="michi-vz-line-chart" :make="makeLine" caption="~16,000 points" />
+<WebgpuHeavyDemo legend element="michi-vz-line-chart" :make="makeLine" caption="~16,000 points" />
 
 ## Détection des lacunes
 

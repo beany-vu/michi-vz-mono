@@ -8,11 +8,11 @@ description: "Cirkel- en donutdiagram: taartpunten geschaald op waarde, gelabeld
 
 "Welk aandeel neemt elk onderdeel van het geheel in?" De oudste vraag in datavisualisatie, en een cirkeldiagram beantwoordt die nog altijd het best wanneer er maar een handvol segmenten zijn. Elk taartpunt is geschaald op waarde en gelabeld met zijn percentage; segmenten worden gesorteerd op waarde zodat het grootste als eerste leest. Liever een donut? Het is **dezelfde grafiek** - zet `innerRadiusRatio` boven 0 om het gat uit te snijden (de context rapporteert dan `mode: "donut"`).
 
-<ChartDemo chart="pie-chart" />
+<ChartDemo chart="pie-chart" :legend="false" />
 
 De donutvariant is één prop verwijderd - hier dezelfde aandelen met `innerRadiusRatio: 0.6`, een kleine `padAngle`, en afgeronde hoeken:
 
-<ChartDemo chart="pie-chart" :index="1" />
+<ChartDemo chart="pie-chart" :index="1" :legend="false" />
 
 > Houd het aantal segmenten laag (≈ 6 of minder). Voor veel categorieën leest een [staafdiagram](/nl/charts/comparable) of [treemap](/nl/charts/treemap) preciezer dan een cirkeldiagram.
 

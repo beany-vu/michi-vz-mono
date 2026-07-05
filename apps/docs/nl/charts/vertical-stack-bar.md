@@ -45,7 +45,7 @@ function makeVsb() {
 
 VerticalStackBarChart heeft een optionele `renderer="webgpu"` die de staven op de GPU tekent, terwijl assen, labels en tooltips op de SVG-laag blijven. Dit is capability-gated: in een browser zonder WebGPU wordt automatisch teruggevallen op canvas, en `getContext().renderer` rapporteert wat daadwerkelijk is getekend.
 
-<WebgpuHeavyDemo element="michi-vz-vertical-stack-bar-chart" :make="makeVsb" caption="~150 bars × 5 keys" />
+<WebgpuHeavyDemo legend element="michi-vz-vertical-stack-bar-chart" :make="makeVsb" caption="~150 bars × 5 keys" />
 
 ## Gebruik
 

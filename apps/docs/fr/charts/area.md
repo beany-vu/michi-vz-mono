@@ -73,7 +73,7 @@ function makeNoDataArea() {
 
 AreaChart dispose d'un `renderer="webgpu"` optionnel qui peint les bandes empilées sur le GPU tandis que les axes, étiquettes et infobulles restent sur la couche SVG. C'est conditionné par les capacités du navigateur : sur un navigateur sans WebGPU, il rétrograde automatiquement vers canvas.
 
-<WebgpuHeavyDemo element="michi-vz-area-chart" :make="makeArea" caption="~7 500 points" />
+<WebgpuHeavyDemo legend element="michi-vz-area-chart" :make="makeArea" caption="~7 500 points" />
 
 ## Chronologie continue et graduations sans données
 

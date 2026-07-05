@@ -40,7 +40,7 @@ function makeRadar() {
 
 RadarChart has an opt-in `renderer="webgpu"` that paints the polygon fills and pole markers as GPU-instanced marks while axes, labels and tooltips stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
 
-<WebgpuHeavyDemo element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
+<WebgpuHeavyDemo legend element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
 
 ## Usage
 

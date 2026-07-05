@@ -40,7 +40,7 @@ function makeRadar() {
 
 RadarChart có `renderer="webgpu"` tùy chọn, vẽ phần tô đa giác và các marker ở cực bằng các mark do GPU dựng hàng loạt trong khi trục, nhãn và tooltip vẫn nằm trên lớp SVG. Tính năng này được kiểm soát theo khả năng phần cứng: trên trình duyệt không có WebGPU, nó tự động hạ cấp về canvas, và `getContext().renderer` báo cáo bộ dựng thực sự đã vẽ.
 
-<WebgpuHeavyDemo element="michi-vz-radar-chart" :make="makeRadar" caption="12 trục × 4 chuỗi" />
+<WebgpuHeavyDemo legend element="michi-vz-radar-chart" :make="makeRadar" caption="12 trục × 4 chuỗi" />
 
 ## Cách dùng
 

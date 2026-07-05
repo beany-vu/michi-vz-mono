@@ -40,7 +40,7 @@ function makeRadar() {
 
 RadarChart possède un `renderer="webgpu"` optionnel qui dessine les remplissages des polygones et les marqueurs de pôles comme des marques rendues par le GPU tandis que les axes, les libellés et les infobulles restent sur la couche SVG. Il est conditionné aux capacités du navigateur : sur un navigateur sans WebGPU, il bascule automatiquement sur canvas, et `getContext().renderer` indique lequel a effectivement dessiné.
 
-<WebgpuHeavyDemo element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
+<WebgpuHeavyDemo legend element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
 
 ## Utilisation
 

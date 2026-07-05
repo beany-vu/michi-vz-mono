@@ -8,11 +8,11 @@ description: "Camembert et anneau : parts dimensionnées selon la valeur, étiqu
 
 « Quelle part chaque élément occupe-t-il dans le tout ? » La plus ancienne question de la visualisation de données, et un camembert y répond encore le mieux lorsqu'il n'y a qu'une poignée de parts. Chaque part est dimensionnée selon sa valeur et étiquetée avec son pourcentage ; les parts sont triées par valeur pour que la plus grosse se lise en premier. Vous préférez un anneau ? C'est le **même graphique** - réglez `innerRadiusRatio` au-dessus de 0 pour creuser le trou (le contexte indique alors `mode: "donut"`).
 
-<ChartDemo chart="pie-chart" />
+<ChartDemo chart="pie-chart" :legend="false" />
 
 La variante en anneau n'est qu'une prop plus loin - voici les mêmes parts avec `innerRadiusRatio: 0.6`, un léger `padAngle`, et des coins arrondis :
 
-<ChartDemo chart="pie-chart" :index="1" />
+<ChartDemo chart="pie-chart" :index="1" :legend="false" />
 
 > Gardez un nombre de parts faible (≈ 6 ou moins). Pour de nombreuses catégories, une [barre](/fr/charts/comparable) ou un [treemap](/fr/charts/treemap) se lit plus précisément qu'un camembert.
 
