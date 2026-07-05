@@ -8,11 +8,11 @@ description: "Bellendiagram met areaal-getrouwe grootte en een zwaartekracht-lay
 
 "Hoe groot is elk onderdeel, en hoeveel ervan is al gerealiseerd?" Een bellenwolk beantwoordt de vraag naar omvang in één oogopslag: elke cirkel heeft een grootte op basis van waarde (**oppervlakte**, niet straal), en een zwaartekrachtsimulatie trekt ze samen tot een net cluster, zodat de grote bellen duidelijk domineren. Net als bij de [treemap](/nl/charts/treemap) kan elke bel een **tweedelige splitsing** dragen - een volle gerealiseerde kern binnen een lichtere onbenutte ring - zodat je grootte en voortgang samen afleest.
 
-<ChartDemo chart="bubble-chart" />
+<ChartDemo chart="bubble-chart" :legend="[]" />
 
 Geen splitsing nodig? Laat `partial` weg voor een nette proportionele wolk, één kleur per categorie:
 
-<ChartDemo chart="bubble-chart" :index="1" />
+<ChartDemo chart="bubble-chart" :index="1" :legend="[]" />
 
 > Het cluster wordt opgebouwd met [d3-force](https://github.com/d3/d3-force): bellen vallen richting het midden (`gravity`) en duwen elkaar uit elkaar zodat ze nooit overlappen (botsing). De simulatie wordt **synchroon** afgerond, zodat SVG en canvas exact dezelfde, reproduceerbare layout renderen.
 

@@ -30,6 +30,10 @@ Legacy-parity fixes for Ribbon and Comparable, a new BarBell axis option, and le
   the legacy header look): "bottom" moves the value-axis tick labels below the
   plot, clearing room under the title. Exposed on the web component
   (`x-axis-position`) and `applyBarBellChartProps`.
-- **`legendData` now also on Ribbon, Range, Fan, Fountain (snapshot), and Pie
-  contexts**, mirroring the resolved series colours, so consumer colour
-  authorities and generic legends can key off every chart's context.
+- **`legendData` now also on Ribbon, Range, Fan, Fountain (snapshot), Pie,
+  Treemap, and Bubble contexts**, mirroring the resolved series colours, so
+  consumer colour authorities and generic legends can key off every chart's
+  context. Treemap and Bubble rows additionally carry the new
+  **`LegendItem.paleColor`**: the opaque white-mix of the split's veiled
+  remainder (computed with the same veil strength the renderers paint), so a
+  paired pale/solid legend can match the pixels exactly.

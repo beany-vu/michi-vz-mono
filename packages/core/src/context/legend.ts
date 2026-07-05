@@ -22,6 +22,21 @@ export interface LegendInput {
   palette?: string[];
 }
 
+/** Opaque white-mix of a hex colour (the "solid + white veil" tint the split
+ * renderers paint) so a legend swatch can show the pale companion EXACTLY as it
+ * renders. ratio = veil strength (0..1); non-hex colours return undefined. */
+export function mixWithWhite(color: string, ratio: number): string | undefined {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
+  if (!m) return undefined;
+  const hex = m[1].length === 3 ? m[1].split("").map((c) => c + c).join("") : m[1];
+  const r = Math.max(0, Math.min(1, ratio));
+  const mix = (i: number) => {
+    const c = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+    return Math.round(c + (255 - c) * r).toString(16).padStart(2, "0");
+  };
+  return `#${mix(0)}${mix(1)}${mix(2)}`;
+}
+
 /** Hex (#rgb / #rrggbb) + alpha → 8-digit hex; non-hex returned unchanged. */
 function hexWithAlpha(color: string, alpha: number): string {
   if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color)) return color;

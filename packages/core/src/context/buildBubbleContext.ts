@@ -1,8 +1,10 @@
 // Renderer-agnostic semantic context for Bubble. Derived from the processed
 // bubbles (not the DOM), so SVG and canvas produce identical context. The split
 // stats mirror the Treemap so "realized vs untapped" reads the same everywhere.
+import { mixWithWhite } from "./legend";
+import { sanitizeForClassName } from "../math/sanitize";
 import type { BubbleNode } from "../bubbleChart/data";
-import type { BubbleChartContext, BubbleContext } from "../types";
+import type { BubbleChartContext, BubbleContext, LegendItem } from "../types";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -13,6 +15,8 @@ export interface BuildBubbleContextInput {
   colorsMapping: Record<string, string>;
   splitLabels: [string, string];
   showSplit: boolean;
+  /** Remainder fill opacity; the veil strength is 1 - splitOpacity (renderer parity). */
+  splitOpacity: number;
 }
 
 export function buildBubbleContext(input: BuildBubbleContextInput): BubbleChartContext {
@@ -79,12 +83,25 @@ export function buildBubbleContext(input: BuildBubbleContextInput): BubbleChartC
     return base;
   });
 
+  // One legend row per bubble label; with a split active, paleColor carries the
+  // veiled remainder tint (same white-mix the renderers paint) so paired
+  // pale/solid legends match pixels.
+  const veil = Math.max(0, Math.min(0.95, 1 - input.splitOpacity));
+  const legendData: LegendItem[] = bubbles.map((b, order) => ({
+    label: b.label,
+    color: b.color,
+    order,
+    dataLabelSafe: sanitizeForClassName(b.label),
+    ...(hasPartial && b.partial != null ? { paleColor: mixWithWhite(b.color, veil) } : {}),
+  }));
+
   return {
     chartType: "bubble-chart",
     title: input.title,
     renderer: input.renderer,
     splitLabels,
     bubbles,
+    legendData,
     stats: {
       bubbleCount: nodes.length,
       total: grandTotal,

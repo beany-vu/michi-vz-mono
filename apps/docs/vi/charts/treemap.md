@@ -8,11 +8,11 @@ description: "Treemap với các ô được vẽ theo kích thước tổng và
 
 "Phần nào lớn nhất, và mỗi phần đã đạt được bao nhiêu?" Một treemap trả lời cả hai câu hỏi cùng lúc: mỗi ô vẽ theo tổng của nó, và một **cách chia hai phần** tùy chọn tô phần đặc bên trong mỗi ô, nhờ vậy bạn đọc được cả độ lớn (diện tích) lẫn tiến độ (phần chia) chỉ trong nháy mắt. Trường hợp kinh điển là tiềm năng xuất khẩu: diện tích ô = tổng tiềm năng, phần đặc = **đã đạt được**, phần nhạt hơn = **chưa khai thác**. Các ô lồng theo nhóm được, và trên màn hình hẹp toàn bộ gấp lại thành **dạng xếp chồng** một cột, dễ đọc.
 
-<ChartDemo chart="treemap-chart" />
+<ChartDemo chart="treemap-chart" :legend="[]" />
 
 Muốn dùng danh sách phẳng (mỗi ô một sản phẩm, mỗi ô một màu riêng - bố cục tiềm năng xuất khẩu kinh điển)? Bỏ lồng `children` và truyền trực tiếp các lá:
 
-<ChartDemo chart="treemap-chart" :index="1" />
+<ChartDemo chart="treemap-chart" :index="1" :legend="[]" />
 
 > Cách chia này mang tính tổng quát. Đặt tên hai phần bằng `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - không có gì trong engine gán cứng một lĩnh vực cụ thể.
 

@@ -8,11 +8,11 @@ description: "Treemap met tegels geschaald op totaal en een optionele tweedelige
 
 "Welke onderdelen zijn het grootst, en hoeveel daarvan is al gerealiseerd?" Een treemap beantwoordt beide tegelijk: elke tegel is geschaald op zijn totaal, en een optionele **tweedelige splitsing** vult het solide aandeel binnen elke tegel - zodat je omvang (oppervlakte) en voortgang (de splitsing) in één oogopslag leest. Het klassieke voorbeeld is exportpotentieel: tegeloppervlakte = totaal potentieel, het solide deel = **gerealiseerd**, het lichtere deel = **onbenut**. Tegels kunnen onder groepen nestelen, en op een smal scherm vouwt het geheel om tot een leesbare **stapel** in één kolom.
 
-<ChartDemo chart="treemap-chart" />
+<ChartDemo chart="treemap-chart" :legend="[]" />
 
 Liever een platte lijst (één tegel per product, elk zijn eigen kleur - de klassieke exportpotentieel-indeling)? Laat de `children`-nesting weg en geef de bladeren direct door:
 
-<ChartDemo chart="treemap-chart" :index="1" />
+<ChartDemo chart="treemap-chart" :index="1" :legend="[]" />
 
 > De splitsing is generiek. Benoem de twee delen met `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - niets in de engine legt een domein hard vast.
 

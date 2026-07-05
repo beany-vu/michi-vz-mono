@@ -8,11 +8,11 @@ description: "Treemap with tiles sized by total and an optional two-part split s
 
 "Which parts are biggest, and how much of each is already realized?" A treemap answers both at once: every tile is sized by its total, and an optional **two-part split** fills the solid share inside each tile - so you read magnitude (area) and progress (the split) in one glance. The classic case is export potential: tile area = total potential, the solid part = **realized**, the lighter part = **untapped**. Tiles can nest under groups, and on a narrow screen the whole thing folds into a readable single-column **stack**.
 
-<ChartDemo chart="treemap-chart" />
+<ChartDemo chart="treemap-chart" :legend="[]" />
 
 Prefer a flat list (one tile per product, each its own colour - the classic export-potential layout)? Drop the `children` nesting and pass leaves directly:
 
-<ChartDemo chart="treemap-chart" :index="1" />
+<ChartDemo chart="treemap-chart" :index="1" :legend="[]" />
 
 > The split is generic. Name the two parts with `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - nothing in the engine hardcodes a domain.
 

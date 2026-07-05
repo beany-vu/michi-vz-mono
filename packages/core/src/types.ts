@@ -185,6 +185,10 @@ export interface LegendItem {
   disabled?: boolean;
   /** sanitizeForClassName(label) - the CSS hook the canvas probe matches. */
   dataLabelSafe?: string;
+  /** Pale companion colour for split (pale/solid) encodings - the OPAQUE
+   * equivalent of the white-veiled remainder, so a legend can pair each label's
+   * pale and solid swatch exactly as rendered. */
+  paleColor?: string;
 }
 
 export interface BaseChartContext {

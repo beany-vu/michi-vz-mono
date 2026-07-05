@@ -8,11 +8,11 @@ description: "Bubble chart with area-true sizing and a gravity layout; each bubb
 
 "How big is each one, and how much of it is already realized?" A bubble cloud answers magnitude at a glance: every circle is sized by value (**area**, not radius), and a gravity simulation pulls them into a tidy cluster so the big ones obviously dominate. Like the [treemap](/charts/treemap), each bubble can carry a **two-part split** - a solid realized core inside a lighter untapped ring - so you read size and progress together.
 
-<ChartDemo chart="bubble-chart" />
+<ChartDemo chart="bubble-chart" :legend="[]" />
 
 No split needed? Drop `partial` for a clean proportional cloud, one colour per category:
 
-<ChartDemo chart="bubble-chart" :index="1" />
+<ChartDemo chart="bubble-chart" :index="1" :legend="[]" />
 
 > The cluster is laid out with [d3-force](https://github.com/d3/d3-force): bubbles fall toward the centre (`gravity`) and push apart so they never overlap (collision). The simulation is settled **synchronously**, so SVG and canvas render the identical, reproducible layout.
 

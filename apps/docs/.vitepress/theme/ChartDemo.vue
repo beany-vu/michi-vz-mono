@@ -85,18 +85,16 @@ async function toggleDevtools() {
 }
 const legendRows = computed<DemoLegendItem[]>(() => {
   if (props.legend === false) return [];
-  if (Array.isArray(props.legend)) {
-    // Pale/solid charts get a play toggle: the page's "meaning" rows vs the
-    // per-label colour pairs read live off the element's colorsBasedMapping.
-    return legendMode.value === "pairs" && pairedLegend.value.length
-      ? pairedLegend.value
-      : props.legend;
-  }
+  // Pale/solid charts get a play toggle: the page's "meaning" rows (or nothing,
+  // when the chart already explains itself on-canvas) vs the per-label colour
+  // pairs. Pairs come from the context (legendData.paleColor) or the element.
+  if (legendMode.value === "pairs" && pairedLegend.value.length) return pairedLegend.value;
+  if (Array.isArray(props.legend)) return props.legend;
   // Auto mode: only worth showing when there is more than one coloured series.
   return autoLegend.value.length > 1 ? autoLegend.value : [];
 });
 const hasLegendToggle = computed(
-  () => Array.isArray(props.legend) && pairedLegend.value.length > 1,
+  () => props.legend !== false && pairedLegend.value.length > 1,
 );
 // Canvas-first: we built the canvas renderer in parallel with SVG and it is the
 // faster path, so the live demos lead with it. The toggle proves SVG/canvas parity.
@@ -126,17 +124,20 @@ function buildNode() {
   // emission is caught.
   node.addEventListener("michi-vz:dataprocessed", (e: Event) => {
     const legend = (e as CustomEvent).detail?.legendData;
-    const rows = Array.isArray(legend)
-      ? legend
-          .filter((l: any) => l && !l.disabled)
-          .map((l: any) => ({ label: String(l.label), color: String(l.color || "") }))
-      : [];
+    const raw = Array.isArray(legend) ? legend.filter((l: any) => l && !l.disabled) : [];
+    const rows = raw.map((l: any) => ({ label: String(l.label), color: String(l.color || "") }));
     autoLegend.value = rows;
-    // Pale companion colours live on the element (comparable's colorsBasedMapping).
+    // Pale companions come from the context itself (treemap/bubble split tints via
+    // legendData.paleColor) or from the element (comparable's colorsBasedMapping).
     const paleOf = (node as any).colorsBasedMapping as Record<string, string> | undefined;
-    pairedLegend.value = paleOf
-      ? rows.filter((r) => paleOf[r.label]).map((r) => ({ ...r, pale: paleOf[r.label] }))
-      : [];
+    const fromContext = raw
+      .filter((l: any) => l.paleColor)
+      .map((l: any) => ({ label: String(l.label), color: String(l.color || ""), pale: String(l.paleColor) }));
+    pairedLegend.value = fromContext.length
+      ? fromContext
+      : paleOf
+        ? rows.filter((r) => paleOf[r.label]).map((r) => ({ ...r, pale: paleOf[r.label] }))
+        : [];
   });
   host.value.appendChild(node);
   el.value = node;
@@ -229,7 +230,7 @@ function toggleContext() {
       </span>
     </div>
     <div class="chart-demo-stage" ref="host"></div>
-    <div v-if="legendRows.length" class="chart-demo-legend-row">
+    <div v-if="legendRows.length || hasLegendToggle" class="chart-demo-legend-row">
       <ul class="chart-demo-legend">
         <li v-for="item in legendRows" :key="item.label">
           <span

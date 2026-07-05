@@ -77,6 +77,27 @@ describe("mountTreemapChart (jsdom)", () => {
     host.remove();
   });
 
+  it("carries legendData with the veiled paleColor companion when a split is active", () => {
+    const withSplit = mount({ dataSet: flat, colorsMapping: { Coffee: "#c0392b" } });
+    const ctx = withSplit.chart.getContext()!;
+    if (ctx.chartType === "treemap-chart") {
+      const coffee = ctx.legendData!.find((l) => l.label === "Coffee")!;
+      expect(coffee.color).toBe("#c0392b");
+      // splitOpacity default 0.35 -> veil 0.65 -> the exact white-mix the renderer paints.
+      expect(coffee.paleColor).toBe("#e9bab5");
+    }
+    withSplit.chart.destroy();
+    withSplit.host.remove();
+
+    const noSplit = mount({ dataSet: flat, showSplit: false });
+    const ctx2 = noSplit.chart.getContext()!;
+    if (ctx2.chartType === "treemap-chart") {
+      expect(ctx2.legendData!.every((l) => l.paleColor === undefined)).toBe(true);
+    }
+    noSplit.chart.destroy();
+    noSplit.host.remove();
+  });
+
   it("produces identical context in SVG and canvas (renderer aside)", () => {
     const a = mount({ dataSet: nested, renderer: "svg" });
     const b = mount({ dataSet: nested, renderer: "canvas" });

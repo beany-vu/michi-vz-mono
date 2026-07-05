@@ -392,6 +392,8 @@ export function mountTreemapChart(
       leaves: processed.leaves,
       colorsMapping: colors.generatedColorsMapping,
       splitLabels: r.splitLabels,
+      splitOpacity: r.splitOpacity,
+      showSplit,
       depth,
     });
     // Plugin hook #3 - enrichContext before a11y + dataprocessed.

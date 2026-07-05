@@ -382,6 +382,7 @@ export function mountBubbleChart(
       colorsMapping: colors.generatedColorsMapping,
       splitLabels: r.splitLabels,
       showSplit,
+      splitOpacity: r.splitOpacity,
     });
     // Plugin hook #3 - enrichContext before a11y + dataprocessed.
     context = applyEnrichContext(pluginList, context, pc);

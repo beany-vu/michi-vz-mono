@@ -8,11 +8,11 @@ description: "Biểu đồ bong bóng với kích thước chuẩn theo diện t
 
 "Mỗi cái lớn cỡ nào, và bao nhiêu phần trong đó đã được hiện thực hóa?" Một đám mây bong bóng trả lời về độ lớn chỉ trong nháy mắt: mỗi vòng tròn có kích thước theo giá trị (**diện tích**, không phải bán kính), và một mô phỏng trọng lực kéo chúng vào một cụm gọn gàng để những cái lớn rõ ràng nổi bật. Giống như [treemap](/vi/charts/treemap), mỗi bong bóng có thể mang một **phần tách hai phần** - một lõi đã hiện thực hóa đặc bên trong một vành chưa khai thác nhạt hơn - để bạn đọc được cả quy mô lẫn tiến độ cùng lúc.
 
-<ChartDemo chart="bubble-chart" />
+<ChartDemo chart="bubble-chart" :legend="[]" />
 
 Không cần tách? Bỏ `partial` để có một đám mây tỷ lệ gọn gàng, mỗi danh mục một màu:
 
-<ChartDemo chart="bubble-chart" :index="1" />
+<ChartDemo chart="bubble-chart" :index="1" :legend="[]" />
 
 > Cụm được bố trí bằng [d3-force](https://github.com/d3/d3-force): các bong bóng rơi về phía trung tâm (`gravity`) và đẩy nhau ra để không bao giờ chồng lấn (va chạm). Mô phỏng được ổn định **đồng bộ**, nên SVG và canvas dựng ra cùng một bố cục giống hệt nhau, có thể tái tạo được.
 

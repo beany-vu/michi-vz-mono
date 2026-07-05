@@ -8,11 +8,11 @@ description: "Treemap avec des tuiles dimensionnées selon le total et une divis
 
 « Quelles parties sont les plus grosses, et quelle part de chacune est déjà réalisée ? » Un treemap répond aux deux à la fois : chaque tuile est dimensionnée selon son total, et une **division optionnelle en deux parties** remplit la part solide à l'intérieur de chaque tuile - vous lisez ainsi l'ampleur (l'aire) et la progression (la division) en un seul coup d'œil. Le cas classique est le potentiel d'exportation : l'aire de la tuile = le potentiel total, la partie solide = **réalisé**, la partie plus claire = **inexploité**. Les tuiles peuvent s'imbriquer sous des groupes, et sur un écran étroit, l'ensemble se replie en une **pile** lisible sur une seule colonne.
 
-<ChartDemo chart="treemap-chart" />
+<ChartDemo chart="treemap-chart" :legend="[]" />
 
 Vous préférez une liste plate (une tuile par produit, chacune sa propre couleur - la disposition classique du potentiel d'exportation) ? Retirez l'imbrication `children` et passez les feuilles directement :
 
-<ChartDemo chart="treemap-chart" :index="1" />
+<ChartDemo chart="treemap-chart" :index="1" :legend="[]" />
 
 > La division est générique. Nommez les deux parties avec `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - rien dans le moteur ne code en dur un domaine.
 

@@ -8,11 +8,11 @@ description: "Graphique à bulles avec un dimensionnement fidèle à l'aire et u
 
 « Quelle est la taille de chacun, et quelle part en est déjà réalisée ? » Un nuage de bulles répond à la question de l'ampleur d'un coup d'œil : chaque cercle est dimensionné par sa valeur (**aire**, pas rayon), et une simulation de gravité les rassemble en une grappe ordonnée pour que les plus grands dominent évidemment. Comme le [treemap](/fr/charts/treemap), chaque bulle peut porter une **division en deux parties** - un noyau réalisé plein à l'intérieur d'un anneau inexploité plus clair - pour lire taille et progression ensemble.
 
-<ChartDemo chart="bubble-chart" />
+<ChartDemo chart="bubble-chart" :legend="[]" />
 
 Pas besoin de division ? Retirez `partial` pour un nuage proportionnel épuré, une couleur par catégorie :
 
-<ChartDemo chart="bubble-chart" :index="1" />
+<ChartDemo chart="bubble-chart" :index="1" :legend="[]" />
 
 > La grappe est disposée avec [d3-force](https://github.com/d3/d3-force) : les bulles tombent vers le centre (`gravity`) et se repoussent pour ne jamais se chevaucher (collision). La simulation est stabilisée **de manière synchrone**, pour que le SVG et le canvas affichent la même disposition identique et reproductible.
 

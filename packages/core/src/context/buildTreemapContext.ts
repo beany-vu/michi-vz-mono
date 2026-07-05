@@ -1,7 +1,9 @@
 // Renderer-agnostic semantic context for Treemap. Derived from the processed data
 // (the leaf list), not the DOM, so SVG and canvas produce identical context.
+import { mixWithWhite } from "./legend";
+import { sanitizeForClassName } from "../math/sanitize";
 import type { TmNode } from "../treemapChart/data";
-import type { TreemapChartContext, TreemapLeafContext } from "../types";
+import type { LegendItem, TreemapChartContext, TreemapLeafContext } from "../types";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -12,6 +14,10 @@ export interface BuildTreemapContextInput {
   leaves: TmNode[];
   colorsMapping: Record<string, string>;
   splitLabels: [string, string];
+  /** Remainder fill opacity; the veil strength is 1 - splitOpacity (renderer parity). */
+  splitOpacity: number;
+  /** Whether the pale/solid split is actually RENDERED (showSplit resolved). */
+  showSplit: boolean;
   depth: number;
 }
 
@@ -80,6 +86,25 @@ export function buildTreemapContext(input: BuildTreemapContextInput): TreemapCha
     return base;
   });
 
+  // One legend row per colour-owning GROUP (top-level nodes own the palette).
+  // With a split active, paleColor carries the veiled remainder tint (the same
+  // white-mix the renderers paint), so paired pale/solid legends match pixels.
+  const veil = Math.max(0, Math.min(0.95, 1 - input.splitOpacity));
+  const seenGroups = new Set<string>();
+  const legendData: LegendItem[] = [];
+  for (const l of leaves) {
+    if (!l.groupLabel || seenGroups.has(l.groupLabel)) continue;
+    seenGroups.add(l.groupLabel);
+    const color = colorsMapping[l.groupLabel] ?? "";
+    legendData.push({
+      label: l.groupLabel,
+      color,
+      order: legendData.length,
+      dataLabelSafe: sanitizeForClassName(l.groupLabel),
+      ...(hasPartial && input.showSplit ? { paleColor: mixWithWhite(color, veil) } : {}),
+    });
+  }
+
   return {
     chartType: "treemap-chart",
     title: input.title,
@@ -87,6 +112,7 @@ export function buildTreemapContext(input: BuildTreemapContextInput): TreemapCha
     layout: input.layout,
     splitLabels,
     leaves: leafCtx,
+    legendData,
     depth: input.depth,
     stats: {
       leafCount: leaves.length,
