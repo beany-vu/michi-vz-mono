@@ -55,7 +55,7 @@ function makeTreemap() {
 
 TreemapChart possède un `renderer="webgpu"` optionnel qui dessine les tuiles comme des rectangles rendus par le GPU tandis que les libellés, les infobulles et le remplissage de la division restent sur la couche SVG. Il est conditionné aux capacités du navigateur : sur un navigateur sans WebGPU, il bascule automatiquement sur canvas, et `getContext().renderer` indique lequel a effectivement dessiné.
 
-<WebgpuHeavyDemo element="michi-vz-treemap-chart" :make="makeTreemap" caption="~400 tiles" />
+<WebgpuHeavyDemo legend element="michi-vz-treemap-chart" :make="makeTreemap" caption="~400 tiles" />
 
 ## Utilisation
 

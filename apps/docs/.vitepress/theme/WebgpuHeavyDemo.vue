@@ -31,7 +31,7 @@ const fellBack = ref(false);
 // reader) gets from getContext(). Pages whose heavy data has a FEW meaningful
 // groups opt into a colour legend via the `legend` prop (capped at 12 rows).
 const summary = ref("");
-const legendRows = ref<Array<{ label: string; color: string }>>([]);
+const legendRows = ref<Array<{ label: string; color: string; pale?: string }>>([]);
 let ro: ResizeObserver | null = null;
 let io: IntersectionObserver | null = null;
 let raf = 0;
@@ -65,7 +65,12 @@ function buildNode() {
       const rows = Array.isArray(detail?.legendData) ? detail.legendData : [];
       legendRows.value =
         rows.length > 1 && rows.length <= 12
-          ? rows.map((l: any) => ({ label: String(l.label), color: String(l.color || "") }))
+          ? rows.map((l: any) => ({
+              label: String(l.label),
+              color: String(l.color || ""),
+              // Split charts (treemap) pair each group's pale remainder tint.
+              ...(l.paleColor ? { pale: String(l.paleColor) } : {}),
+            }))
           : [];
     }
   });
@@ -185,6 +190,7 @@ onBeforeUnmount(() => {
     <div class="gpu-stage michi-vz-calm" ref="host"></div>
     <ul v-if="legendRows.length" class="gpu-legend">
       <li v-for="item in legendRows" :key="item.label">
+        <span v-if="item.pale" class="gpu-swatch" :style="{ background: item.pale }"></span>
         <span class="gpu-swatch" :style="{ background: item.color }"></span>
         {{ item.label }}
       </li>
@@ -251,6 +257,7 @@ onBeforeUnmount(() => {
 }
 .gpu-legend li { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
 .gpu-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.gpu-legend li .gpu-swatch + .gpu-swatch { margin-left: -3px; }
 .gpu-pill.on {
   background: var(--vp-c-brand-1);
   color: #fff;

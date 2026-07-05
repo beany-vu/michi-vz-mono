@@ -55,7 +55,7 @@ function makeTreemap() {
 
 TreemapChart có `renderer="webgpu"` tùy chọn, vẽ các ô thành các hình chữ nhật do GPU dựng hàng loạt trong khi nhãn, tooltip và phần tô chia vẫn nằm trên lớp SVG. Tính năng này được kiểm soát theo khả năng phần cứng: trên trình duyệt không có WebGPU, nó tự động hạ cấp về canvas, và `getContext().renderer` báo cáo bộ dựng thực sự đã vẽ.
 
-<WebgpuHeavyDemo element="michi-vz-treemap-chart" :make="makeTreemap" caption="~400 ô" />
+<WebgpuHeavyDemo legend element="michi-vz-treemap-chart" :make="makeTreemap" caption="~400 ô" />
 
 ## Cách dùng
 

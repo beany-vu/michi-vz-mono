@@ -55,7 +55,7 @@ function makeTreemap() {
 
 TreemapChart has an opt-in `renderer="webgpu"` that paints the tiles as GPU-instanced rectangles while labels, tooltips and the split fill stay on the SVG layer. It is capability-gated: on a browser without WebGPU it downgrades to canvas automatically, and `getContext().renderer` reports whichever actually painted.
 
-<WebgpuHeavyDemo element="michi-vz-treemap-chart" :make="makeTreemap" caption="~400 tiles" />
+<WebgpuHeavyDemo legend element="michi-vz-treemap-chart" :make="makeTreemap" caption="~400 tiles" />
 
 ## Usage
 
