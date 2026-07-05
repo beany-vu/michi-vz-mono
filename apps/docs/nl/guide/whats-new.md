@@ -10,9 +10,10 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## Binnenkort in de volgende release <span class="vp-badge warning">Op main, nog niet uitgebracht</span>
+## v1.6.5
 
-Al gemerged en live in de demo's van deze docs; gaat naar npm met de volgende versiegolf.
+Packageversies: react **1.6.5** · core, wc, angular **1.6.0** · vue, svelte **1.5.7** ·
+devtools, insights **0.2.5**.
 
 - **RibbonChart wisselt eindelijk van plaats.** De stapel van elke periode wordt nu per waarde
   opnieuw gerangschikt: een categorie die een andere inhaalt, kruist zichtbaar de linten op weg

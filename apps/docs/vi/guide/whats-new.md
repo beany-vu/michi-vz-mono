@@ -10,9 +10,10 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## Sắp có trong bản phát hành tới <span class="vp-badge warning">Đã lên main, chưa phát hành</span>
+## v1.6.5
 
-Đã merge và chạy ngay trong các demo của trang docs này; sẽ lên npm cùng đợt version tiếp theo.
+Version các package: react **1.6.5** · core, wc, angular **1.6.0** · vue, svelte **1.5.7** ·
+devtools, insights **0.2.5**.
 
 - **RibbonChart cuối cùng cũng biết đổi ngôi.** Cột chồng của mỗi kỳ giờ được xếp hạng lại theo
   giá trị: một nhóm vượt lên sẽ thấy rõ các dải bắt chéo nhau trên đường đi lên - đúng cái hồn

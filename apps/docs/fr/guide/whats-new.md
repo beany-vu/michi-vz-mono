@@ -12,9 +12,10 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## À venir dans la prochaine version <span class="vp-badge warning">Sur main, non publié</span>
+## v1.6.5
 
-Déjà fusionné et visible dans les démos de cette doc ; part sur npm avec la prochaine vague de versions.
+Versions des packages : react **1.6.5** · core, wc, angular **1.6.0** · vue, svelte **1.5.7** ·
+devtools, insights **0.2.5**.
 
 - **RibbonChart échange enfin les places.** La pile de chaque période est désormais reclassée
   par valeur : une catégorie qui en dépasse une autre croise visiblement les rubans en montant,
