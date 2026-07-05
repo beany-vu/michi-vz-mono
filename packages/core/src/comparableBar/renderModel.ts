@@ -5,6 +5,15 @@ import type { ComparableBarDataPoint } from "../types";
 import type { ComparableScales } from "./scales";
 import type { ComparableColorResolver } from "./colors";
 
+export interface ComparableBarSegment {
+  x: number;
+  width: number;
+  /** Sub-bar's own y/height: equal to the row's (y, height) in "overlay" layout; the
+   * top or bottom half of it in "grouped" layout. */
+  y: number;
+  height: number;
+}
+
 export interface ComparableBarModel {
   raw: ComparableBarDataPoint;
   label: string;
@@ -12,10 +21,11 @@ export interface ComparableBarModel {
   color: string;
   /** Fill for the value-based sub-bar (colorsBasedMapping, else the row colour). */
   basedColor: string;
+  /** Full row band - unaffected by `layout` (used for row-level hit-testing / leader lines). */
   y: number;
   height: number;
-  based: { x: number; width: number };
-  compared: { x: number; width: number };
+  based: ComparableBarSegment;
+  compared: ComparableBarSegment;
   dimmed: boolean;
 }
 
@@ -29,6 +39,10 @@ export interface BuildComparableModelOptions {
   minBarWidth?: number;
   /** Per-label colour override for the value-based sub-bar (legacy colorsBasedMapping). */
   colorsBasedMapping?: Record<string, string>;
+  /** "overlay" (default): both sub-bars span the full band, one drawn in front of the
+   * other. "grouped": valueBased occupies the top half of the band, valueCompared the
+   * bottom half - no overlap. Omitted/"overlay" is byte-identical to pre-layout output. */
+  layout?: "overlay" | "grouped";
 }
 
 // Legacy z-order: the LONGER sub-bar is drawn first and the shorter one last (on
@@ -49,27 +63,34 @@ export function buildComparableRenderModel(
   const zero = scales.xScale(0);
   const bandHeight = scales.yScale.bandwidth();
   const minW = o.minBarWidth ?? 5;
+  const grouped = o.layout === "grouped";
+  const halfHeight = bandHeight / 2;
 
-  const seg = (v: number): { x: number; width: number } => {
+  const seg = (v: number, y: number, height: number): ComparableBarSegment => {
     const px = scales.xScale(v);
     const width = Math.abs(px - zero);
     // Floor non-zero widths so a near-zero value isn't a sub-pixel invisible bar;
     // a literal zero stays zero (no phantom bar at the origin).
-    return { x: Math.min(zero, px), width: width === 0 ? 0 : Math.max(width, minW) };
+    return { x: Math.min(zero, px), width: width === 0 ? 0 : Math.max(width, minW), y, height };
   };
 
-  const bars: ComparableBarModel[] = points.map((d) => ({
-    raw: d,
-    label: d.label,
-    safe: sanitizeForClassName(d.label),
-    color: colors.getColor(d.label),
-    basedColor: o.colorsBasedMapping?.[d.label] ?? colors.getColor(d.label),
-    y: scales.yScale(d.label) ?? 0,
-    height: bandHeight,
-    based: seg(d.valueBased),
-    compared: seg(d.valueCompared),
-    dimmed: anyHighlight && !highlightSet.has(d.label),
-  }));
+  const bars: ComparableBarModel[] = points.map((d) => {
+    const y = scales.yScale(d.label) ?? 0;
+    return {
+      raw: d,
+      label: d.label,
+      safe: sanitizeForClassName(d.label),
+      color: colors.getColor(d.label),
+      basedColor: o.colorsBasedMapping?.[d.label] ?? colors.getColor(d.label),
+      y,
+      height: bandHeight,
+      // grouped: valueBased = top half, valueCompared = bottom half, no overlap.
+      // overlay (default): both spans equal the full row band - identical to pre-layout output.
+      based: grouped ? seg(d.valueBased, y, halfHeight) : seg(d.valueBased, y, bandHeight),
+      compared: grouped ? seg(d.valueCompared, y + halfHeight, halfHeight) : seg(d.valueCompared, y, bandHeight),
+      dimmed: anyHighlight && !highlightSet.has(d.label),
+    };
+  });
 
   return { bars };
 }

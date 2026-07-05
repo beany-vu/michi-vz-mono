@@ -103,7 +103,7 @@ export function drawComparableCanvas(
       }
       ctx.globalAlpha = groupAlpha * part.opacity;
       ctx.fillStyle = fillStyle;
-      roundRectPath(ctx, part.seg.x, bar.y, part.seg.width, bar.height, 5);
+      roundRectPath(ctx, part.seg.x, part.seg.y, part.seg.width, part.seg.height, 5);
       ctx.fill();
       // 1px border (legacy strokeWidth=1) in the resolved colour, so the bar reads
       // as an outlined rounded rect (and the hatch fill gets a clean edge).

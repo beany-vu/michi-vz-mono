@@ -197,6 +197,121 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
   });
 });
 
+describe("layout: overlay (default) vs grouped", () => {
+  it("default (layout omitted) keeps overlay geometry: based/compared share the full band", () => {
+    const { host, chart } = mount();
+    const g = host.querySelector('g.data-group[data-label="Alpha One"]')!;
+    const based = g.querySelector("rect.value-based")!;
+    const compared = g.querySelector("rect.value-compared")!;
+    const basedY = Number(based.getAttribute("y"));
+    const basedH = Number(based.getAttribute("height"));
+    const comparedY = Number(compared.getAttribute("y"));
+    const comparedH = Number(compared.getAttribute("height"));
+    expect(basedY).toBe(comparedY);
+    expect(basedH).toBe(comparedH);
+    expect(basedH).toBeGreaterThan(0);
+    chart.destroy();
+    host.remove();
+  });
+
+  it('layout: "overlay" (explicit) is byte-identical to the default', () => {
+    const a = mount();
+    const b = mount({ layout: "overlay" });
+    const rectAttrs = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll("rect.bar")).map((r) => r.outerHTML);
+    expect(rectAttrs(a.host)).toEqual(rectAttrs(b.host));
+    a.chart.destroy();
+    a.host.remove();
+    b.chart.destroy();
+    b.host.remove();
+  });
+
+  it('layout: "grouped" splits the band: valueBased on top half, valueCompared on bottom half, no overlap', () => {
+    const { host, chart } = mount({ layout: "grouped" });
+    const g = host.querySelector('g.data-group[data-label="Alpha One"]')!;
+    const based = g.querySelector("rect.value-based")!;
+    const compared = g.querySelector("rect.value-compared")!;
+    const basedY = Number(based.getAttribute("y"));
+    const basedH = Number(based.getAttribute("height"));
+    const comparedY = Number(compared.getAttribute("y"));
+    const comparedH = Number(compared.getAttribute("height"));
+
+    // Halves are equal thickness and exactly half the (unsplit) band.
+    expect(basedH).toBeCloseTo(comparedH, 5);
+    // based occupies the TOP half, compared the BOTTOM half, contiguous (no gap, no overlap).
+    expect(basedY).toBeLessThan(comparedY);
+    expect(comparedY).toBeCloseTo(basedY + basedH, 5);
+
+    // The full row band (from the default/overlay mount) equals based+compared height combined.
+    const overlayMount = mount();
+    const overlayBased = overlayMount.host.querySelector(
+      'g.data-group[data-label="Alpha One"] rect.value-based'
+    )!;
+    const fullBandHeight = Number(overlayBased.getAttribute("height"));
+    expect(basedH + comparedH).toBeCloseTo(fullBandHeight, 5);
+    expect(basedY).toBeCloseTo(Number(overlayBased.getAttribute("y")), 5);
+    overlayMount.chart.destroy();
+    overlayMount.host.remove();
+
+    chart.destroy();
+    host.remove();
+  });
+
+  it('layout: "grouped" keeps the sub-bar DOM/probe contract identical (g.data-group[data-label-safe] > rect.bar.value-based/.value-compared)', () => {
+    const { host, chart } = mount({ layout: "grouped" });
+    const bars = host.querySelectorAll<SVGRectElement>("rect.bar");
+    expect(bars.length).toBe(6); // 3 labels x 2 sub-bars, same as overlay
+    expect(host.querySelectorAll("rect.bar.value-based").length).toBe(3);
+    expect(host.querySelectorAll("rect.bar.value-compared").length).toBe(3);
+    const g = host.querySelector('g.data-group[data-label="Alpha One"]')!;
+    expect(g.getAttribute("data-label-safe")).toBe(sanitizeForClassName("Alpha One"));
+    for (const rect of g.querySelectorAll("rect.bar")) {
+      expect(rect.getAttribute("data-label-safe")).toBe(sanitizeForClassName("Alpha One"));
+    }
+    chart.destroy();
+    host.remove();
+  });
+
+  it('layout: "grouped" respects maxBarHeight: caps the FULL band, halves are half of the capped value', () => {
+    const capped = mount({ layout: "grouped", maxBarHeight: 60 });
+    const g = capped.host.querySelector('g.data-group[data-label="Alpha One"]')!;
+    const basedH = Number(g.querySelector("rect.value-based")!.getAttribute("height"));
+    const comparedH = Number(g.querySelector("rect.value-compared")!.getAttribute("height"));
+    expect(basedH).toBeCloseTo(comparedH, 5);
+    expect(basedH).toBeLessThanOrEqual(30 + 0.5); // half of the 60px cap
+    capped.chart.destroy();
+    capped.host.remove();
+  });
+
+  it('layout: "grouped" still honours colorsBasedMapping, opacities, and the legacy z-order (same fields as overlay)', () => {
+    const { host, chart } = mount({
+      layout: "grouped",
+      colorsMapping: { "Alpha One": "#c0392b" },
+      colorsBasedMapping: { "Alpha One": "#e9bab5" },
+      valueBasedOpacity: 0.4,
+      valueComparedOpacity: 0.95,
+    });
+    const g = host.querySelector('g.data-group[data-label="Alpha One"]')!;
+    expect(g.querySelector("rect.value-based")!.getAttribute("fill")).toBe("#e9bab5");
+    expect(g.querySelector("rect.value-compared")!.getAttribute("fill")).toBe("#c0392b");
+    expect(g.querySelector("rect.value-based")!.getAttribute("opacity")).toBe("0.4");
+    expect(g.querySelector("rect.value-compared")!.getAttribute("opacity")).toBe("0.95");
+    chart.destroy();
+    host.remove();
+  });
+
+  it('layout: "grouped" produces the same renderer-agnostic context as overlay (geometry-independent)', () => {
+    const overlay = mount({ renderer: "canvas" });
+    const grouped = mount({ layout: "grouped", renderer: "canvas" });
+    const strip = (c: NonNullable<ReturnType<typeof overlay.chart.getContext>>) => ({ ...c, renderer: undefined });
+    expect(strip(overlay.chart.getContext()!)).toEqual(strip(grouped.chart.getContext()!));
+    overlay.chart.destroy();
+    overlay.host.remove();
+    grouped.chart.destroy();
+    grouped.host.remove();
+  });
+});
+
 describe("y-band gridlines respect showGrid (no phantom horizontal lines)", () => {
   it("draws NO .mv-y-axis .mv-grid line (the engine passes y-band showGrid:false)", () => {
     // Regression: the old `stroke=transparent` fallback was overridden by the

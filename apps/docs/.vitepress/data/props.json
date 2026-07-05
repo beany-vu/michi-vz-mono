@@ -2534,6 +2534,14 @@
           "common": false
         },
         {
+          "name": "layout",
+          "type": "\"overlay\" | \"grouped\"",
+          "optional": true,
+          "description": "How the two sub-bars (valueBased, valueCompared) share a row's band. \"overlay\" (default): both draw at the full band thickness, one in front of the other - today's behaviour, byte-identical when this prop is omitted. \"grouped\": the band splits in half - valueBased occupies the top half, valueCompared the bottom half, with no overlap (legacy sdg-trade BarchartHorizontal look). Everything else (scales, colours, patternsMapping, tooltips, maxBarHeight, symmetricXDomain) is identical between modes.",
+          "default": "\"overlay\"",
+          "common": false
+        },
+        {
           "name": "isLoading",
           "type": "boolean",
           "optional": true,

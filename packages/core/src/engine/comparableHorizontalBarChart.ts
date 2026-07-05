@@ -60,6 +60,7 @@ interface Resolved {
   hideTickLabels: boolean;
   horizontalTickPosition?: { x: number; y: number };
   maxBarHeight?: number;
+  layout: "overlay" | "grouped";
 }
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
@@ -88,6 +89,7 @@ function resolve(p: ComparableBarChartProps): Resolved {
     hideTickLabels: p.hideTickLabels ?? false,
     horizontalTickPosition: p.horizontalTickPosition,
     maxBarHeight: p.maxBarHeight,
+    layout: p.layout ?? "overlay",
   };
 }
 
@@ -200,10 +202,14 @@ export function mountComparableHorizontalBarChart(
     tooltip.style.left = `${x + tw + 10 > r.width ? Math.max(0, x - tw - 10) : x + 10}px`;
     tooltip.style.top = `${y - th - 10 < 0 ? y + 10 : y - th - 10}px`;
   };
-  const subBarTypeAt = (bar: ComparableBarModel, x: number): "based" | "compared" | undefined => {
-    // compared is drawn in front; prefer it when the two overlap.
-    if (x >= bar.compared.x && x <= bar.compared.x + bar.compared.width) return "compared";
-    if (x >= bar.based.x && x <= bar.based.x + bar.based.width) return "based";
+  const subBarTypeAt = (bar: ComparableBarModel, x: number, y: number): "based" | "compared" | undefined => {
+    // compared is drawn in front; prefer it when the two overlap (overlay layout).
+    // In grouped layout, based/compared occupy distinct y halves, so this also
+    // naturally attributes a hover to the half the pointer is actually over.
+    const inSeg = (s: { x: number; width: number; y: number; height: number }): boolean =>
+      x >= s.x && x <= s.x + s.width && y >= s.y && y <= s.y + s.height;
+    if (inSeg(bar.compared)) return "compared";
+    if (inSeg(bar.based)) return "based";
     return undefined;
   };
   const hideTooltip = (): void => {
@@ -229,7 +235,7 @@ export function mountComparableHorizontalBarChart(
       }
     }
     if (hit) {
-      showTooltip(hit.raw, ev, subBarTypeAt(hit, x));
+      showTooltip(hit.raw, ev, subBarTypeAt(hit, x, y));
       baseProps.onHighlightItem?.([hit.label]);
     } else {
       hideTooltip();
@@ -319,6 +325,7 @@ export function mountComparableHorizontalBarChart(
       highlightItems: props.highlightItems ?? [],
       minBarWidth: r.minBarWidth,
       colorsBasedMapping: props.colorsBasedMapping,
+      layout: r.layout,
     });
 
     const xFormat = props.xAxisFormat ?? defaultNumberFormatter(props.locale);

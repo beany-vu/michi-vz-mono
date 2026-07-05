@@ -47,6 +47,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
     horizontalTickPosition: { attribute: false },
     maxBarHeight: { type: Number, attribute: "max-bar-height" },
     symmetricXDomain: { type: Boolean, attribute: "symmetric-x-domain" },
+    layout: { type: String },
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
@@ -87,6 +88,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
   horizontalTickPosition?: { x: number; y: number };
   maxBarHeight?: number;
   symmetricXDomain?: boolean;
+  layout?: "overlay" | "grouped";
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
   noDataLabel?: string;
@@ -141,6 +143,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
       horizontalTickPosition: this.horizontalTickPosition,
       maxBarHeight: this.maxBarHeight,
       symmetricXDomain: this.symmetricXDomain,
+      layout: this.layout,
       isLoading: this.isLoading,
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,

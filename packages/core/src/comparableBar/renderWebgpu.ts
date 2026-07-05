@@ -53,9 +53,9 @@ export function drawComparableBarWebgpu(
       pushRect(
         batch.triangles,
         part.seg.x,
-        bar.y,
+        part.seg.y,
         part.seg.width,
-        bar.height,
+        part.seg.height,
         markColor(part.color, groupAlpha * part.opacity)
       );
     }
