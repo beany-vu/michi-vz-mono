@@ -1,15 +1,21 @@
 import { defineConfig, type HeadConfig } from "vitepress";
 import { ui, chartNames, prefixOf, type LocaleKey } from "./i18n";
 
-// Google Analytics is injected ONLY from a build-time env var so the tracking
-// ID never lives in this open-source repo. Set GA_MEASUREMENT_ID in the Netlify
-// build environment (Site settings -> Environment variables). When unset - forks,
-// clones, local dev - no GA script is emitted, so nobody pollutes the property.
-// Google Search Console site-verification, injected from a build-time env var
-// (Netlify: Site settings -> Environment variables -> GOOGLE_SITE_VERIFICATION)
-// so the token stays out of this open-source repo. Verify a URL-prefix property
-// (https://michi-vz.netlify.app/); the DNS/Domain method cannot work on a
-// .netlify.app subdomain whose DNS you do not control.
+// Hosting: GitHub Pages project site at beany-vu.github.io/michi-vz-mono/.
+// BASE is the subpath VitePress serves under (leading + trailing slash); SITE_URL
+// is the absolute origin+subpath used for canonical / OG / sitemap URLs. Assets
+// referenced raw in `head` (favicons) must be prefixed with BASE by hand - only
+// theme/markdown links get BASE applied automatically.
+const BASE = "/michi-vz-mono/";
+const SITE_URL = "https://beany-vu.github.io/michi-vz-mono";
+
+// Google Analytics + Search Console are injected ONLY from build-time env vars,
+// so neither value lives in this open-source repo. Set GA_MEASUREMENT_ID and
+// GOOGLE_SITE_VERIFICATION as GitHub Actions repository secrets (repo Settings ->
+// Secrets and variables -> Actions); the deploy-docs workflow passes them into the
+// build. When unset - forks, clones, local dev - nothing is emitted, so nobody
+// pollutes the property. For Search Console, verify the URL-prefix property
+// https://beany-vu.github.io/michi-vz-mono/ via the HTML-tag (meta) method.
 const GSC_TOKEN = process.env.GOOGLE_SITE_VERIFICATION;
 const gscHead: HeadConfig[] = GSC_TOKEN
   ? [["meta", { name: "google-site-verification", content: GSC_TOKEN }]]
@@ -145,17 +151,18 @@ export default defineConfig({
   description:
     "Framework-agnostic charts - a plain-TS engine, native web components, and React/Vue/Svelte/Angular wrappers, with an LLM-ready ChartContext on every chart.",
   lang: "en-US",
+  base: BASE,
   cleanUrls: true,
   // Git commit time per page: shows "Last updated" in the theme AND emits
   // <lastmod> in sitemap.xml so crawlers know which pages changed.
   lastUpdated: true,
-  sitemap: { hostname: "https://michi-vz.netlify.app" },
+  sitemap: { hostname: SITE_URL + "/" },
   // Per-page SEO: a unique <meta description>, canonical URL, and Open Graph +
   // Twitter card on every page (VitePress otherwise repeats the site description
   // everywhere and emits no social tags). A page can override the description via
   // its own `description:` frontmatter.
   transformPageData(pageData) {
-    const base = "https://michi-vz.netlify.app";
+    const base = SITE_URL;
     const path = pageData.relativePath.replace(/\.md$/, "").replace(/(^|\/)index$/, "$1");
     const url = (base + "/" + path).replace(/\/+$/, "") || base;
     const isHome = pageData.relativePath === "index.md";
@@ -227,9 +234,9 @@ export default defineConfig({
   head: [
     // Michi shield favicons (generated from public/michi-shield.png, centered on a
     // transparent square; 48px default + 32px fallback + 180px apple-touch).
-    ["link", { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon.png" }],
-    ["link", { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" }],
-    ["link", { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }],
+    ["link", { rel: "icon", type: "image/png", sizes: "48x48", href: `${BASE}favicon.png` }],
+    ["link", { rel: "icon", type: "image/png", sizes: "32x32", href: `${BASE}favicon-32.png` }],
+    ["link", { rel: "apple-touch-icon", sizes: "180x180", href: `${BASE}apple-touch-icon.png` }],
     ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
     ["link", { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" }],
     [

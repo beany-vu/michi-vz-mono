@@ -1,0 +1,58 @@
+name: Deploy docs to GitHub Pages
+
+# Builds the VitePress docs site and publishes it to GitHub Pages on every push
+# to main (or on demand). Static build only - no server, no Netlify credits.
+# One-time setup: repo Settings -> Pages -> Source: "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/docs/**"
+      - "packages/**"
+      - ".github/workflows/deploy-docs.yml"
+  workflow_dispatch:
+
+# Allow the workflow to publish to Pages via OIDC.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; let a newer run supersede an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # `--filter "docs..."` builds the docs package AND its workspace deps
+      # (@michi-vz/examples, wc, core) in topological order first.
+      - run: pnpm --filter "docs..." build
+        env:
+          # Set these as repo secrets if you want analytics / Search Console.
+          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
+          GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/docs/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
