@@ -35,12 +35,16 @@ Déjà fusionné et visible dans les démos de cette doc ; part sur npm avec la 
 - **Petits réglages, grand confort.** L'axe des valeurs du Barre-haltère peut passer sous le
   tracé (`xAxisPosition: "bottom"`), le GapChart accepte un `xAxisDomain` explicite (zoomer une
   histoire d'espérance de vie dans sa bande 35-90), les libellés de lignes du tornado peuvent
-  passer à gauche du tracé (`yAxisPosition: "left"`), et les libellés des pôles du radar ne
-  touchent plus le titre.
-- **Des libellés de lignes que l'on peut saisir.** Sur Gap, Comparable et le tornado,
-  l'option `interactiveRowLabels` fait de chaque libellé de ligne un vrai contrôle :
+  passer à gauche du tracé (`yAxisPosition: "left"`), les libellés des pôles du radar ne
+  touchent plus le titre, et le résumé de contexte du tornado nomme désormais son plus grand
+  déséquilibre.
+- **Des libellés de lignes que l'on peut saisir - et parcourir.** Sur Gap, Comparable et le
+  tornado, l'option `interactiveRowLabels` fait de chaque libellé de ligne un vrai contrôle :
   survolez-le ou donnez-lui le focus et une ligne de rappel court jusqu'à sa ligne avec
-  l'infobulle et la mise en évidence ; un clic épingle. À essayer sur les démos de ces pages.
+  l'infobulle et la mise en évidence ; un clic épingle. La gouttière des libellés se parcourt
+  aussi comme un curseur : faites-la glisser et l'infobulle suit votre pointeur de ligne en
+  ligne, jusqu'aux lignes dont le libellé a été allégé sur un axe dense. À essayer sur les
+  démos de ces pages.
 - **Une légende pour tout.** Chaque contexte de graphique porte désormais `legendData`, et les
   graphiques à division (treemap, bulles, comparables) exposent aussi la couleur pâle compagne
   de chaque étiquette via `LegendItem.paleColor` : les démos de la doc s'en servent pour leurs
@@ -54,6 +58,23 @@ Déjà fusionné et visible dans les démos de cette doc ; part sur npm avec la 
   histoire : le spectre dimuon du LHC sur [Nuage de points](/fr/charts/scatter), les salaires
   bruts vs nets de l'UE sur [Bulles](/fr/charts/bubble), et une fresque d'espérance de vie de
   ~195 pays sur [Écart](/fr/charts/gap).
+
+## v1.6.1 - v1.6.4
+
+Versions des packages : react **1.6.4** · devtools, insights **0.2.4** · core, wc, vue,
+svelte, angular **1.5.6**. Quatre petites vagues de correctifs entre les versions phares :
+
+- **L'axe des valeurs du GapChart, durci trois fois.** Les `tickValues` fournis par le
+  consommateur sont filtrés aux valeurs finies, triés et dédupliqués (les entrées dégénérées
+  retombent sur le domaine des données) ; les marques et l'axe ne débordent plus quand des
+  `tickValues` sont passés alors que `enableExplicitTickValues` est désactivé ; et les
+  domaines en pourcentage gagnent un rembourrage adapté à la plage, pour qu'un marqueur de
+  référence à zéro se pose sur l'axe au lieu d'en dépasser le bord.
+- **La légende du VerticalStackBar garde ses couleurs.** Une clé désactivée reste dans
+  `legendData`, marquée `disabled: true` : la pastille de légende s'estompe au lieu de
+  disparaître, et les emplacements de couleur sont attribués sur l'ensemble complet des
+  clés - aucune clé ne change de couleur en désactivant puis réactivant. Les barres
+  continuent d'exclure les clés désactivées.
 
 ## v1.6.0
 

@@ -1,5 +1,10 @@
 import { defineConfig, type HeadConfig } from "vitepress";
 import { ui, chartNames, prefixOf, type LocaleKey } from "./i18n";
+import reactPkg from "../../../packages/react/package.json";
+
+// Navbar version = the react wrapper's version (the headline package), stamped
+// from its package.json at build time so the dropdown can never drift from npm.
+const LIB_VERSION = `v${reactPkg.version}`;
 
 // Deployed to Netlify at the domain root, so no `base` needed. SITE_URL is the
 // absolute origin used for canonical / OG / sitemap URLs.
@@ -107,9 +112,12 @@ function themeForLocale(loc: LocaleKey) {
       { text: t.navCharts, link: link("/charts/") },
       { text: t.navGuide, link: link("/guide/why") },
       {
-        text: "v1.6.0",
+        text: LIB_VERSION,
         items: [
-          { text: t.navWhatsNew, link: link("/guide/whats-new") },
+          {
+            text: t.navWhatsNew.replace("{version}", LIB_VERSION),
+            link: link("/guide/whats-new"),
+          },
           {
             text: t.navChangelog,
             link: "https://github.com/beany-vu/michi-vz-mono/releases",

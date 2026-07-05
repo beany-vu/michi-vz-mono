@@ -37,10 +37,14 @@ Legacy-parity fixes for Ribbon and Comparable, a new BarBell axis option, and le
 - **New `interactiveRowLabels` on Gap, Comparable, and Dual (tornado)**: hovering
   or keyboard-focusing a row label draws a leader line to the row's marks, shows
   the row's tooltip, and highlights it; clicking pins the tooltip (the same
-  sticky contract as the marks). Labels become focusable buttons, and the leader
-  lives on the SVG axis layer so it works in svg, canvas, and webgpu modes.
-  Theme it via the `--michi-vz-crosshair*` vars (`.mv-row-leader`). Default off.
-  The dual chart's context summary now also names the largest imbalance
+  sticky contract as the marks). The label gutter also scrubs like a slider:
+  dragging along it moves the leader from row to row with the tooltip tracking
+  the cursor, reaching rows whose labels were thinned away on a dense axis
+  (the host canvas hit-test stands down while a scrub is active, so the two
+  never fight). Labels become focusable buttons, and the leader lives on the
+  SVG axis layer so it works in svg, canvas, and webgpu modes. Theme it via the
+  `--michi-vz-crosshair*` vars (`.mv-row-leader`). Default off. The dual
+  chart's context summary now also names the largest imbalance
   (`stats.largestImbalance`).
 - **New `yAxisPosition: "center" | "left"` on DualBarChartProps** (default "center",
   the legacy tornado look): "left" moves the row labels into the left margin,

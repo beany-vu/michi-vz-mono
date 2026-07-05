@@ -31,10 +31,13 @@ Already merged and live in these docs' demos; ships to npm with the next version
 - **Small controls, big comfort.** BarBell's value axis can move below the plot
   (`xAxisPosition: "bottom"`), GapChart accepts an explicit `xAxisDomain` (zoom a
   life-expectancy story into its 35-90 band), the tornado's row labels can sit left of the
-  plot (`yAxisPosition: "left"`), and Radar pole labels stay clear of the title.
-- **Row labels you can grab.** On Gap, Comparable, and the tornado, opt-in
+  plot (`yAxisPosition: "left"`), Radar pole labels stay clear of the title, and the
+  tornado's context summary now names its largest imbalance.
+- **Row labels you can grab - and scrub.** On Gap, Comparable, and the tornado, opt-in
   `interactiveRowLabels` makes every row label a real control: hover or focus it and a
-  leader line runs to its row with the tooltip and highlight; click pins. Try it on the
+  leader line runs to its row with the tooltip and highlight; click pins. The label gutter
+  also scrubs like a slider - drag along it and the tooltip tracks your cursor from row to
+  row, reaching even rows whose labels were thinned away on a dense axis. Try it on the
   demos above each of those pages.
 - **A legend for everything.** Every chart context now carries `legendData`, and split
   charts (treemap, bubble, comparable) also expose each label's pale companion via
@@ -47,6 +50,21 @@ Already merged and live in these docs' demos; ships to npm with the next version
   plus new story-driven examples: the LHC dimuon spectrum on
   [Scatter](/charts/scatter), EU gross-vs-net salaries on [Bubble](/charts/bubble), and
   a ~195-country life-expectancy sweep on [Gap](/charts/gap).
+
+## v1.6.1 - v1.6.4
+
+Package versions: react **1.6.4** · devtools, insights **0.2.4** · core, wc, vue, svelte,
+angular **1.5.6**. Four small patch waves between the headline releases:
+
+- **GapChart's value axis, hardened three ways.** Consumer-supplied `tickValues` are
+  filtered to finite values, sorted, and de-duplicated (degenerate inputs fall back to the
+  data domain); marks and axis no longer overflow when `tickValues` are passed while
+  `enableExplicitTickValues` is off; and percentage domains gain range-aware padding, so a
+  baseline marker at zero sits on the axis instead of past its edge.
+- **VerticalStackBar's legend keeps its colours.** A key you disable stays in `legendData`
+  flagged `disabled: true`, so the legend pill dims instead of disappearing, and colour
+  slots are assigned over the full key set - no key changes colour across a disable/enable
+  toggle. Bars still exclude disabled keys.
 
 ## v1.6.0
 

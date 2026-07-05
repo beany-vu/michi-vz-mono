@@ -30,10 +30,13 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 - **Chỉnh nhỏ, dễ chịu lớn.** Trục giá trị của biểu đồ quả tạ chuyển được xuống dưới
   (`xAxisPosition: "bottom"`), GapChart nhận `xAxisDomain` tường minh (zoom câu chuyện tuổi thọ
   vào đúng dải 35-90), nhãn hàng của biểu đồ tornado chuyển được sang trái vùng vẽ
-  (`yAxisPosition: "left"`), và nhãn cực của radar không còn chạm tiêu đề.
-- **Nhãn hàng cầm nắm được.** Trên Gap, biểu đồ so sánh và tornado, tùy chọn
-  `interactiveRowLabels` biến mỗi nhãn hàng thành một control thật: rê chuột hoặc focus
+  (`yAxisPosition: "left"`), nhãn cực của radar không còn chạm tiêu đề, và phần tóm tắt
+  context của tornado giờ nêu luôn mức chênh lệch lớn nhất.
+- **Nhãn hàng cầm nắm được - và kéo lướt được.** Trên Gap, biểu đồ so sánh và tornado, tùy
+  chọn `interactiveRowLabels` biến mỗi nhãn hàng thành một control thật: rê chuột hoặc focus
   vào nhãn là một đường nối chạy tới đúng hàng đó kèm tooltip và highlight; bấm để ghim.
+  Dải nhãn giờ còn kéo được như một slider: rê dọc theo nó là tooltip bám theo con trỏ,
+  nhảy từ hàng này sang hàng khác, tới cả những hàng đã bị thưa nhãn trên trục dày đặc.
   Thử ngay trên demo của các trang này.
 - **Cái gì cũng có chú giải.** Mọi context biểu đồ giờ đều mang `legendData`, và các biểu đồ
   tách phần (treemap, bong bóng, cột so sánh) còn lộ màu nhạt đi kèm của từng nhãn qua
@@ -47,6 +50,21 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
   [Biểu đồ phân tán](/vi/charts/scatter), lương gross vs net ở EU trên
   [Biểu đồ bong bóng](/vi/charts/bubble), và dải tuổi thọ ~195 quốc gia trên
   [Biểu đồ khoảng cách](/vi/charts/gap).
+
+## v1.6.1 - v1.6.4
+
+Phiên bản gói: react **1.6.4** · devtools, insights **0.2.4** · core, wc, vue, svelte,
+angular **1.5.6**. Bốn đợt vá nhỏ giữa hai bản phát hành lớn:
+
+- **Trục giá trị của GapChart được gia cố ba lần.** `tickValues` do bạn truyền vào giờ được
+  lọc bỏ giá trị không hữu hạn, sắp xếp và khử trùng lặp (đầu vào hỏng thì rơi về domain
+  của dữ liệu); mark và trục không còn tràn ra ngoài khi truyền `tickValues` mà
+  `enableExplicitTickValues` đang tắt; và domain phần trăm được đệm theo biên độ, để marker
+  mốc 0 nằm đúng trên trục thay vì lòi ra ngoài mép.
+- **Chú giải của VerticalStackBar giữ nguyên màu.** Key bị tắt vẫn nằm trong `legendData`
+  với cờ `disabled: true`: viên chú giải chỉ mờ đi thay vì biến mất, và các slot màu được
+  chia trên toàn bộ tập key - không key nào đổi màu khi tắt rồi bật lại. Các cột vẫn loại
+  trừ key đã tắt.
 
 ## v1.6.0
 

@@ -19,7 +19,7 @@ export interface UiStrings {
   lang: string; // <html lang>
   navCharts: string;
   navGuide: string;
-  navWhatsNew: string;
+  navWhatsNew: string; // "{version}" is replaced with the current lib version at build time
   navChangelog: string;
   sbCharts: string;
   sbOverview: string;
@@ -70,7 +70,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     lang: "en-US",
     navCharts: "Charts",
     navGuide: "Guide",
-    navWhatsNew: "What's new in v1.6.0",
+    navWhatsNew: "What's new in {version}",
     navChangelog: "Changelog (GitHub)",
     sbCharts: "Charts",
     sbOverview: "Overview",
@@ -119,7 +119,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     lang: "fr-FR",
     navCharts: "Graphiques",
     navGuide: "Guide",
-    navWhatsNew: "Nouveautés de la v1.6.0",
+    navWhatsNew: "Nouveautés de la {version}",
     navChangelog: "Journal des modifications (GitHub)",
     sbCharts: "Graphiques",
     sbOverview: "Vue d'ensemble",
@@ -168,7 +168,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     lang: "nl-NL",
     navCharts: "Grafieken",
     navGuide: "Gids",
-    navWhatsNew: "Wat is nieuw in v1.6.0",
+    navWhatsNew: "Wat is nieuw in {version}",
     navChangelog: "Wijzigingslogboek (GitHub)",
     sbCharts: "Grafieken",
     sbOverview: "Overzicht",
@@ -217,7 +217,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     lang: "vi-VN",
     navCharts: "Biểu đồ",
     navGuide: "Hướng dẫn",
-    navWhatsNew: "Có gì mới trong v1.6.0",
+    navWhatsNew: "Có gì mới trong {version}",
     navChangelog: "Nhật ký thay đổi (GitHub)",
     sbCharts: "Biểu đồ",
     sbOverview: "Tổng quan",

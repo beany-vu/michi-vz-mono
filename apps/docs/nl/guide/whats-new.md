@@ -33,10 +33,13 @@ Al gemerged en live in de demo's van deze docs; gaat naar npm met de volgende ve
 - **Kleine knoppen, groot comfort.** De waarde-as van het halterdiagram kan onder het plot
   (`xAxisPosition: "bottom"`), GapChart accepteert een expliciete `xAxisDomain` (zoom een
   levensverwachtingsverhaal in op zijn band 35-90), de rijlabels van de tornado kunnen links
-  van het plot (`yAxisPosition: "left"`), en radar-poollabels blijven vrij van de titel.
-- **Rijlabels die je kunt vastpakken.** Op Gap, Vergelijkbaar en de tornado maakt de
-  opt-in `interactiveRowLabels` van elk rijlabel een echte control: hover of focus en een
-  verbindingslijn loopt naar de rij, met tooltip en highlight; klikken pint vast.
+  van het plot (`yAxisPosition: "left"`), radar-poollabels blijven vrij van de titel, en de
+  contextsamenvatting van de tornado benoemt nu zijn grootste onbalans.
+- **Rijlabels die je kunt vastpakken - en scrubben.** Op Gap, Vergelijkbaar en de tornado
+  maakt de opt-in `interactiveRowLabels` van elk rijlabel een echte control: hover of focus
+  en een verbindingslijn loopt naar de rij, met tooltip en highlight; klikken pint vast. De
+  labelgoot scrubt bovendien als een slider: sleep erlangs en de tooltip volgt je cursor van
+  rij naar rij, tot aan rijen waarvan het label op een dichte as was uitgedund.
   Probeer het op de demo's van die pagina's.
 - **Een legenda voor alles.** Elke grafiekcontext draagt nu `legendData`, en split-grafieken
   (treemap, bellen, vergelijkbare staven) tonen ook de lichte partnerkleur van elk label via
@@ -51,6 +54,22 @@ Al gemerged en live in de demo's van deze docs; gaat naar npm met de volgende ve
   [Spreidingsdiagram](/nl/charts/scatter), bruto-vs-nettosalarissen in de EU op
   [Bellen](/nl/charts/bubble), en een levensverwachtingsgolf van ~195 landen op
   [Verschil](/nl/charts/gap).
+
+## v1.6.1 - v1.6.4
+
+Pakketversies: react **1.6.4** · devtools, insights **0.2.4** · core, wc, vue, svelte,
+angular **1.5.6**. Vier kleine patchgolven tussen de grote releases:
+
+- **De waarde-as van GapChart, drie keer gehard.** Door de consument aangeleverde
+  `tickValues` worden gefilterd op eindige waarden, gesorteerd en ontdubbeld (ontaarde
+  invoer valt terug op het datadomein); markeringen en as lopen niet meer over wanneer
+  `tickValues` worden meegegeven terwijl `enableExplicitTickValues` uit staat; en
+  procentdomeinen krijgen bereikbewuste padding, zodat een nulpuntsmarkering op de as landt
+  in plaats van erbuiten.
+- **De legenda van VerticalStackBar houdt haar kleuren.** Een uitgeschakelde sleutel blijft
+  in `legendData` staan met `disabled: true`: de legendapil dimt in plaats van te verdwijnen,
+  en kleurslots worden toegewezen over de volledige sleutelset - geen sleutel verandert van
+  kleur bij uit- en weer inschakelen. Balken sluiten uitgeschakelde sleutels nog steeds uit.
 
 ## v1.6.0
 
