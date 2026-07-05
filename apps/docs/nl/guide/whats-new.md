@@ -32,8 +32,8 @@ Al gemerged en live in de demo's van deze docs; gaat naar npm met de volgende ve
   [Bellen](/nl/charts/bubble).
 - **Kleine knoppen, groot comfort.** De waarde-as van het halterdiagram kan onder het plot
   (`xAxisPosition: "bottom"`), GapChart accepteert een expliciete `xAxisDomain` (zoom een
-  levensverwachtingsverhaal in op zijn band 35-90), en radar-poollabels blijven vrij van de
-  titel.
+  levensverwachtingsverhaal in op zijn band 35-90), de rijlabels van de tornado kunnen links
+  van het plot (`yAxisPosition: "left"`), en radar-poollabels blijven vrij van de titel.
 - **Een legenda voor alles.** Elke grafiekcontext draagt nu `legendData`, en split-grafieken
   (treemap, bellen, vergelijkbare staven) tonen ook de lichte partnerkleur van elk label via
   `LegendItem.paleColor` - de docs-demo's gebruiken het voor hun legenda's en de schakelaar

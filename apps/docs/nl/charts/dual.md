@@ -8,7 +8,13 @@ description: "Dubbele staven (tornado, bevolkingspiramide): twee tegenover elkaa
 
 Welke kant wint, en met hoeveel? Veranker twee tegenover elkaar staande waarden aan een gedeelde middellijn en de onbalans is in één oogopslag afleesbaar - links versus rechts, mannen versus vrouwen, voor versus na. De klassieke bevolkingspiramide en tornado-grafiek, waarbij de langste balk het verhaal vertelt.
 
-<ChartDemo chart="dual-horizontal-bar-chart" />
+<ChartDemo
+  chart="dual-horizontal-bar-chart"
+  :legend="[
+    { label: 'Mannen (rechts, vol)', color: '#3F7CAC' },
+    { label: 'Vrouwen (links, licht)', color: '#95b7d1' },
+  ]"
+/>
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
 

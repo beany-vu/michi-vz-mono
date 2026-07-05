@@ -47,6 +47,7 @@ interface Resolved {
   height: number;
   margin: Margin;
   tickHtmlWidth: number;
+  yAxisPosition: "center" | "left";
   renderer: Renderer;
   value1Opacity: number;
   value2Opacity: number;
@@ -59,6 +60,7 @@ function resolve(p: DualBarChartProps): Resolved {
     height: p.height ?? 480,
     margin: p.margin ?? DEFAULT_MARGIN,
     tickHtmlWidth: p.tickHtmlWidth ?? 100,
+    yAxisPosition: p.yAxisPosition ?? "center",
     // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
     // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
     // reflects what actually painted.
@@ -245,9 +247,12 @@ export function mountDualHorizontalBarChart(
 
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
+    // Legacy "center" anchors the label column to the shared centre line (labels sit
+    // over the left-extending bars); "left" keeps them in the left margin, clear of
+    // the plot - the classic population-pyramid look.
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
-      margin: { ...r.margin, left: scales.center },
+      margin: r.yAxisPosition === "center" ? { ...r.margin, left: scales.center } : r.margin,
       format: (label) => yFormat(label),
       tickHtmlWidth: r.tickHtmlWidth,
       showGrid: false,

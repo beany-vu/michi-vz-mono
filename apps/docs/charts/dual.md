@@ -8,7 +8,13 @@ description: "Dual bar chart (tornado, population pyramid): two opposing values 
 
 Which side wins, and by how much? Anchor two opposing values to a shared centre line and the imbalance reads at a glance - left vs right, men vs women, before vs after. The classic population pyramid and tornado chart, where the longest bar is the story.
 
-<ChartDemo chart="dual-horizontal-bar-chart" />
+<ChartDemo
+  chart="dual-horizontal-bar-chart"
+  :legend="[
+    { label: 'Male (right, solid)', color: '#3F7CAC' },
+    { label: 'Female (left, pale)', color: '#95b7d1' },
+  ]"
+/>
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 

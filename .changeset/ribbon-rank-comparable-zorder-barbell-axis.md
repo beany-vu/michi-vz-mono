@@ -34,6 +34,11 @@ Legacy-parity fixes for Ribbon and Comparable, a new BarBell axis option, and le
   of the derived zero-baseline domain (zoom a life-expectancy story into its
   35-90 band). An explicit domain skips d3 nice() re-rounding. Exposed on the web
   component and `applyGapChartProps`.
+- **New `yAxisPosition: "center" | "left"` on DualBarChartProps** (default "center",
+  the legacy tornado look): "left" moves the row labels into the left margin,
+  clear of the left-extending bars - the classic population-pyramid layout.
+  Exposed on the web component (`y-axis-position`) and
+  `applyDualHorizontalBarChartProps`.
 - **New `xAxisPosition: "top" | "bottom"` on BarBellChartProps** (default "top",
   the legacy header look): "bottom" moves the value-axis tick labels below the
   plot, clearing room under the title. Exposed on the web component

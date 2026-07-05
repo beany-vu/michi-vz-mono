@@ -8,7 +8,13 @@ description: "Graphique en barres doubles (tornade, pyramide des âges) : deux v
 
 Quel côté l'emporte, et de combien ? Ancrez deux valeurs opposées à une ligne centrale partagée et le déséquilibre se lit d'un coup d'œil - gauche vs droite, hommes vs femmes, avant vs après. La classique pyramide des âges et le diagramme en tornade, où la barre la plus longue est l'histoire.
 
-<ChartDemo chart="dual-horizontal-bar-chart" />
+<ChartDemo
+  chart="dual-horizontal-bar-chart"
+  :legend="[
+    { label: 'Hommes (droite, plein)', color: '#3F7CAC' },
+    { label: 'Femmes (gauche, pâle)', color: '#95b7d1' },
+  ]"
+/>
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 

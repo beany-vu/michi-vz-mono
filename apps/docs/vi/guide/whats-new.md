@@ -29,7 +29,8 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
   render. Xem demo sự kiện va chạm trên [Biểu đồ bong bóng](/vi/charts/bubble).
 - **Chỉnh nhỏ, dễ chịu lớn.** Trục giá trị của biểu đồ quả tạ chuyển được xuống dưới
   (`xAxisPosition: "bottom"`), GapChart nhận `xAxisDomain` tường minh (zoom câu chuyện tuổi thọ
-  vào đúng dải 35-90), và nhãn cực của radar không còn chạm tiêu đề.
+  vào đúng dải 35-90), nhãn hàng của biểu đồ tornado chuyển được sang trái vùng vẽ
+  (`yAxisPosition: "left"`), và nhãn cực của radar không còn chạm tiêu đề.
 - **Cái gì cũng có chú giải.** Mọi context biểu đồ giờ đều mang `legendData`, và các biểu đồ
   tách phần (treemap, bong bóng, cột so sánh) còn lộ màu nhạt đi kèm của từng nhãn qua
   `LegendItem.paleColor` - demo trong docs dùng nó cho chú giải màu và nút chuyển

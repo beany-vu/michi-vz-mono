@@ -2718,6 +2718,14 @@
           "common": false
         },
         {
+          "name": "yAxisPosition",
+          "type": "\"center\" | \"left\"",
+          "optional": true,
+          "description": "Where the row labels sit: \"center\" (default, legacy: on the shared centre line, over the left-extending bars) or \"left\" (in the left margin, clear of the plot - the classic population-pyramid look).",
+          "default": "\"center\"",
+          "common": false
+        },
+        {
           "name": "value1Opacity",
           "type": "number",
           "optional": true,

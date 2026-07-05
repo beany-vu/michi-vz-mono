@@ -709,6 +709,8 @@ const dual: Example<DualBarChartProps>[] = [
     "element": "michi-vz-dual-horizontal-bar-chart",
     "props": {
       "title": "Population by age band: male vs female, Japan 2023 (millions)",
+      // Age-band labels in the left margin, clear of the left-extending bars.
+      "yAxisPosition": "left",
       "dataSet": [
         {
           "label": "0-9 years",

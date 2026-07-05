@@ -8,7 +8,13 @@ description: "Biểu đồ cột kép (tornado, tháp dân số): hai giá trị
 
 Bên nào thắng, và thắng bao nhiêu? Neo hai giá trị đối lập vào một đường trung tâm chung và sự mất cân bằng hiện rõ chỉ trong nháy mắt - trái so với phải, nam so với nữ, trước so với sau. Đây là tháp dân số kinh điển và biểu đồ tornado, nơi cột dài nhất chính là câu chuyện.
 
-<ChartDemo chart="dual-horizontal-bar-chart" />
+<ChartDemo
+  chart="dual-horizontal-bar-chart"
+  :legend="[
+    { label: 'Nam (bên phải, màu đậm)', color: '#3F7CAC' },
+    { label: 'Nữ (bên trái, màu nhạt)', color: '#95b7d1' },
+  ]"
+/>
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 

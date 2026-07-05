@@ -34,7 +34,8 @@ Déjà fusionné et visible dans les démos de cette doc ; part sur npm avec la 
   Voir la démo « événement de collision » sur [Bulles](/fr/charts/bubble).
 - **Petits réglages, grand confort.** L'axe des valeurs du Barre-haltère peut passer sous le
   tracé (`xAxisPosition: "bottom"`), le GapChart accepte un `xAxisDomain` explicite (zoomer une
-  histoire d'espérance de vie dans sa bande 35-90), et les libellés des pôles du radar ne
+  histoire d'espérance de vie dans sa bande 35-90), les libellés de lignes du tornado peuvent
+  passer à gauche du tracé (`yAxisPosition: "left"`), et les libellés des pôles du radar ne
   touchent plus le titre.
 - **Une légende pour tout.** Chaque contexte de graphique porte désormais `legendData`, et les
   graphiques à division (treemap, bulles, comparables) exposent aussi la couleur pâle compagne

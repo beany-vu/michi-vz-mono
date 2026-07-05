@@ -38,6 +38,20 @@ describe("mountDualHorizontalBarChart (jsdom)", () => {
     host.remove();
   });
 
+  it("yAxisPosition:'left' moves the row labels from the centre line into the left margin", () => {
+    const center = mount();
+    const left = mount({ yAxisPosition: "left" });
+    const labelX = (host: HTMLElement) => {
+      const fo = host.querySelector<SVGForeignObjectElement>(".mv-y-axis foreignObject")!;
+      return Number(fo.getAttribute("x"));
+    };
+    expect(labelX(left.host)).toBeLessThan(labelX(center.host));
+    center.chart.destroy();
+    center.host.remove();
+    left.chart.destroy();
+    left.host.remove();
+  });
+
   it("builds an a11y mirror with one row per label", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(3);

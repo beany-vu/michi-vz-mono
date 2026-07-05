@@ -30,7 +30,8 @@ Already merged and live in these docs' demos; ships to npm with the next version
   memoised across re-renders. See the collision-event demo on [Bubble](/charts/bubble).
 - **Small controls, big comfort.** BarBell's value axis can move below the plot
   (`xAxisPosition: "bottom"`), GapChart accepts an explicit `xAxisDomain` (zoom a
-  life-expectancy story into its 35-90 band), and Radar pole labels stay clear of the title.
+  life-expectancy story into its 35-90 band), the tornado's row labels can sit left of the
+  plot (`yAxisPosition: "left"`), and Radar pole labels stay clear of the title.
 - **A legend for everything.** Every chart context now carries `legendData`, and split
   charts (treemap, bubble, comparable) also expose each label's pale companion via
   `LegendItem.paleColor` - the docs demos use it for their colour legends and the

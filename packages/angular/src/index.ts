@@ -414,6 +414,7 @@ export function applyDualHorizontalBarChartProps(
   if (props.xAxisDomain !== undefined) el.xAxisDomain = props.xAxisDomain;
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickHtmlWidth !== undefined) el.tickHtmlWidth = props.tickHtmlWidth;
+  if (props.yAxisPosition !== undefined) el.yAxisPosition = props.yAxisPosition;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
 }

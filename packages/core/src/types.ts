@@ -1048,6 +1048,10 @@ export interface DualBarChartProps {
   ticks?: number;
   /** Width in px reserved for each y-axis (label) tick's HTML (default 100) */
   tickHtmlWidth?: number;
+  /** Where the row labels sit: "center" (default, legacy: on the shared centre line,
+   * over the left-extending bars) or "left" (in the left margin, clear of the plot -
+   * the classic population-pyramid look). */
+  yAxisPosition?: "center" | "left";
   /** value1 (right) / value2 (left) fill opacities. */
   value1Opacity?: number;
   /** Fill opacity of the left-extending value2 bar (default 0.55) */
