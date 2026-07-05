@@ -8,26 +8,25 @@ title: Insights - dự đoán, giải thích, và điều khiển biểu đồ b
 Lớp AI `@michi-vz/insights` là **thử nghiệm**: API, sub-path, và đầu ra của nó có thể thay đổi trong các bản phát hành tương lai. 16 biểu đồ lõi đã ổn định; insights (và [biểu đồ Fountain](/vi/charts/fountain) mới) thì chưa. Hãy ghim một phiên bản nếu bạn phụ thuộc vào chúng.
 :::
 
-Một biểu đồ thông thường chỉ *vẽ lại* quá khứ. `@michi-vz/insights` khiến nó **dự báo tương
-lai**, **tự giải thích bằng ngôn ngữ thuần túy**, **bắt lỗi dữ liệu xấu**, và **trả lời một
-trợ lý AI** - tất cả ngay trong trình duyệt, không máy chủ và không có gì rời khỏi trang.
-Đây là tính năng **tùy chọn (opt-in)** và dùng **các phương pháp giáo khoa thuần túy** (không
-hộp đen); mỗi biểu đồ michi-vz đã mang sẵn một `ChartContext` có cấu trúc, và các tính năng
-này chỉ đơn giản là đọc từ đó.
+Một biểu đồ bình thường chỉ *vẽ lại* quá khứ. `@michi-vz/insights` cho nó **dự báo tương
+lai**, **tự giải thích bằng ngôn ngữ thuần**, **bắt lỗi dữ liệu xấu**, và **trả lời một
+trợ lý AI**, tất cả ngay trong trình duyệt, không máy chủ, không gì rời khỏi trang. Tính
+năng này **opt-in** và chỉ dùng **các phương pháp giáo khoa thuần túy** (không hộp đen); mỗi
+biểu đồ michi-vz đã sẵn một `ChartContext` có cấu trúc, còn các tính năng này chỉ đơn giản
+là đọc từ đó ra.
 
 <InsightsDemo feature="forecast" />
 
-> Ở trên là một biểu đồ đường thực sự. Bật **Forecast** để thấy một dự đoán nét đứt + vùng
-> dự báo được tô mờ; **Explain** viết một câu từ dữ liệu. Không máy chủ - tất cả chạy ngay
-> trong trình duyệt của bạn.
+> Ở trên là một biểu đồ đường thật. Bật **Forecast** để thấy một dự đoán nét đứt cộng vùng
+> dự báo tô mờ; **Explain** viết một câu từ chính dữ liệu. Không máy chủ nào cả, tất cả
+> chạy ngay trong trình duyệt của bạn.
 
-> [!IMPORTANT] Một mô hình hỗ trợ; nó không quyết định.
-> Các mô hình khác nhau cho ra câu trả lời khác nhau, và ngay cả một mô hình mạnh cũng có
-> thể sai - càng nhỏ và càng nhanh thì càng dễ sai hơn. Các công cụ này giúp việc *đọc* một
-> biểu đồ nhanh hơn; chúng không chịu trách nhiệm thay cho việc đó. Hãy coi bất kỳ đầu ra
-> nào của mô hình như một điểm khởi đầu, dựa vào phương án dự phòng dựa trên quy tắc có
-> tính xác định như một cơ sở trung thực, và **xác minh bất cứ điều gì quan trọng trước khi
-> bạn hành động dựa trên nó**. AI ở đây để giúp đỡ, không phải để trả lời thay cho bạn.
+> [!IMPORTANT] Model chỉ hỗ trợ, không quyết định thay bạn.
+> Mỗi model trả lời một kiểu, và ngay cả model mạnh cũng có thể sai, càng nhỏ càng nhanh
+> thì càng dễ sai hơn. Mấy công cụ này giúp *đọc* biểu đồ nhanh hơn, chứ không làm thay việc
+> đó. Cứ coi bất kỳ output nào của model là điểm khởi đầu, dựa vào phương án rule-based có
+> tính xác định làm cơ sở đáng tin, và **luôn xác minh trước khi hành động dựa trên điều gì
+> quan trọng**. AI ở đây để giúp, không phải để quyết định thay bạn.
 
 ---
 
@@ -37,10 +36,15 @@ Bốn điều trở nên khả thi ngay khi một biểu đồ mang theo ý ngh�
 
 ### Đọc và điều khiển biểu đồ từ một trợ lý AI
 
-Đây là điểm nổi bật nhất. Vì mỗi biểu đồ phơi bày ý nghĩa của nó (`ChartContext`) **và**
-các điều khiển của nó dưới dạng **công cụ (tools)**, một trợ lý AI có thể tóm tắt nó, lọc
-nó, tô nổi bật một chuỗi dữ liệu, hoặc dự báo nó - bằng cách gọi hàm, chứ không cào điểm
-ảnh. Hãy thử các nút (mỗi nút là một lệnh gọi công cụ thực sự):
+Đây là điểm nhấn quan trọng nhất. Thử hình dung buổi rà dashboard sáng thứ Hai: ai đó hỏi
+*"khu vực nào đang tụt lại?"* và trợ lý trả lời trong vài giây, không phải bằng cách nheo
+mắt nhìn từng pixel, mà gọi `get_chart_context`, đọc đúng bản tóm tắt có cấu trúc mà biểu
+đồ đã có sẵn, phát hiện chuỗi nào vừa đổi chiều xu hướng, rồi gọi `highlight` để mọi người
+cùng thấy. Đó là function call, không phải screenshot. Mọi biểu đồ michi-vz đều cung cấp ý
+nghĩa của mình (`ChartContext`) **và** các nút điều khiển dưới dạng **tool**, và các tool
+đó giao tiếp qua **MCP** (Model Context Protocol), nên **Claude Code, Codex, Cursor, và
+Claude Desktop** điều khiển được biểu đồ đang chạy của bạn mà không cần tích hợp riêng gì
+cả. Thử mấy nút bên dưới xem (mỗi nút là một tool call thật sự):
 
 <InsightsDemo feature="agent" />
 
@@ -51,15 +55,15 @@ const agent = createAgent({ charts: [chartHandle("revenue", chart, props)], llm:
 await agent.ask("Filter to the top 5 and forecast next quarter");
 ```
 
-Các công cụ tương tự được phơi bày qua **MCP** (Model Context Protocol), nên **Claude Code,
-Codex, Cursor, và Claude Desktop** kết nối mà không cần tích hợp tùy chỉnh nào - xem
-**Agents & MCP** trong phần tham chiếu bên dưới.
+Nối việc này chỉ tốn một lệnh gọi đăng ký (registry) cho mỗi biểu đồ; máy chủ MCP, danh
+sách tool đầy đủ, và các resource `michivz://chart/<name>` đều nằm trong mục **Agents &
+MCP** ở phần tham chiếu bên dưới.
 
 ### Dự đoán tương lai
 
 Thêm một plugin và biểu đồ sẽ mọc thêm một dự đoán nét đứt, một dải tin cậy, và một con số
-**độ chính xác đã qua kiểm định hậu nghiệm (backtest)** (để nó đáng tin cậy, không phải một
-phỏng đoán). Dự báo hoạt động trên Line, **Fan**, Range, Area, và họ stacked-bar.
+**độ chính xác đã backtest** (để nó đáng tin, không phải phỏng đoán suông). Forecast chạy
+được trên Line, **Fan**, Range, Area, và họ stacked-bar.
 
 ```ts
 import { forecast } from "@michi-vz/insights/forecast";
@@ -69,22 +73,21 @@ mountLineChart(el, { dataSet: revenue, xAxisDataType: "date_annual" }, {
 // getContext().summary → "...Revenue projected to 189 by 2027 (holt-winters, MAPE 6.1%)."
 ```
 
-(Bản demo ở đầu trang chính là cái này.) Và nó **không chỉ dành riêng cho line** - cùng một
-dự báo mở rộng ra một biểu đồ Fan (các dải tin cậy lồng nhau), phần chồng của một biểu đồ
-Area, một dải Range, và hơn thế nữa:
+(Bản demo ở đầu trang chính là cái này.) Và nó **không chỉ dành cho line**, cùng một
+forecast mở rộng ra cả biểu đồ Fan (các dải tin cậy lồng nhau), phần chồng của Area, một
+dải Range, và hơn thế nữa:
 
 <InsightsDemo feature="forecast" chart="fan" />
 
 <InsightsDemo feature="forecast" chart="area" />
 
-**[Biểu đồ Fan](/vi/charts/fan)** là phần trình bày dự báo chuyên dụng, được xây dựng chỉ
-trong một lệnh gọi với `forecastFan()`.
+**[Biểu đồ Fan](/vi/charts/fan)** là phần trình bày forecast chuyên dụng, chỉ cần một lệnh
+gọi `forecastFan()` là dựng xong.
 
 ### Tự giải thích chính mình, bắt lỗi dữ liệu xấu
 
 Biểu đồ **phát hiện bất thường** (và đánh dấu chúng), viết một **tường thuật bằng ngôn ngữ
-thuần túy**, và chạy **xác thực chất lượng dữ liệu** - tất cả từ cùng một context có cấu
-trúc.
+thuần**, và chạy **xác thực chất lượng dữ liệu**, tất cả từ cùng một context có cấu trúc.
 
 <InsightsDemo feature="anomaly" />
 
@@ -101,39 +104,37 @@ chart.use(validate());  // warns via onDataWarning AND marks the bad points red 
 
 ### Làm sạch và kết nối dữ liệu của bạn, cũng vậy
 
-Cùng ý nghĩa có cấu trúc đó cũng dọn dẹp dữ liệu lộn xộn và tìm thấy mọi thứ theo ý nghĩa
-của chúng, không phải theo cách chúng được viết ra - tất cả đều không cần mô hình theo mặc
-định, tất cả đều là tùy chọn nâng cấp lên một mô hình thực khi bạn muốn nhiều hơn:
+Cùng thứ ý nghĩa có cấu trúc đó cũng dọn dẹp dữ liệu lộn xộn và tìm ra mọi thứ theo đúng ý
+nghĩa, chứ không theo cách nó được viết ra: mặc định không cần model nào cả, và luôn có
+tùy chọn nâng cấp lên model thật khi bạn cần thêm:
 
-- **[Đối chiếu nhãn](#reconcile-labels)** - gộp `USA` / `united states` / `U.S.A.` thành
-  một nhóm sạch duy nhất, để tổng số ngừng bị tách ra theo cách viết khác nhau.
-- **[Khớp giữa các tập dữ liệu](#match-across-datasets)** - liên kết hai danh sách được
-  viết khác nhau (một tệp xuất từ CRM và một tệp xuất từ ERP) thành một biểu đồ đã nối,
-  trung thực.
-- **[Tìm kiếm thông minh](#smart-search)** - tìm một chuỗi dữ liệu theo ý bạn muốn nói
-  ("tiền đang chảy vào"), chứ không theo đúng nhãn của nó.
-- **[Mang mô hình của riêng bạn vào](#bring-a-model)** - mọi tính năng dựa trên mô hình đều
-  quay về một câu trả lời có tính xác định, dựa trên quy tắc; bật **Real model** trong demo
-  tường thuật để so sánh văn xuôi của một mô hình nhỏ chạy trong trình duyệt song song,
-  trực tiếp.
+- **[Đối chiếu nhãn](#reconcile-labels)**: gộp `USA` / `united states` / `U.S.A.` thành một
+  nhóm sạch duy nhất, để tổng số không còn bị tách ra vì viết khác nhau.
+- **[Khớp giữa các tập dữ liệu](#match-across-datasets)**: nối hai danh sách viết khác
+  nhau (một file xuất từ CRM và một file xuất từ ERP) thành một biểu đồ trung thực, đã nối.
+- **[Tìm kiếm thông minh](#smart-search)**: tìm một chuỗi theo đúng ý bạn muốn nói ("tiền
+  đang chảy vào"), chứ không cần khớp đúng nhãn.
+- **[Mang model của riêng bạn vào](#bring-a-model)**: mọi tính năng dựa trên model đều quay
+  về câu trả lời rule-based có tính xác định; bật **Real model** trong demo tường thuật để
+  so sánh văn xuôi của một model nhỏ chạy trong trình duyệt, ngay cạnh nhau.
 
 ---
 
 ## Ví dụ thực tế
 
-Mỗi biểu đồ bên dưới là hàng thật - nó tính toán ngay trong trình duyệt của bạn khi trang
-tải, và có thể nhấp được (bật Canvas/SVG, nhấn **Explain ▸**). Vấn đề không phải là bản
-demo; mà là một nhà phân tích, một chủ ngân hàng, một nhà khoa học dược phẩm, hay một sử
-gia đều nhận được câu trả lời *ngay trên biểu đồ* - không notebook, không máy chủ. Mỗi
-thuật ngữ được giải thích ngay lần đầu xuất hiện, và được tập hợp trong [Thuật ngữ](#glossary).
+Mỗi biểu đồ bên dưới đều là hàng thật, nó tự tính toán ngay trong trình duyệt lúc trang
+tải, và bấm được (bật Canvas/SVG, nhấn **Explain ▸**). Vấn đề không nằm ở bản demo, mà ở
+chỗ một nhà phân tích, một chủ ngân hàng, một nhà khoa học dược phẩm, hay một sử gia đều
+nhận được câu trả lời *ngay trên biểu đồ*, không notebook, không máy chủ. Mỗi thuật ngữ
+được giải thích ngay lần đầu xuất hiện, và gom lại hết trong [Thuật ngữ](#glossary).
 
-### Forecast: điều này đang đi về đâu, và liệu nó có đạt được mục tiêu?
+### Forecast: cái này đang đi về đâu, và có đạt mục tiêu không?
 
-Đường nét đứt dự phóng xu hướng gần đây. **Dải tin cậy** được tô mờ chính là sai số quá khứ
-của mô hình, nên nó cho thấy một *khoảng* trung thực thay vì một con số đầy hy vọng duy
-nhất. Và nơi dự phóng gặp một mục tiêu, một **điểm chạm (fall point)** màu đỏ đánh dấu *khi
-nào* mục tiêu đạt được - trả lời cả câu hỏi "điều này đang đi về đâu?" lẫn câu hỏi tìm mục
-tiêu (goal-seek) "liệu nó có đạt được không, và khi nào?".
+Đường nét đứt dự phóng theo xu hướng gần đây. **Dải tin cậy** tô mờ chính là sai số quá khứ
+của model, nên nó cho một *khoảng* trung thực thay vì một con số đầy hy vọng. Và ở chỗ dự
+phóng chạm một mục tiêu, một **điểm chạm (fall point)** màu đỏ đánh dấu *khi nào* đạt được
+mục tiêu đó, trả lời cả câu hỏi "cái này đang đi về đâu?" lẫn câu hỏi goal-seek "có đạt
+được không, và khi nào?".
 
 **Tốc độ tăng doanh thu (run-rate) của một ngân hàng - kế hoạch cuối năm có trong tầm với
 không?**
@@ -160,10 +161,10 @@ xây dựng không?**
 
 ### Kịch bản: tốt nhất, cơ sở, xấu nhất
 
-Một dự phóng duy nhất hiếm khi là đủ. Thêm các đường **kịch bản** - một giả định tăng
-trưởng lạc quan và một giả định bi quan - và cùng một lịch sử tỏa ra thành một dải tốt
-nhất / cơ sở / xấu nhất, giống cách một CFO hay một bài kiểm tra căng thẳng (stress test)
-của ngân hàng đóng khung tương lai.
+Một dự phóng duy nhất hiếm khi là đủ. Thêm các đường **kịch bản**, một giả định tăng
+trưởng lạc quan và một giả định bi quan, thế là cùng một lịch sử tỏa ra thành dải tốt
+nhất / cơ sở / xấu nhất, giống hệt cách một CFO hay một stress test ngân hàng đóng khung
+tương lai.
 
 **Một bài kiểm tra căng thẳng ngân hàng - doanh thu trong kịch bản khả quan và kịch bản
 nghiêm trọng, đối chiếu với đường kế hoạch.**
@@ -181,10 +182,10 @@ vốn tiếp theo trễ mất một quý?**
 
 ### Narration: biểu đồ tự viết tiêu đề của chính mình (và không bao giờ bịa đặt)
 
-Một biểu đồ bận rộn che giấu câu chuyện của chính nó. `narrate()` đọc dữ liệu và viết một
-câu văn thuần túy: nó gọi tên **top mover** (chuỗi dữ liệu biến động nhiều nhất giữa điểm
-đầu và điểm cuối) và tỷ lệ tăng-so-với-giảm. Mọi con số đều được tính từ dữ liệu số, nên -
-khác với một chatbot - nó không thể bịa ra một con số. Nhấn **Explain ▸** để xem câu văn.
+Một biểu đồ bận rộn hay che giấu câu chuyện của chính nó. `narrate()` đọc dữ liệu và viết
+một câu thuần: gọi tên **top mover** (chuỗi biến động nhiều nhất giữa điểm đầu và điểm
+cuối) và tỷ lệ tăng-so-với-giảm. Mọi con số đều tính từ dữ liệu số thật, nên khác với một
+chatbot, nó không bịa ra được con số nào. Nhấn **Explain ▸** để xem câu văn.
 
 **Một ngân hàng bán lẻ - tiền gửi số hóa âm thầm vượt qua mạng lưới chi nhánh.**
 
@@ -208,12 +209,12 @@ khác với một chatbot - nó không thể bịa ra một con số. Nhấn **E
 
 ### Anomaly: thứ gì không thuộc về đây?
 
-Một **bất thường (anomaly)** là một năm nổi bật khác biệt so với phần còn lại của chuỗi
-dữ liệu. Theo mặc định nó được tìm thấy bằng **z-score** (một điểm dữ liệu cách trung bình
-bao nhiêu bước chuẩn; quá khoảng ba bước thì bị gắn cờ) và được đánh dấu bằng một chấm -
-biến câu hỏi "có điều gì bất thường đã xảy ra không?" thành một cái liếc mắt duy nhất.
-Logic chính xác của cả ba phương pháp phát hiện (z-score, hàng rào IQR, dải dự báo), ngưỡng
-của chúng và giới hạn của chúng được trình bày chi tiết trong
+Một **bất thường (anomaly)** là một năm nổi bật khác hẳn phần còn lại của chuỗi. Mặc định
+nó được tìm bằng **z-score** (một điểm dữ liệu cách trung bình bao nhiêu bước chuẩn; quá
+khoảng ba bước thì bị gắn cờ) và đánh dấu bằng một chấm, biến câu hỏi "có gì bất thường đã
+xảy ra không?" thành một cái liếc mắt là xong. Logic chính xác của cả ba phương pháp phát
+hiện (z-score, hàng rào IQR, dải dự báo), cùng ngưỡng và giới hạn của chúng, đều được trình
+bày chi tiết trong
 [Phương pháp luận](#methodology---the-exact-logic-behind-every-insight).
 
 **Một ngân hàng - năm mà tổn thất gian lận thẻ vượt khỏi xu hướng (một vụ vi phạm hoặc làn
@@ -240,164 +241,157 @@ cảnh giác dược.**
 
 ## Thêm nữa từ bộ công cụ
 
-Bảng **Sub-path** ở gần cuối liệt kê nhiều hơn những gì thư viện demo ở trên cho thấy. Đây
-là sáu plugin nữa trong số đó đang chạy thật - mỗi cái không cần mô hình, có tính xác định,
-và chỉ vài dòng để kết nối vào. Chúng trả lời những câu hỏi mà một biểu đồ thuần túy bỏ
-ngỏ: *cần gì để đạt được con số đó, tỷ lệ là bao nhiêu, xu hướng thực sự thay đổi khi nào,
-và đâu là tăng trưởng mùa vụ so với tăng trưởng thực.*
+Bảng **Sub-path** ở gần cuối liệt kê nhiều hơn hẳn những gì demo ở trên cho thấy. Đây là
+sáu plugin khác đang chạy thật, mỗi cái đều không cần model, có tính xác định, và chỉ vài
+dòng để nối vào. Chúng trả lời những câu mà một biểu đồ thuần bỏ ngỏ: *cần gì để đạt con số
+đó, tỷ lệ ra sao, xu hướng thật sự đổi lúc nào, và đâu là tăng trưởng mùa vụ so với tăng
+trưởng thật.*
 
-**Goal-seek - cần gì để đạt được con số đó?** Dự báo chạy thời gian về phía trước;
-goal-seek chạy nó *ngược lại* từ một mục tiêu bạn đặt ra. Di chuyển mục tiêu và xem tốc độ
-cần thiết (đường nét đứt màu vàng) phản ứng, cùng một phán quyết liệu tốc độ gần đây của
-bạn có đạt được nó hay không.
+**Goal-seek: cần gì để đạt con số đó?** Forecast chạy thời gian về phía trước; goal-seek
+chạy *ngược lại* từ một mục tiêu bạn đặt ra. Kéo mục tiêu đi và xem tốc độ cần thiết (đường
+nét đứt màu vàng) phản ứng ra sao, kèm một phán quyết xem tốc độ gần đây của bạn có đạt
+được nó không.
 
 <PluginLab feature="goalseek" />
 
-**Monte Carlo - tỷ lệ, không chỉ một đường.** Một đường dự báo duy nhất che giấu rủi ro.
-Cái này chạy hàng trăm tương lai được mô phỏng và báo cáo *dải* cộng với xác suất vượt qua
-một mục tiêu - được gieo hạt (seeded), nên nó phát lại chính xác, với một nút **Re-roll**
-để xem dải phân bố dịch chuyển.
+**Monte Carlo: tỷ lệ, không chỉ một đường.** Một đường dự báo duy nhất giấu mất rủi ro.
+Cái này chạy hàng trăm tương lai mô phỏng và báo cáo *dải* cộng xác suất vượt qua một mục
+tiêu, seeded nên phát lại y hệt, kèm nút **Re-roll** để xem dải phân bố dịch chuyển.
 
 <PluginLab feature="montecarlo" />
 
-**Changepoints - xu hướng thực sự thay đổi khi nào?** Các mức trung bình làm mờ đi khoảnh
-khắc câu chuyện đổi hướng. Cái này tìm ra nơi độ dốc thay đổi về mặt cấu trúc và tô màu
-đường theo từng chế độ (regime) - ở đây là một mô hình đỉnh-rồi-suy-giảm rõ ràng.
+**Changepoints: xu hướng thật sự đổi lúc nào?** Trung bình làm mờ khoảnh khắc câu chuyện
+đổi hướng. Cái này tìm ra chỗ độ dốc đổi về mặt cấu trúc và tô màu đường theo từng chế độ
+(regime); ở đây là một mô hình đỉnh-rồi-suy-giảm rõ ràng.
 
 <PluginLab feature="changepoints" />
 
-**Seasonality - tách tăng trưởng thực khỏi "lại đến tháng Mười Hai rồi."** Một lệnh gọi
-tách một đường gập ghềnh thành một xu hướng mượt và một sóng mùa vụ lặp lại, và tự nó phát
-hiện độ dài chu kỳ.
+**Seasonality: tách tăng trưởng thật khỏi "lại tháng Mười Hai rồi."** Một lệnh gọi tách một
+đường gập ghềnh thành xu hướng mượt và một sóng mùa vụ lặp lại, tự phát hiện luôn độ dài
+chu kỳ.
 
 <PluginLab feature="seasonal" />
 
-**Aggregate - từ hàng dữ liệu thô thành biểu đồ trong một lệnh gọi.** Trước khi có thể vẽ
-biểu đồ dữ liệu, thường bạn phải *định hình* nó. `aggregate()` thực hiện group-by + các
-phép đo mà không cần dependency nào (tùy chọn dùng DuckDB-Wasm cho SQL thực sự trên hàng
-triệu hàng). Đổi cách nhóm và nó tính lại.
+**Aggregate: từ hàng dữ liệu thô thành biểu đồ trong một lệnh gọi.** Trước khi vẽ được biểu
+đồ dữ liệu, thường bạn phải *định hình* nó trước. `aggregate()` làm group-by cộng các phép
+đo mà không cần dependency nào (tùy chọn dùng DuckDB-Wasm cho SQL thật trên hàng triệu
+hàng). Đổi cách nhóm là nó tính lại ngay.
 
 <PluginLab feature="sql" />
 
-**Sonify - nghe thấy xu hướng.** Một chiến thắng cho khả năng truy cập: mỗi giá trị trở
-thành một cao độ, nên một chuỗi dữ liệu tăng *nghe* như đang tăng lên. Nhấn play - các
-thanh chính là đầu ra thuần túy, có thể kiểm thử được của `valuesToTones()`.
+**Sonify: nghe thấy xu hướng.** Một điểm cộng cho accessibility: mỗi giá trị thành một cao
+độ, nên một chuỗi tăng *nghe* như đang tăng lên thật. Nhấn play, mấy thanh chính là output
+thuần, test được, của `valuesToTones()`.
 
 <PluginLab feature="sonify" />
 
 ## Làm sạch, khớp, và tìm kiếm dữ liệu của bạn
 
-Bốn điều AI mang lại cho dữ liệu của bạn, tất cả ngay trong trình duyệt: **đối chiếu**
+Bốn việc AI làm được cho dữ liệu của bạn, tất cả ngay trong trình duyệt: **đối chiếu**
 (reconcile) các nhãn lộn xộn trong một danh sách, **khớp** (match) hai danh sách viết khác
-nhau, **tìm kiếm** một chuỗi dữ liệu theo ý nghĩa, và **phân loại** văn bản tự do mà không
-cần quy tắc nào - được cấp năng lượng bởi các mô hình mở nhỏ, không phải một mô hình đám
-mây khổng lồ.
+nhau, **tìm kiếm** một chuỗi theo ý nghĩa, và **phân loại** văn bản tự do mà không cần rule
+nào cả, chạy nhờ các model mở nhỏ, không phải một model cloud khổng lồ.
 
-**Biến văn bản thành ý nghĩa.** Một *embedding* là một cách biến một từ hay cụm từ thành
-một danh sách số, được sắp xếp sao cho những thứ *mang cùng ý nghĩa* nằm gần nhau - để một
-máy tính có thể biết `USA` và `United States` là cùng một nơi dù chúng không chia sẻ chữ
-cái nào. `@michi-vz/insights` không phát minh ra bất cứ điều gì trong số này; nó cho thấy
-cách *tận dụng* các mô hình mã nguồn mở mà cộng đồng đã xây dựng sẵn: các **mô hình
-embedding** nhỏ (họ BERT / MiniLM) và các **LLM mở đủ nhỏ** (Qwen, Gemma, Phi), tất cả đều
-chạy **phía client trong trình duyệt của bạn** - không máy chủ, không API key, không gì
-được gửi đi đâu cả. Khi trỏ vào dữ liệu biểu đồ của bạn, chúng nâng **chất lượng** của nó
-lên và dọn dẹp **dữ liệu sai, lộn xộn**: bốn vấn đề thường ngày trở thành một thủ thuật -
-**gộp** những gì mang cùng ý nghĩa, **khớp** những gì hai hệ thống viết khác nhau, **tìm**
-những gì bạn muốn nói, **sắp xếp** những gì chưa được sắp xếp. Mặc định
-**không cần mô hình** chạy ngay lập tức ngoại tuyến (n-gram ký tự, rất tốt cho lỗi chính tả
-và cách viết); **chọn một mô hình** từ dropdown (MiniLM ~23 MB → MPNet ~110 MB, kích thước
-được hiển thị, tải theo yêu cầu) để chuyển từ khớp *chữ cái* sang khớp *ý nghĩa* - và mang
-một LLM nhỏ vào để **xác nhận** kết quả.
+**Biến văn bản thành ý nghĩa.** Một *embedding* là cách biến một từ hay cụm từ thành một
+dãy số, sắp xếp sao cho những thứ *cùng ý nghĩa* nằm gần nhau, để máy tính biết `USA` và
+`United States` là cùng một nơi dù chúng chẳng chung chữ cái nào. `@michi-vz/insights`
+không phát minh ra gì cả ở đây; nó chỉ cho thấy cách *tận dụng* các model mã nguồn mở mà
+cộng đồng đã xây sẵn: **model embedding** nhỏ (họ BERT / MiniLM) và **LLM mở đủ nhỏ**
+(Qwen, Gemma, Phi), tất cả chạy **phía client trong trình duyệt của bạn**, không máy chủ,
+không API key, không gì gửi đi đâu cả. Trỏ vào dữ liệu biểu đồ của bạn, chúng nâng **chất
+lượng** dữ liệu lên và dọn **dữ liệu sai, lộn xộn**: bốn việc thường ngày gói gọn trong một
+thủ thuật, **gộp** những gì cùng ý nghĩa, **khớp** những gì hai hệ thống viết khác nhau,
+**tìm** những gì bạn muốn nói, **sắp xếp** những gì chưa có thứ tự. Mặc định
+**không cần model** chạy ngay lập tức, ngoại tuyến (n-gram ký tự, rất hợp cho lỗi chính tả
+và cách viết khác nhau); **chọn một model** từ dropdown (MiniLM ~23 MB → MPNet ~110 MB,
+kích thước hiện rõ, tải theo yêu cầu) để chuyển từ khớp *chữ cái* sang khớp *ý nghĩa*, rồi
+mang thêm một LLM nhỏ vào để **xác nhận** kết quả.
 
 ### Đối chiếu nhãn
 
-**Vấn đề mà mọi nhà phân tích đều biết.** Dữ liệu của bạn đến từ ba nguồn và mỗi nguồn viết
-cùng một thứ theo cách khác nhau - `United States`, `united states`, `USA`. Nhóm theo khớp
-chính xác và biểu đồ của bạn sẽ tách một quốc gia thành ba thanh ngắn với **tổng số sai**,
-và một buổi chiều trôi qua để viết tay một bảng tra cứu (lookup table).
+**Vấn đề mà nhà phân tích nào cũng biết.** Dữ liệu của bạn đến từ ba nguồn, mỗi nguồn viết
+cùng một thứ một kiểu: `United States`, `united states`, `USA`. Nhóm theo khớp chính xác là
+biểu đồ tách một quốc gia thành ba thanh ngắn với **tổng số sai**, và mất nguyên một buổi
+chiều ngồi viết tay bảng tra cứu (lookup table).
 
-**Embedding sửa nó bằng ý nghĩa.** Biến mỗi nhãn thành một vector và gộp những cái nằm gần
-nhau. Mặc định **không cần mô hình** (tức thời, ngoại tuyến) đã gộp được cách viết, chữ
-hoa/thường, khoảng trắng và lỗi chính tả. Tải một mô hình thực sự (dropdown hiển thị kích
-thước của từng cái) và nó cũng gộp cả từ viết tắt và bản dịch - `USA` ≈ `United States`,
+**Embedding sửa nó bằng ý nghĩa.** Biến mỗi nhãn thành một vector rồi gộp những cái nằm
+gần nhau. Mặc định **không cần model** (tức thời, offline) đã gộp được cách viết, chữ
+hoa/thường, khoảng trắng và lỗi chính tả. Tải thêm một model thật (dropdown hiện rõ kích
+thước từng cái) thì nó gộp luôn cả từ viết tắt và bản dịch: `USA` ≈ `United States`,
 `Deutschland` ≈ `Germany`, `Nippon` ≈ `Japan`. **Certify** sau đó thêm một LLM nhỏ xác nhận
-mỗi nhóm và đóng dấu tên chuẩn.
+từng nhóm và đóng dấu tên chuẩn.
 
 <EmbeddingsLab />
 
-> Bắt đầu ở **Raw labels** để cảm nhận sự lộn xộn - 10 thanh, tổng số bị tách - rồi nhấn
-> **Reconcile**. Không cần mô hình đã gộp được các biến thể cách viết ngoại tuyến; tải một
-> mô hình (MiniLM → MPNet) cũng gộp luôn cả từ viết tắt và bản dịch, xuống còn 3 quốc gia
-> thực sự. **Certify** trao các nhóm đó cho một LLM nhỏ chạy trong trình duyệt để lấy tên
+> Bắt đầu ở **Raw labels** để thấy sự lộn xộn: 10 thanh, tổng số bị tách, rồi nhấn
+> **Reconcile**. Không cần model đã gộp được các biến thể cách viết ngay khi offline; tải
+> một model (MiniLM → MPNet) thì gộp luôn cả từ viết tắt và bản dịch, xuống còn đúng 3 quốc
+> gia thật. **Certify** đưa các nhóm đó cho một LLM nhỏ chạy trong trình duyệt để lấy tên
 > chuẩn.
 
-> [!NOTE] Sự tương đồng đề xuất, một mô hình mới *xác nhận*.
-> Một mô hình embedding chạy hoàn toàn **ngoại tuyến** - nó không có internet và không tra
-> cứu gì cả. Nó gộp `Deutschland` với `Germany` vì vector của chúng nằm gần nhau trong quá
-> trình huấn luyện, chứ không phải vì nó "biết" đó là quốc gia nào. Vì vậy việc gộp không
-> chỉ được quyết định dựa trên ngưỡng thô: một nhãn chỉ tham gia vào một nhóm khi nó
-> **gần nhóm đó hơn hẳn so với bất kỳ nhóm nào khác** (một biên độ tin cậy), điều này giữ
-> cho hai quốc gia khác biệt không bị sụp vào nhau chỉ vì chúng nằm gần nhau. Để có một câu
-> trả lời *có thẩm quyền*, **Certify** chạy một **cascade** (không phải mixture-of-experts -
-> đó là nội bộ của một mô hình): embedding đề xuất các phép gộp với chi phí rẻ, sau đó một
-> LLM **nhỏ** chạy trong trình duyệt (Qwen / Gemma, kích thước được hiển thị) xác nhận mỗi
-> nhóm là một quốc gia và trả về tên chuẩn. Mô hình đó thực sự biết về các quốc gia, nhưng
-> nó cần **WebGPU** và trọng số tải xuống một lần. (Trong một ứng dụng thực tế, một caller
-> tùy chỉnh có thể trỏ tới một mô hình lớn hơn hoặc một máy chủ **Ollama** cục bộ thay thế;
-> một trang web tĩnh không thể gọi Ollama trực tiếp - chính sách CORS của trình duyệt chặn
-> `localhost`. Xem **Agents & MCP** bên dưới.)
+> [!NOTE] Độ tương đồng chỉ đề xuất, một model khác mới *xác nhận*.
+> Model embedding chạy hoàn toàn **offline**, không có internet, không tra cứu gì cả. Nó
+> gộp `Deutschland` với `Germany` vì vector của chúng nằm gần nhau lúc huấn luyện, chứ
+> không phải vì nó "biết" đó là quốc gia nào. Vậy nên việc gộp không chỉ dựa vào một ngưỡng
+> thô: một nhãn chỉ vào một nhóm khi nó **gần nhóm đó hơn hẳn so với bất kỳ nhóm nào khác**
+> (biên độ tin cậy), nhờ đó hai quốc gia khác nhau không bị sụp vào nhau chỉ vì đứng gần
+> nhau. Để có câu trả lời *đáng tin*, **Certify** chạy một **cascade** (không phải
+> mixture-of-experts, đó là chuyện nội bộ của một model): embedding đề xuất phép gộp với
+> chi phí rẻ, rồi một LLM **nhỏ** chạy trong trình duyệt (Qwen / Gemma, kích thước hiện rõ)
+> xác nhận từng nhóm đúng là một quốc gia và trả về tên chuẩn. Model đó thật sự biết về các
+> quốc gia, nhưng cần **WebGPU** và tải trọng số một lần. (Trong ứng dụng thực tế, một
+> caller tùy chỉnh có thể trỏ tới một model lớn hơn, hoặc một máy chủ **Ollama** local thay
+> thế; một trang web tĩnh không gọi được Ollama trực tiếp, vì chính sách CORS của trình
+> duyệt chặn `localhost`. Xem **Agents & MCP** bên dưới.)
 
-> [!NOTE] Canh cược: một mô hình nhanh hoàn tất, một mô hình thông minh hơn tinh chỉnh.
-> Luồng ở trên là một thử nghiệm có chủ đích - để một mô hình nhanh, đơn giản (embedding)
-> làm phần lớn công việc, sau đó gọi một mô hình nặng hơn, thông minh hơn (một LLM nhỏ) chỉ
-> để tinh chỉnh những gì còn lại. Nó đánh đổi một chút độ chính xác ban đầu để lấy tốc độ
-> và chi phí, và chỉ trả giá cho mô hình lớn hơn ở nơi nó thực sự quan trọng. Đây là một
-> niềm tin đang được kiểm chứng ở đây, không phải một học thuyết đã an bài; nó có thể được
-> tranh luận theo chiều ngược lại, và cách tiếp cận này - cùng với các kết quả này - sẽ tiến
-> hóa khi các mô hình tiến hóa.
+> [!NOTE] Đặt cược: một model nhanh làm phần lớn, một model khôn hơn tinh chỉnh nốt.
+> Luồng ở trên là một thử nghiệm có chủ đích: để một model nhanh, đơn giản (embedding) làm
+> phần lớn việc, rồi mới gọi một model nặng hơn, khôn hơn (một LLM nhỏ) để tinh chỉnh phần
+> còn lại. Nó đánh đổi một chút độ chính xác ban đầu để lấy tốc độ và chi phí, và chỉ trả
+> giá cho model lớn ở đúng chỗ cần thiết. Đây là một giả thuyết đang được kiểm chứng, không
+> phải chân lý đã an bài; hoàn toàn có thể tranh luận ngược lại, và cách làm này, cùng các
+> kết quả này, sẽ tiến hóa theo model.
 
 ### Khớp giữa các tập dữ liệu
 
-**Vấn đề tiếp theo: hai nguồn riêng biệt, không phải một danh sách lộn xộn.** Một tệp xuất
-từ CRM và một tệp xuất từ ERP đều đặt tên cho cùng những khách hàng, quốc gia, hay sản phẩm
-- nhưng viết hơi khác nhau ở mỗi hệ thống. `reconcileLabels` dọn dẹp các bản trùng lặp
-*trong* một danh sách; `matchLabels` liên kết các thực thể *giữa* hai danh sách, để hai tập
-dữ liệu trở thành một biểu đồ trung thực duy nhất.
+**Vấn đề tiếp theo: hai nguồn riêng biệt, không phải một danh sách lộn xộn.** Một file
+xuất từ CRM và một file xuất từ ERP đều đặt tên cho cùng khách hàng, quốc gia, hay sản
+phẩm, nhưng viết hơi khác nhau ở mỗi hệ thống. `reconcileLabels` dọn các bản trùng *trong*
+một danh sách; `matchLabels` nối các thực thể *giữa* hai danh sách, để hai dataset gộp
+thành một biểu đồ trung thực duy nhất.
 
 <MatchLab />
 
-> Hai tập dữ liệu nhỏ, bị làm cho không khớp một cách có chủ đích. Nhấn **Match** và các
-> cặp tự tin sẽ sáng lên cùng độ tương đồng của chúng; phần còn lại vẫn trung thực ở trạng
-> thái không khớp (kèm gợi ý gần-khớp-nhất) thay vì bị ép khớp cho bằng được - và các hàng
-> đã nối vẽ thành một biểu đồ, hai thanh phụ cho mỗi hàng.
+> Hai dataset nhỏ, cố tình làm cho không khớp nhau. Nhấn **Match** và các cặp tự tin sẽ
+> sáng lên cùng độ tương đồng; phần còn lại vẫn trung thực ở trạng thái không khớp (kèm gợi
+> ý gần-khớp-nhất) thay vì bị ép khớp cho bằng được, và các hàng đã nối vẽ thành một biểu
+> đồ, hai thanh phụ cho mỗi hàng.
 
 ### Tìm kiếm thông minh
 
-Một dashboard với hàng chục chuỗi dữ liệu và bạn không nhớ chính xác tên. Gõ những gì bạn
-*muốn nói* và embedding xếp hạng mọi chuỗi dữ liệu theo độ tương đồng - không cần từ khóa
-nào phải khớp.
+Một dashboard hàng chục chuỗi mà bạn không nhớ chính xác tên. Gõ đúng ý bạn *muốn nói* và
+embedding xếp hạng mọi chuỗi theo độ tương đồng, không cần từ khóa nào khớp cả.
 
 <SemanticSearchLab />
 
-> Thử `customer` trước - không cần mô hình đã tìm ra các KPI khách hàng nhờ chữ cái chung.
-> Rồi thử `money coming in`: chỉ **BERT** mới đạt tới `Revenue`, vì chúng chia sẻ *ý nghĩa*,
-> không phải cách viết.
+> Thử `customer` trước, không cần model cũng tìm ra các KPI khách hàng nhờ chữ cái chung.
+> Rồi thử `money coming in`: chỉ **BERT** mới ra được `Revenue`, vì chúng chung *ý nghĩa*,
+> không chung cách viết.
 
 ### Categorize
 
-Một đống bình luận khảo sát không có nhãn. Đưa cho embedding chỉ **tên chủ đề** (không danh
-sách từ khóa, không huấn luyện) và mỗi bình luận rơi vào chủ đề gần nhất của nó - để văn
-bản phi cấu trúc trở thành một biểu đồ bạn có thể hành động dựa trên đó. Đây là cái thực sự
-cần một mô hình: `keeps freezing` → **Performance** không chia sẻ chữ cái nào với bất kỳ
-tên chủ đề nào.
+Một đống comment khảo sát chưa có nhãn. Đưa cho embedding đúng **tên chủ đề** thôi (không
+danh sách từ khóa, không train) và mỗi comment rơi vào chủ đề gần nhất của nó, biến văn bản
+phi cấu trúc thành một biểu đồ bạn hành động được ngay. Đây là chỗ thật sự cần một model:
+`keeps freezing` → **Performance** chẳng chung chữ cái nào với tên chủ đề đó cả.
 
 <CategorizeLab />
 
-> **Tải BERT** và xem các bình luận nhảy vào đúng chủ đề theo ý nghĩa - `too expensive` →
-> Pricing, `love the clean new look` → Design & UX - không cái nào trong số đó chia sẻ một
-> từ khóa với chủ đề của chúng.
+> **Tải BERT** và xem các comment nhảy đúng chủ đề theo ý nghĩa: `too expensive` → Pricing,
+> `love the clean new look` → Design & UX, chẳng cái nào trong số đó chung từ khóa với chủ
+> đề của mình.
 
-Cách viết nó - đối chiếu trước, rồi tới các cách dùng embedding khác:
+Cách viết ra: đối chiếu trước, rồi tới các cách dùng embedding khác:
 
 ::: code-group
 
@@ -442,16 +436,16 @@ const top = (await findSimilar(question, charts, (c) => c.getContext().summary))
 
 :::
 
-Cùng một engine, các cách dùng khác: **tìm kiếm** một danh mục biểu đồ lớn theo ý nghĩa,
-**gom cụm (clustering)** các chuỗi dữ liệu tương tự, và **RAG toàn dashboard** - lấy ra các
-biểu đồ phù hợp để một agent có thể trả lời trên toàn bộ một dashboard (xem **Agents &
-MCP**). Embedding là lớp truy xuất; tiêu điểm chính là những gì nằm phía trên nó.
+Cùng một engine, còn nhiều cách dùng khác: **tìm kiếm** một danh mục biểu đồ lớn theo ý
+nghĩa, **gom cụm (clustering)** các chuỗi tương tự nhau, và **RAG toàn dashboard**: lấy ra
+đúng biểu đồ liên quan để một agent trả lời được trên cả dashboard (xem **Agents & MCP**).
+Embedding chỉ là lớp truy xuất; trọng tâm chính nằm ở những gì phía trên nó.
 
-## Phương pháp luận - logic chính xác đằng sau mỗi insight
+## Phương pháp luận: logic chính xác đằng sau mỗi insight
 
-Không có gì ở đây là hộp đen: mỗi insight là một phương pháp giáo khoa có tên gọi mà bạn có
-thể tự tay kiểm chứng. Phần này nêu rõ thuật toán, giá trị mặc định, và giới hạn của nó,
-theo từng tính năng.
+Không có gì ở đây là hộp đen: mỗi insight là một phương pháp giáo khoa có tên gọi, bạn tự
+tay kiểm chứng được. Phần này nêu rõ thuật toán, giá trị mặc định, và giới hạn của từng
+tính năng.
 
 ### Forecast
 
@@ -539,27 +533,25 @@ nó, không bao giờ bị âm thầm loại bỏ.
 ## Vì sao có thể tin tưởng (và dành cho ai)
 
 - **Không phải hộp đen.** Mỗi con số là một phương pháp giáo khoa có tên gọi (Holt, MAPE,
-  z-score, IQR, OLS…) - logic chính xác theo từng tính năng được trình bày chi tiết trong
-  [Phương pháp luận](#methodology---the-exact-logic-behind-every-insight) ở trên. Cùng
-  những nguyên hàm mà một thư viện thống kê sử dụng.
-- **Có tính xác định + đã kiểm thử.** Các tính năng thống kê cho ra cùng kết quả với cùng
-  đầu vào và được bao phủ bởi một bộ kiểm thử đồ sộ; bất cứ điều gì ngẫu nhiên (Monte
-  Carlo) đều được gieo hạt.
-- **Dữ liệu ở lại trong trình duyệt.** Không máy chủ, không tải lên. Các backend mô hình từ
-  xa là tùy chọn nghiêm ngặt và được ghi chú là "dữ liệu rời khỏi client."
-- **Không khóa chặt (lock-in).** Không mô hình nào từng được đóng gói sẵn; các tính năng mô
-  hình là tùy chọn và **quay về** một phiên bản thống kê/dựa-trên-quy-tắc hoạt động được
-  nếu mô hình không khả dụng.
+  z-score, IQR, OLS…); logic chính xác của từng tính năng nằm hết trong
+  [Phương pháp luận](#methodology---the-exact-logic-behind-every-insight) ở trên. Đúng
+  những công thức mà một thư viện thống kê dùng.
+- **Có tính xác định + có test.** Tính năng thống kê luôn ra cùng kết quả với cùng đầu vào,
+  và một bộ test đồ sộ bao phủ hết; cái gì ngẫu nhiên (Monte Carlo) đều seeded.
+- **Dữ liệu ở lại trong trình duyệt.** Không máy chủ, không upload. Backend model từ xa
+  chỉ là tùy chọn nghiêm ngặt, và luôn ghi chú "dữ liệu rời khỏi client."
+- **Không khóa chặt (lock-in).** Không model nào bundle sẵn; tính năng model là opt-in và
+  **quay về** một phiên bản thống kê/rule-based vẫn chạy tốt nếu model không có sẵn.
 
 **Dành cho ai:**
 
-- **Đang xây dựng một sản phẩm (phân tích nhúng)?** Cung cấp biểu đồ dự báo và tự giải
-  thích cho *người dùng của bạn* - phía client, không cần chạy dịch vụ Python nào.
-- **Là một nhà phân tích dữ liệu / thị trường?** Những phương pháp bạn đã biết
-  (Holt-Winters, MAPE, z-score) - giờ chạy tại runtime trong ứng dụng, không chỉ trong một
-  notebook (xem **so với quy trình pandas / notebook** bên dưới).
-- **Đang xây dựng với các tác nhân AI?** Biểu đồ của bạn trở thành các công cụ MCP mà một
-  agent có thể đọc và điều khiển.
+- **Đang xây sản phẩm (phân tích nhúng)?** Cho *người dùng của bạn* biểu đồ biết dự báo và
+  tự giải thích, phía client, chẳng cần chạy dịch vụ Python nào.
+- **Là nhà phân tích dữ liệu / thị trường?** Những phương pháp bạn đã quen (Holt-Winters,
+  MAPE, z-score) giờ chạy tại runtime trong app, không chỉ trong một notebook (xem **so với
+  quy trình pandas / notebook** bên dưới).
+- **Đang xây dựng với AI agent?** Biểu đồ của bạn trở thành các tool MCP mà agent đọc và
+  điều khiển được.
 
 ## Bắt đầu
 
@@ -576,7 +568,7 @@ const chart = mountLineChart(el, { dataSet: revenue, xAxisDataType: "date_annual
 });
 ```
 
-Vậy là xong - biểu đồ giờ đã dự báo. Mọi thứ bên dưới là phần tham chiếu.
+Vậy là xong, biểu đồ giờ đã biết dự báo. Mọi thứ bên dưới là phần tham chiếu.
 
 ---
 
@@ -601,15 +593,15 @@ Thêm các helper thuần túy, có tính xác định trong `@michi-vz/insights
 
 ## Narration: tùy chỉnh, bản địa hóa (i18n), hoặc mang mô hình vào
 
-Đây là tường thuật - một biểu đồ hai chuỗi dữ liệu tự viết câu văn của chính nó. Nhấn
-**Explain ▸** để có câu văn dựa trên quy tắc tức thời; bật **Real model** để tải một mô
-hình ngôn ngữ nhỏ chạy trong trình duyệt (kích thước của nó được hiển thị trước khi bất cứ
-thứ gì được tải xuống) và đọc văn xuôi của nó cạnh các quy tắc, song song với nhau:
+Đây là tường thuật, một biểu đồ hai chuỗi tự viết câu văn của chính nó. Nhấn **Explain ▸**
+để có câu rule-based tức thời; bật **Real model** để tải một model ngôn ngữ nhỏ chạy trong
+trình duyệt (kích thước hiện rõ trước khi tải bất cứ thứ gì) và đọc văn xuôi của nó cạnh
+các rule, song song luôn:
 
 <InsightsDemo feature="narrate" model-explain />
 
-`narrate()` mặc định là **dựa trên quy tắc** (không mô hình). Biến nó thành của riêng bạn
-theo ba cách:
+`narrate()` mặc định **rule-based** (không model). Biến nó thành của riêng bạn theo ba
+cách:
 
 ```ts
 import { narrate, explainChart, SLM_PRESETS } from "@michi-vz/insights/narrate";
@@ -626,12 +618,12 @@ narrate({ render: (ctx) => myTemplate(ctx) });
 
 ### Mang mô hình của riêng bạn vào
 
-Hãy thử trực tiếp trong bản demo ở trên: bật **Real model**, chọn một mô hình nhỏ theo kích
-thước của nó, và so sánh văn xuôi của nó với câu dựa trên quy tắc, song song với nhau.
+Cứ thử trực tiếp trong demo ở trên: bật **Real model**, chọn một model nhỏ theo kích thước,
+rồi so sánh văn xuôi của nó với câu rule-based, song song với nhau.
 
-`explainChart(ctx, { backend, model })` nâng cấp văn xuôi bằng một mô hình và **luôn quay
-về** văn bản dựa trên quy tắc. Không cần plugin - gọi nó theo yêu cầu. **Các mô hình ngôn
-ngữ nhỏ chạy trong trình duyệt** được ưu tiên (ưu tiên cục bộ, riêng tư, không máy chủ):
+`explainChart(ctx, { backend, model })` nâng văn xuôi lên bằng một model, và **luôn quay
+về** văn bản rule-based khi cần. Không cần plugin, cứ gọi theo yêu cầu. Ưu tiên **model
+ngôn ngữ nhỏ chạy trong trình duyệt** (local trước, riêng tư, không máy chủ):
 
 ```ts
 // In-browser via Transformers.js (ONNX + WebGPU). Phi-3-mini (MIT) or Google Gemma 2 (2B):
@@ -645,9 +637,9 @@ await explainChart(chart.getContext(), { backend: "webllm", model: SLM_PRESETS.w
 await explainChart(chart.getContext(), { backend: "remote", caller: (prompt) => callClaude(prompt) });
 ```
 
-**Đã có sẵn một AI cục bộ đang chạy?** Kết nối trực tiếp vào nó - không tải xuống, không
-Hugging Face, các prompt chỉ đi tới endpoint bạn chỉ định. Hai caller dựng sẵn bao phủ các
-máy chủ cục bộ thường gặp:
+**Đã có sẵn một AI local đang chạy?** Nối thẳng vào nó, không tải xuống, không Hugging
+Face, prompt chỉ đi tới endpoint bạn chỉ định. Hai caller dựng sẵn cho các máy chủ local
+thường gặp:
 
 ```ts
 import { ollamaCaller, openaiCompatCaller } from "@michi-vz/insights/narrate";
@@ -665,17 +657,17 @@ await explainChart(ctx, {
 });
 ```
 
-Cả hai đều throw lỗi khi thất bại, nên tường thuật quay về câu dựa trên quy tắc có tính
-xác định - biểu đồ không bao giờ trống trơn chỉ vì một máy chủ cục bộ bị sập.
+Cả hai đều throw lỗi khi thất bại, nên tường thuật quay về câu rule-based có tính xác
+định; biểu đồ không bao giờ trống trơn chỉ vì một máy chủ local bị sập.
 
-`SLM_PRESETS` cung cấp sẵn model id cho **Phi-3-mini** và **Gemma 2 (2B)**. Mô hình chỉ
-được tải lười (lazy-load) khi được gọi; không có gì được đóng gói sẵn, và nếu nó không tải
-được thì văn bản dựa trên quy tắc sẽ được trả về. Kết hợp với `strings` / `render` để ngay
-cả phương án dự phòng cũng bằng ngôn ngữ của bạn.
+`SLM_PRESETS` có sẵn model id cho **Phi-3-mini** và **Gemma 2 (2B)**. Model chỉ lazy-load
+khi được gọi; không có gì bundle sẵn, và nếu tải không được thì nó trả về văn bản
+rule-based. Kết hợp với `strings` / `render` để ngay cả phương án dự phòng cũng dùng đúng
+ngôn ngữ của bạn.
 
-Lần tải mô hình đầu tiên sẽ tải xuống trọng số, nên hãy hiển thị một bộ tải với
-`onProgress` (kết nối với Transformers.js / WebLLM). Các demo ở trên dùng một chỉ báo "đang
-suy nghĩ" theo phong cách Bắc Âu điềm tĩnh trong khi nó chạy:
+Lần tải model đầu tiên sẽ tải trọng số về, nên hãy hiện một bộ loading với `onProgress`
+(nối với Transformers.js / WebLLM). Demo ở trên dùng một chỉ báo "đang suy nghĩ" kiểu Bắc
+Âu điềm tĩnh trong lúc chạy:
 
 ```ts
 await explainChart(ctx, {
@@ -687,8 +679,8 @@ await explainChart(ctx, {
 
 ### Mô hình đến từ đâu (và cách thay đổi nó)
 
-Việc tải mô hình không bao giờ nên là một bất ngờ. Đây là chính xác những gì mỗi backend
-lấy về, từ đâu, theo mặc định:
+Việc tải model không bao giờ nên là một bất ngờ. Đây là chính xác những gì mỗi backend
+tải về, từ đâu, theo mặc định:
 
 | Backend | Có tải xuống không? | Nguồn mặc định |
 | --- | --- | --- |
@@ -697,7 +689,7 @@ lấy về, từ đâu, theo mặc định:
 | `webllm` | Trọng số mô hình, ở lần dùng đầu tiên | Registry dựng sẵn của WebLLM (lưu trữ trên Hugging Face), được cache trong trình duyệt |
 | `remote` | Không có gì | Các prompt của bạn đi tới endpoint **của bạn** (tùy chọn `caller`) - ví dụ một máy chủ Ollama/llama.cpp cục bộ hoặc API của bạn. Dữ liệu rời khỏi trang; đó chính là phần tùy chọn. |
 
-Hãy hỏi chính thư viện trước khi tải bất cứ thứ gì, và hiển thị nó cho người dùng của bạn:
+Cứ hỏi chính thư viện trước khi tải bất cứ thứ gì, rồi hiện nó cho người dùng của bạn xem:
 
 ```ts
 import { describeModelSource, SLM_PRESETS } from "@michi-vz/insights";
@@ -738,8 +730,8 @@ await explainChart(ctx, { backend: "remote", caller: (prompt) => fetch("/api/llm
 
 ## Agents & MCP
 
-Cùng một registry đó cấp năng lượng cho demo bên dưới - mỗi nút là một lệnh gọi công cụ
-thực sự đối với biểu đồ (chính xác các công cụ mà một client MCP như Claude Code sẽ gọi):
+Đúng cái registry đó chạy demo bên dưới, mỗi nút là một tool call thật lên biểu đồ (đúng
+những tool mà một MCP client như Claude Code sẽ gọi):
 
 <InsightsDemo feature="agent" />
 
@@ -751,10 +743,12 @@ registry.register(chartHandle("revenue", chart, props));
 createMcpServer(registry, stdioTransport(), { name: "michi-vz" });
 ```
 
-Công cụ: `get_chart_context`, `summarize_chart`, `list_series`, `forecast_series`,
-`detect_threshold_breach`, `set_filter`, `highlight`, `set_disabled`, `set_data`. Context của
-mỗi biểu đồ cũng là một resource `michivz://chart/<name>` có thể đọc được. Một
-`messagePortTransport` bắc cầu tới các biểu đồ của một ứng dụng web đang chạy.
+Tool: `list_charts`, `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`,
+`highlight`, `set_disabled`, `set_data`, cộng thêm một tool đặt tên theo namespace riêng
+cho mỗi plugin của biểu đồ (một biểu đồ đăng ký tên `revenue` cùng plugin forecast sẽ có
+thêm `revenue.forecast`). Context của mỗi biểu đồ cũng là một resource
+`michivz://chart/<name>` đọc được. Một `messagePortTransport` bắc cầu tới các biểu đồ của
+một ứng dụng web đang chạy.
 
 ---
 
@@ -779,30 +773,29 @@ Mỗi khả năng là một import có thể tree-shake riêng của chính nó:
 
 ### Cách nó hoạt động (logic, theo cách đơn giản)
 
-- **Forecast.** Khớp một mô hình (Holt-Winters theo dõi *level* + *trend*; hồi quy tuyến
-  tính khớp một đường phù hợp nhất) → dự phóng về phía trước. **Dải** đến từ độ trải rộng
-  sai số quá khứ của chính mô hình (mở rộng theo khoảng cách). Một **backtest** ẩn đi vài
-  điểm thực gần nhất và đo sai số → con số độ chính xác.
-- **Anomaly.** Tính trung bình và độ trải rộng, sau đó gắn cờ các điểm nằm quá xa - bằng
-  **z-score** (một điểm cách trung bình bao nhiêu độ lệch chuẩn; bị gắn cờ khi vượt qua
-  khoảng 3) hoặc **IQR** (liệu một điểm có nằm ngoài phạm vi giữa thông thường của dữ liệu
-  hay không).
-- **Narrate / Explain - từ ngữ đến từ đâu.** Theo **mặc định thì không hề có mô hình AI
-  nào cả**: `narrate()` đọc `ChartContext` có cấu trúc (xu hướng, mover lớn nhất, % thay
-  đổi, tổng) và điền vào các mẫu câu. Đó là việc lắp ráp chuỗi ký tự thuần túy, có tính xác
-  định - tức thời và ngoại tuyến. `explainChart()` có thể **tùy chọn** nâng cấp lên một mô
-  hình ngôn ngữ **sinh (generative)** thực sự: `backend: "transformers"` tải một mô hình
-  sinh văn bản nhỏ (mặc định Phi-3-mini) trong trình duyệt qua Transformers.js, `backend:
-  "webllm"` chạy Llama/Phi trên WebGPU, hoặc `backend: "remote"` gọi một mô hình của riêng
-  bạn (ví dụ một API Claude). Bất kỳ cái nào trong số đó cũng nhận `ChartContext` làm prompt
-  của nó và **quay về các quy tắc** nếu không khả dụng.
+- **Forecast.** Khớp một model (Holt-Winters theo dõi *level* + *trend*; hồi quy tuyến tính
+  khớp một đường phù hợp nhất) rồi dự phóng về phía trước. **Dải** đến từ độ trải rộng sai
+  số quá khứ của chính model (mở rộng theo khoảng cách). Một **backtest** giấu vài điểm
+  thật gần nhất rồi đo sai số, ra con số độ chính xác.
+- **Anomaly.** Tính trung bình và độ trải rộng, rồi gắn cờ các điểm nằm quá xa: bằng
+  **z-score** (một điểm cách trung bình bao nhiêu độ lệch chuẩn; vượt khoảng 3 thì bị gắn
+  cờ) hoặc **IQR** (một điểm có nằm ngoài phạm vi giữa thông thường của dữ liệu hay không).
+- **Narrate / Explain: chữ nghĩa từ đâu ra.** **Mặc định không hề có model AI nào cả**:
+  `narrate()` đọc `ChartContext` có cấu trúc (xu hướng, mover lớn nhất, % thay đổi, tổng)
+  rồi điền vào mẫu câu. Đó chỉ là lắp ráp chuỗi ký tự thuần, có tính xác định, tức thời và
+  offline. `explainChart()` có thể **tùy chọn** nâng lên một model ngôn ngữ **sinh
+  (generative)** thật sự: `backend: "transformers"` tải một model sinh văn bản nhỏ (mặc
+  định Phi-3-mini) trong trình duyệt qua Transformers.js, `backend: "webllm"` chạy Llama/Phi
+  trên WebGPU, hoặc `backend: "remote"` gọi model của riêng bạn (ví dụ một API Claude). Bất
+  kỳ cái nào trong số đó cũng nhận `ChartContext` làm prompt và **quay về rule** nếu không
+  dùng được.
   > **Không phải BERT.** BERT (trong `@michi-vz/insights/embeddings`) biến văn bản thành
-  > vector cho *độ tương đồng / tìm kiếm*, không phải để viết câu văn. Tường thuật mặc định
-  > dựa trên quy tắc, hoặc một LLM sinh nhỏ khi được bật tùy chọn - hai công việc khác nhau.
+  > vector để *so độ tương đồng / tìm kiếm*, không phải để viết câu văn. Tường thuật mặc
+  > định rule-based, hoặc một LLM sinh nhỏ khi bật tùy chọn, hai việc hoàn toàn khác nhau.
 
 ### Thuật ngữ
 
-Ý nghĩa bằng ngôn ngữ thuần túy của các thuật ngữ mà những biểu đồ này sử dụng:
+Ý nghĩa bằng ngôn ngữ thuần của các thuật ngữ mà những biểu đồ này dùng:
 
 - **Fall point (điểm chạm)** - vị trí mà đường dự phóng được kỳ vọng sẽ chạm tới một mục
   tiêu bạn quan tâm (một điểm hòa vốn, một mục tiêu), dù nó leo lên tới đó hay tụt xuống
@@ -850,12 +843,12 @@ Và các đơn vị và cách viết tắt mà các biểu đồ ví dụ sử d
 
 ### Phương pháp & công thức
 
-Mỗi con số trong các demo này đều được tính từ dữ liệu, không bao giờ chỉ nói suông - và
-không cái nào trong số đó cần bằng cấp thống kê. Bên dưới là những gì mỗi phương pháp làm
-bằng lời văn đơn giản, công thức đằng sau nó cho những ai tò mò, và một nguồn tham khảo
-miễn phí, dễ đọc. Các tham chiếu tới *Hyndman* trỏ tới
-[*Forecasting: Principles and Practice*](https://otexts.com/fpp3/), một giáo trình trực
-tuyến miễn phí.
+Mỗi con số trong các demo này đều tính ra từ dữ liệu thật, chẳng bao giờ nói suông, và
+chẳng cái nào cần bằng cấp thống kê cả. Bên dưới là những gì mỗi phương pháp làm, viết bằng
+lời văn đơn giản, công thức đằng sau cho ai tò mò, và một nguồn tham khảo miễn phí, dễ đọc.
+Các tham chiếu tới *Hyndman* trỏ tới
+[*Forecasting: Principles and Practice*](https://otexts.com/fpp3/), một giáo trình online
+miễn phí.
 
 | Nó làm gì | Phương pháp | Công thức (cho người tò mò) | Tìm hiểu thêm |
 | --- | --- | --- | --- |
@@ -874,8 +867,8 @@ tuyến miễn phí.
 
 ### So với quy trình pandas / notebook
 
-Không phải một sự thay thế cho việc khám phá - hãy tiếp tục dùng pandas / R / một notebook
-cho việc đó. Sự khác biệt nằm ở *nơi insight chạy*:
+Đây không phải để thay thế việc khám phá dữ liệu, cứ tiếp tục dùng pandas / R / notebook
+cho việc đó. Khác biệt nằm ở *chỗ insight chạy*:
 
 | | pandas / notebook | `@michi-vz/insights` |
 | --- | --- | --- |
@@ -885,9 +878,9 @@ cho việc đó. Sự khác biệt nằm ở *nơi insight chạy*:
 | **Backend** | runtime Python | không có - không máy chủ, dữ liệu ở lại cục bộ |
 | **Sẵn sàng cho AI** | prompt được viết tay | biểu đồ **chính là** bề mặt công cụ (MCP) |
 
-pandas là cách một insight được *khám phá*; đây là cách nó được **chuyển giao** tới người
-dùng và biến thành một biểu đồ mà một tác nhân AI có thể điều khiển - cùng các phương pháp
-đáng tin cậy, được giao tại runtime.
+pandas là chỗ bạn *khám phá* một insight; còn đây là cách bạn **chuyển giao** nó tới người
+dùng, biến thành một biểu đồ mà AI agent điều khiển được, cùng các phương pháp đáng tin,
+chạy ngay tại runtime.
 
 ### Đọc thêm
 
@@ -898,9 +891,9 @@ dùng và biến thành một biểu đồ mà một tác nhân AI có thể đi
 
 ### Nguyên tắc
 
-- **Tùy chọn & tree-shakeable** - các khả năng không dùng đến không chiếm byte nào.
-- **Suy giảm nhẹ nhàng (graceful degradation)** - các đường dẫn thống kê/dựa-trên-quy-tắc
-  không cần mô hình; các đường dẫn mô hình có phương án dự phòng.
-- **Riêng tư theo mặc định** - dữ liệu ở lại trong trình duyệt; các backend từ xa là tùy
+- **Tùy chọn & tree-shakeable**: cái gì không dùng thì không chiếm byte nào.
+- **Suy giảm nhẹ nhàng (graceful degradation)**: đường thống kê/rule-based không cần model;
+  đường dùng model luôn có phương án dự phòng.
+- **Riêng tư theo mặc định**: dữ liệu ở lại trong trình duyệt; backend từ xa chỉ là tùy
   chọn.
 - **Chỉ mã nguồn mở dễ dãi (permissive-OSS)** - không mô hình nào từng được đóng gói sẵn.

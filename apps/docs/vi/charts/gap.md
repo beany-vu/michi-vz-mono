@@ -12,6 +12,12 @@ Hai con số quan trọng cách nhau bao xa? Vẽ trước và sau, mục tiêu 
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
+## Khi nào nên dùng
+
+- **Mục tiêu và thực tế, trước và sau, dự báo và kết quả.** Mỗi hàng hai giá trị, và khoảng cách giữa chúng mới là điều đáng nói: bản thân thanh khoảng cách chính là kết luận.
+- **Xếp hạng theo mức chênh.** Chỉ cần sắp xếp các hàng là những cú về đích ấn tượng nhất (hay những cú hụt sâu nhất) nổi lên ngay: sinh ra cho buổi họp sáng thứ Hai điểm lại ai đã thu hẹp được khoảng cách.
+- **Nếu độ lớn tuyệt đối quan trọng hơn phần chênh lệch**, hai cột con nằm cạnh nhau trong [biểu đồ cột so sánh](/vi/charts/comparable) giúp đọc cả hai đại lượng dễ hơn.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

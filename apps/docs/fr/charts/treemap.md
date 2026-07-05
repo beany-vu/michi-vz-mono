@@ -16,6 +16,12 @@ Vous préférez une liste plate (une tuile par produit, chacune sa propre couleu
 
 > La division est générique. Nommez les deux parties avec `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - rien dans le moteur ne code en dur un domaine.
 
+## Quand le choisir
+
+- **Vues de portefeuille.** Des centaines de produits, secteurs ou centres de coûts sur un seul écran : l'aire est la taille, la division est la progression, et toute la hiérarchie tient sans défilement.
+- **« Où devrions-nous concentrer nos efforts ? »** Les grandes tuiles majoritairement inexploitées forment la liste des opportunités, sans tri nécessaire - la lecture classique du potentiel d'exportation et de l'analyse de marché.
+- **Une douzaine de catégories plates ou moins ?** Une [barre](/fr/charts/comparable) ou un [camembert](/fr/charts/pie) lit les valeurs exactes plus vite que des aires de tuiles ; le treemap gagne sa place à grande échelle.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

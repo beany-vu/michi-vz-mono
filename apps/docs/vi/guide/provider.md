@@ -1,8 +1,8 @@
 # Provider & trạng thái dùng chung
 
-`@michi-vz/react` cung cấp một lớp React context - `MichiVzProvider` + `useChartContext` -
-cho phép một cây biểu đồ chia sẻ màu sắc, tô nổi bật, và trạng thái hiển thị mà không cần
-truyền props qua nhiều tầng (prop-drilling).
+`@michi-vz/react` có một lớp React context, `MichiVzProvider` + `useChartContext`, cho phép
+cả cây biểu đồ chia sẻ màu sắc, highlight, và trạng thái hiển thị mà không phải truyền prop
+qua nhiều tầng (prop-drilling).
 
 ## MichiVzProvider
 
@@ -23,25 +23,25 @@ export default function Dashboard() {
 }
 ```
 
-Mọi prop đều là tùy chọn. Provider hợp nhất chúng vào mỗi biểu đồ trong cây thông qua `resolveEffectiveProps`.
+Mọi prop đều tùy chọn (optional). Provider hợp nhất chúng vào từng biểu đồ trong cây qua `resolveEffectiveProps`.
 
 ### Props
 
 | Prop | Type | Mục đích |
 |---|---|---|
-| `colorsMapping` | `Record<string, string>` | Ánh xạ nhãn → màu hex. Được áp dụng cho các mark và được probe canvas đọc. |
-| `highlightItems` | `string[]` | Các nhãn được vẽ ở độ mờ đục đầy đủ; các nhãn khác bị làm mờ đi. |
-| `disabledItems` | `string[]` | Các nhãn bị ẩn hoàn toàn khỏi biểu đồ. |
-| `hiddenItems` | `string[]` | Các nhãn bị loại khỏi việc render (phần bù của `visibleItems`). |
-| `visibleItems` | `string[]` | Danh sách cho phép tường minh; các nhãn ngoài danh sách này bị ẩn. |
-| `fontFamily` | `string` | Thiết lập `--michi-vz-font-family` để văn bản SVG và văn bản canvas khớp nhau. Font phải đã được trang tải sẵn. |
-| `singlePointLine` | `boolean \| SinglePointLineConfig` | Cách render một chuỗi dữ liệu chỉ có một điểm (chấm, đoạn ngắn, v.v.). |
-| `categoryMetadata` | `Record<string, { color?: string; label?: string }>` | Ghi đè màu/nhãn theo từng danh mục. |
-| `colorsBasedMapping` | `Record<string, string>` | Hợp đồng màu thứ cấp (ví dụ cho phần tô của area so với đường viền). |
-| `locale` | `string` | Locale theo chuẩn BCP-47 được chuyển tiếp tới các bộ định dạng trục (ví dụ `"fr"`, `"ar"`). |
+| `colorsMapping` | `Record<string, string>` | Ánh xạ nhãn → màu hex. Áp dụng cho các mark, và probe canvas đọc luôn giá trị này. |
+| `highlightItems` | `string[]` | Vẽ các nhãn này ở độ mờ đục đầy đủ; nhãn khác bị làm mờ đi. |
+| `disabledItems` | `string[]` | Ẩn hoàn toàn các nhãn này khỏi biểu đồ. |
+| `hiddenItems` | `string[]` | Loại các nhãn này khỏi render (phần bù của `visibleItems`). |
+| `visibleItems` | `string[]` | Danh sách cho phép tường minh; nhãn nào không có trong danh sách sẽ bị ẩn. |
+| `fontFamily` | `string` | Set `--michi-vz-font-family` để text SVG và text canvas khớp nhau. Font phải được trang load sẵn từ trước. |
+| `singlePointLine` | `boolean \| SinglePointLineConfig` | Cách render một chuỗi chỉ có một điểm dữ liệu (chấm, đoạn ngắn, v.v.). |
+| `categoryMetadata` | `Record<string, { color?: string; label?: string }>` | Ghi đè màu/nhãn theo từng category. |
+| `colorsBasedMapping` | `Record<string, string>` | Hợp đồng màu phụ (ví dụ cho phần tô của area so với đường viền). |
+| `locale` | `string` | Locale chuẩn BCP-47, chuyển tiếp tới bộ định dạng trục (ví dụ `"fr"`, `"ar"`). |
 | `dir` | `"ltr" \| "rtl"` | Hướng văn bản. `"rtl"` lật ngược các trục nằm ngang. |
 
-Bên dưới, `MichiVzProvider` tạo một `MichiVzStore` (thông qua `createMichiVzStore` từ `@michi-vz/core`) ở lần render đầu tiên, đồng bộ lại khi props thay đổi. Store không phụ thuộc framework; một coordinator web component trong tương lai có thể dùng chung cùng một instance store này.
+Bên dưới, `MichiVzProvider` tạo một `MichiVzStore` (qua `createMichiVzStore` từ `@michi-vz/core`) ở lần render đầu tiên, rồi đồng bộ lại mỗi khi prop thay đổi. Store này không phụ thuộc framework; sau này một coordinator web component có thể dùng chung đúng instance store đó.
 
 ## useChartContext
 
@@ -65,16 +65,18 @@ function MyLegend() {
 }
 ```
 
-`useChartContext` đăng ký (subscribe) thông qua `useSyncExternalStore` - các cập nhật không bị xé hình (tear-free) dưới chế độ render đồng thời (concurrent). Khi không có `MichiVzProvider` nào trong cây, nó trả về các giá trị mặc định rỗng an toàn (`colorsMapping: {}`, `highlightItems: []`, v.v.) nên bạn không bao giờ đọc phải `undefined`.
+`useChartContext` subscribe qua `useSyncExternalStore` nên các update không bị xé hình
+(tear-free) khi render ở chế độ concurrent. Không có `MichiVzProvider` nào trong cây thì
+nó trả về giá trị mặc định rỗng an toàn (`colorsMapping: {}`, `highlightItems: []`, v.v.)
+nên bạn không bao giờ phải đọc `undefined`.
 
 ## Hợp đồng màu legendData
 
-Đối với **biểu đồ canvas**, engine không thể đọc trực tiếp các biến CSS tại thời điểm vẽ -
-thay vào đó nó dùng một probe `getComputedStyle`. Khi một biểu đồ được render với
-`skipColorMappingDispatch` (consumer kiểm soát màu sắc, không phải engine), quy trình phân
-quyền màu sắc là:
+Với **biểu đồ canvas**, engine không đọc trực tiếp biến CSS lúc vẽ được, nên nó dùng một
+probe `getComputedStyle` thay thế. Khi biểu đồ render với `skipColorMappingDispatch`
+(consumer tự kiểm soát màu, không phải engine), luồng phân quyền màu chạy như sau:
 
-1. Engine điền dữ liệu vào `ChartContext.legendData` sau khi xử lý dữ liệu. Mỗi mục là một `LegendItem`:
+1. Engine điền `ChartContext.legendData` sau khi xử lý xong dữ liệu. Mỗi mục là một `LegendItem`:
 
    ```ts
    type LegendItem = {
@@ -86,7 +88,7 @@ quyền màu sắc là:
    };
    ```
 
-2. Một cơ quan màu sắc phía consumer đọc `legendData` từ `onChartDataProcessed(ctx)` và phát ra CSS nhắm vào thuộc tính `data-label-safe`:
+2. Logic quyết định màu (colour authority) phía consumer đọc `legendData` từ `onChartDataProcessed(ctx)` rồi phát ra CSS nhắm vào thuộc tính `data-label-safe`:
 
    ```css
    /* emitted by your colour authority into a <style> block */
@@ -96,7 +98,7 @@ quyền màu sắc là:
 
 3. Ở lần vẽ tiếp theo, probe canvas gọi `getComputedStyle` trên phần tử SVG tương ứng và đọc màu sắc - không còn vấn đề thanh bị trong suốt/mờ đục.
 
-Trường `dataLabelSafe` được tạo ra bởi `sanitizeForClassName` từ `@michi-vz/core` và ổn định qua các lần render với cùng một chuỗi nhãn.
+`sanitizeForClassName` từ `@michi-vz/core` tạo ra trường `dataLabelSafe`, và giá trị này ổn định qua các lần render nếu cùng một chuỗi nhãn.
 
 ::: tip Danh sách kiểm tra màu sắc cho canvas
 Với biểu đồ canvas (`renderer="canvas"` + `skipColorMappingDispatch`) bạn cần **cả hai**:
@@ -107,9 +109,9 @@ Với biểu đồ canvas (`renderer="canvas"` + `skipColorMappingDispatch`) b�
 
 ## Chuyển đổi từ gói `michi-vz` độc lập
 
-Các gói trong mono-repo (`@michi-vz/core` + `@michi-vz/react`) là một siêu tập thay thế
-trực tiếp (drop-in superset) cho gói npm `michi-vz` cũ. Hầu hết thay đổi đều mang tính bổ
-sung; bảng dưới đây bao quát những phần khác biệt.
+Các package trong mono-repo (`@michi-vz/core` + `@michi-vz/react`) là bản superset thay
+trực tiếp (drop-in) cho package npm `michi-vz` cũ. Hầu hết thay đổi chỉ là bổ sung; bảng
+dưới đây liệt kê những phần khác đi.
 
 ### Đường dẫn import
 
@@ -121,27 +123,26 @@ sung; bảng dưới đây bao quát những phần khác biệt.
 
 ### Alias ScatterPlotChart
 
-Biểu đồ được đổi tên thành `ScatterChart` trong mono. `ScatterPlotChart`,
-`ScatterPlotChartProps`, và `ScatterPlotChartHandle` đều được re-export dưới dạng alias
-nên các import hiện có vẫn biên dịch được mà không cần thay đổi.
+Trong mono, biểu đồ này đổi tên thành `ScatterChart`. `ScatterPlotChart`,
+`ScatterPlotChartProps`, và `ScatterPlotChartHandle` vẫn được re-export như alias, nên các
+import cũ vẫn biên dịch được mà không cần sửa gì.
 
 ### legendData
 
-Trong gói cũ, `legendData` nằm trên `ChartMetadata` và chỉ có sẵn ở một số biểu đồ nhất
-định. Trong mono, nó là một trường hạng nhất trên `ChartContext` (được trả về bởi
-`chart.getContext()` và truyền vào `onChartDataProcessed`) và hiện được `LineChart` điền
-dữ liệu, các loại biểu đồ khác sẽ theo sau.
+Ở package cũ, `legendData` nằm trên `ChartMetadata` và chỉ vài biểu đồ có. Trong mono, nó
+là một field chính thức trên `ChartContext` (`chart.getContext()` trả về, và cũng truyền
+vào `onChartDataProcessed`); hiện tại `LineChart` đã điền dữ liệu vào đây, các biểu đồ
+khác sẽ theo sau.
 
 ### Không cần import CSS
 
-Gói cũ yêu cầu một `import "michi-vz/dist/style.css"` riêng biệt. Mono tự động chèn CSS
-layout/overlay thông qua `ensureStyles()` tại thời điểm mount - hãy xóa import đó nếu bạn
-có. CSS màu sắc (fill/stroke) vẫn là hợp đồng của bạn, như trước đây.
+Package cũ cần một `import "michi-vz/dist/style.css"` riêng. Mono tự chèn CSS layout/
+overlay qua `ensureStyles()` ngay lúc mount, nên bạn xóa import đó đi nếu còn. CSS màu sắc
+(fill/stroke) vẫn là hợp đồng của bạn, như trước.
 
-### Sự tương đồng Provider / useChartContext
+### Provider / useChartContext tương đồng
 
-`MichiVzProvider` chấp nhận chính xác các props lõi giống như trước (`colorsMapping`,
-`highlightItems`, `disabledItems`, `fontFamily`, `singlePointLine`), cộng thêm các bổ sung
-mới (`hiddenItems`, `visibleItems`, `categoryMetadata`, `colorsBasedMapping`, `locale`,
-`dir`). `useChartContext` trả về một siêu tập của `MichiVzState` cũ - các destructure hiện
-có vẫn an toàn.
+`MichiVzProvider` nhận đúng các prop lõi như trước (`colorsMapping`, `highlightItems`,
+`disabledItems`, `fontFamily`, `singlePointLine`), cộng thêm các prop mới (`hiddenItems`,
+`visibleItems`, `categoryMetadata`, `colorsBasedMapping`, `locale`, `dir`). `useChartContext`
+trả về một superset của `MichiVzState` cũ, nên code destructure hiện có vẫn chạy an toàn.

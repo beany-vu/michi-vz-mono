@@ -12,6 +12,12 @@ description: "Diagramme de Sankey pour les flux : des nœuds disposés en colonn
 
 > La disposition est calculée avec [d3-sankey](https://github.com/d3/d3-sankey) : les nœuds sont assignés à des colonnes à partir de la topologie du graphe, empilés verticalement, et les liens sont dessinés comme des bandes horizontales lissées. Survolez un nœud ou un flux pour voir ses chiffres.
 
+## Quand le choisir
+
+- **Des flux structurés.** Commerce entre exportateurs et marchés, budget des sources vers les usages, utilisateurs à travers un entonnoir : d'où viennent les quantités, où elles vont, ce qui se divise et se recombine.
+- **Repérer le chemin dominant et les fuites.** L'épaisseur des bandes est la valeur, si bien que les grandes routes et les petites pertes se lisent instantanément - la vue d'audit de n'importe quel système.
+- **Une seule étape ?** Si rien ne traverse *à travers*, une [barre comparable](/fr/charts/comparable) classe les sources plus proprement qu'un Sankey à deux colonnes.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

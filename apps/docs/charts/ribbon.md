@@ -12,6 +12,12 @@ Who's gaining and who's slipping? When market share, budget splits, or vote tall
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Market share, budget splits, league tables.** When categories trade places period to period, the ribbons make "who overtook whom, and when" the first thing readers see.
+- **Presenting reshuffles to a business audience.** Each category keeps its colour as it swells, shrinks and swaps ranks, so the eye follows one competitor through the whole story.
+- **If nothing ever swaps ranks**, the ribbons run parallel and an [Area chart](/charts/area) tells the same share story with less ink.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

@@ -12,6 +12,12 @@ description: "Lijndiagram voor tijdreeksen: één reeks of vijftig, ontbrekende 
 
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Het verloop van een KPI volgen.** Omzet per maand, gebruikers per week, latentie per uur - overal waar "hoe is dit bewogen?" de vraag is, beantwoordt de lijn die sneller dan welke tabel dan ook.
+- **Een handvol reeksen op één schaal vergelijken**, met hiaten in de rapportage eerlijk weergegeven: een ontbrekende periode wordt getoond als een streepje, nooit als een valse dip waar een directielid op zou kunnen reageren.
+- **Ook bij grote datasets.** Duizenden punten blijven soepel dankzij de optionele canvas-renderer (LTTB-decimatie). Maar als het verhaal een voorspelling is in plaats van historie, toont het [waaierdiagram](/nl/charts/fan) de bandbreedte, niet alleen de lijn.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

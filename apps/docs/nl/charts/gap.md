@@ -12,6 +12,12 @@ Hoe ver liggen de twee waarden die ertoe doen uit elkaar? Zet voor en na, doel e
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Doel versus werkelijk, voor versus na, prognose versus uitkomst.** Twee waarden per rij waarbij de afstand ertussen de hoofdboodschap is - de verschilbalk IS de bevinding.
+- **Rangschikken op verschil.** Sorteer de rijen en de grootste overwinningen (of ergste missers) komen meteen naar boven - gemaakt voor het maandagochtendoverzicht van wie het gat heeft gedicht.
+- **Doen de absolute groottes er meer toe dan het verschil**, dan houden naast elkaar geplaatste subbalken op een [staafdiagram](/nl/charts/comparable) beide groottes leesbaar.
+
 ## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

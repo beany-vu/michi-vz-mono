@@ -12,6 +12,12 @@ Tổng đang tăng, nhưng lát nào đang thúc đẩy điều đó? Chồng c�
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
+## Khi nào nên dùng
+
+- **Cơ cấu theo thời gian, khi tổng thể cũng quan trọng.** Các dải chồng lên nhau cho thấy tỷ trọng từng nhóm, còn mép trên vẽ ra tổng: vừa thấy nước lên, vừa thấy cơ cấu dịch chuyển, tất cả trong một hình.
+- **Kể câu chuyện "cơ cấu đang thay đổi".** Một dải mỏng dần trong khi tổng vẫn tăng là thông điệp không bảng tính nào truyền đạt nhanh bằng: rất hợp với báo cáo doanh thu theo sản phẩm hay lưu lượng theo kênh.
+- **Khi thứ hạng đổi chỗ, hãy đổi biểu đồ.** Nếu câu chuyện là ai vượt ai, [biểu đồ dải](/vi/charts/ribbon) thể hiện các cú hoán đổi rõ ràng hơn; còn nếu chỉ xét một thời điểm, [biểu đồ tròn](/vi/charts/pie) là đủ.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

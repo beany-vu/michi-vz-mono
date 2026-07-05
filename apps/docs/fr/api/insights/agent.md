@@ -71,7 +71,7 @@ Retourne un serveur MCP (JSON-RPC).
 
 ### Outils
 
-Chaque graphique enregistré expose `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, et `set_data`, plus tous les outils de plugin. Chaque contexte de graphique est aussi lisible comme une ressource `michivz://chart/<name>`.
+Le registre expose `list_charts`, et chaque graphique enregistré expose `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, et `set_data`, plus les outils de plugin éventuels, nommés dans leur propre espace de noms selon le nom du graphique (un graphique enregistré sous `revenue` avec le plugin forecast expose `revenue.forecast`). Chaque contexte de graphique est aussi lisible comme une ressource `michivz://chart/<name>`.
 
 ## Exemple
 

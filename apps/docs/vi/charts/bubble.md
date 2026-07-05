@@ -16,6 +16,12 @@ Không cần tách? Bỏ `partial` để có một đám mây tỷ lệ gọn g�
 
 > Cụm được bố trí bằng [d3-force](https://github.com/d3/d3-force): các bong bóng rơi về phía trung tâm (`gravity`) và đẩy nhau ra để không bao giờ chồng lấn (va chạm). Mô phỏng được ổn định **đồng bộ**, nên SVG và canvas dựng ra cùng một bố cục giống hệt nhau, có thể tái tạo được.
 
+## Khi nào nên dùng
+
+- **Độ lớn trong nháy mắt.** Sản phẩm, thị trường, từ khóa hiện thành một đám mây bong bóng có kích thước: khi "cái nào lớn?" quan trọng hơn thứ hạng chính xác, cụm bong bóng trả lời tức thì.
+- **Bản đồ cơ hội.** Với phần chia, một bong bóng to mà lõi đã hiện thực hóa còn mỏng nghĩa là tiền vẫn đang nằm trên bàn: góc nhìn quét tìm dư địa cho các buổi rà soát danh mục.
+- **Nếu vị trí cần mang ý nghĩa** (hai trục số, mối tương quan), đó là việc của [biểu đồ phân tán](/vi/charts/scatter); đám mây bong bóng đánh đổi vị trí lấy sự gọn gàng.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

@@ -12,6 +12,12 @@ Est-ce que plus de X fait vraiment bouger Y, ou poursuivez-vous une coïncidence
 
 > Le graphique ci-dessus utilise le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Tester une hypothèse.** Est-ce que les dépenses font bouger la conversion ? Est-ce que l'ancienneté fait bouger le churn ? Le nuage, la tendance et les valeurs aberrantes répondent en un coup d'œil, et `getContext()` vous donne le r de Pearson à citer dans le compte-rendu.
+- **Repérer les segments avant que la moyenne ne les cache.** Les groupes et les valeurs aberrantes ressortent d'un nuage de points bien avant d'apparaître dans un tableau récapitulatif - le premier regard de l'analyste sur tout nouveau jeu de données.
+- **Si un axe est le temps, utilisez un [graphique en courbes](/fr/charts/line)** - un nuage de points traite le temps comme un simple nombre et perd l'ordre de lecture que votre public attend.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

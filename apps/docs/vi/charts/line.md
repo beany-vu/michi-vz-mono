@@ -12,6 +12,12 @@ description: "Biểu đồ đường cho dữ liệu chuỗi thời gian: một 
 
 > Biểu đồ ở trên là **cùng một engine** trên mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
+## Khi nào nên dùng
+
+- **Theo dõi diễn biến của một chỉ số.** Doanh thu theo tháng, người dùng theo tuần, độ trễ theo giờ: khi câu hỏi là "con số này đang đi về đâu?", đường kẻ trả lời nhanh hơn mọi bảng số liệu.
+- **So sánh vài chuỗi trên cùng một thang đo**, và luôn trung thực với dữ liệu thiếu: kỳ nào không có số liệu sẽ hiện nét đứt, để một khoảng trống báo cáo không bị đọc nhầm thành một cú sụt giảm thật.
+- **Dữ liệu lớn vẫn ổn.** Hàng nghìn điểm vẫn mượt nhờ bộ dựng canvas tùy chọn (giảm mẫu LTTB). Còn nếu câu chuyện là dự báo chứ không phải quá khứ, [biểu đồ hình quạt](/vi/charts/fan) cho thấy cả khoảng dao động, không chỉ một đường kẻ.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

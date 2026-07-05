@@ -16,6 +16,11 @@ De donutvariant is één prop verwijderd - hier dezelfde aandelen met `innerRadi
 
 > Houd het aantal segmenten laag (≈ 6 of minder). Voor veel categorieën leest een [staafdiagram](/nl/charts/comparable) of [treemap](/nl/charts/treemap) preciezer dan een cirkeldiagram.
 
+## Wanneer kies je deze
+
+- **Aandelen voor het bestuur.** Een handvol taartpunten, elk gelabeld met zijn percentage: nog altijd de snelste manier om "wie neemt welk aandeel van het geheel" op een dia te zetten.
+- **Dashboard-donuts.** Zet `innerRadiusRatio` en het uitgesneden midden wordt de beste plek voor het kerngetal dat de cirkel bewijst.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>
@@ -29,7 +34,8 @@ function makePie() {
       color: palette[i % palette.length],
     });
   }
-  return { dataSet, showLabels: true, showLegend: true };
+  // Geen legenda hier: 40 legenda-pillen doen de demokaart overlopen; hover in plaats daarvan over een taartpunt.
+  return { dataSet, showLabels: true, showLegend: false };
 }
 </script>
 

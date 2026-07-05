@@ -12,6 +12,12 @@ description: "Range chart: shade the whole spread per series (best to worst case
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Whenever a single line would overstate your certainty.** Forecast cones, 5th-to-95th percentile bands, best-to-worst scenarios: the band's width is the honest answer.
+- **Comparing volatility across series.** A wide band next to a narrow one is a risk statement no average conveys - portfolio spreads, SLA jitter, temperature ranges.
+- **Nested confidence levels around one forecast?** That is exactly what the [Fan chart](/charts/fan) composes for you, bands and median in one call.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

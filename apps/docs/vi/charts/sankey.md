@@ -12,6 +12,12 @@ description: "Biểu đồ Sankey cho các dòng chảy: các nút được bố
 
 > Bố cục được tính toán bằng [d3-sankey](https://github.com/d3/d3-sankey): các nút được gán vào các cột từ cấu trúc topology của đồ thị, sắp xếp theo chiều dọc, và các liên kết được vẽ thành các dải ngang mượt. Di chuột vào một nút hoặc một dòng chảy để xem con số.
 
+## Khi nào nên dùng
+
+- **Dòng chảy có cấu trúc.** Thương mại giữa nước xuất khẩu và thị trường, ngân sách từ nguồn đến khoản chi, người dùng đi qua phễu: lượng đến từ đâu, đi về đâu, tách nhập ra sao trên đường đi.
+- **Tìm tuyến chủ đạo và chỗ rò rỉ.** Độ dày của dải chính là giá trị, nên tuyến lớn và những thất thoát nhỏ đều hiện rõ tức thì: góc nhìn kiểm toán cho mọi hệ thống.
+- **Chỉ có một chặng?** Nếu không có gì chảy *xuyên qua*, [biểu đồ cột so sánh](/vi/charts/comparable) xếp hạng các nguồn gọn gàng hơn một Sankey hai cột.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

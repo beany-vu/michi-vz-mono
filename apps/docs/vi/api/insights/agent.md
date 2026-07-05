@@ -73,7 +73,7 @@ Trả về một server MCP (JSON-RPC).
 
 ### Các công cụ
 
-Mỗi biểu đồ đã đăng ký công khai `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, và `set_data`, cộng thêm bất kỳ công cụ nào từ plugin. Mỗi chart context cũng có thể được đọc dưới dạng một resource `michivz://chart/<name>`.
+Registry công khai `list_charts`, và mỗi biểu đồ đã đăng ký công khai `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, và `set_data`, cộng thêm mọi công cụ từ plugin được đặt tên theo không gian tên (namespaced) theo tên biểu đồ (một biểu đồ được đăng ký với tên `revenue` cùng plugin dự báo sẽ công khai `revenue.forecast`). Mỗi chart context cũng có thể được đọc dưới dạng một resource `michivz://chart/<name>`.
 
 ## Ví dụ
 

@@ -12,6 +12,12 @@ Welke kant wint, en met hoeveel? Veranker twee tegenover elkaar staande waarden 
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Wanneer asymmetrie het verhaal is.** Bevolkingspiramides, import versus export, promotors versus criticasters: twee tegenover elkaar staande grootheden op één middellijn, en de scheefste kant spreekt als eerste.
+- **Directie-samenvattingen op één pagina.** De langste balk en de zwaarste kant communiceren voordat er ook maar één getal wordt gelezen - ideaal wanneer je publiek tien seconden heeft.
+- **Staan de twee waarden niet tegenover elkaar** (dit jaar versus vorig jaar, doel versus werkelijk), houd ze dan allebei aan dezelfde kant van nul met een [staafdiagram](/nl/charts/comparable).
+
 ## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

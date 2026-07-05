@@ -21,6 +21,10 @@ const host = ref<HTMLDivElement>();
 const el = shallowRef<any>(null);
 const status = ref<"pending" | "webgpu" | "canvas">("pending");
 const fellBack = ref(false);
+// At this density no legend or per-row label can work, so the chart's own
+// ChartContext summary stands in: the same deterministic sentence an AI agent
+// (or a screen reader) gets from getContext().
+const summary = ref("");
 let ro: ResizeObserver | null = null;
 let io: IntersectionObserver | null = null;
 let raf = 0;
@@ -45,6 +49,9 @@ function buildNode() {
   node.height = props.height ?? 380;
   node.style.display = "block";
   node.width = Math.max(280, host.value.clientWidth);
+  node.addEventListener("michi-vz:dataprocessed", (e: Event) => {
+    summary.value = (e as CustomEvent).detail?.summary ?? "";
+  });
   host.value.appendChild(node);
   el.value = node;
 }
@@ -159,6 +166,10 @@ onBeforeUnmount(() => {
       </span>
     </div>
     <div class="gpu-stage michi-vz-calm" ref="host"></div>
+    <p v-if="summary" class="gpu-summary">
+      <span class="gpu-summary-tag">ChartContext summary</span>
+      {{ summary }}
+    </p>
     <p v-if="fellBack" class="gpu-note">
       Your browser has no WebGPU adapter available, so these marks are drawn with the
       canvas 2D renderer instead. The chart is otherwise identical.
@@ -221,5 +232,27 @@ onBeforeUnmount(() => {
   padding: 0 16px 14px;
   font-size: 12.5px;
   color: var(--vp-c-text-3);
+}
+.gpu-summary {
+  margin: 0 16px 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+}
+.gpu-summary-tag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 8px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  white-space: nowrap;
 }
 </style>

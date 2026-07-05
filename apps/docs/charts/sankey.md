@@ -12,6 +12,12 @@ description: "Sankey diagram for flows: nodes laid out in columns with band thic
 
 > Layout is computed with [d3-sankey](https://github.com/d3/d3-sankey): nodes are assigned to columns from the graph topology, packed vertically, and links drawn as smooth horizontal bands. Hover a node or a flow for its figures.
 
+## When to reach for it
+
+- **Flows with structure.** Trade between exporters and markets, budget from sources to uses, users through a funnel: where quantities come from, where they go, what splits and recombines.
+- **Finding the dominant path and the leaks.** Band thickness is the value, so the thick routes and the thin losses read instantly - the audit view of any system.
+- **Only one stage?** If nothing flows *through*, a [Comparable bar](/charts/comparable) ranks sources more cleanly than a two-column Sankey.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

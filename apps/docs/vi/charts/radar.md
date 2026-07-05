@@ -1,16 +1,22 @@
 ---
 title: Biểu đồ radar
-description: "Biểu đồ radar để so sánh các lựa chọn trên cùng một tập tiêu chí: mỗi ứng viên trở thành một đa giác mà các đỉnh nhô ra và lõm vào cho thấy điểm mạnh, điểm yếu chỉ trong một cái nhìn."
+description: "Biểu đồ radar để so sánh các lựa chọn trên cùng một tập tiêu chí: mỗi ứng viên trở thành một đa giác mà các đỉnh nhô ra và lõm vào cho thấy điểm mạnh, điểm yếu chỉ trong nháy mắt."
 ---
 # Biểu đồ radar
 
 <span class="vp-badge tip">So sánh</span>
 
-Lựa chọn nào thắng, và thắng ở đâu? Đặt vài ứng viên chồng lên cùng một tập tiêu chí và mỗi ứng viên trở thành một đa giác bạn có thể đọc chỉ trong một cái nhìn - các đỉnh nhô ra cho thấy mọi điểm mạnh, các chỗ lõm vào cho thấy mọi điểm yếu, và các phần chồng lấn cho thấy chính xác nơi họ đổi vị trí cho nhau.
+Lựa chọn nào thắng, và thắng ở đâu? Đặt vài ứng viên chồng lên cùng một tập tiêu chí, mỗi ứng viên thành một đa giác bạn đọc được chỉ trong nháy mắt: đỉnh nhô ra cho thấy mọi điểm mạnh, chỗ lõm vào cho thấy mọi điểm yếu, và phần chồng lấn cho thấy chính xác nơi họ đổi vị trí cho nhau.
 
 <ChartDemo chart="radar-chart" />
 
 > Biểu đồ ở trên là **cùng một engine** trên mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
+
+## Khi nào nên dùng
+
+- **Bảng chấm điểm.** Đánh giá nhà cung cấp, ứng viên, sản phẩm: vài lựa chọn trên cùng một bộ tiêu chí, mỗi lựa chọn là một đa giác mà đỉnh nhọn là điểm mạnh, chỗ lõm là điểm yếu.
+- **Cân bằng hay chuyên biệt.** Đa giác càng tròn đều càng toàn diện; đa giác nhọn hoắt đặt cược tất cả vào vài trục. Câu chuyện hình dáng ấy là thứ bảng số liệu không kể được.
+- **Giữ ở mức vài thực thể và 5-12 trục.** Cần so sánh chính xác trên một tiêu chí, [biểu đồ cột so sánh](/vi/charts/comparable) cho đọc đúng từng giá trị; radar dành cho cái nhìn tổng thể.
 
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 

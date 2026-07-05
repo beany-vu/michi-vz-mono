@@ -12,6 +12,12 @@ description: "Graphique en courbes pour séries temporelles : une série ou cinq
 
 > Le graphique ci-dessus utilise le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Suivre la trajectoire d'un indicateur clé.** Chiffre d'affaires par mois, utilisateurs par semaine, latence par heure - partout où « comment cela a-t-il évolué ? » est la question, la courbe y répond plus vite qu'aucun tableau.
+- **Comparer une poignée de séries sur une même échelle**, en gardant les trous honnêtes : une période manquante s'affiche en pointillés, jamais comme une fausse baisse sur laquelle un dirigeant pourrait agir.
+- **Les gros volumes aussi.** Des milliers de points restent fluides grâce au rendu canvas optionnel (décimation LTTB). Mais si l'histoire est une prévision plutôt qu'un historique, le [graphique en éventail](/fr/charts/fan) montre l'étendue, pas seulement la ligne.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

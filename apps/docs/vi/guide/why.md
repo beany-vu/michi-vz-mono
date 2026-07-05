@@ -7,82 +7,75 @@ title: Vì sao chọn michi-vz - và vì sao có thể tin tưởng
 Đã có rất nhiều thư viện biểu đồ xuất sắc, nên câu hỏi trung thực nhất chính là câu bạn
 đang tự hỏi: **vì sao lại bắt đầu với một thư viện còn non trẻ?**
 
-Bởi vì michi-vz được xây dựng cho phần của việc vẽ biểu đồ mà các thư viện lớn chưa được
-thiết kế cho: **những biểu đồ mà máy móc và mọi người đều có thể đọc được** - tác nhân AI,
-trình đọc màn hình, và cả nhà phát triển đang gỡ lỗi - chứ không chỉ dành cho người sáng
-mắt nhìn vào điểm ảnh.
+Vì michi-vz nhắm vào phần mà các thư viện lớn chưa làm: **biểu đồ mà cả máy móc lẫn con
+người đều đọc được**, gồm AI agent, screen reader, và cả bạn khi đang debug, chứ không chỉ
+người mắt sáng nhìn vào pixel.
 
 ## Điều michi-vz coi trọng
 
 **Mỗi biểu đồ tự giải thích chính nó.** Mỗi biểu đồ phát ra một `ChartContext` có cấu
-trúc: một bản tóm tắt bằng ngôn ngữ thuần túy, thống kê theo từng chuỗi dữ liệu, miền giá
-trị của trục, và một bảng dữ liệu. Chỉ một tạo phẩm đó thôi mà cấp năng lượng cho ba việc
-cùng lúc - một tác nhân AI có thể đọc biểu đồ
-([và điều khiển nó qua MCP](/vi/guide/llm-context)), trình đọc màn hình có được một
-phương án thay thế văn bản thực thụ, và bạn có thứ để khẳng định trong các bài kiểm thử.
+trúc: một bản tóm tắt bằng ngôn ngữ thuần túy, thống kê theo từng chuỗi, domain của trục,
+và một bảng dữ liệu. Chỉ một artifact đó thôi mà phục vụ ba việc cùng lúc: một AI agent
+đọc được biểu đồ ([và điều khiển nó qua MCP](/vi/guide/llm-context)), screen reader có
+được text thay thế thực thụ, còn bạn có thứ để assert trong test.
 
-**Insights, ngay trong trình duyệt, với phép toán được phơi bày.** Dự báo với độ chính
-xác đã qua kiểm định hậu nghiệm (backtest), phát hiện bất thường, tường thuật, xác thực
-dữ liệu - không máy chủ, không tải lên, và mọi phương pháp đều là một kỹ thuật giáo khoa
-có tên gọi rõ ràng, được trình bày chi tiết trong
+**Insights chạy ngay trong trình duyệt, và phép tính không giấu ai.** Forecast với độ
+chính xác đã backtest, phát hiện bất thường, tường thuật, xác thực dữ liệu; không máy
+chủ, không upload, và mọi phương pháp đều là một kỹ thuật giáo khoa có tên gọi rõ ràng,
+trình bày chi tiết trong
 [Phương pháp luận](/vi/guide/insights#methodology---the-exact-logic-behind-every-insight).
-Nếu một con số xuất hiện trên biểu đồ của bạn, bạn có thể kiểm tra xem nó được tính như
-thế nào.
+Con số nào hiện trên biểu đồ, bạn đều kiểm tra được nó tính ra sao.
 
-**Một devtools đúng nghĩa.** [Bảng điều khiển](/vi/guide/devtools) kiểm tra trạng thái
-trực tiếp của bất kỳ biểu đồ nào, chẩn đoán các lỗi kích thước kinh điển, so sánh khác
-biệt trạng thái giữa các lần render, phát trực tiếp các phép kiểm tra va chạm (hit-test)
-trên canvas, đo hiệu năng render, và kiểm toán khả năng truy cập. Gỡ lỗi biểu đồ không
-còn là việc khảo cổ `console.log` nữa.
+**Một bộ devtools đúng nghĩa.** [Bảng điều khiển](/vi/guide/devtools) soi state sống của
+bất kỳ biểu đồ nào, chẩn đoán các lỗi kích thước kinh điển, so sánh khác biệt state giữa
+các lần render, stream hit-test trên canvas, đo hiệu năng render, và audit accessibility.
+Debug biểu đồ không còn là khảo cổ `console.log` nữa.
 
-**Khả năng truy cập theo mặc định, được kiểm toán.** Bản tóm tắt và bảng dữ liệu được
-mọi biểu đồ tự động phát ra, và tab A11y trong devtools chạy các kiểm tra lấy cảm hứng
-từ Chartability (độ tương phản, màu trùng lặp, tính đầy đủ của bảng) để các hồi quy luôn
-hiện rõ.
+**Accessibility mặc định có sẵn, có audit hẳn hoi.** Mọi biểu đồ tự động phát ra summary
+và bảng dữ liệu, còn tab A11y trong devtools chạy các kiểm tra lấy cảm hứng từ Chartability
+(độ tương phản, màu trùng nhau, bảng có đủ dữ liệu hay không) để hồi quy luôn lộ ra ngay.
 
-**Một engine, năm cách sử dụng.** React, Vue, Svelte, Angular, và web component thuần
-đều là các lớp vỏ mỏng phủ lên cùng một engine TypeScript - sự tương đồng props giữa các
-wrapper được CI thực thi bắt buộc, nên không framework nào là công dân hạng hai. Các mark
-được vẽ bằng SVG, canvas, hoặc WebGPU thử nghiệm chỉ đằng sau một prop duy nhất.
+**Một engine, năm cách dùng.** React, Vue, Svelte, Angular, và web component thuần chỉ là
+lớp vỏ mỏng phủ lên cùng một engine TypeScript; CI bắt buộc các wrapper phải tương đồng
+prop, nên không framework nào bị đối xử kém hơn. Mark vẽ bằng SVG, canvas, hay WebGPU
+thử nghiệm chỉ khác nhau ở một prop duy nhất.
 
 ## Vì sao có thể tin tưởng
 
-Sự tin tưởng không phải là lời tuyên bố suông, mà là điều có thể kiểm chứng được:
+Sự tin tưởng không phải lời tuyên bố suông, mà là thứ bạn kiểm chứng được:
 
-- **Dữ liệu của bạn không bao giờ rời khỏi trình duyệt.** Không máy chủ, không đo từ xa,
-  không gọi về nhà. Những ngoại lệ duy nhất là những gì bạn tự cấu hình rõ ràng, và chúng
-  được ghi chú "dữ liệu rời khỏi client" trong tài liệu.
-- **Việc tải mô hình minh bạch và nằm trong tầm kiểm soát của bạn.** Các tính năng AI là
-  tùy chọn (opt-in); không có gì được đóng gói sẵn. Trước khi bất kỳ mô hình nào được tải,
-  `describeModelSource()` cho bạn biết (và cho phép bạn thông báo với người dùng) chính
-  xác những gì sẽ được tải xuống và từ đâu - mặc định được nêu rõ ràng: Hugging Face. Bạn
-  có thể trỏ nó tới một máy chủ nhân bản (mirror), tự lưu trữ (self-host) các tệp, cấm
-  hoàn toàn việc tải từ xa, hoặc bỏ qua việc tải xuống hoàn toàn bằng cách
-  [kết nối AI cục bộ của riêng bạn](/vi/guide/insights#bring-a-model) (Ollama, LM Studio,
-  llama.cpp) chỉ trong một dòng lệnh.
-- **Có tính xác định theo mặc định.** Các tính năng thống kê cho ra cùng một kết quả với
-  cùng một đầu vào, mọi lần; bất cứ điều gì ngẫu nhiên (Monte Carlo) đều được gieo hạt
-  (seeded). Bộ tường thuật dựa trên quy tắc không thể bịa ra một con số không có trong dữ
-  liệu.
-- **Được kiểm thử nghiêm túc.** Hơn 700 bài kiểm thử trên engine, các wrapper, insights,
-  và devtools chạy ở mỗi lần thay đổi - bao gồm cả kiểm tra va chạm trên canvas và sự
-  tương đồng props giữa các framework.
-- **CSS của bạn vẫn nắm quyền kiểm soát.** Biểu đồ render vào light DOM và không bao giờ
-  chiếm quyền màu sắc của bạn - [hợp đồng màu sắc](/vi/guide/getting-started#the-colour-contract-light-dom)
-  nghĩa là việc tạo kiểu vẫn là CSS thuần túy, kể cả với các mark được vẽ trên canvas.
-- **Cấp phép MIT, không ràng buộc.** Mọi tính năng trong tài liệu này đều miễn phí. Không
-  có gói trả phí nào mà tài liệu đang dẫn dắt bạn tới.
+- **Dữ liệu của bạn không bao giờ rời khỏi trình duyệt.** Không máy chủ, không telemetry,
+  không gọi về nhà. Ngoại lệ duy nhất là những gì chính bạn tự cấu hình, và tài liệu luôn
+  ghi rõ "dữ liệu rời khỏi client" ở những chỗ đó.
+- **Việc tải model minh bạch và do bạn kiểm soát.** Tính năng AI là opt-in; không có gì
+  bundle sẵn. Trước khi tải bất kỳ model nào, `describeModelSource()` cho bạn biết (và
+  cho phép bạn báo cho người dùng) chính xác sẽ tải gì, từ đâu; mặc định nói rõ luôn:
+  Hugging Face. Bạn có thể trỏ nó tới mirror, tự self-host file, cấm hẳn việc tải từ xa,
+  hoặc bỏ qua bước tải hoàn toàn bằng cách
+  [nối AI chạy local của riêng bạn](/vi/guide/insights#bring-a-model) (Ollama, LM Studio,
+  llama.cpp) chỉ với một dòng lệnh.
+- **Có tính xác định (deterministic) mặc định.** Các tính năng thống kê luôn cho cùng
+  kết quả với cùng đầu vào; cái gì ngẫu nhiên (Monte Carlo) đều seeded. Bộ tường thuật
+  dựa trên rule không thể bịa ra con số nào không có trong dữ liệu.
+- **Test nghiêm túc.** Hơn 700 test trên engine, wrapper, insights, và devtools chạy ở
+  mỗi lần thay đổi, gồm cả hit-test trên canvas và kiểm tra tương đồng prop giữa các
+  framework.
+- **CSS của bạn vẫn nắm quyền.** Biểu đồ render vào light DOM và không bao giờ giành lấy
+  màu sắc của bạn; [hợp đồng màu sắc](/vi/guide/getting-started#the-colour-contract-light-dom)
+  nghĩa là style vẫn là CSS thuần, kể cả với mark vẽ trên canvas.
+- **License MIT, không ràng buộc gì.** Mọi tính năng trong tài liệu này đều miễn phí.
+  Không có gói trả phí nào mà tài liệu đang cố hướng bạn tới.
 
 ## Nơi chúng tôi thẳng thắn về giới hạn
 
-- Thư viện còn non trẻ: danh mục biểu đồ và hệ sinh thái xung quanh nó vẫn đang phát
-  triển, và lớp insights được đánh dấu là **thử nghiệm** (hãy ghim một phiên bản cụ thể).
-- Dự báo chưa có thành phần mùa vụ (seasonal) - một chuỗi dữ liệu mang tính mùa vụ mạnh sẽ
-  dự báo xu hướng của nó, chứ không phải độ dao động của nó.
-- Render WebGPU là thử nghiệm và sẽ chuyển về canvas nếu không khả dụng.
+- Thư viện còn non trẻ: danh mục biểu đồ và hệ sinh thái xung quanh vẫn đang phát triển,
+  và lớp insights được đánh dấu **thử nghiệm** (nhớ ghim version cụ thể).
+- Forecast chưa có thành phần mùa vụ (seasonal): một chuỗi dữ liệu mang tính mùa vụ mạnh
+  sẽ dự báo đúng xu hướng, nhưng không bắt được độ dao động của nó.
+- Render WebGPU còn thử nghiệm và sẽ tự chuyển về canvas nếu không dùng được.
 
-Nếu đó là những điều không thể chấp nhận ngay hôm nay, một thư viện trưởng thành hơn sẽ
-phục vụ bạn tốt hơn - và trang này vẫn sẽ ở đây khi một trợ lý AI cần đọc biểu đồ của bạn.
+Nếu những điều đó là không thể chấp nhận ngay lúc này, một thư viện trưởng thành hơn sẽ
+hợp với bạn hơn, và trang này vẫn sẽ ở đây khi nào một trợ lý AI cần đọc biểu đồ của bạn.
 
 ## Thử trong sáu mươi giây
 
@@ -105,5 +98,5 @@ Không cần bước build nào cả:
 ```
 
 Sau đó: [Cài đặt](/vi/guide/installation) cho framework của bạn,
-[Bắt đầu](/vi/guide/getting-started) cho biểu đồ thực đầu tiên, và
-[thư viện biểu đồ](/vi/charts/) để chọn một dạng.
+[Bắt đầu](/vi/guide/getting-started) cho biểu đồ thật đầu tiên, và ghé
+[thư viện biểu đồ](/vi/charts/) để chọn dạng phù hợp.

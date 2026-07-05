@@ -12,6 +12,12 @@ description: "Line chart for time series: one series or fifty, missing periods r
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Tracking a KPI's trajectory.** Revenue by month, users by week, latency by hour - anywhere "how did it move?" is the question, the line answers it faster than any table.
+- **Comparing a handful of series on one scale**, with reporting gaps kept honest: a missing period renders as a dash, never a fake dip an exec might act on.
+- **Big data included.** Thousands of points stay smooth with the opt-in canvas renderer (LTTB decimation). But if the story is a prediction rather than history, the [Fan chart](/charts/fan) shows the range, not just the line.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

@@ -12,6 +12,12 @@ Qui progresse et qui recule ? Quand les parts de marché, la répartition budgé
 
 > Le graphique ci-dessus utilise le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Parts de marché, répartitions budgétaires, classements.** Quand les catégories échangent leur place d'une période à l'autre, les rubans font de « qui a dépassé qui, et quand » la première chose que les lecteurs voient.
+- **Présenter des redistributions à un public professionnel.** Chaque catégorie garde sa couleur pendant qu'elle gonfle, se réduit et change de rang, pour que l'œil suive un même concurrent tout au long de l'histoire.
+- **Si aucun rang ne change jamais**, les rubans restent parallèles et un [graphique en aires](/fr/charts/area) raconte la même histoire de parts avec moins d'encre.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

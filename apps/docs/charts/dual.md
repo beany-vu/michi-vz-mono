@@ -12,6 +12,12 @@ Which side wins, and by how much? Anchor two opposing values to a shared centre 
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **When asymmetry is the story.** Population pyramids, imports vs exports, promoters vs detractors: two opposing magnitudes on one centre line, and the lopsided side speaks first.
+- **Executive one-pagers.** The longest bar and the heavier side communicate before a single number is read - ideal when the audience has ten seconds.
+- **If the two values do not oppose each other** (this year vs last year, target vs actual), keep both on the same side of zero with a [Comparable bar](/charts/comparable).
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

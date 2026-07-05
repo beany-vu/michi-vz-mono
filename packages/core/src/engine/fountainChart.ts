@@ -8,6 +8,8 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter, defaultXAxisFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisBand, renderXAxisLinear, renderYAxisLinear } from "../render/svg";
+import { chooseAxisMode } from "../render/svg/chooseAxisMode";
+import { measureLabelWidth } from "../render/svg/measureLabelWidth";
 import { processFountainData } from "../fountainChart/data";
 import { buildFountainColors } from "../fountainChart/colors";
 import { createFountainScales } from "../fountainChart/scales";
@@ -245,7 +247,8 @@ export function mountFountainChart(
       }
     }
 
-    const scales = createFountainScales(
+    let margin = r.margin;
+    let scales = createFountainScales(
       processed.mode,
       processed.labels,
       processed.items.length,
@@ -253,9 +256,45 @@ export function mountFountainChart(
       processed.yAxisDomain,
       r.width,
       r.height,
-      r.margin,
+      margin,
       processed.temporalType
     );
+
+    // Snapshot (band) x-axis layout, same policy as the stack/bar charts: fit
+    // labels horizontally, else rotate -45° (reserving bottom margin, which means
+    // re-creating the scales), else thin to a readable subset.
+    let bandAxis: ReturnType<typeof chooseAxisMode> | null = null;
+    if (scales.xBand) {
+      const xFormat = props.xAxisFormat ?? ((d: number | string) => String(d));
+      bandAxis = chooseAxisMode({
+        domain: scales.xBand.domain(),
+        formatter: (d) => xFormat(d),
+        bandWidth: scales.xBand.step(),
+        measure: measureLabelWidth,
+      });
+      if (bandAxis.mode === "rotated") {
+        const maxLabelWidth = bandAxis.tickValues.reduce(
+          (m, v) => Math.max(m, measureLabelWidth(String(xFormat(v)))),
+          0
+        );
+        // 25 (axis offset) + 14 (label translate) + label·sin45 + 12 (descender pad)
+        const required = Math.ceil(25 + 14 + maxLabelWidth * Math.SQRT1_2 + 12);
+        if (required > margin.bottom) {
+          margin = { ...margin, bottom: required };
+          scales = createFountainScales(
+            processed.mode,
+            processed.labels,
+            processed.items.length,
+            processed.xDomain,
+            processed.yAxisDomain,
+            r.width,
+            r.height,
+            margin,
+            processed.temporalType
+          );
+        }
+      }
+    }
 
     model = buildFountainRenderModel(processed.items, processed.mode, processed.temporalType, scales, colors, {
       style: r.style,
@@ -279,7 +318,7 @@ export function mountFountainChart(
       renderXAxisLinear(svg, scales.xLinear, {
         width: r.width,
         height: r.height,
-        margin: r.margin,
+        margin,
         xAxisDataType: processed.temporalType,
         format: (v) => xFormat(v),
         ticks: r.ticks,
@@ -290,15 +329,17 @@ export function mountFountainChart(
       renderXAxisBand(svg, scales.xBand, {
         width: r.width,
         height: r.height,
-        margin: r.margin,
+        margin,
         format: (label) => xFormat(label),
+        mode: bandAxis?.mode,
+        tickValues: bandAxis?.tickValues,
       });
     }
 
     renderYAxisLinear(svg, scales.yScale, {
       width: r.width,
       height: r.height,
-      margin: r.margin,
+      margin,
       format: (v) => yFormat(v),
       ticks: r.ticks,
     });

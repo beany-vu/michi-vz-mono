@@ -12,6 +12,12 @@ Does more of X really move Y, or are you chasing a coincidence? Plot your points
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Testing a hypothesis.** Does spend move conversion? Does tenure move churn? The cloud, the trend and the outliers answer at a glance, and `getContext()` hands you the Pearson r to quote in the write-up.
+- **Finding segments before the average hides them.** Clusters and outliers jump out of a scatter long before they surface in a summary table - the analyst's first look at any new dataset.
+- **If one axis is time, use a [Line chart](/charts/line)** - a scatter treats time as just another number and loses the reading order your audience expects.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

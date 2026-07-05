@@ -7,7 +7,7 @@ một đường render **WebGPU** thử nghiệm) và phát ra một **`ChartCon
 
 ## Cài đặt
 
-Chọn gói cho stack của bạn - chi tiết đầy đủ, peer dependency, và tùy chọn CDN nằm trong **[Cài đặt](/vi/guide/installation)**:
+Chọn package phù hợp với stack của bạn. Chi tiết đầy đủ, peer dependency và tùy chọn dùng qua CDN có ở trang **[Cài đặt](/vi/guide/installation)**:
 
 ```bash
 npm i @michi-vz/react
@@ -53,28 +53,26 @@ chart.destroy();
 
 ## Hợp đồng màu sắc (light DOM)
 
-Biểu đồ render vào **light DOM** để CSS của consumer tiếp cận được mọi mark - kể cả các
-điểm ảnh canvas, thông qua một probe `getComputedStyle`. Tô màu cho các mark theo nhãn đã
-được làm sạch:
+Biểu đồ render vào **light DOM** nên CSS của consumer chạm được vào mọi mark, kể cả pixel
+canvas, qua một probe `getComputedStyle`. Tô màu cho mark bằng nhãn đã sanitize:
 
 ```css
 .line[data-label-safe="North"] { stroke: #b23a2e; }
 .bar[data-label-safe="Africa"] { fill: #cda14a; }
 ```
 
-`@michi-vz/core/styles.css` chỉ xử lý layout/tooltip - nó không bao giờ thiết lập
-`fill`/`stroke`, vì màu sắc là hợp đồng của bạn.
+`@michi-vz/core/styles.css` chỉ lo layout/tooltip, không bao giờ set `fill`/`stroke` vì
+màu sắc là hợp đồng của bạn.
 
-## Bước tiếp theo nên đi đâu
+## Bước tiếp theo
 
-- **Chọn một biểu đồ** trong [thư viện](/vi/charts/) - mỗi trang biểu đồ đều có một demo
-  trực tiếp, các tab theo framework, và một liên kết tới tham chiếu prop đầy đủ của nó.
-- **Đang phân vân liệu thư viện này có hợp với bạn?** [Vì sao chọn michi-vz](/vi/guide/why)
-  - điều gì thực sự khác biệt, và nơi chúng tôi thẳng thắn về giới hạn.
-- **Gỡ lỗi những gì bạn xây dựng** với [bảng DevTools](/vi/guide/devtools) - kích thước,
-  thang đo (scale), so sánh khác biệt trạng thái, và một kiểm toán khả năng truy cập cho
-  bất kỳ biểu đồ nào trên trang.
-- **Làm cho biểu đồ dự đoán và tự giải thích chính mình** với [Insights](/vi/guide/insights)
-  - dự báo, bất thường, tường thuật, tất cả ngay trong trình duyệt với
-  [phương pháp luận được trình bày chi tiết](/vi/guide/insights#methodology---the-exact-logic-behind-every-insight).
-- **Kết nối biểu đồ với một trợ lý AI** qua [LLM context](/vi/guide/llm-context) và MCP.
+- **Chọn một biểu đồ** trong [thư viện](/vi/charts/): mỗi trang đều có demo trực tiếp,
+  các tab theo từng framework, và link tới tham chiếu prop đầy đủ.
+- **Đang phân vân thư viện này có hợp với bạn không?** Đọc [Vì sao chọn michi-vz](/vi/guide/why)
+  để biết điều gì thực sự khác biệt, và cả những giới hạn chúng tôi thẳng thắn nói ra.
+- **Debug thứ bạn dựng** bằng [bảng DevTools](/vi/guide/devtools): kích thước, scale,
+  so sánh khác biệt state, và audit accessibility cho bất kỳ biểu đồ nào trên trang.
+- **Cho biểu đồ tự dự báo và tự giải thích** với [Insights](/vi/guide/insights): forecast,
+  phát hiện bất thường, tường thuật, tất cả chạy ngay trong trình duyệt, với
+  [cách tính được trình bày chi tiết](/vi/guide/insights#methodology---the-exact-logic-behind-every-insight).
+- **Kết nối biểu đồ với trợ lý AI** qua [LLM context](/vi/guide/llm-context) và MCP.

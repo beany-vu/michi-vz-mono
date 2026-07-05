@@ -16,6 +16,11 @@ Biến thể vành khuyên chỉ cách một prop - đây là cùng các tỷ tr
 
 > Giữ số lượng múi ở mức thấp (khoảng 6 hoặc ít hơn). Với nhiều danh mục hơn, [biểu đồ cột](/vi/charts/comparable) hoặc [treemap](/vi/charts/treemap) đọc chính xác hơn một biểu đồ tròn.
 
+## Khi nào nên dùng
+
+- **Tỷ trọng cho slide báo cáo.** Vài lát cắt, mỗi lát gắn nhãn phần trăm: vẫn là cách nhanh nhất để một slide trả lời "ai chiếm bao nhiêu phần của tổng thể".
+- **Vành khuyên cho dashboard.** Đặt `innerRadiusRatio` là có ngay lỗ tròn ở giữa: vị trí đắc địa cho con số tiêu đề mà biểu đồ đang chứng minh.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>
@@ -29,7 +34,8 @@ function makePie() {
       color: palette[i % palette.length],
     });
   }
-  return { dataSet, showLabels: true, showLegend: true };
+  // Ẩn chú giải ở đây: 40 mục chú giải sẽ tràn khỏi khung demo; rê chuột lên từng lát để xem chi tiết.
+  return { dataSet, showLabels: true, showLegend: false };
 }
 </script>
 

@@ -4,38 +4,38 @@ title: LLM context - một biểu đồ mà AI có thể đọc và điều khi�
 
 # LLM context: một biểu đồ mà AI có thể đọc và điều khiển
 
-Đưa một biểu đồ cho chatbot và cách làm thông thường là chụp màn hình nó rồi hy vọng mô
-hình đọc được các điểm ảnh. Một biểu đồ michi-vz bỏ qua bước đó: nó trao ra một
-**`ChartContext`** có cấu trúc mà mô hình có thể đọc trực tiếp, và phơi bày các điều khiển
-của nó dưới dạng **công cụ (tools)** mà mô hình có thể gọi. Nhờ vậy một trợ lý có thể
-*hiểu* biểu đồ và *thay đổi* nó - bằng các lệnh gọi hàm, chứ không phải đoán mò.
+Đưa một biểu đồ cho chatbot, cách làm thông thường là chụp màn hình rồi hy vọng model đọc
+được pixel. Biểu đồ michi-vz bỏ qua bước đó: nó đưa thẳng một **`ChartContext`** có cấu
+trúc mà model đọc trực tiếp được, và cung cấp các điều khiển của mình dưới dạng **tool**
+mà model có thể gọi. Nhờ vậy một trợ lý có thể *hiểu* biểu đồ và *thay đổi* nó bằng function
+call, chứ không phải đoán mò.
 
 <InsightsDemo feature="forecast" />
 
-> Câu văn bên dưới biểu đồ chính là `getContext().summary` của nó - được viết từ dữ liệu,
-> không phải cào (scrape) từ DOM. Một mô hình nhận được điều đó, cộng với context có cấu
-> trúc đầy đủ bên dưới.
+> Câu văn bên dưới biểu đồ chính là `getContext().summary` của nó. Nó viết từ dữ liệu thật,
+> không cào (scrape) từ DOM. Model nhận được câu đó, cộng với toàn bộ context có cấu trúc
+> bên dưới.
 
 ## Context là gì
 
-Mỗi biểu đồ đều tạo ra một **`ChartContext`** không phụ thuộc renderer từ mô hình dữ liệu
-của nó (chứ không bao giờ từ DOM), nên nó **giống hệt nhau ở chế độ SVG và canvas** - ngay
-cả trong canvas, nơi không có node theo từng mark để cào dữ liệu.
+Mỗi biểu đồ tạo ra một **`ChartContext`** không phụ thuộc renderer, tính từ data model của
+nó (không bao giờ từ DOM), nên nó **giống hệt nhau dù ở chế độ SVG hay canvas**, kể cả ở
+canvas là nơi không có node riêng cho từng mark để cào.
 
 ```ts
 const ctx = chart.getContext(); // or el.getContext() on the web component / wrappers
 ```
 
-Nó phơi bày ba thứ từ một nguồn duy nhất:
+Nó cung cấp ba thứ, cùng từ một nguồn:
 
-1. **JSON có cấu trúc** - loại biểu đồ, trục/miền giá trị, thống kê theo từng chuỗi
-   (min/max/đầu/cuối, thay đổi, xu hướng, tương quan, khoảng trống, tổng…). Sẵn sàng cho
-   việc dùng công cụ LLM, RAG, hoặc agent.
-2. **Một `summary` bằng ngôn ngữ tự nhiên có tính xác định** - dựa trên quy tắc, không cần
-   mô hình; cũng đóng vai trò văn bản thay thế (alt text).
+1. **JSON có cấu trúc**: loại biểu đồ, trục/domain, thống kê theo từng chuỗi (min/max/đầu/
+   cuối, mức thay đổi, xu hướng, tương quan, khoảng trống, tổng…). Dùng ngay được cho LLM
+   tool-use, RAG, hoặc agent.
+2. **Một `summary` bằng ngôn ngữ tự nhiên, có tính xác định**: dựa trên rule, không cần
+   model; cũng đóng vai trò alt text.
 3. **Một `a11yTable` không phụ thuộc loại biểu đồ** (`headers` + `rows`) điều khiển một
-   bảng DOM ẩn về mặt thị giác bên cạnh biểu đồ, để trình đọc màn hình và các công cụ cào
-   DOM nhận được nội dung thực ngay cả ở chế độ canvas.
+   bảng DOM ẩn về mặt thị giác cạnh biểu đồ, để screen reader và các tool cào DOM vẫn nhận
+   được nội dung thật ngay cả ở chế độ canvas.
 
 ```jsonc
 {
@@ -48,49 +48,47 @@ Nó phơi bày ba thứ từ một nguồn duy nhất:
 }
 ```
 
-Hình dạng của nó là một discriminated union theo khóa `chartType`, nên nó thu hẹp kiểu một
-cách gọn gàng theo từng biểu đồ.
+Hình dạng của nó là một discriminated union theo khóa `chartType`, nên type tự thu hẹp gọn
+gàng theo từng biểu đồ.
 
-## Trò chuyện với biểu đồ của bạn: một chatbot điều khiển nó
+## Trò chuyện với biểu đồ của bạn: chatbot điều khiển thẳng
 
-Vì ý nghĩa đã có cấu trúc **và** các điều khiển là các công cụ, một chatbot không cào điểm
-ảnh - nó gọi hàm. Mỗi nút bên dưới là một lệnh gọi công cụ thực sự đối với biểu đồ (chính
-xác các lệnh gọi mà một client MCP như Claude Code sẽ thực hiện):
+Vì ý nghĩa đã có cấu trúc **và** các điều khiển đều là tool, chatbot không cào pixel, nó
+gọi hàm. Mỗi nút bên dưới là một tool call thật sự lên biểu đồ (đúng những lệnh gọi mà một
+MCP client như Claude Code sẽ thực hiện):
 
 <InsightsDemo feature="agent" />
 
-Gõ một lệnh - kể cả một lệnh cẩu thả như *"hilight east"* - và biểu đồ sẽ phản hồi. Engine
-**⚡ Instant** định tuyến các từ của bạn tới công cụ của biểu đồ bằng một bộ khớp **chịu
-được lỗi chính tả** (và gợi ý sửa khi nó không chắc chắn: *"did you mean highlight East?"*).
-Chuyển sang **Real model** và chọn một LLM nhỏ chạy ngay trong trình duyệt (**Qwen / Llama
-/ Gemma**) để đọc context của biểu đồ và diễn giải các yêu cầu tự do; nó sẽ quay về bộ khớp
-tức thời nếu không tải được hoặc gặp trục trặc.
+Gõ một lệnh, kể cả lệnh cẩu thả như *"hilight east"*, biểu đồ vẫn phản hồi. Engine
+**⚡ Instant** khớp từ bạn gõ với tool của biểu đồ bằng một bộ so khớp **chịu được lỗi
+chính tả** (và gợi ý sửa khi không chắc: *"did you mean highlight East?"*). Chuyển sang
+**Real model** để chọn một LLM nhỏ chạy ngay trong trình duyệt (**Qwen / Llama / Gemma**),
+đọc context của biểu đồ và diễn giải các yêu cầu tự do; nó tự quay về bộ so khớp tức thời
+nếu không tải được hoặc trục trặc.
 
-Dù theo cách nào, việc *đọc* dữ liệu vẫn chính xác: câu trả lời cho *"chuỗi nào tăng nhiều
-nhất?"* đến thẳng từ `getContext()` có tính xác định (top mover, % thay đổi, tổng) - cùng
-một context mà các tính năng insight sử dụng - nên chỉ có cách diễn đạt là mơ hồ, không
-bao giờ là các con số. Kết nối caller của riêng bạn và agent sẽ nhận được context đó cùng
-với các công cụ:
+Dù chọn cách nào, phần *đọc* dữ liệu vẫn chính xác: câu trả lời cho *"chuỗi nào tăng nhiều
+nhất?"* lấy thẳng từ `getContext()` có tính xác định (top mover, % thay đổi, tổng), cùng
+context mà các tính năng insight đang dùng, nên chỉ cách diễn đạt là mơ hồ, số liệu thì
+không bao giờ sai. Nối caller của riêng bạn vào, agent sẽ nhận context đó cùng các tool:
 
 ```ts
 import { createAgent, chartHandle } from "@michi-vz/insights/agent";
 
 const agent = createAgent({ charts: [chartHandle("sales", chart, props)], llm: myCaller });
 await agent.ask("Highlight North, hide South, and forecast next quarter");
-// the agent reads getContext(), calls highlight / set_disabled / forecast_series, and replies.
+// the agent reads getContext(), calls highlight / set_disabled / sales.forecast, and replies.
 ```
 
-Ô chat ở trên là một ô nhỏ được xây dựng riêng cho tài liệu này. Để có một giao diện chat
-hoàn thiện trong ứng dụng của riêng bạn, **[deep-chat](https://deepchat.dev)** là một web
-component chat không phụ thuộc framework rất đáng dùng - chỉ cần thả nó vào, trỏ nó tới
-LLM của bạn, và trao cho nó cùng `getContext()` và các công cụ. (Xin gửi lời cảm ơn tới đội
-ngũ deep-chat.)
+Ô chat ở trên chỉ là bản nhỏ, làm riêng cho trang tài liệu này. Nếu cần một giao diện chat
+hoàn chỉnh trong app của bạn, **[deep-chat](https://deepchat.dev)** là một web component
+chat không phụ thuộc framework rất đáng dùng: thả vào, trỏ tới LLM của bạn, rồi đưa cho nó
+cùng `getContext()` và các tool đó. (Cảm ơn team deep-chat.)
 
-> Một mô hình có thể sai một cách đầy tự tin và các mô hình khác nhau trả lời khác nhau -
-> vì vậy đừng tin tưởng AI một cách mù quáng. Context và công cụ có cấu trúc là có tính xác
-> định; mô hình phủ bên trên mới là phần cần kiểm chứng.
+> Model có thể sai một cách rất tự tin, và mỗi model trả lời một kiểu, nên đừng tin AI một
+> cách mù quáng. Context và tool có cấu trúc thì có tính xác định; phần model chạy phía
+> trên mới là chỗ cần kiểm chứng.
 
-Các công cụ tương tự được phơi bày qua **MCP** (Model Context Protocol), nên Claude Code,
-Cursor, và Claude Desktop kết nối mà không cần tích hợp tùy chỉnh nào. Danh sách công cụ
-đầy đủ, các resource `michivz://chart/<name>`, và demo registry nằm trong
+Cùng bộ tool đó cũng lộ ra qua **MCP** (Model Context Protocol), nên Claude Code, Cursor,
+và Claude Desktop kết nối được luôn mà không cần tích hợp riêng. Danh sách tool đầy đủ,
+các resource `michivz://chart/<name>`, và demo registry nằm ở
 **[Insights → Agents & MCP](/vi/guide/insights)**.

@@ -6,7 +6,7 @@ description: "Treemap với các ô được vẽ theo kích thước tổng và
 
 <span class="vp-badge tip">Cơ cấu</span>
 
-"Phần nào lớn nhất, và mỗi phần đã đạt được bao nhiêu?" Một treemap trả lời cả hai câu hỏi cùng lúc: mỗi ô được vẽ theo tổng của nó, và một **cách chia hai phần** tùy chọn tô phần đặc bên trong mỗi ô - nhờ đó bạn đọc được cả độ lớn (diện tích) lẫn tiến độ (phần chia) chỉ trong một cái nhìn. Trường hợp kinh điển là tiềm năng xuất khẩu: diện tích ô = tổng tiềm năng, phần đặc = **đã đạt được**, phần nhạt hơn = **chưa khai thác**. Các ô có thể lồng theo nhóm, và trên màn hình hẹp toàn bộ sẽ gấp lại thành một **dạng xếp chồng** một cột dễ đọc.
+"Phần nào lớn nhất, và mỗi phần đã đạt được bao nhiêu?" Một treemap trả lời cả hai câu hỏi cùng lúc: mỗi ô vẽ theo tổng của nó, và một **cách chia hai phần** tùy chọn tô phần đặc bên trong mỗi ô, nhờ vậy bạn đọc được cả độ lớn (diện tích) lẫn tiến độ (phần chia) chỉ trong nháy mắt. Trường hợp kinh điển là tiềm năng xuất khẩu: diện tích ô = tổng tiềm năng, phần đặc = **đã đạt được**, phần nhạt hơn = **chưa khai thác**. Các ô lồng theo nhóm được, và trên màn hình hẹp toàn bộ gấp lại thành **dạng xếp chồng** một cột, dễ đọc.
 
 <ChartDemo chart="treemap-chart" />
 
@@ -15,6 +15,12 @@ Muốn dùng danh sách phẳng (mỗi ô một sản phẩm, mỗi ô một mà
 <ChartDemo chart="treemap-chart" :index="1" />
 
 > Cách chia này mang tính tổng quát. Đặt tên hai phần bằng `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - không có gì trong engine gán cứng một lĩnh vực cụ thể.
+
+## Khi nào nên dùng
+
+- **Bức tranh toàn danh mục.** Hàng trăm sản phẩm, ngành hàng hay khoản mục chi phí trên một màn hình: diện tích là quy mô, phần chia là tiến độ, cả cây phân cấp hiện đủ không cần cuộn trang.
+- **"Nên dồn lực vào đâu?"** Những ô lớn mà phần lớn còn chưa khai thác chính là danh sách cơ hội, khỏi cần sắp xếp: cách đọc kinh điển của tiềm năng xuất khẩu và khảo sát thị trường.
+- **Chỉ có khoảng chục nhóm phẳng?** [Biểu đồ cột](/vi/charts/comparable) hay [biểu đồ tròn](/vi/charts/pie) cho đọc giá trị chính xác nhanh hơn so diện tích ô; treemap phát huy giá trị khi dữ liệu ở quy mô lớn.
 
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 

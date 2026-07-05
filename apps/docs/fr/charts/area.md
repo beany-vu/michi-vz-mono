@@ -12,6 +12,12 @@ Le total augmente, mais quelle part le fait grimper ? Empilez vos catégories et
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **La composition dans le temps quand le total compte aussi.** Les bandes empilées montrent la part de chaque catégorie tandis que le bord supérieur trace la somme - une marée montante et une composition changeante en une seule image.
+- **Les histoires « la répartition change ».** Une part qui s'amincit pendant que le total grossit est un message qu'aucun tableur ne délivre aussi vite - idéal pour les revues de chiffre d'affaires par produit ou de trafic par canal.
+- **Quand les rangs se redistribuent, changez de graphique.** Si l'histoire est de savoir qui a dépassé qui, le [graphique en ruban](/fr/charts/ribbon) rend les échanges explicites ; pour un instant unique, un [camembert](/fr/charts/pie) suffit.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

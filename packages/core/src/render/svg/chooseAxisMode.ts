@@ -61,15 +61,26 @@ function niceNumberSample(domain: string[], nums: number[], count: number): stri
   return [...chosen].sort((a, b) => a - b).map((i) => domain[i]);
 }
 
-function sampleEvenly(domain: string[], bandWidth: number, maxTicks: number): string[] {
+/**
+ * Evenly thin a band domain so each kept tick gets at least `minSlot` px of the
+ * axis. Keeps both endpoints; numeric domains land on round (nice-number) values.
+ * Shared by the x-band fallback (minSlot = estimated tick width) and the y-band
+ * axis (minSlot = a label's line height).
+ */
+export function sampleBandTicks(
+  domain: string[],
+  bandSize: number,
+  minSlot: number,
+  maxTicks: number
+): string[] {
   if (domain.length === 0) return [];
   if (domain.length === 1) return domain;
 
   const first = domain[0];
   const last = domain[domain.length - 1];
 
-  const availableWidth = bandWidth * domain.length;
-  const maxFittingTicks = Math.floor(availableWidth / ESTIMATED_TICK_WIDTH);
+  const availableWidth = bandSize * domain.length;
+  const maxFittingTicks = Math.floor(availableWidth / minSlot);
   const effectiveTicks = Math.max(2, Math.min(maxFittingTicks, maxTicks));
 
   if (effectiveTicks <= 2 || domain.length <= 2) {
@@ -98,6 +109,10 @@ function sampleEvenly(domain: string[], bandWidth: number, maxTicks: number): st
   }
   result.push(last);
   return result;
+}
+
+function sampleEvenly(domain: string[], bandWidth: number, maxTicks: number): string[] {
+  return sampleBandTicks(domain, bandWidth, ESTIMATED_TICK_WIDTH, maxTicks);
 }
 
 export function chooseAxisMode(params: ChooseAxisModeParams): ChooseAxisModeResult {

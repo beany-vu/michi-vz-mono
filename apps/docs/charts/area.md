@@ -12,6 +12,12 @@ The total is growing, but which slice is driving it? Stack your categories and w
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Composition over time when the total matters too.** The stacked bands show each category's share while the top edge traces the sum - a rising tide and a shifting mix in one picture.
+- **"The mix is changing" stories.** A slice that thins while the total grows is a message no spreadsheet delivers as fast - ideal for revenue-by-product or traffic-by-channel reviews.
+- **When ranks reshuffle, switch charts.** If the story is who overtook whom, the [Ribbon chart](/charts/ribbon) makes the swaps explicit; for a single moment in time, a [Pie](/charts/pie) is enough.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

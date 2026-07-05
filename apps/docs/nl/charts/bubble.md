@@ -16,6 +16,12 @@ Geen splitsing nodig? Laat `partial` weg voor een nette proportionele wolk, éé
 
 > Het cluster wordt opgebouwd met [d3-force](https://github.com/d3/d3-force): bellen vallen richting het midden (`gravity`) en duwen elkaar uit elkaar zodat ze nooit overlappen (botsing). De simulatie wordt **synchroon** afgerond, zodat SVG en canvas exact dezelfde, reproduceerbare layout renderen.
 
+## Wanneer kies je deze
+
+- **Omvang in één oogopslag.** Producten, markten, zoekwoorden als een wolk met verschillende groottes - wanneer "welke zijn groot?" meer telt dan een exacte rangschikking, geeft het cluster meteen antwoord.
+- **Kansenkaarten.** Met de splitsing is een grote bel met een dunne gerealiseerde kern geld dat op tafel ligt - de blik waarmee je een portefeuille op onbenut potentieel scant.
+- **Moet positie iets betekenen** (twee numerieke assen, correlatie), dan is een [spreidingsdiagram](/nl/charts/scatter) de juiste keuze; de bellenwolk ruilt positie in voor compactheid.
+
 ## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

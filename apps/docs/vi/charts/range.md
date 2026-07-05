@@ -12,6 +12,12 @@ description: "Biểu đồ khoảng: tô toàn bộ độ trải rộng của m�
 
 > Biểu đồ ở trên là **cùng một engine** trên mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
+## Khi nào nên dùng
+
+- **Khi một đường kẻ đơn lẻ sẽ nói quá mức độ chắc chắn.** Hình nón dự báo, dải bách phân vị 5-95, kịch bản tốt nhất đến xấu nhất: bề rộng của dải chính là câu trả lời trung thực.
+- **So sánh độ biến động giữa các chuỗi.** Một dải rộng nằm cạnh một dải hẹp là lời cảnh báo rủi ro mà không giá trị trung bình nào nói được: biên độ danh mục đầu tư, độ trồi sụt SLA, khoảng nhiệt độ.
+- **Các mức tin cậy lồng nhau quanh một dự báo?** Đó chính là việc [biểu đồ hình quạt](/vi/charts/fan) làm sẵn cho bạn: các dải và đường trung vị trong một lệnh gọi.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

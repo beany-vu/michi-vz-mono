@@ -16,6 +16,11 @@ La variante en anneau n'est qu'une prop plus loin - voici les mêmes parts avec 
 
 > Gardez un nombre de parts faible (≈ 6 ou moins). Pour de nombreuses catégories, une [barre](/fr/charts/comparable) ou un [treemap](/fr/charts/treemap) se lit plus précisément qu'un camembert.
 
+## Quand le choisir
+
+- **Parts pour présentation au conseil.** Une poignée de parts, chacune étiquetée avec son pourcentage : toujours le moyen le plus rapide de montrer « qui prend quelle part du tout » sur une diapositive.
+- **Anneaux de tableau de bord.** Réglez `innerRadiusRatio` et le centre creusé devient un emplacement de choix pour le chiffre phare que le camembert vient appuyer.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>
@@ -29,7 +34,8 @@ function makePie() {
       color: palette[i % palette.length],
     });
   }
-  return { dataSet, showLabels: true, showLegend: true };
+  // Pas de légende ici : 40 pastilles de légende débordent de la carte de démo ; survolez plutôt une part.
+  return { dataSet, showLabels: true, showLegend: false };
 }
 </script>
 

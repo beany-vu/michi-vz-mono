@@ -12,6 +12,12 @@ Quel côté l'emporte, et de combien ? Ancrez deux valeurs opposées à une lign
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Quand l'asymétrie est l'histoire.** Pyramides des âges, importations contre exportations, promoteurs contre détracteurs : deux grandeurs opposées sur une même ligne centrale, et le côté déséquilibré parle en premier.
+- **Documents de synthèse pour dirigeants.** La barre la plus longue et le côté le plus lourd communiquent avant même qu'un seul chiffre soit lu - idéal quand le public a dix secondes.
+- **Si les deux valeurs ne s'opposent pas** (cette année contre l'an dernier, cible contre réel), gardez les deux du même côté de zéro avec une [barre comparable](/fr/charts/comparable).
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

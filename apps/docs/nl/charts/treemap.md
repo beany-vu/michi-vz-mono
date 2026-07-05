@@ -16,6 +16,12 @@ Liever een platte lijst (één tegel per product, elk zijn eigen kleur - de klas
 
 > De splitsing is generiek. Benoem de twee delen met `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - niets in de engine legt een domein hard vast.
 
+## Wanneer kies je deze
+
+- **Portefeuilleoverzichten.** Honderden producten, sectoren of kostenplaatsen op één scherm: oppervlakte is grootte, de splitsing is voortgang, en de hele hiërarchie past zonder scrollen.
+- **"Waar moeten we ons op focussen?"** De grote, grotendeels onbenutte tegels vormen de kansenlijst, zonder dat er gesorteerd hoeft te worden - de klassieke lezing voor exportpotentieel en marktscans.
+- **Een dozijn platte categorieën of minder?** Een [staafdiagram](/nl/charts/comparable) of [cirkeldiagram](/nl/charts/pie) leest exacte waarden sneller af dan tegeloppervlaktes; de treemap verdient haar plek pas op schaal.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

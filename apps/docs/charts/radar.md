@@ -12,6 +12,12 @@ Which option wins, and where? Lay a few candidates over the same set of criteria
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Scorecards.** Vendor evaluations, candidate assessments, product benchmarks: a few options over the same criteria, each a polygon whose spikes and dents are its strengths and weaknesses.
+- **Balance vs specialisation.** A rounder polygon is the all-rounder; a spiky one bets everything on two axes. That shape story is what tables cannot tell.
+- **Keep it to a few entities and 5-12 axes.** For a precise comparison on one criterion, a [Comparable bar](/charts/comparable) reads exact values; the radar reads profiles.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

@@ -12,6 +12,12 @@ How far apart are the two numbers that matter? Plot before and after, target and
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Target vs actual, before vs after, forecast vs outturn.** Two values per row where the distance between them is the headline - the gap bar IS the finding.
+- **Ranking by gap.** Sort the rows and the biggest wins (or worst misses) surface instantly - built for the Monday-morning review of who closed their gap.
+- **If the absolute sizes matter more than the difference**, side-by-side sub-bars on a [Comparable bar](/charts/comparable) keep both magnitudes readable.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

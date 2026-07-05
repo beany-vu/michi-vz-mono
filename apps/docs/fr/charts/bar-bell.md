@@ -12,6 +12,12 @@ Comment un total cumulé s'accumule-t-il, morceau par morceau ? Chaque ligne dis
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Entonnoirs et cumuls progressifs.** Comment les parties s'additionnent jusqu'à un total, ligne par ligne, avec un embout marquant chaque étape - étapes de pipeline, cumuls de coûts, accumulations de kilométrage.
+- **Deux publics, une seule ligne.** L'analyste lit la contribution de chaque segment sur les embouts ; le dirigeant lit la portée finale à l'extrémité de la ligne. Personne n'a besoin d'un second graphique.
+- **Si comparer le même segment entre les lignes compte plus que le total cumulé de chaque ligne**, les [barres empilées verticales](/fr/charts/vertical-stack-bar) alignent les segments pour vous.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

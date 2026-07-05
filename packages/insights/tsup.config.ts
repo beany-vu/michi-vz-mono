@@ -1,6 +1,10 @@
 import { defineConfig } from "tsup";
+import pkg from "./package.json";
 
 export default defineConfig({
+  // Stamp the root `version` export from package.json so it can never drift
+  // from the published version.
+  define: { __MICHI_VZ_INSIGHTS_VERSION__: JSON.stringify(pkg.version) },
   entry: [
     "src/index.ts",
     "src/forecast/index.ts",

@@ -12,6 +12,12 @@ Bên nào thắng, và thắng bao nhiêu? Neo hai giá trị đối lập vào 
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
+## Khi nào nên dùng
+
+- **Khi sự bất cân xứng chính là câu chuyện.** Tháp dân số, nhập khẩu và xuất khẩu, người ủng hộ và người phản đối: hai đại lượng đối nhau trên một trục giữa, bên nào lệch là thấy ngay.
+- **Báo cáo một trang cho lãnh đạo.** Thanh dài nhất và bên nặng hơn truyền đạt thông điệp trước cả khi người xem kịp đọc một con số: lý tưởng khi bạn chỉ có mười giây chú ý.
+- **Nếu hai giá trị không đối nghịch nhau** (năm nay và năm ngoái, mục tiêu và thực tế), hãy giữ cả hai cùng một phía của trục 0 bằng [biểu đồ cột so sánh](/vi/charts/comparable).
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

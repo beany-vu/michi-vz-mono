@@ -12,6 +12,12 @@ Het totaal groeit, maar welk deel is daarvan de drijvende kracht? Stapel je cate
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Samenstelling in de tijd, wanneer het totaal ook telt.** De gestapelde banden tonen het aandeel van elke categorie terwijl de bovenrand de som traceert - een stijgend totaal en een verschuivende mix in één beeld.
+- **"De mix verandert"-verhalen.** Een segment dat dunner wordt terwijl het totaal groeit, is een boodschap die geen spreadsheet zo snel overbrengt - ideaal voor overzichten van omzet per product of verkeer per kanaal.
+- **Wisselen de rangordes, wissel dan van grafiek.** Als het verhaal is wie wie inhaalde, maakt het [lintdiagram](/nl/charts/ribbon) die wissels expliciet; voor één enkel moment in de tijd volstaat een [cirkeldiagram](/nl/charts/pie).
+
 ## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

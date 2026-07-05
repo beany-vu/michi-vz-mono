@@ -71,7 +71,7 @@ Returns an MCP (JSON-RPC) server.
 
 ### Tools
 
-Every registered chart exposes `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, and `set_data`, plus any plugin tools. Each chart context is also readable as a `michivz://chart/<name>` resource.
+The registry exposes `list_charts`, and every registered chart exposes `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, and `set_data`, plus any plugin tools namespaced by chart name (a chart registered as `revenue` with the forecast plugin exposes `revenue.forecast`). Each chart context is also readable as a `michivz://chart/<name>` resource.
 
 ## Example
 

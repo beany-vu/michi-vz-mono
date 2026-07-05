@@ -12,6 +12,12 @@ Ai đang tăng và ai đang tụt? Khi thị phần, phân bổ ngân sách, ho�
 
 > Biểu đồ ở trên là **cùng một engine** trên mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
+## Khi nào nên dùng
+
+- **Thị phần, phân bổ ngân sách, bảng xếp hạng.** Khi các nhóm đổi chỗ nhau qua từng kỳ, các dải nối khiến "ai vượt ai, và khi nào" trở thành điều đập vào mắt người đọc trước tiên.
+- **Trình bày các cú đổi ngôi cho người làm kinh doanh.** Mỗi nhóm giữ nguyên màu khi phình ra, co lại và hoán đổi thứ hạng, nên mắt người xem theo được một "đối thủ" xuyên suốt câu chuyện.
+- **Nếu chẳng có ai đổi chỗ ai**, các dải chạy song song và [biểu đồ vùng](/vi/charts/area) kể cùng câu chuyện tỷ trọng với ít nét vẽ hơn.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

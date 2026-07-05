@@ -37,10 +37,16 @@ Quatre choses deviennent possibles dès qu'un graphique porte son propre sens st
 
 ### Lire et piloter des graphiques depuis un assistant IA
 
-C'est la fonctionnalité phare. Parce que chaque graphique expose son sens (`ChartContext`)
-**et** ses commandes comme des **outils**, un assistant IA peut le résumer, le filtrer, mettre
-une série en évidence, ou le prévoir - par des appels de fonction, pas en extrayant des
-pixels. Essayez les boutons (chacun est un véritable appel d'outil) :
+C'est la fonctionnalité phare. Imaginez la revue de tableau de bord du lundi matin : quelqu'un
+demande *« quelle région est en train de décrocher ? »* et un assistant répond en quelques
+secondes - non pas en scrutant des pixels, mais en appelant `get_chart_context`, en lisant le
+même résumé structuré que le graphique porte déjà, en repérant la série dont la tendance s'est
+retournée, et en appelant `highlight` pour que tout le monde la voie. Des appels de fonction,
+pas des captures d'écran. Chaque graphique michi-vz expose son sens (`ChartContext`) **et** ses
+commandes comme des **outils**, et ces outils parlent **MCP** (Model Context Protocol) - de
+sorte que **Claude Code, Codex, Cursor et Claude Desktop** pilotent vos graphiques en direct
+sans aucune intégration personnalisée. Essayez les boutons (chacun est un véritable appel
+d'outil) :
 
 <InsightsDemo feature="agent" />
 
@@ -51,9 +57,9 @@ const agent = createAgent({ charts: [chartHandle("revenue", chart, props)], llm:
 await agent.ask("Filter to the top 5 and forecast next quarter");
 ```
 
-Les mêmes outils sont exposés via **MCP** (Model Context Protocol), de sorte que **Claude
-Code, Codex, Cursor et Claude Desktop** se connectent sans aucune intégration
-personnalisée - voir **Agents & MCP** dans la référence ci-dessous.
+La connecter tient en un seul appel au registre par graphique - le serveur MCP, la liste
+complète des outils, et les ressources `michivz://chart/<name>` se trouvent dans **Agents &
+MCP** dans la référence ci-dessous.
 
 ### Prédire l'avenir
 
@@ -771,11 +777,12 @@ registry.register(chartHandle("revenue", chart, props));
 createMcpServer(registry, stdioTransport(), { name: "michi-vz" });
 ```
 
-Outils : `get_chart_context`, `summarize_chart`, `list_series`, `forecast_series`,
-`detect_threshold_breach`, `set_filter`, `highlight`, `set_disabled`, `set_data`. Le contexte de
-chaque graphique est aussi une ressource lisible `michivz://chart/<name>`. Un
-`messagePortTransport` fait le pont avec les graphiques d'une application web en cours
-d'exécution.
+Outils : `list_charts`, `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`,
+`highlight`, `set_disabled`, `set_data` - plus un outil par plugin de graphique, nommé dans son
+propre espace de noms (un graphique enregistré sous `revenue` avec le plugin forecast expose
+`revenue.forecast`). Le contexte de chaque graphique est aussi une ressource lisible
+`michivz://chart/<name>`. Un `messagePortTransport` fait le pont avec les graphiques d'une
+application web en cours d'exécution.
 
 ---
 

@@ -12,6 +12,12 @@ description: "Graphique d'écart : tracez deux valeurs par étiquette (avant et 
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Cible contre réel, avant contre après, prévision contre résultat.** Deux valeurs par ligne où la distance entre elles est le message principal - la barre d'écart EST la conclusion.
+- **Classer par écart.** Triez les lignes et les plus belles réussites (ou les pires échecs) ressortent instantanément - conçu pour la revue du lundi matin : qui a comblé son écart ?
+- **Si les valeurs absolues comptent plus que la différence**, des sous-barres côte à côte sur une [barre comparable](/fr/charts/comparable) gardent les deux grandeurs lisibles.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

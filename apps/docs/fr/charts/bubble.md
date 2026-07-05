@@ -16,6 +16,12 @@ Pas besoin de division ? Retirez `partial` pour un nuage proportionnel épuré, 
 
 > La grappe est disposée avec [d3-force](https://github.com/d3/d3-force) : les bulles tombent vers le centre (`gravity`) et se repoussent pour ne jamais se chevaucher (collision). La simulation est stabilisée **de manière synchrone**, pour que le SVG et le canvas affichent la même disposition identique et reproductible.
 
+## Quand le choisir
+
+- **L'ampleur en un coup d'œil.** Produits, marchés, mots-clés sous forme de nuage dimensionné - quand « lesquels sont grands ? » compte plus qu'un classement exact, la grappe répond instantanément.
+- **Cartes d'opportunités.** Avec la division, une grosse bulle au noyau réalisé fin est de l'argent laissé sur la table - la vue de repérage du potentiel pour les revues de portefeuille.
+- **Si la position doit signifier quelque chose** (deux axes numériques, une corrélation), c'est un [nuage de points](/fr/charts/scatter) qu'il vous faut ; le nuage de bulles échange la position contre la compacité.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

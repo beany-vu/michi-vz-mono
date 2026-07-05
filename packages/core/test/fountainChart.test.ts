@@ -248,3 +248,38 @@ describe("mountFountainChart (jsdom)", () => {
     host.remove();
   });
 });
+
+describe("snapshot-mode band axis thinning", () => {
+  it("thins a dense category axis to a readable subset keeping both endpoints", () => {
+    const many: FountainDataItem[] = Array.from({ length: 200 }, (_, i) => ({
+      label: `Jet ${i + 1}`,
+      value: 40 + (i % 30),
+      spread: 5,
+    }));
+    const { host, chart } = mount(many, { width: 700 });
+    const texts = Array.from(host.querySelectorAll(".mv-x-axis-band text")).map(
+      (t) => t.textContent ?? ""
+    );
+    expect(texts.length).toBeGreaterThanOrEqual(2);
+    expect(texts.length).toBeLessThan(40);
+    expect(texts).toContain("Jet 1");
+    expect(texts).toContain("Jet 200");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("keeps every label when the categories fit", () => {
+    const few: FountainDataItem[] = Array.from({ length: 4 }, (_, i) => ({
+      label: `J${i + 1}`,
+      value: 40 + i,
+      spread: 5,
+    }));
+    const { host, chart } = mount(few, { width: 700 });
+    const texts = Array.from(host.querySelectorAll(".mv-x-axis-band text")).map(
+      (t) => t.textContent ?? ""
+    );
+    expect(texts).toEqual(["J1", "J2", "J3", "J4"]);
+    chart.destroy();
+    host.remove();
+  });
+});

@@ -16,6 +16,11 @@ The donut variant is one prop away - here the same shares with `innerRadiusRatio
 
 > Keep slice counts low (≈ 6 or fewer). For many categories, a [bar](/charts/comparable) or [treemap](/charts/treemap) reads more precisely than a pie.
 
+## When to reach for it
+
+- **Board-deck shares.** A handful of slices, each labelled with its percentage: still the fastest "who takes what share of the whole" a slide can carry.
+- **Dashboard donuts.** Set `innerRadiusRatio` and the carved-out centre becomes prime real estate for the headline number the pie is proving.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>
@@ -29,7 +34,8 @@ function makePie() {
       color: palette[i % palette.length],
     });
   }
-  return { dataSet, showLabels: true, showLegend: true };
+  // No legend here: 40 legend pills overflow the demo card; hover a slice instead.
+  return { dataSet, showLabels: true, showLegend: false };
 }
 </script>
 

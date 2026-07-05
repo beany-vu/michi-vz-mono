@@ -12,6 +12,12 @@ Hoe bouwt een lopend totaal zich op, stap voor stap? Elke rij plaatst zijn onder
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Trechters en cumulatieve opbouw.** Hoe de onderdelen zich rij voor rij opstapelen tot een totaal, met een eindkap die elke stap markeert - pijplijnfases, kostenopbouw, kilometeropbouw.
+- **Twee doelgroepen, één rij.** De analist leest de bijdrage van elk segment af aan de kappen; de directie leest het uiteindelijke bereik af aan het einde van de rij. Niemand heeft een tweede grafiek nodig.
+- **Weegt het vergelijken van hetzelfde segment tussen rijen zwaarder dan het lopende totaal van elke rij**, dan zet het [verticale gestapelde staafdiagram](/nl/charts/vertical-stack-bar) de segmenten voor je op één lijn.
+
 ## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

@@ -12,6 +12,12 @@ Beweegt meer van X écht Y, of jaag je een toeval na? Plot je punten en de trend
 
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Een hypothese testen.** Beweegt uitgavenbudget de conversie? Beweegt anciënniteit het verloop? De wolk, de trend en de uitschieters geven in één oogopslag antwoord, en `getContext()` levert je de Pearson-r die je in het rapport kunt citeren.
+- **Segmenten vinden voordat het gemiddelde ze verbergt.** Clusters en uitschieters springen er in een spreidingsdiagram veel eerder uit dan in een samenvattende tabel - de eerste blik van elke analist op een nieuwe dataset.
+- **Is één as tijd, gebruik dan een [lijndiagram](/nl/charts/line)** - een spreidingsdiagram behandelt tijd als zomaar een getal en verliest de leesvolgorde die je publiek verwacht.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

@@ -73,9 +73,11 @@ Retourneert een MCP-(JSON-RPC-)server.
 
 ### Tools
 
-Elke geregistreerde grafiek stelt `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`,
-`highlight`, `set_disabled`, en `set_data` beschikbaar, plus eventuele plugin-tools. Elke grafiekcontext
-is ook leesbaar als een `michivz://chart/<name>`-resource.
+Het register stelt `list_charts` beschikbaar, en elke geregistreerde grafiek stelt `get_chart_context`,
+`summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, en `set_data` beschikbaar,
+plus eventuele plugin-tools met de grafieknaam als voorvoegsel (een grafiek die geregistreerd is als
+`revenue` met de forecast-plugin stelt `revenue.forecast` beschikbaar). Elke grafiekcontext is ook
+leesbaar als een `michivz://chart/<name>`-resource.
 
 ## Voorbeeld
 

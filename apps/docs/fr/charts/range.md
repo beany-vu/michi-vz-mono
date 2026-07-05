@@ -12,6 +12,12 @@ description: "Graphique d'étendue : colore toute la dispersion par série (meil
 
 > Le graphique ci-dessus utilise le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Chaque fois qu'une ligne unique exagérerait votre certitude.** Cônes de prévision, bandes du 5e au 95e percentile, scénarios du meilleur au pire cas : la largeur de la bande est la réponse honnête.
+- **Comparer la volatilité entre séries.** Une bande large à côté d'une bande étroite est un message sur le risque qu'aucune moyenne ne transmet - écarts de portefeuille, gigue de SLA, plages de température.
+- **Des niveaux de confiance imbriqués autour d'une seule prévision ?** C'est exactement ce que le [graphique en éventail](/fr/charts/fan) compose pour vous, bandes et médiane en un seul appel.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

@@ -12,6 +12,12 @@ How does a running total stack up, piece by piece? Each row lays its parts end t
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
+## When to reach for it
+
+- **Funnels and cumulative build-ups.** How the parts stack to a total, row by row, with an end-cap marking every step - pipeline stages, cost build-ups, mileage accumulations.
+- **Two audiences, one row.** The analyst reads each segment's contribution off the caps; the exec reads the final reach off the row's end. Nobody needs a second chart.
+- **If comparing the same segment across rows matters more than each row's running total**, the [Vertical Stack Bar](/charts/vertical-stack-bar) lines the segments up for you.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

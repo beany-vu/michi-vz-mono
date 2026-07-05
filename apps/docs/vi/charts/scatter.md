@@ -1,16 +1,22 @@
 ---
 title: Biểu đồ phân tán
-description: "Biểu đồ phân tán cho thấy xu hướng, cụm và giá trị ngoại lai chỉ trong một cái nhìn; kích thước bong bóng mang biến thứ ba và hệ số tương quan Pearson được trả về trong getContext()."
+description: "Biểu đồ phân tán cho thấy xu hướng, cụm và giá trị ngoại lai chỉ trong nháy mắt; kích thước bong bóng mang biến thứ ba và hệ số tương quan Pearson được trả về trong getContext()."
 ---
 # Biểu đồ phân tán
 
 <span class="vp-badge tip">Tương quan</span>
 
-Nhiều X có thực sự làm thay đổi Y, hay bạn chỉ đang đuổi theo một sự trùng hợp? Vẽ các điểm của bạn và xu hướng, các cụm, cùng các giá trị ngoại lai đều hiện ra chỉ trong một cái nhìn, với kích thước bong bóng mang thêm một biến thứ ba miễn phí. Hệ số tương quan Pearson được trả về trong getContext(), nên bạn có thể trích dẫn con số thay vì phải nheo mắt nhìn đám mây điểm.
+Nhiều X có thực sự làm thay đổi Y, hay bạn chỉ đang đuổi theo một sự trùng hợp? Vẽ các điểm của bạn ra, xu hướng, các cụm, cùng giá trị ngoại lai đều hiện chỉ trong nháy mắt, với kích thước bong bóng mang thêm một biến thứ ba miễn phí. Hệ số tương quan Pearson được trả về trong getContext(), nên bạn trích dẫn con số được luôn, khỏi cần nheo mắt nhìn đám mây điểm.
 
 <ChartDemo chart="scatter-chart" />
 
 > Biểu đồ ở trên là **cùng một engine** trên mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
+
+## Khi nào nên dùng
+
+- **Kiểm chứng một giả thuyết.** Chi tiêu có kéo tỷ lệ chuyển đổi lên không? Thâm niên có ảnh hưởng đến tỷ lệ rời bỏ không? Nhìn vào đám mây điểm là thấy ngay xu hướng, cụm và điểm ngoại lai, còn `getContext()` đưa sẵn hệ số tương quan Pearson để bạn trích vào báo cáo.
+- **Tìm ra các phân khúc trước khi giá trị trung bình che mất chúng.** Cụm điểm và điểm ngoại lai lộ rõ trên biểu đồ phân tán từ rất lâu trước khi chúng kịp xuất hiện trong bảng tổng hợp: đây là cái nhìn đầu tiên nhà phân tích dành cho mọi bộ dữ liệu mới.
+- **Nếu một trục là thời gian, hãy dùng [biểu đồ đường](/vi/charts/line)**: biểu đồ phân tán coi thời gian như một con số bình thường, làm mất trật tự đọc mà người xem mong đợi.
 
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 

@@ -12,6 +12,12 @@ description: "Sankey-diagram voor stromen: knopen ingedeeld in kolommen waarbij 
 
 > De lay-out wordt berekend met [d3-sankey](https://github.com/d3/d3-sankey): knopen worden op basis van de grafiektopologie aan kolommen toegewezen, verticaal gepakt, en verbindingen worden getekend als vloeiende horizontale banden. Hover over een knoop of een stroom voor de bijbehorende cijfers.
 
+## Wanneer kies je deze
+
+- **Stromen met structuur.** Handel tussen exporteurs en markten, budget van bronnen naar bestemmingen, gebruikers door een trechter: waar hoeveelheden vandaan komen, waar ze naartoe gaan, wat opsplitst en weer samenkomt.
+- **Het dominante pad en de lekken vinden.** Banddikte is de waarde, dus de dikke routes en de dunne verliezen lees je meteen af - het auditoverzicht van elk systeem.
+- **Slechts één fase?** Als er niets *doorheen* stroomt, rangschikt een [staafdiagram](/nl/charts/comparable) bronnen overzichtelijker dan een Sankey met twee kolommen.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

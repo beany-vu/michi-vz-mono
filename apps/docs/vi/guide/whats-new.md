@@ -1,71 +1,70 @@
 # Có gì mới
 
-Các bản phát hành `@michi-vz` mới nhất, mới nhất trước tiên. Cả sáu gói -
+Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu. Cả sáu package -
 [core](https://www.npmjs.com/package/@michi-vz/core),
 [wc](https://www.npmjs.com/package/@michi-vz/wc),
 [react](https://www.npmjs.com/package/@michi-vz/react),
 [vue](https://www.npmjs.com/package/@michi-vz/vue),
 [svelte](https://www.npmjs.com/package/@michi-vz/svelte),
-[angular](https://www.npmjs.com/package/@michi-vz/angular) - đánh số phiên bản cùng nhau
-(mỗi bản phát hành liệt kê gói nào đã tiến xa hơn). Chi tiết theo từng commit đầy đủ nằm
-trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
+[angular](https://www.npmjs.com/package/@michi-vz/angular) - đều đánh version cùng nhau
+(mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
+đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
 ## v1.6.0
 
 Phiên bản gói: react **1.6.0** · devtools **0.2.0** · insights **0.2.0** · core, wc, vue,
 svelte, angular **1.5.2**.
 
-- **DevTools 0.2.0: nút bật/tắt lá chắn Michi.** Việc mount devtools không còn che phủ
-  ứng dụng của bạn nữa - nó bắt đầu như một lá chắn nổi nhỏ (huy hiệu của thư viện). Nhấp
-  vào đó, hoặc nhấn `Ctrl/Cmd+Shift+M`, để mở bảng điều khiển; trạng thái mở/đóng được ghi
-  nhớ theo từng trình duyệt, nên tải lại trang sẽ trở về đúng như bạn đã để lại. Góc màn
-  hình đã bị một widget nổi khác chiếm? **Kéo lá chắn tới bất kỳ đâu** - vị trí đó cũng
-  được ghi nhớ, và tùy chọn `buttonPosition` mới chọn góc bắt đầu. Handle có thêm
-  `isOpen()`, và `<MichiVzDevtools />` (react 1.6.0) truyền `buttonPosition` xuống. Xem
+- **DevTools 0.2.0: nút bật/tắt lá chắn Michi.** Mount devtools giờ không còn che app của
+  bạn nữa, nó chỉ bắt đầu như một lá chắn nổi nhỏ (huy hiệu của thư viện). Nhấp vào đó,
+  hoặc nhấn `Ctrl/Cmd+Shift+M`, để mở bảng điều khiển; trạng thái mở/đóng tự nhớ theo từng
+  trình duyệt, nên tải lại trang thì mọi thứ vẫn y nguyên như bạn để lại. Góc màn hình đã
+  bị một widget nổi khác chiếm mất? Cứ **kéo lá chắn đi bất kỳ đâu**, vị trí đó cũng được
+  nhớ, và tùy chọn `buttonPosition` mới sẽ chọn góc khởi đầu. Handle có thêm `isOpen()`, và
+  `<MichiVzDevtools />` (react 1.6.0) truyền `buttonPosition` xuống. Xem
   [DevTools](/vi/guide/devtools).
-- **Insights 0.2.0: liên kết đa tập dữ liệu bằng `matchLabels()`.** Liên kết cùng một thực
-  thể trên hai danh sách được viết khác nhau (một tệp xuất từ CRM so với một tệp xuất từ
-  ERP) để hai tập dữ liệu trở thành một biểu đồ đã nối. Mặc định khớp tốt nhất theo cả hai
-  chiều (mutual best match), có ngưỡng biên độ tin cậy, các hàng không khớp được trả về
-  kèm gợi ý "có phải bạn muốn nói". Cơ chế băm không cần mô hình hoạt động ngoại tuyến;
-  backend MiniLM còn liên kết cả từ đồng nghĩa, từ viết tắt, và bản dịch. Hãy thử bản demo
-  trực tiếp [MatchLab](/vi/guide/insights#clean-match-and-search-your-data).
-- **Core 1.5.2: các bản sửa hiệu năng cho trang nặng.** Cơ chế bảo vệ tính bất biến
-  (idempotency) của `onChartDataProcessed` giờ ký các context bằng một hàm băm FNV-1a có
-  giới hạn thay vì chuyển toàn bộ dữ liệu từng hàng thành chuỗi (một chuỗi nhiều MB mỗi
-  lần render với 50 nghìn điểm dữ liệu), và việc hover trên scatter canvas/WebGPU gộp mọi
-  đợt trỏ chuột dồn dập trong một khung hình thành một lượt `requestAnimationFrame` cuối
-  cùng duy nhất. Các dashboard lớn vẫn phản hồi nhanh mà không cần cấu hình gì thêm.
-- **Tài liệu, nay có bốn ngôn ngữ.** Trang web nói tiếng Anh, tiếng Pháp, tiếng Hà Lan và
-  tiếng Việt, với bộ chuyển ngôn ngữ trên thanh điều hướng - mọi trang hướng dẫn, biểu đồ và API
-  đều được dịch. Rất hoan nghênh đóng góp cho bản dịch; xem liên kết **Giúp dịch thuật** ở chân
-  trang.
-- **Trang chủ sắc nét hơn.** Trang chủ giờ dẫn dắt bằng câu chuyện DevTools và bốn trụ cột bằng
-  ngôn ngữ tự nhiên - kiểm tra mọi thứ, biểu đồ mà máy đọc được, mặc định dễ tiếp cận, và chạy
-  cục bộ. Chân trang mới mời bạn gắn sao cho kho mã, tham gia cộng đồng, đóng góp và giúp dịch
-  thuật. Lá chắn Michi là favicon của trang web và nằm cạnh tiêu đề thanh điều hướng, và mỗi
-  trang đều có mô tả riêng và thẻ chia sẻ mạng xã hội riêng.
+- **Insights 0.2.0: nối nhiều dataset bằng `matchLabels()`.** Nối cùng một thực thể trên
+  hai danh sách viết khác nhau (một file xuất từ CRM so với một file xuất từ ERP) để hai
+  dataset gộp lại thành một biểu đồ. Mặc định khớp tốt nhất theo cả hai chiều (mutual best
+  match), có ngưỡng biên độ tin cậy, hàng nào không khớp thì trả về kèm gợi ý "có phải bạn
+  muốn nói". Cơ chế hash không cần model chạy được offline; backend MiniLM còn nối được cả
+  từ đồng nghĩa, từ viết tắt, và bản dịch. Thử ngay bản demo trực tiếp
+  [MatchLab](/vi/guide/insights#clean-match-and-search-your-data).
+- **Core 1.5.2: vá hiệu năng cho trang nặng.** Cơ chế bảo vệ tính bất biến (idempotency)
+  của `onChartDataProcessed` giờ ký context bằng một hàm hash FNV-1a có giới hạn, thay vì
+  stringify từng hàng dữ liệu (một chuỗi nhiều MB mỗi lần render với 50 nghìn điểm), và
+  hover trên scatter canvas/WebGPU gộp mọi đợt trỏ chuột dồn dập trong một khung hình
+  thành đúng một lượt `requestAnimationFrame` cuối. Dashboard lớn vẫn phản hồi nhanh, chẳng
+  cần cấu hình gì thêm.
+- **Tài liệu, giờ có bốn ngôn ngữ.** Trang web có bản tiếng Anh, tiếng Pháp, tiếng Hà Lan
+  và tiếng Việt, với bộ chuyển ngôn ngữ trên thanh điều hướng; mọi trang hướng dẫn, biểu đồ
+  và API đều đã dịch. Rất hoan nghênh đóng góp bản dịch; xem link **Giúp dịch thuật** ở
+  chân trang.
+- **Trang chủ sắc nét hơn.** Trang chủ giờ mở đầu bằng câu chuyện DevTools và bốn trụ cột
+  viết bằng ngôn ngữ tự nhiên: kiểm tra mọi thứ, biểu đồ máy đọc được, dễ tiếp cận sẵn theo
+  mặc định, và chạy local. Chân trang mới mời bạn star repo, tham gia cộng đồng, đóng góp,
+  và giúp dịch thuật. Lá chắn Michi giờ là favicon của trang web, nằm cạnh tiêu đề thanh
+  điều hướng, và mỗi trang đều có mô tả riêng cùng thẻ chia sẻ mạng xã hội riêng.
 
 ## v1.5.0
 
-- **DevTools đã có mặt: `@michi-vz/devtools` 0.1.0, bản phát hành công khai đầu tiên.**
-  Một bảng điều khiển ngay trong trang (không cần tiện ích mở rộng trình duyệt) kiểm tra
-  trạng thái trực tiếp của mọi biểu đồ qua tám tab - Overview (với chỉnh sửa trực tiếp +
-  **Reset chart**), Sizing, Scales, Diff, Hit-test, Profiler, Insights, và một tab kiểm
-  toán A11y. Cách ly bằng Shadow DOM, có thể thay đổi kích thước, sáng + tối, mặc định chỉ
-  dành cho môi trường phát triển với một điểm vào `/production` vô hại, và một dòng React
-  duy nhất: `<MichiVzDevtools />`. Xem [DevTools](/vi/guide/devtools).
-- **Insights 0.1.0: AI minh bạch và ưu tiên cục bộ.**
+- **DevTools ra mắt: `@michi-vz/devtools` 0.1.0, bản phát hành công khai đầu tiên.** Một
+  bảng điều khiển ngay trong trang (không cần extension trình duyệt) soi state sống của
+  mọi biểu đồ qua tám tab: Overview (sửa trực tiếp + **Reset chart**), Sizing, Scales,
+  Diff, Hit-test, Profiler, Insights, và một tab audit A11y. Cách ly bằng Shadow DOM, đổi
+  kích thước được, sáng + tối, mặc định chỉ chạy ở môi trường dev với entry point
+  `/production` vô hại, và chỉ một dòng React: `<MichiVzDevtools />`. Xem
+  [DevTools](/vi/guide/devtools).
+- **Insights 0.1.0: AI minh bạch, ưu tiên local.**
   [Phương pháp luận](/vi/guide/insights#methodology---the-exact-logic-behind-every-insight)
-  giờ trình bày chi tiết logic chính xác đằng sau mỗi insight; `describeModelSource()` nêu
-  rõ một backend mô hình sẽ tải gì và từ đâu **trước khi** bất cứ thứ gì được tải;
-  `modelSource` chuyển hướng việc tải xuống tới một máy chủ nhân bản hoặc các tệp tự lưu
-  trữ (hoặc cấm hoàn toàn); và `ollamaCaller` / `openaiCompatCaller` kết nối một AI cục bộ
-  (Ollama, LM Studio, llama.cpp) chỉ trong một dòng lệnh mà không cần tải xuống gì cả. Kết
-  quả phát hiện bất thường giờ mang theo phương pháp, ngưỡng, và một lời giải thích bằng
-  ngôn ngữ thuần túy.
-- **Core:** hook devtools có thêm các kênh hit-test tần suất cao và đo thời gian render
-  (không tốn chi phí gì khi devtools tắt).
+  giờ trình bày chi tiết logic đằng sau mỗi insight; `describeModelSource()` nói rõ một
+  model backend sẽ tải gì, từ đâu, **trước khi** tải bất cứ thứ gì; `modelSource` chuyển
+  hướng việc tải sang mirror hoặc file tự self-host (hay cấm hẳn); và `ollamaCaller` /
+  `openaiCompatCaller` nối một AI chạy local (Ollama, LM Studio, llama.cpp) chỉ với một
+  dòng lệnh, không tải gì cả. Kết quả phát hiện bất thường giờ kèm cả phương pháp, ngưỡng,
+  và một lời giải thích bằng ngôn ngữ thuần.
+- **Core:** hook devtools có thêm kênh hit-test tần suất cao và đo thời gian render (không
+  tốn chi phí gì khi devtools tắt).
 
 ## v1.4.0
 

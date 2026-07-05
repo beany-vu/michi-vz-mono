@@ -2,7 +2,11 @@
 // Each capability is also its own tree-shakeable sub-path ("@michi-vz/insights/forecast",
 // "/anomaly", "/validate", "/agent", "/mcp"); this root re-exports the lightweight,
 // model-free pieces for convenience. The Node MCP server stays at "/mcp" only.
-export const version = "0.1.0";
+declare const __MICHI_VZ_INSIGHTS_VERSION__: string | undefined;
+// Stamped from package.json by tsup at build time; the dev fallback only shows
+// for direct-from-src consumers (vitest, the docs dev server).
+export const version: string =
+  typeof __MICHI_VZ_INSIGHTS_VERSION__ === "string" ? __MICHI_VZ_INSIGHTS_VERSION__ : "0.0.0-dev";
 
 // ---- Forecasting + simulation ----
 export {

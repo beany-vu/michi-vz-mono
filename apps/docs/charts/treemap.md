@@ -16,6 +16,12 @@ Prefer a flat list (one tile per product, each its own colour - the classic expo
 
 > The split is generic. Name the two parts with `splitLabels` - `["Realized", "Untapped"]`, `["Used", "Free"]`, `["Done", "Remaining"]` - nothing in the engine hardcodes a domain.
 
+## When to reach for it
+
+- **Portfolio views.** Hundreds of products, sectors or cost centres on one screen: area is size, the split is progress, and the whole hierarchy fits without scrolling.
+- **"Where should we focus?"** The big, mostly-untapped tiles are the opportunity list, no sorting required - the classic export-potential and market-scan read.
+- **A dozen flat categories or fewer?** A [bar](/charts/comparable) or [Pie](/charts/pie) reads exact values faster than tile areas; the treemap earns its place at scale.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

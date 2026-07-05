@@ -69,7 +69,7 @@ import { createAgent, chartHandle } from "@michi-vz/insights/agent";
 
 const agent = createAgent({ charts: [chartHandle("sales", chart, props)], llm: myCaller });
 await agent.ask("Highlight North, hide South, and forecast next quarter");
-// the agent reads getContext(), calls highlight / set_disabled / forecast_series, and replies.
+// the agent reads getContext(), calls highlight / set_disabled / sales.forecast, and replies.
 ```
 
 Het chatinvoerveld hierboven is een klein exemplaar dat speciaal voor deze docs gebouwd is. Voor een gepolijste

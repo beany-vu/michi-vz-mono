@@ -6,7 +6,7 @@ description: "Biểu đồ cột chồng dọc cho cơ cấu qua các danh mục
 
 <span class="vp-badge tip">Cơ cấu</span>
 
-"Mỗi danh mục được cấu thành từ gì, và cơ cấu đó thay đổi ra sao qua các danh mục?" Xếp chồng các phần trong một cột cho mỗi danh mục và cơ cấu hiện ra chỉ trong một cái nhìn. Khi một đoạn bị thiếu, một cơ chế bảo vệ tường minh đánh dấu khoảng trống đó thay vì âm thầm làm phẳng nó về 0.
+"Mỗi danh mục được cấu thành từ gì, và cơ cấu đó thay đổi ra sao qua các danh mục?" Xếp chồng các phần trong một cột cho mỗi danh mục, và cơ cấu hiện ra chỉ trong nháy mắt. Khi một đoạn bị thiếu, một cơ chế bảo vệ tường minh đánh dấu khoảng trống đó thay vì âm thầm làm phẳng nó về 0.
 
 <ChartDemo chart="vertical-stack-bar-chart" />
 

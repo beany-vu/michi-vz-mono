@@ -12,6 +12,12 @@ Welke optie wint, en waar? Leg een paar kandidaten over dezelfde set criteria en
 
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Scorekaarten.** Leveranciersevaluaties, kandidaatbeoordelingen, productbenchmarks: een paar opties over dezelfde criteria, elk een veelhoek waarvan de pieken en dalen de sterktes en zwaktes zijn.
+- **Balans versus specialisatie.** Een rondere veelhoek is de allrounder; een puntige zet alles op twee assen. Dat vormverhaal is wat tabellen niet kunnen vertellen.
+- **Houd het bij een paar entiteiten en 5 tot 12 assen.** Voor een precieze vergelijking op één criterium leest een [staafdiagram](/nl/charts/comparable) de exacte waarden af; de radar leest profielen.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

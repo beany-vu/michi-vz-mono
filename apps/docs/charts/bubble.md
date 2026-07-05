@@ -16,6 +16,12 @@ No split needed? Drop `partial` for a clean proportional cloud, one colour per c
 
 > The cluster is laid out with [d3-force](https://github.com/d3/d3-force): bubbles fall toward the centre (`gravity`) and push apart so they never overlap (collision). The simulation is settled **synchronously**, so SVG and canvas render the identical, reproducible layout.
 
+## When to reach for it
+
+- **Magnitude at a glance.** Products, markets, keywords as a sized cloud - when "which ones are big?" matters more than an exact ranking, the cluster answers instantly.
+- **Opportunity maps.** With the split, a big bubble with a thin realized core is money on the table - the scan-for-upside view for portfolio reviews.
+- **If position should mean something** (two numeric axes, correlation), that is a [Scatter plot](/charts/scatter); the bubble cloud trades position for compactness.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

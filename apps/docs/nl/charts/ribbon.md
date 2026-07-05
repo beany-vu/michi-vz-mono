@@ -12,6 +12,12 @@ Wie wint terrein en wie verliest het? Wanneer marktaandeel, budgetverdelingen of
 
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Marktaandeel, budgetverdelingen, ranglijsten.** Wanneer categorieën van periode tot periode van plaats wisselen, laten de linten "wie haalde wie in, en wanneer" als eerste zien.
+- **Herschikkingen presenteren aan een zakelijk publiek.** Elke categorie houdt haar kleur terwijl ze aanzwelt, krimpt en van rang wisselt, zodat het oog één concurrent door het hele verhaal kan volgen.
+- **Wisselt er nooit iets van rang**, dan lopen de linten parallel en vertelt een [vlakdiagram](/nl/charts/area) hetzelfde aandeelverhaal met minder inkt.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

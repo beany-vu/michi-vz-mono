@@ -458,3 +458,29 @@ describe("mountGapChart enableExplicitTickValues threading", () => {
     expect(labelCount(false)).not.toBe(3); // d3-computed, ignores the explicit values
   });
 });
+
+describe("mountGapChart dense y-axis thinning", () => {
+  it("thins 120 row labels to a readable subset (marks stay per-row)", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const dense: GapDataItem[] = Array.from({ length: 120 }, (_, i) => ({
+      label: `Row ${i + 1}`,
+      value1: 10 + (i % 7),
+      value2: 20 + (i % 11),
+      difference: 10,
+      date: "2024",
+    }));
+    const chart = mountGapChart(host, {
+      dataSet: dense,
+      title: "Dense",
+      width: 700,
+      height: 380,
+    });
+    expect(host.querySelectorAll("rect.gap-bar").length).toBe(120);
+    const labels = host.querySelectorAll(".mv-ylabel-fo").length;
+    expect(labels).toBeGreaterThanOrEqual(2);
+    expect(labels).toBeLessThanOrEqual(25);
+    chart.destroy();
+    host.remove();
+  });
+});

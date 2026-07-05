@@ -12,6 +12,12 @@ description: "Bereikdiagram: arceert de volledige spreiding per reeks (beste tot
 
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
 
+## Wanneer kies je deze
+
+- **Wanneer een enkele lijn je zekerheid zou overdrijven.** Prognosekegels, 5e-tot-95e-percentielbanden, best-tot-slechtste scenario's: de breedte van de band is het eerlijke antwoord.
+- **Volatiliteit tussen reeksen vergelijken.** Een brede band naast een smalle is een risicoverhaal dat geen gemiddelde overbrengt - portefeuillespreiding, SLA-jitter, temperatuurbereiken.
+- **Geneste betrouwbaarheidsniveaus rond één prognose?** Precies dat stelt het [waaierdiagram](/nl/charts/fan) voor je samen, banden en mediaan in één aanroep.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

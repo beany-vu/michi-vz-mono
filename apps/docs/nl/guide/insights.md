@@ -34,9 +34,14 @@ Vier dingen worden mogelijk zodra een grafiek zijn eigen gestructureerde beteken
 
 ### Lees en bestuur grafieken vanuit een AI-assistent
 
-Dit is de hoofdzaak. Omdat elke grafiek zijn betekenis (`ChartContext`) **en** zijn besturingselementen als
-**tools** blootstelt, kan een AI-assistent hem samenvatten, filteren, een serie highlighten, of forecasten - door
-functies aan te roepen, niet door pixels te schrapen. Probeer de knoppen (elke is een echte tool-aanroep):
+Dit is de hoofdzaak. Stel je de maandagochtend-dashboardreview voor: iemand vraagt *"welke regio zakt
+weg?"* en een assistent antwoordt binnen enkele seconden - niet door naar pixels te turen, maar door
+`get_chart_context` aan te roepen, dezelfde gestructureerde samenvatting te lezen die de grafiek al
+draagt, de reeks te spotten waarvan de trend omsloeg, en `highlight` aan te roepen zodat iedereen het
+ziet. Functieaanroepen, geen schermafbeeldingen. Elke michi-vz-grafiek stelt zijn betekenis
+(`ChartContext`) **en** zijn besturingselementen bloot als **tools**, en die tools spreken **MCP**
+(Model Context Protocol) - zodat **Claude Code, Codex, Cursor, en Claude Desktop** je live grafieken
+besturen zonder enige aangepaste integratie. Probeer de knoppen (elke is een echte tool-aanroep):
 
 <InsightsDemo feature="agent" />
 
@@ -47,8 +52,8 @@ const agent = createAgent({ charts: [chartHandle("revenue", chart, props)], llm:
 await agent.ask("Filter to the top 5 and forecast next quarter");
 ```
 
-Dezelfde tools worden blootgesteld via **MCP** (Model Context Protocol), zodat **Claude Code, Codex, Cursor, en
-Claude Desktop** verbinden zonder enige aangepaste integratie - zie **Agents & MCP** in de referentie hieronder.
+Het opzetten is één registratie-aanroep per grafiek - de MCP-server, de volledige toolslijst, en de
+`michivz://chart/<name>`-resources vind je in **Agents & MCP** in de referentie hieronder.
 
 ### Voorspel de toekomst
 
@@ -691,10 +696,12 @@ registry.register(chartHandle("revenue", chart, props));
 createMcpServer(registry, stdioTransport(), { name: "michi-vz" });
 ```
 
-Tools: `get_chart_context`, `summarize_chart`, `list_series`, `forecast_series`,
-`detect_threshold_breach`, `set_filter`, `highlight`, `set_disabled`, `set_data`. De context van elke
-grafiek is ook een leesbare `michivz://chart/<name>`-resource. Een `messagePortTransport` overbrugt de
-grafieken van een draaiende webapp.
+Tools: `list_charts`, `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`,
+`highlight`, `set_disabled`, `set_data` - plus één tool per grafiekplugin, met de grafieknaam als
+voorvoegsel (een grafiek die geregistreerd is als `revenue` met de forecast-plugin stelt
+`revenue.forecast` bloot). De context van elke grafiek is ook een leesbare
+`michivz://chart/<name>`-resource. Een `messagePortTransport` overbrugt de grafieken van een
+draaiende webapp.
 
 ---
 

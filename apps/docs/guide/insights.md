@@ -34,9 +34,14 @@ Four things become possible once a chart carries its own structured meaning:
 
 ### Read and drive charts from an AI assistant
 
-This is the headline. Because each chart exposes its meaning (`ChartContext`) **and** its controls as
-**tools**, an AI assistant can summarize it, filter it, highlight a series, or forecast it - by
-calling functions, not scraping pixels. Try the buttons (each is a real tool call):
+This is the headline. Picture the Monday dashboard review: someone asks *"which region is
+slipping?"* and an assistant answers in seconds - not by squinting at pixels, but by calling
+`get_chart_context`, reading the same structured summary the chart already carries, spotting the
+series whose trend turned, and calling `highlight` so everyone sees it. Function calls, not
+screenshots. Every michi-vz chart exposes its meaning (`ChartContext`) **and** its controls as
+**tools**, and those tools speak **MCP** (Model Context Protocol) - so **Claude Code, Codex,
+Cursor, and Claude Desktop** drive your live charts with zero custom integration. Try the buttons
+(each is a real tool call):
 
 <InsightsDemo feature="agent" />
 
@@ -47,8 +52,8 @@ const agent = createAgent({ charts: [chartHandle("revenue", chart, props)], llm:
 await agent.ask("Filter to the top 5 and forecast next quarter");
 ```
 
-The same tools are exposed over **MCP** (Model Context Protocol), so **Claude Code, Codex, Cursor, and
-Claude Desktop** connect with zero custom integration - see **Agents & MCP** in the reference below.
+Wiring it up is one registry call per chart - the MCP server, the full tool list, and the
+`michivz://chart/<name>` resources are in **Agents & MCP** in the reference below.
 
 ### Predict the future
 
@@ -684,8 +689,9 @@ registry.register(chartHandle("revenue", chart, props));
 createMcpServer(registry, stdioTransport(), { name: "michi-vz" });
 ```
 
-Tools: `get_chart_context`, `summarize_chart`, `list_series`, `forecast_series`,
-`detect_threshold_breach`, `set_filter`, `highlight`, `set_disabled`, `set_data`. Each chart's context
+Tools: `list_charts`, `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`,
+`highlight`, `set_disabled`, `set_data` - plus one namespaced tool per chart plugin (a chart
+registered as `revenue` with the forecast plugin exposes `revenue.forecast`). Each chart's context
 is also a readable `michivz://chart/<name>` resource. A `messagePortTransport` bridges a running web
 app's charts.
 

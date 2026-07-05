@@ -12,6 +12,12 @@ Quelle option l'emporte, et sur quels points ? Superposez quelques candidats sur
 
 > Le graphique ci-dessus utilise le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
+## Quand le choisir
+
+- **Grilles d'évaluation.** Évaluations de fournisseurs, appréciations de candidats, comparatifs de produits : quelques options sur les mêmes critères, chacune un polygone dont les pointes et les creux sont ses forces et ses faiblesses.
+- **Équilibre contre spécialisation.** Un polygone plus rond est le généraliste ; un polygone pointu mise tout sur deux axes. Cette histoire de forme, aucun tableau ne peut la raconter.
+- **Limitez-vous à quelques entités et 5 à 12 axes.** Pour une comparaison précise sur un seul critère, une [barre comparable](/fr/charts/comparable) donne des valeurs exactes ; le radar donne des profils.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

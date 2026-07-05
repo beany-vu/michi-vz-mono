@@ -12,6 +12,12 @@ Một tổng cộng dồn được xếp chồng ra sao, từng mảnh một? M�
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.
 
+## Khi nào nên dùng
+
+- **Phễu và tổng tích lũy.** Các phần cộng dồn thành tổng theo từng hàng, mỗi bước có một nắp tròn đánh dấu: các chặng pipeline, cấu thành chi phí, quãng đường cộng dồn.
+- **Hai đối tượng người xem, một hàng biểu đồ.** Nhà phân tích đọc đóng góp của từng phân đoạn qua các nắp tròn; lãnh đạo đọc con số chốt ở cuối hàng. Không ai cần đến biểu đồ thứ hai.
+- **Nếu việc so cùng một phân đoạn giữa các hàng quan trọng hơn tổng tích lũy của mỗi hàng**, [biểu đồ cột chồng dọc](/vi/charts/vertical-stack-bar) đã xếp các phân đoạn thẳng hàng sẵn cho bạn.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

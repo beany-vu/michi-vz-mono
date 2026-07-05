@@ -8,6 +8,12 @@
 import { svgEl, htmlEl } from "../../dom";
 import type { ScaleBand } from "d3-scale";
 import type { Margin } from "../../types";
+import { sampleBandTicks } from "./chooseAxisMode";
+
+// A band shorter than one label's line height cannot show its label without
+// smearing into its neighbours; below this the axis thins to a sampled subset.
+const MIN_LABEL_HEIGHT = 16;
+const DEFAULT_MAX_TICKS = 15;
 
 export interface YAxisBandOptions {
   width: number;
@@ -15,6 +21,8 @@ export interface YAxisBandOptions {
   /** Formats a band label (default identity). */
   format?: (label: string) => string;
   tickHtmlWidth?: number;
+  /** Cap on labelled bands once thinning kicks in (default 15). */
+  maxTicks?: number;
   showGrid?: boolean;
   hideTickLabels?: boolean;
   /** Offset (px) added to each label's foreignObject x/y (consumer alignment). */
@@ -39,8 +47,21 @@ export function renderYAxisBand(
   const bandwidth = scale.bandwidth();
   const gridRight = o.width - o.margin.right;
   const hovered = o.hoveredItem ?? null;
+  const domain = scale.domain();
 
-  for (const label of scale.domain()) {
+  // Dense-axis thinning: with more rows than the plot can label (bands shorter
+  // than a line of text, or beyond an explicit maxTicks) label only an even
+  // subset - endpoints kept, numeric domains snapped to round values - and thin
+  // the per-band grid with it. Marks/tooltips still render for every row.
+  let visible: ReadonlySet<string> | null = null;
+  if (bandwidth < MIN_LABEL_HEIGHT || (o.maxTicks != null && domain.length > o.maxTicks)) {
+    visible = new Set(
+      sampleBandTicks(domain, bandwidth, MIN_LABEL_HEIGHT, o.maxTicks ?? DEFAULT_MAX_TICKS)
+    );
+  }
+
+  for (const label of domain) {
+    if (visible && !visible.has(label)) continue;
     const center = (scale(label) || 0) + bandwidth / 2;
 
     // Only emit the line when grid is on. The old `stroke="transparent"` fallback did
@@ -67,12 +88,17 @@ export function renderYAxisBand(
     // .mv-ylabel div + the overflow:visible svg) lets a label taller than the band
     // spill into the empty inter-band gaps rather than clip - the foreignObject would
     // otherwise clip to its viewport, cutting off long labels (worst at the top band).
+    // When thinning is active the band itself is shorter than a text line, so
+    // centre a line-height box on the band instead of using the sliver-thin band box.
+    const foY = visible
+      ? center - MIN_LABEL_HEIGHT / 2
+      : (scale(label) ?? center - bandwidth / 2);
     const fo = svgEl("foreignObject", {
       class: "mv-ylabel-fo",
       x: o.margin.left - tickHtmlWidth + (o.tickLabelOffset?.x ?? 0),
-      y: (scale(label) ?? center - bandwidth / 2) + (o.tickLabelOffset?.y ?? 0),
+      y: foY + (o.tickLabelOffset?.y ?? 0),
       width: tickHtmlWidth,
-      height: bandwidth,
+      height: visible ? MIN_LABEL_HEIGHT : bandwidth,
       style: "overflow: visible",
     });
     const div = htmlEl("div", { class: "mv-ylabel", title: label });
