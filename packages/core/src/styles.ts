@@ -38,8 +38,14 @@ export const CORE_CSS = `
 /* Row-label leader line (interactiveRowLabels on band-row charts): connects a
    hovered/focused y-axis label to its row's marks. Same theme vars as the crosshair. */
 .michi-vz .mv-row-leader { stroke: var(--michi-vz-crosshair, #a9a9a9); stroke-width: var(--michi-vz-crosshair-width, 1); stroke-dasharray: 3 3; pointer-events: none; }
-/* The scrubbed row's popped-up label (rows the dense-axis thinning left unlabelled). */
-.michi-vz .mv-ylabel-popup { font-weight: 600; pointer-events: none; }
+/* The scrubbed row's popped-up label (rows the dense-axis thinning left unlabelled):
+   a raised chip ABOVE the row line so the cursor never covers it, surfaced like the
+   tooltip so it stays readable over grid lines on light and dark themes. */
+.michi-vz .mv-ylabel-popup { font-weight: 600; pointer-events: none; justify-content: flex-end; overflow: visible; }
+.michi-vz .mv-ylabel-popup span {
+  background: var(--michi-vz-surface, #fff); border: 1px solid #ccc; border-radius: 4px;
+  padding: 1px 7px; box-shadow: 0 2px 4px rgba(0,0,0,.1); white-space: nowrap;
+}
 /* Opt-in "calm" axis theme (Nordic / lagom): a whisper-quiet grid and muted labels so
    the axis recedes and the data carries the only saturation. Add class="michi-vz-calm"
    to the chart host (or ANY ancestor - the vars cascade); pair with fewer ticks

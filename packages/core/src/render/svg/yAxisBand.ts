@@ -99,12 +99,15 @@ export function renderYAxisBand(
     // and if they catch it the strip fires pointerleave and clears them instantly.
     (leader as SVGElement & { style: CSSStyleDeclaration }).style.pointerEvents = "none";
     g.appendChild(leader);
-    // Pop the row's label up when the thinned axis is not showing it.
+    // Pop the row's label up when the thinned axis is not showing it. The chip
+    // sits ABOVE the row line (clamped at the top): the cursor glyph extends
+    // down-right from its hotspot on the row, so on the line it would cover the
+    // text exactly where the user is looking.
     if (!o.hideTickLabels && visible && !visible.has(label)) {
       const fo = svgEl("foreignObject", {
         class: "mv-ylabel-fo",
         x: labelBoxX,
-        y: rowCenterY - MIN_LABEL_HEIGHT / 2 + (o.tickLabelOffset?.y ?? 0),
+        y: Math.max(2, rowCenterY - MIN_LABEL_HEIGHT - 6 + (o.tickLabelOffset?.y ?? 0)),
         width: tickHtmlWidth,
         height: MIN_LABEL_HEIGHT,
         style: "overflow: visible; pointer-events: none",
