@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DefaultTheme from "vitepress/theme";
+import MvPageFooter from "./MvPageFooter.vue";
 import CatBand from "./CatBand.vue";
 import WhySpotlight from "./WhySpotlight.vue";
 import ChartAtlas from "./ChartAtlas.vue";
@@ -38,6 +39,12 @@ const META = [
       <CatBand />
       <WhySpotlight />
       <ChartAtlas />
+    </template>
+
+    <!-- The stock footer only shows on the sidebar-less homepage; this mirrors
+         the same localized footer at the bottom of every other page. -->
+    <template #layout-bottom>
+      <MvPageFooter />
     </template>
   </Layout>
 </template>
