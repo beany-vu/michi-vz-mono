@@ -170,14 +170,32 @@ export function mountChoroplethMapChart(
     tooltip.style.visibility = "hidden";
   };
 
-  // Canvas/webgpu host-level hit-test: no DOM marks to attach mouse listeners to,
-  // so re-project each feature's raw geometry and run a point-in-polygon test
-  // (see choroplethMap/hitTest.ts). Last-drawn (topmost) match wins.
+  // Canvas/webgpu host-level hit-test (B3.8 - same coordinate-space bug class
+  // as SymbolMapChart's B3.7, see engine/symbolMapChart.ts's onHostMove).
+  //
+  // ROOT CAUSE: `svg` spans the FULL host box (title + margins + plot), so
+  // `ev.clientX - svgRect.left` yields a HOST-space pixel - but `model`'s
+  // projection was built from `innerWidth`/`innerHeight` (margin-EXCLUDED
+  // plot space), and both the SVG renderer's plot `<g>` and the canvas layer
+  // are offset by `translate(margin.left, margin.top)` / CSS
+  // top/left:margin. Comparing a host-space point straight against
+  // plot-local projected polygon coordinates left every polygon short by a
+  // CONSTANT (margin.left, margin.top) vector, so hover/hit-testing was
+  // offset by the margin on canvas/webgpu. jsdom's always-zero
+  // getBoundingClientRect had masked this from existing tests. Fix:
+  // subtract the margin before running point-in-polygon - no MIN_HIT_RADIUS
+  // forgiveness needed here (unlike B3.7's circles), since polygons are area
+  // targets, not point targets.
+  //
+  // No DOM marks to attach mouse listeners to, so re-project each feature's
+  // raw geometry and run a point-in-polygon test (see choroplethMap/hitTest.ts).
+  // Last-drawn (topmost) match wins.
   const onHostMove = (ev: MouseEvent): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
+    const r = resolve(baseProps);
+    if (!isPainted(r.renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
-    const x = ev.clientX - svgRect.left;
-    const y = ev.clientY - svgRect.top;
+    const x = ev.clientX - svgRect.left - r.margin.left;
+    const y = ev.clientY - svgRect.top - r.margin.top;
     let hit: ChoroplethFeatureMark | null = null;
     for (let i = model.features.length - 1; i >= 0; i--) {
       const mark = model.features[i];

@@ -291,6 +291,64 @@ describe("mountChoroplethMapChart (jsdom, canvas renderer)", () => {
     chart.destroy();
     host.remove();
   });
+
+  // B3.8: same coordinate-space bug class as SymbolMapChart's B3.7 (mono
+  // f2cc94d) - `onHostMove` measured the pointer in HOST/full-svg space
+  // (`ev.clientX - svg.getBoundingClientRect().left`) but compared it against
+  // the projection built from margin-EXCLUDED innerWidth/innerHeight plot
+  // space, with no (margin.left, margin.top) subtraction. That left every
+  // polygon short by a CONSTANT margin vector, so hover/hit-testing was
+  // offset by the margin on canvas/webgpu. A DEFAULT (or zero) margin can't
+  // expose this in jsdom, since `getBoundingClientRect()` always returns an
+  // all-zero rect there too - a non-default margin is required to distinguish
+  // "no correction" from "correct plot-local coords" when both svgRect.left
+  // and svgRect.top are 0. Unlike B3.7's circles, polygons are area targets:
+  // no MIN_HIT_RADIUS-style forgiveness is added here, purely the
+  // coordinate-space correction.
+  it("B3.8 root cause fixed: canvas hit-test converts host-space pointer coords to plot-local BEFORE point-in-polygon, accounting for a non-zero margin", () => {
+    // Deliberately different from DEFAULT_MARGIN ({top:40,right:10,bottom:10,left:10})
+    // so this can't pass by accidental coincidence with the default.
+    const margin = { top: 51, right: 7, bottom: 7, left: 23 };
+
+    // Read region A's settled plot-local pixel centroid from an SVG mount with
+    // the SAME margin (and therefore the same projection/innerWidth/innerHeight).
+    // Only the FIRST subpath (up to the first "Z") is region A's actual small
+    // square ring - geoRobinson's rotate/center combo makes d3-geo append a
+    // second, much larger frame-outline subpath to the SAME `d` string (a
+    // pre-existing d3-geo-projection quirk, orthogonal to this bug), which
+    // would badly skew a naive whole-string centroid.
+    const svgMount = mount({ renderer: "svg", margin });
+    const d = svgMount.host.querySelector<SVGPathElement>('path.region[data-label="A"]')!.getAttribute("d")!;
+    const firstRing = d.match(/^M[^Z]*Z/)![0];
+    const nums = firstRing.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
+    const xs: number[] = [];
+    const ys: number[] = [];
+    for (let i = 0; i < nums.length; i += 2) {
+      xs.push(nums[i]);
+      ys.push(nums[i + 1]);
+    }
+    const cx = xs.reduce((a, b) => a + b, 0) / xs.length;
+    const cy = ys.reduce((a, b) => a + b, 0) / ys.length;
+    svgMount.chart.destroy();
+    svgMount.host.remove();
+
+    const highlighted: string[][] = [];
+    const { host, chart } = mount({
+      renderer: "canvas",
+      margin,
+      onHighlightItem: (labels) => highlighted.push(labels),
+    });
+    // In jsdom, `svg.getBoundingClientRect()` is always the zero rect, so a
+    // real browser's host-space `ev.clientX/Y` (which WOULD equal
+    // margin.left/top + the plot-local centroid) is simulated by adding the
+    // margin directly here.
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: cx + margin.left, clientY: cy + margin.top, bubbles: true })
+    );
+    expect(highlighted.some((h) => h.includes("Alpha"))).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
 });
 
 describe("mountChoroplethMapChart - chrome quad", () => {
