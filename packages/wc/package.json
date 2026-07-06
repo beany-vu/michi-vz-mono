@@ -114,6 +114,11 @@
       "types": "./dist/symbol-map-chart.d.ts",
       "import": "./dist/symbol-map-chart.js",
       "require": "./dist/symbol-map-chart.cjs"
+    },
+    "./radial-tree-chart": {
+      "types": "./dist/radial-tree-chart.d.ts",
+      "import": "./dist/radial-tree-chart.js",
+      "require": "./dist/radial-tree-chart.cjs"
     }
   },
   "scripts": {

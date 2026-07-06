@@ -23,6 +23,7 @@ export default defineConfig({
     "src/fountain-chart.ts",
     "src/choropleth-map-chart.ts",
     "src/symbol-map-chart.ts",
+    "src/radial-tree-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

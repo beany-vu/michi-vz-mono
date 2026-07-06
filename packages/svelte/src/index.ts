@@ -21,6 +21,7 @@ import {
   mountFountainChart,
   mountChoroplethMapChart,
   mountSymbolMapChart,
+  mountRadialTreeChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -43,6 +44,7 @@ import type {
   FountainChartProps,
   ChoroplethMapChartProps,
   SymbolMapChartProps,
+  RadialTreeChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -67,6 +69,7 @@ export type {
   FountainChartProps,
   ChoroplethMapChartProps,
   SymbolMapChartProps,
+  RadialTreeChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -377,6 +380,21 @@ export function symbolMapChart(node: HTMLElement, props: SymbolMapChartProps): S
   const chart = mountSymbolMapChart(node, props);
   return {
     update: (next: SymbolMapChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface RadialTreeChartAction {
+  update(props: RadialTreeChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<RadialTreeChartProps>["getContext"];
+}
+
+export function radialTreeChart(node: HTMLElement, props: RadialTreeChartProps): RadialTreeChartAction {
+  const chart = mountRadialTreeChart(node, props);
+  return {
+    update: (next: RadialTreeChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };

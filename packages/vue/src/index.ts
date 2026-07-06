@@ -22,6 +22,7 @@ import {
   mountFountainChart,
   mountChoroplethMapChart,
   mountSymbolMapChart,
+  mountRadialTreeChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -44,6 +45,7 @@ import type {
   FountainChartProps,
   ChoroplethMapChartProps,
   SymbolMapChartProps,
+  RadialTreeChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -69,6 +71,7 @@ export type {
   FountainChartProps,
   ChoroplethMapChartProps,
   SymbolMapChartProps,
+  RadialTreeChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -691,6 +694,38 @@ export const SymbolMapChart = defineComponent({
 
     onMounted(() => {
       if (host.value) chart = mountSymbolMapChart(host.value, props.options);
+    });
+    watch(
+      () => props.options,
+      (next) => chart?.update(next),
+      { deep: true }
+    );
+    onBeforeUnmount(() => chart?.destroy());
+
+    expose({ getContext: (): ChartContext | null => chart?.getContext() ?? null });
+
+    return () =>
+      h("div", {
+        ref: host,
+        style: {
+          width: `${props.options.width ?? 900}px`,
+          height: `${props.options.height ?? 520}px`,
+        },
+      });
+  },
+});
+
+export const RadialTreeChart = defineComponent({
+  name: "MichiVzRadialTreeChart",
+  props: {
+    options: { type: Object as PropType<RadialTreeChartProps>, required: true },
+  },
+  setup(props, { expose }) {
+    const host = ref<HTMLDivElement | null>(null);
+    let chart: ChartInstance<RadialTreeChartProps> | null = null;
+
+    onMounted(() => {
+      if (host.value) chart = mountRadialTreeChart(host.value, props.options);
     });
     watch(
       () => props.options,
