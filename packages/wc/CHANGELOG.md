@@ -1,5 +1,102 @@
 # @michi-vz/wc
 
+## 1.7.0
+
+### Minor Changes
+
+- 3c0bc4b: New `stackOffset: "none" | "expand"` on AreaChartProps (default `"none"`, zero change).
+
+  - **`"expand"` turns AreaChart into a true 100%-stacked chart.** It reuses d3-shape's
+    own `stackOffsetExpand` on the existing `d3.stack()` call in `processAreaChartData`,
+    so every x-slice's band heights are normalized to sum to 1 - the same divide-by-zero
+    guard d3 ships with means an all-zero/null slice renders as an empty (zero-height)
+    band instead of `NaN`. The y domain becomes `[0,1]` (this wins over an explicit
+    `yAxisDomain` or `forcePercentageScale`, since those don't make sense once the values
+    themselves are fractions), and y-axis ticks default to percentage formatting unless
+    an explicit `yAxisFormat` is passed. Because the branch lives in the shared
+    data/scale layer, all three renderers (svg/canvas/webgpu) and the context builder
+    pick it up for free with no renderer-specific code.
+  - This is distinct from the existing `forcePercentageScale`, which only clamps the
+    y-axis _display_ range to `[0,100]` without touching the underlying stacked values;
+    that prop's behavior is unchanged.
+  - Exposed on the web component (`stack-offset` attribute) and `applyAreaChartProps`;
+    Vue/Svelte/React need no changes (whole-props pass-through).
+
+  - Migration note: expand mode's default y-tick formatter is Intl percent with
+    0 fraction digits; consumers needing legacy variable-precision labels (e.g.
+    sdg-trade's ONEHUNDREDPERC mode) should pass an explicit `yAxisFormat`. When
+    `stackOffset: "expand"` is combined with `forcePercentageScale`/`yAxisDomain`,
+    the normalized `[0,1]` domain wins.
+
+- d920094: RadarChart, SankeyChart, and TreemapChart gain the full loading/no-data prop quad
+  (`isLoading`, `isNodata`, `noDataLabel`, `suppressDefaultOverlay`), wired through
+  the shared `applyChartChrome` helper like the already-converged charts. Engines now
+  stamp `data-mv-state="loading" | "nodata" | "ready"` on the host element.
+
+  - React wrappers for these three charts gain `isLoadingComponent` /
+    `isNodataComponent` (ReactNode overlays rendered over the still-mounted host).
+  - **React DOM-shape note:** the React wrappers for Radar/Sankey/Treemap now
+    unconditionally wrap the chart host in
+    `<div class="michi-vz michi-vz-react-host" style="position:relative">` (the same
+    structure Gap/Line already use) — required by the mounted-overlay mechanism. If
+    your CSS or DOM-walking code assumed the old direct-child structure for these
+    three charts, adjust the selector.
+  - RadarChart's pre-existing `isLoading` was a dead no-op (its CSS class landed on
+    an element the stylesheet's descendant selector never matched); it now shows a
+    real overlay, matching its documented intent.
+
+- d920094: New `deltaIndicator?: DeltaIndicatorConfig` on ComparableBarChartProps.
+
+  - Per row, renders an arrow glyph + formatted difference label
+    (`valueCompared - valueBased`) after the end of the bars: green when the sign
+    matches `positiveIsGood` (default true), red otherwise, neutral gray + flat
+    glyph for zero. `positiveIsUp` flips the arrow direction; `formatter`
+    overrides the label. Works in both `overlay` and `grouped` layouts; absent
+    prop or `show: false` is a byte-for-byte no-op. NOTE for legacy sdg-trade
+    migrations: the old `positiveChangeGood` prop had the inverse visual effect —
+    pass its logical negation as `positiveIsGood` to reproduce the legacy look.
+    The shared `DeltaIndicatorConfig` type is exported for the upcoming
+    ComparableVerticalBarChart, which mirrors this behavior.
+
+- d920094: New `layout: "overlay" | "grouped"` on ComparableBarChartProps (default `"overlay"`, zero change).
+
+  - **`"grouped"` splits each row band into two half-height bars** — `valueBased` on
+    the top half, `valueCompared` on the bottom half, same zero/domain origin, no
+    overlap — instead of overlaying the two sub-bars at the same y. Geometry branches
+    once in the shared render model, so svg/canvas/webgpu stay in lockstep and the
+    canvas color-probe DOM contract is unchanged in both modes: the probe is a
+    `<g class="bar" data-label data-label-safe>` ancestor wrapping a
+    `<rect class="bar value-based|value-compared" data-label data-label-safe>`
+    descendant, so it satisfies real consumer CSS written either as a descendant
+    selector (`.bar[data-label-safe="K"] .value-based { fill; stroke }`, thd's
+    MonitorV2 TariffStructure/TradeMap contract) or as a same-element/compound
+    selector (`.bar { fill }`, `.bar.value-based { fill }`). `maxBarHeight` caps
+    the full band; the halves are half the capped value. Exposed on the web
+    component (`layout` attribute) and `applyComparableHorizontalBarChartProps`.
+
+- 2b68160: New `yAxisScale: "linear" | "log"` on LineChartProps (default `"linear"`, zero change).
+
+  - **`"log"` draws a base-10 logarithmic y-axis** across all three renderers (svg,
+    canvas, webgpu), since they share one scale factory. Non-positive values (`<= 0`)
+    can't exist on a log scale, so they're treated as missing points: dropped from
+    their series (like any other gap - the drop happens before `detectGaps`, so an
+    opted-in gap check still dashes the resulting hole), and the y domain is derived
+    from the remaining positive values only. A dropped point fires `onDataWarning`
+    with a `"non-positive-log-value"` warning naming the series and count. A dataSet
+    with no positive values anywhere renders the no-data state instead of crashing.
+    Y ticks use d3's default log ticks, still formatted through `yAxisFormat` if
+    provided. Exposed on the web component (`y-axis-scale`) and
+    `applyLineChartProps`; Vue/Svelte/React need no changes (whole-props pass-through).
+
+### Patch Changes
+
+- Updated dependencies [3c0bc4b]
+- Updated dependencies [d920094]
+- Updated dependencies [d920094]
+- Updated dependencies [d920094]
+- Updated dependencies [2b68160]
+  - @michi-vz/core@1.7.0
+
 ## 1.6.0
 
 ### Minor Changes
