@@ -22,6 +22,7 @@ export default defineConfig({
     "src/sankey-chart.ts",
     "src/fountain-chart.ts",
     "src/choropleth-map-chart.ts",
+    "src/symbol-map-chart.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

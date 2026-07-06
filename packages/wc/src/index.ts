@@ -20,6 +20,7 @@ import "./bubble-chart";
 import "./sankey-chart";
 import "./fountain-chart";
 import "./choropleth-map-chart";
+import "./symbol-map-chart";
 
 export { GapChartElement } from "./gap-chart";
 export { LineChartElement } from "./line-chart";
@@ -40,3 +41,4 @@ export { BubbleChartElement } from "./bubble-chart";
 export { SankeyChartElement } from "./sankey-chart";
 export { FountainChartElement } from "./fountain-chart";
 export { ChoroplethMapChartElement } from "./choropleth-map-chart";
+export { SymbolMapChartElement } from "./symbol-map-chart";

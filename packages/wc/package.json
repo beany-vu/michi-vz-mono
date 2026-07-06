@@ -109,6 +109,11 @@
       "types": "./dist/choropleth-map-chart.d.ts",
       "import": "./dist/choropleth-map-chart.js",
       "require": "./dist/choropleth-map-chart.cjs"
+    },
+    "./symbol-map-chart": {
+      "types": "./dist/symbol-map-chart.d.ts",
+      "import": "./dist/symbol-map-chart.js",
+      "require": "./dist/symbol-map-chart.cjs"
     }
   },
   "scripts": {

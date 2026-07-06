@@ -20,6 +20,7 @@ import {
   mountSankeyChart,
   mountFountainChart,
   mountChoroplethMapChart,
+  mountSymbolMapChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -41,6 +42,7 @@ import type {
   SankeyChartProps,
   FountainChartProps,
   ChoroplethMapChartProps,
+  SymbolMapChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -64,6 +66,7 @@ export type {
   SankeyChartProps,
   FountainChartProps,
   ChoroplethMapChartProps,
+  SymbolMapChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -359,6 +362,21 @@ export function choroplethMapChart(node: HTMLElement, props: ChoroplethMapChartP
   const chart = mountChoroplethMapChart(node, props);
   return {
     update: (next: ChoroplethMapChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface SymbolMapChartAction {
+  update(props: SymbolMapChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<SymbolMapChartProps>["getContext"];
+}
+
+export function symbolMapChart(node: HTMLElement, props: SymbolMapChartProps): SymbolMapChartAction {
+  const chart = mountSymbolMapChart(node, props);
+  return {
+    update: (next: SymbolMapChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };
