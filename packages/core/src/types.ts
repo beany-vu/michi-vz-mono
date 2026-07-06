@@ -940,7 +940,12 @@ export interface ComparableBarDataPoint {
 export interface DeltaIndicatorConfig {
   /** Master switch; false (or the prop being omitted) is a provable no-op. */
   show: boolean;
-  /** Positive diff renders "good" (green); default true. */
+  /**
+   * Positive diff renders "good" (green); default true. NOTE: legacy
+   * sdg-trade `positiveChangeGood` had the INVERSE visual effect (its `true`
+   * painted a positive diff red) - to replicate a legacy chart's output,
+   * pass the logical NEGATION of its `positiveChangeGood` value here.
+   */
   positiveIsGood?: boolean;
   /** Positive diff's arrow points up (else down); default true. */
   positiveIsUp?: boolean;

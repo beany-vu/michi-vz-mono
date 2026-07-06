@@ -21,3 +21,9 @@ New `stackOffset: "none" | "expand"` on AreaChartProps (default `"none"`, zero c
   that prop's behavior is unchanged.
 - Exposed on the web component (`stack-offset` attribute) and `applyAreaChartProps`;
   Vue/Svelte/React need no changes (whole-props pass-through).
+
+- Migration note: expand mode's default y-tick formatter is Intl percent with
+  0 fraction digits; consumers needing legacy variable-precision labels (e.g.
+  sdg-trade's ONEHUNDREDPERC mode) should pass an explicit `yAxisFormat`. When
+  `stackOffset: "expand"` is combined with `forcePercentageScale`/`yAxisDomain`,
+  the normalized `[0,1]` domain wins.
