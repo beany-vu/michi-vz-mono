@@ -200,6 +200,12 @@
 <h2>SymbolMap edge-clipping check (B3.6 - extreme-west max-value + extreme-north large bubble)</h2>
 <div class="card"><michi-vz-symbol-map-chart id="symbolEdge"></michi-vz-symbol-map-chart></div>
 
+<h2>SymbolMap small-circle forgiving hover check (B3.7 - real pointer coords, both renderers)</h2>
+<div class="row">
+  <div class="card"><h2>SVG</h2><michi-vz-symbol-map-chart id="symbolSmallSvg"></michi-vz-symbol-map-chart></div>
+  <div class="card"><h2>Canvas</h2><michi-vz-symbol-map-chart id="symbolSmallCanvas"></michi-vz-symbol-map-chart></div>
+</div>
+
 <h1 style="margin-top:36px">@michi-vz/wc - RadialTree (radial cluster()/dendrogram)</h1>
 <div class="row">
   <div class="card"><h2>SVG renderer</h2><michi-vz-radial-tree-chart id="radialSvg"></michi-vz-radial-tree-chart></div>
@@ -534,6 +540,20 @@ const symbolEdgeData = [
   { id: "mid", label: "Mid", lng: 40, lat: -30, value: 10 },
 ];
 Object.assign(symbolEdgeEl, { dataSet: symbolEdgeData, chartTitle: "Edge-clipping check", renderer: "svg", ...symbolCommon });
+
+// B3.7 small-circle forgiving hover check: a tiny (r=3, `radiusRange` floor)
+// dot far from a much bigger bubble, so a real Chromium pointer can be driven
+// to the tiny dot's EXACT center (the reported bug - no tooltip on small
+// circles) and a few px off-center (forgiveness), in BOTH renderers.
+const symbolSmallSvgEl = document.getElementById("symbolSmallSvg");
+const symbolSmallCanvasEl = document.getElementById("symbolSmallCanvas");
+const symbolSmallData = [
+  { id: "tiny", label: "Tiny", lng: -60, lat: 0, value: 1 },
+  { id: "huge", label: "Huge", lng: 60, lat: 0, value: 100 },
+];
+const symbolSmallCommon = { dataSet: symbolSmallData, radiusRange: [3, 30], width: 460, height: 280 };
+Object.assign(symbolSmallSvgEl, { chartTitle: "Small-circle hover (SVG)", renderer: "svg", ...symbolSmallCommon });
+Object.assign(symbolSmallCanvasEl, { chartTitle: "Small-circle hover (canvas)", renderer: "canvas", ...symbolSmallCommon });
 
 // ---- RadialTree setup ---- (2-level forest: RadialTreeNode mirrors TreemapNode's
 // shape - a group's value is always the sum of its children)
@@ -1135,6 +1155,60 @@ try {
     }
   }
   log(edgeAllInBounds, `SYMBOL EDGE: all ${edgeCircles.length} circles stay within [0,${edgePlotWidth}]x[0,${edgePlotHeight}] (no clipping at plot edges)`);
+
+  // B3.7 small-circle forgiving hover check - the ONE place this repo can
+  // exercise REAL geometric pointer hit-testing (jsdom vitest dispatches
+  // events directly on elements/coordinates and never actually computes
+  // hit-testing from clientX/clientY, so it can't reproduce the reported bug:
+  // a real pointer landing on a tiny circle finding nothing). Drives a real
+  // MouseEvent at the tiny (r=3) node's true on-screen center via
+  // getBoundingClientRect, in both renderers.
+  const fireMoveAt = (hostEl, clientX, clientY) => hostEl.dispatchEvent(new MouseEvent("mousemove", { clientX, clientY, bubbles: true }));
+  const tooltipVisible = (chartEl) => {
+    const tip = chartEl.querySelector(".tooltip");
+    return !!tip && tip.style.visibility === "visible";
+  };
+
+  const smallSvgHost = symbolSmallSvgEl.querySelector(".mv-host");
+  const tinyCircleSvg = symbolSmallSvgEl.querySelector('circle.symbol[data-label="Tiny"]');
+  const tinyRectSvg = tinyCircleSvg ? tinyCircleSvg.getBoundingClientRect() : null;
+  log(!!tinyCircleSvg && Number(tinyCircleSvg.getAttribute("r")) === 3, "SYMBOL SMALL-CIRCLE: the tiny node renders at r=3 (below SYMBOL_MIN_HIT_RADIUS=8)");
+
+  // SVG hover is native per-mark `mouseenter`/`mouseleave` on a descendant
+  // <g> (renderSvg.ts) - a synthetic `dispatchEvent` call from in-page JS
+  // can't reach it (dispatchEvent only visits the given target + its
+  // ANCESTORS, never descendants, and the SVG listener lives on a descendant
+  // `<g>`, not the host). Only a REAL OS-level pointer move (which the
+  // browser resolves via actual hit-testing) can exercise this correctly, so
+  // this is driven from the Node-side Playwright harness
+  // (`scripts/verify-playground.mjs`) via `locator.hover()` (which also
+  // scroll-into-views the target - this card sits far down the page) and
+  // folded into the same pass/fail count. This helper just exposes the
+  // tooltip-visibility read the Node side can't do without an in-page hook.
+  window.__b37TooltipVisible = (id) => tooltipVisible(document.getElementById(id));
+
+  // Canvas mode has no DOM circle to measure - translate the SVG mount's
+  // known offset (relative to ITS OWN host) onto the canvas mount's own host:
+  // the force layout is a deterministic pure function of dataSet+dimensions
+  // (see the "two independent mounts settle to the identical layout" unit
+  // test), so the SAME dataSet+size settles to the SAME relative position in
+  // both mounts, and the offset transfers even though the two cards sit at
+  // different places on the page.
+  const smallCanvasHost = symbolSmallCanvasEl.querySelector(".mv-host");
+  if (tinyRectSvg && smallSvgHost && smallCanvasHost) {
+    const svgHostRect = smallSvgHost.getBoundingClientRect();
+    const offsetX = tinyRectSvg.left + tinyRectSvg.width / 2 - svgHostRect.left;
+    const offsetY = tinyRectSvg.top + tinyRectSvg.height / 2 - svgHostRect.top;
+    const canvasHostRect = smallCanvasHost.getBoundingClientRect();
+    const cx = canvasHostRect.left + offsetX;
+    const cy = canvasHostRect.top + offsetY;
+    fireMoveAt(smallCanvasHost, cx, cy);
+    log(tooltipVisible(symbolSmallCanvasEl), "SYMBOL CANVAS SMALL-CIRCLE: hovering the tiny (r=3) node's exact center shows the tooltip (B3.7 repro fixed)");
+    fireMoveAt(smallCanvasHost, cx + 6, cy);
+    log(tooltipVisible(symbolSmallCanvasEl), "SYMBOL CANVAS SMALL-CIRCLE: hovering 6px off the tiny node's center still shows the tooltip (forgiving hover)");
+    fireMoveAt(smallCanvasHost, cx + 300, cy + 300);
+    log(!tooltipVisible(symbolSmallCanvasEl), "SYMBOL CANVAS SMALL-CIRCLE: moving well away hides the tooltip again (forgiveness isn't unbounded)");
+  }
 
   // ---- RadialTree checks ----
   const radialCircles = radialSvgEl.querySelectorAll("circle.radial-tree-node-circle");

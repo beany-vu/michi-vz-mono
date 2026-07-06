@@ -19,6 +19,7 @@ import { projectSymbolMapPoints, buildSymbolMapRadiusScale, DEFAULT_PROJECTION }
 import { layoutSymbolMap } from "../symbolMap/layout";
 import { buildSymbolMapRenderModel, buildSymbolMapBackdrop } from "../symbolMap/renderModel";
 import type { SymbolMapMark, SymbolMapRenderModel } from "../symbolMap/renderModel";
+import { pickNearestSymbolHit } from "../symbolMap/hitTest";
 import { normalizeGeography } from "../choroplethMap/data";
 import { renderSymbolMapSvg } from "../symbolMap/renderSvg";
 import { drawSymbolMapCanvas } from "../symbolMap/renderCanvas";
@@ -178,24 +179,33 @@ export function mountSymbolMapChart(
     tooltip.style.visibility = "hidden";
   };
 
-  // Canvas/webgpu host-level hit-test: point-in-circle against the larger of the
-  // two radii (circles are already de-overlapped by the force layout, so the
-  // first hit wins - same convention as BubbleChart).
+  // Canvas/webgpu host-level hit-test (B3.7 - see symbolMap/hitTest.ts).
+  //
+  // ROOT CAUSE (the actual reported bug, found while writing a real-browser
+  // repro - jsdom's always-zero getBoundingClientRect had masked it): `svg`
+  // spans the FULL host box (title + margins + plot), so `ev.clientX -
+  // svgRect.left` yields a HOST-space pixel - but `model.symbols[].x/y` are
+  // PLOT-local (margin-excluded; the SVG renderer draws them inside a
+  // `translate(margin.left, margin.top)` group, and the canvas layer is
+  // itself CSS-positioned at that same offset). Comparing a host-space point
+  // straight against plot-local mark centres left every mark short by a
+  // CONSTANT (margin.left, margin.top) vector - here sqrt(10^2+40^2)~=41px -
+  // so only marks whose radius happened to exceed that margin vector could
+  // ever be hit at all, no matter how precisely the real pointer landed.
+  // That's exactly "small circles never tooltip, big ones are fine": it was
+  // never about small-circle precision alone, the margin offset alone made
+  // most marks unhittable outright. Subtracting the margin restores the
+  // correct plot-local space; MIN_HIT_RADIUS forgiveness + nearest-match-wins
+  // (pickNearestSymbolHit) is the SEPARATE, compounding fix for real pointer
+  // imprecision on genuinely small marks, replacing the old "first hit in
+  // array order wins" convention.
   const onHostMove = (ev: MouseEvent): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
+    const r = resolve(baseProps);
+    if (!isPainted(r.renderer) || !model || sticky) return;
     const svgRect = svg.getBoundingClientRect();
-    const x = ev.clientX - svgRect.left;
-    const y = ev.clientY - svgRect.top;
-    let hit: SymbolMapMark | null = null;
-    for (const m of model.symbols) {
-      const r = m.radiusSecond != null ? Math.max(m.radius, m.radiusSecond) : m.radius;
-      const dx = x - m.x;
-      const dy = y - m.y;
-      if (dx * dx + dy * dy <= r * r) {
-        hit = m;
-        break;
-      }
-    }
+    const x = ev.clientX - svgRect.left - r.margin.left;
+    const y = ev.clientY - svgRect.top - r.margin.top;
+    const hit = pickNearestSymbolHit(model.symbols, x, y);
     reportDevtoolsHit(host, x, y, hit ? hit.label : null);
     if (hit) {
       showTooltip(hit, ev);
