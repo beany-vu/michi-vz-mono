@@ -104,6 +104,11 @@
       "types": "./dist/fountain-chart.d.ts",
       "import": "./dist/fountain-chart.js",
       "require": "./dist/fountain-chart.cjs"
+    },
+    "./choropleth-map-chart": {
+      "types": "./dist/choropleth-map-chart.d.ts",
+      "import": "./dist/choropleth-map-chart.js",
+      "require": "./dist/choropleth-map-chart.cjs"
     }
   },
   "scripts": {

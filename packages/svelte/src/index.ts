@@ -19,6 +19,7 @@ import {
   mountBubbleChart,
   mountSankeyChart,
   mountFountainChart,
+  mountChoroplethMapChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -39,6 +40,7 @@ import type {
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
+  ChoroplethMapChartProps,
   ChartInstance,
 } from "@michi-vz/core";
 
@@ -61,6 +63,7 @@ export type {
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
+  ChoroplethMapChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -341,6 +344,21 @@ export function fountainChart(node: HTMLElement, props: FountainChartProps): Fou
   const chart = mountFountainChart(node, props);
   return {
     update: (next: FountainChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface ChoroplethMapChartAction {
+  update(props: ChoroplethMapChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<ChoroplethMapChartProps>["getContext"];
+}
+
+export function choroplethMapChart(node: HTMLElement, props: ChoroplethMapChartProps): ChoroplethMapChartAction {
+  const chart = mountChoroplethMapChart(node, props);
+  return {
+    update: (next: ChoroplethMapChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };

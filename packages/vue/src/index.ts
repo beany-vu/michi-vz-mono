@@ -20,6 +20,7 @@ import {
   mountBubbleChart,
   mountSankeyChart,
   mountFountainChart,
+  mountChoroplethMapChart,
 } from "@michi-vz/core";
 import type {
   GapChartProps,
@@ -40,6 +41,7 @@ import type {
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
+  ChoroplethMapChartProps,
   ChartInstance,
   ChartContext,
 } from "@michi-vz/core";
@@ -63,6 +65,7 @@ export type {
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
+  ChoroplethMapChartProps,
   ChartContext,
 } from "@michi-vz/core";
 
@@ -637,6 +640,38 @@ export const FountainChart = defineComponent({
         style: {
           width: `${props.options.width ?? 800}px`,
           height: `${props.options.height ?? 500}px`,
+        },
+      });
+  },
+});
+
+export const ChoroplethMapChart = defineComponent({
+  name: "MichiVzChoroplethMapChart",
+  props: {
+    options: { type: Object as PropType<ChoroplethMapChartProps>, required: true },
+  },
+  setup(props, { expose }) {
+    const host = ref<HTMLDivElement | null>(null);
+    let chart: ChartInstance<ChoroplethMapChartProps> | null = null;
+
+    onMounted(() => {
+      if (host.value) chart = mountChoroplethMapChart(host.value, props.options);
+    });
+    watch(
+      () => props.options,
+      (next) => chart?.update(next),
+      { deep: true }
+    );
+    onBeforeUnmount(() => chart?.destroy());
+
+    expose({ getContext: (): ChartContext | null => chart?.getContext() ?? null });
+
+    return () =>
+      h("div", {
+        ref: host,
+        style: {
+          width: `${props.options.width ?? 900}px`,
+          height: `${props.options.height ?? 520}px`,
         },
       });
   },
