@@ -126,3 +126,8 @@ Each `dataSet` row (`{ id, label, value?, color? }`) is matched against a geogra
 `isLoading` and `isNodata` drive the overlay (React: `isLoadingComponent` / `isNodataComponent`), identical to every other chart in the house.
 
 > **Consumer colour authorities:** the context carries `legendData` (`{ label, color, dataLabelSafe }`) so a CSS-injection colour system can key per-label rules; `onChartDataProcessed` is only emitted when the context **changes**.
+
+- Every feature in `geography` is rendered. Legacy consumers that special-cased
+  certain features as invisible (e.g. sdg-trade's old chart skipped Antarctica,
+  feature id `ATA`) should filter those features out of the `geography` prop
+  before passing it in — the chart does not special-case any feature id.
