@@ -31,6 +31,16 @@
      thd pattern via patternsMapping). */
   #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-based { fill: url(#nonexistent-pattern); stroke: rgb(10, 200, 10); }
   #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-compared { fill: rgb(220, 20, 140); }
+  /* ComparableVerticalBar consumer colour contract: recolour bar fills purely via CSS. */
+  #cmpVContract .bar { fill: rgb(30, 110, 190); }
+  /* ComparableVerticalBar DESCENDANT consumer colour contract - same thd MonitorV2
+     shape as the horizontal chart's #cmpDescendantContract above. Targets "Beta"
+     (valueBased 30 > valueCompared 22): unlike the horizontal chart's WIDTH-dependent
+     z-order swap, this chart's z-order is FIXED (valueBased always behind), so the
+     rear value-based sub-bar only peeks out above the front value-compared bar when
+     it is the TALLER of the two - "Alpha One" (10 < 18) would be fully covered. */
+  #cmpVDescendantContract .bar[data-label-safe="Beta"] .value-based { fill: url(#nonexistent-pattern); stroke: rgb(10, 200, 10); }
+  #cmpVDescendantContract .bar[data-label-safe="Beta"] .value-compared { fill: rgb(220, 20, 140); }
   /* DualBar consumer colour contract: recolour bar fills purely via CSS. */
   #dualContract .bar { fill: rgb(0, 160, 160); }
   /* BarBell consumer colour contract: recolour bar fills purely via CSS. */
@@ -98,6 +108,16 @@
 <div class="card" id="cmpContract"><michi-vz-comparable-horizontal-bar-chart id="cmpContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
 <h2>Comparable consumer-CSS DESCENDANT selector contract (canvas, thd MonitorV2 shape)</h2>
 <div class="card" id="cmpDescendantContract"><michi-vz-comparable-horizontal-bar-chart id="cmpDescendantContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc - ComparableVerticalBar (fixed z-order, full-bandwidth overlay)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-comparable-vertical-bar-chart id="cmpVSvg"></michi-vz-comparable-vertical-bar-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-comparable-vertical-bar-chart id="cmpVCanvas"></michi-vz-comparable-vertical-bar-chart></div>
+</div>
+<h2>ComparableVerticalBar consumer-CSS fill contract (canvas)</h2>
+<div class="card" id="cmpVContract"><michi-vz-comparable-vertical-bar-chart id="cmpVContractChart"></michi-vz-comparable-vertical-bar-chart></div>
+<h2>ComparableVerticalBar consumer-CSS DESCENDANT selector contract (canvas, thd MonitorV2 shape)</h2>
+<div class="card" id="cmpVDescendantContract"><michi-vz-comparable-vertical-bar-chart id="cmpVDescendantContractChart"></michi-vz-comparable-vertical-bar-chart></div>
 
 <h1 style="margin-top:36px">@michi-vz/wc - DualHorizontalBar (tornado)</h1>
 <div class="row">
@@ -260,6 +280,30 @@ Object.assign(cmpDescendantContractEl, {
   valueBasedOpacity: 1,
   valueComparedOpacity: 1,
   ...cmpCommon,
+});
+
+// ---- ComparableVerticalBar setup ----
+const cmpVData = [
+  { label: "Alpha One", valueBased: 10, valueCompared: 18 },
+  { label: "Beta", valueBased: 30, valueCompared: 22 },
+  { label: "Gamma", valueBased: 16, valueCompared: 24 },
+];
+const cmpVCommon = { width: 460, height: 280 };
+const cmpVSvgEl = document.getElementById("cmpVSvg");
+const cmpVCanvasEl = document.getElementById("cmpVCanvas");
+const cmpVContractEl = document.getElementById("cmpVContractChart");
+Object.assign(cmpVSvgEl, { dataSet: cmpVData, chartTitle: "Based vs Compared (columns)", renderer: "svg", deltaIndicator: { show: true }, ...cmpVCommon });
+Object.assign(cmpVCanvasEl, { dataSet: cmpVData, chartTitle: "Based vs Compared (columns)", renderer: "canvas", deltaIndicator: { show: true }, ...cmpVCommon });
+Object.assign(cmpVContractEl, { dataSet: cmpVData, chartTitle: "ComparableVertical canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...cmpVCommon });
+const cmpVDescendantContractEl = document.getElementById("cmpVDescendantContractChart");
+Object.assign(cmpVDescendantContractEl, {
+  dataSet: cmpVData,
+  chartTitle: "ComparableVertical canvas + descendant CSS",
+  renderer: "canvas",
+  skipColorMappingDispatch: true,
+  valueBasedOpacity: 1,
+  valueComparedOpacity: 1,
+  ...cmpVCommon,
 });
 
 // ---- DualHorizontalBar (tornado) setup ----
@@ -541,6 +585,65 @@ try {
   }
   log(cmpDescendantBasedOk, "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-based { stroke: rgb(10,200,10) }` (url() fill falls through) reached canvas pixels");
   log(cmpDescendantComparedOk, "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels");
+
+  // ---- ComparableVerticalBar checks ----
+  const cmpVBars = cmpVSvgEl.querySelectorAll("rect.bar");
+  log(cmpVBars.length === 6, `CMPV: SVG renders 6 bars (3 categories x based+compared) (got ${cmpVBars.length})`);
+  log(cmpVSvgEl.querySelectorAll("rect.bar.value-based").length === 3 && cmpVSvgEl.querySelectorAll("rect.bar.value-compared").length === 3, "CMPV: 3 based + 3 compared sub-bars");
+  log(!!cmpVSvgEl.querySelector('rect.bar[data-label-safe="Alpha_One"]'), 'CMPV: bar carries data-label-safe="Alpha_One"');
+
+  // Fixed z-order (unlike CMP horizontal): valueBased is ALWAYS first/behind, valueCompared ALWAYS second/in front.
+  const cmpVOrder = Array.from(cmpVSvgEl.querySelectorAll('g.data-group[data-label="Alpha One"] rect.bar')).map((r) => r.classList.contains("value-based") ? "based" : "compared");
+  log(cmpVOrder.length === 2 && cmpVOrder[0] === "based" && cmpVOrder[1] === "compared", `CMPV: FIXED z-order valueBased behind, valueCompared in front (got ${cmpVOrder.join(",")})`);
+
+  // Full-bandwidth overlay: based and compared share the same x and width for a column.
+  const cmpVGroup = cmpVSvgEl.querySelector('g.data-group[data-label="Alpha One"]');
+  const cmpVBased = cmpVGroup.querySelector("rect.value-based");
+  const cmpVCompared = cmpVGroup.querySelector("rect.value-compared");
+  log(cmpVBased.getAttribute("x") === cmpVCompared.getAttribute("x") && cmpVBased.getAttribute("width") === cmpVCompared.getAttribute("width"), "CMPV: based/compared share the SAME x and width (full-bandwidth overlay)");
+
+  // Delta indicator: one .mv-delta glyph+label per category, drawn above the taller bar.
+  log(cmpVSvgEl.querySelectorAll(".mv-delta").length === 3, "CMPV: deltaIndicator renders one .mv-delta per category");
+
+  const cvctx = cmpVSvgEl.getContext();
+  log(cvctx && cvctx.chartType === "comparable-vertical-bar-chart" && cvctx.stats.count === 3, "CMPV: getContext() returns comparable-vertical-bar-chart with 3 items");
+  log(typeof cvctx.summary === "string" && cvctx.summary.includes("Comparable vertical bar"), "CMPV: getContext() includes an NL summary");
+  // Unlike CMP horizontal, this chart's context REFLECTS the delta indicator.
+  const cvAlpha = cvctx.series.find((s) => s.label === "Alpha One");
+  log(cvAlpha && cvAlpha.deltaDirection === "up" && cvAlpha.deltaLabel === "+8", `CMPV: context reflects deltaIndicator (deltaDirection/deltaLabel on series[]) (got ${cvAlpha && cvAlpha.deltaDirection}/${cvAlpha && cvAlpha.deltaLabel})`);
+
+  const cva2 = JSON.stringify({ ...cmpVSvgEl.getContext(), renderer: 0 });
+  const cvb2 = JSON.stringify({ ...cmpVCanvasEl.getContext(), renderer: 0 });
+  log(cva2 === cvb2, "CMPV: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(cmpVSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "CMPV: a11y table mirror has 3 rows");
+
+  // THE comparable-vertical colour contract: canvas pixels must reflect consumer CSS fill rgb(30,110,190)
+  const cvcnv = cmpVContractEl.querySelector("canvas");
+  let cmpVContractOk = false;
+  if (cvcnv) {
+    const c = cvcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, cvcnv.width, cvcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 60 && px[i + 1] > 85 && px[i + 1] < 135 && px[i + 2] > 165 && px[i + 3] > 0) { cmpVContractOk = true; break; }
+    }
+  }
+  log(cmpVContractOk, "CMPV CANVAS colour contract: consumer CSS rgb(30,110,190) reached canvas pixels");
+
+  // THE comparable-vertical DESCENDANT colour contract - same thd MonitorV2 shape as CMP horizontal's #cmpDescendantContract.
+  const cvdcnv = cmpVDescendantContractEl.querySelector("canvas");
+  let cmpVDescendantBasedOk = false;
+  let cmpVDescendantComparedOk = false;
+  if (cvdcnv) {
+    const c = cvdcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, cvdcnv.width, cvdcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 40 && px[i + 1] > 175 && px[i + 2] < 40 && px[i + 3] > 0) cmpVDescendantBasedOk = true;
+      if (px[i] > 195 && px[i + 1] < 50 && px[i + 2] > 110 && px[i + 2] < 170 && px[i + 3] > 0) cmpVDescendantComparedOk = true;
+    }
+  }
+  log(cmpVDescendantBasedOk, "CMPV DESCENDANT CANVAS colour contract: `.bar[data-label-safe=\"Beta\"] .value-based { stroke: rgb(10,200,10) }` (url() fill falls through, Beta's based bar is TALLER so it peeks out) reached canvas pixels");
+  log(cmpVDescendantComparedOk, "CMPV DESCENDANT CANVAS colour contract: `.bar[data-label-safe=\"Beta\"] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels");
 
   // ---- DualHorizontalBar checks ----
   const dualBars = dualSvgEl.querySelectorAll("rect.bar");

@@ -2679,6 +2679,334 @@
         }
       ]
     },
+    "comparable-vertical-bar-chart": {
+      "element": "michi-vz-comparable-vertical-bar-chart",
+      "propsType": "ComparableVerticalBarChartProps",
+      "context": "ComparableVerticalBarChartContext",
+      "mount": "mountComparableVerticalBarChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "ComparableBarDataPoint[]",
+          "optional": false,
+          "description": "Array of column categories; each renders two overlaid sub-bars (valueBased behind, valueCompared in front), full column bandwidth, diverging from y=0",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "Optional chart title rendered above the plot",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "480",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 50, right: 50, bottom: 100, left: 60 }",
+          "common": true
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsBasedMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Optional label -> colour map for the value-based sub-bar ONLY (falls back to the row colour). Pair an opaque light tint here with valueBasedOpacity 1 for the crispest before/after contrast (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisFormat",
+          "type": "(d: string) => string",
+          "optional": true,
+          "description": "Formats a category (x tick) label",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisFormat",
+          "type": "(d: number | string) => string",
+          "optional": true,
+          "description": "Formats a y tick value into its display label",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "yAxisDomain",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "Fix the y-axis (value) range instead of deriving it from the data",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "symmetricYDomain",
+          "type": "boolean",
+          "optional": true,
+          "description": "Force a symmetric y-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits centred and the negative/positive sides mirror. Wins over yAxisDomain.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "number",
+          "optional": true,
+          "description": "Approximate number of y-axis (value) ticks",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "xAxisLabelPadding",
+          "type": "number",
+          "optional": true,
+          "description": "Min gap (px) a column label needs before it tilts -45° (chooseAxisMode). Default 8.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "xAxisMode",
+          "type": "\"auto\" | \"horizontal\"",
+          "optional": true,
+          "description": "\"auto\" (default) tilts crowded column labels -45°, else thins; \"horizontal\" keeps them flat (thinning instead), so no rotated-label bottom margin is reserved.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "patternsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based sub-bar - the canvas tiles it via ctx.createPattern, the SVG renderer via a real `<pattern>`/`<image>` def (same contract as ComparableHorizontalBarChart).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "valueBasedOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "Fill opacity of the rear valueBased sub-bar (historical look: 0.45)",
+          "default": "0.45",
+          "common": false
+        },
+        {
+          "name": "valueComparedOpacity",
+          "type": "number",
+          "optional": true,
+          "description": "Fill opacity of the front valueCompared sub-bar (default 0.9)",
+          "default": "0.9",
+          "common": false
+        },
+        {
+          "name": "showZeroLineForYAxis",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw a solid horizontal line at y=0 on the value axis (diverging charts)",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "showGrid",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw horizontal gridlines on the value axis (default false, legacy parity)",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "hideTickLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Hide the x-axis category labels",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "minBarHeight",
+          "type": "number",
+          "optional": true,
+          "description": "Floor for a sub-bar's pixel height so near-zero values stay visible (default 5)",
+          "default": "5",
+          "common": false
+        },
+        {
+          "name": "maxBarWidth",
+          "type": "number",
+          "optional": true,
+          "description": "Cap each column's thickness (px). When few categories would otherwise balloon the bandwidth, the band range shrinks to yield exactly this thickness and is centred in the plot. No-op for dense charts whose natural bandwidth is already below the cap.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "deltaIndicator",
+          "type": "DeltaIndicatorConfig",
+          "optional": true,
+          "description": "Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased, drawn ABOVE each column pair (legacy `translate(bandwidth/3, -32)` placement). Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero `.mv-delta` DOM). Unlike ComparableHorizontalBarChart, THIS chart's context DOES reflect the indicator (per-series direction/color/label) - see DeltaIndicatorConfig JSDoc for the full decision-logic contract.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Loading overlay (stale bars hidden while true)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "| boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data predicate/flag; default = empty dataSet",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the built-in no-data overlay",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "Set by a framework wrapper passing its own overlay node - suppresses the default overlay",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "filter",
+          "type": "{ limit: number; criteria: \"valueBased\" | \"valueCompared\"; sortingDir: \"asc\" | \"desc\"; }",
+          "optional": true,
+          "description": "Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects \"valueBased\" or \"valueCompared\", sortingDir picks highest (desc) or lowest (asc)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\" | \"webgpu\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "( d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: \"based\" | \"compared\", ) => string",
+          "optional": true,
+          "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted). `type` is the hovered sub-bar (\"based\" | \"compared\"); `dataSet` is all rows.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called when the hovered/highlighted label(s) change",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
     "dual-horizontal-bar-chart": {
       "element": "michi-vz-dual-horizontal-bar-chart",
       "propsType": "DualBarChartProps",

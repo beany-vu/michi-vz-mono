@@ -14,6 +14,7 @@ import type {
   ScatterChartProps,
   VerticalStackBarChartProps,
   ComparableBarChartProps,
+  ComparableVerticalBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
@@ -701,6 +702,38 @@ const comparable: Example<ComparableBarChartProps>[] = [
       ]
     }
   }
+];
+
+const comparableVertical: Example<ComparableVerticalBarChartProps>[] = [
+  {
+    id: "comparable-vertical-basic",
+    title: "Sector export value: 2019 vs 2024",
+    description:
+      "Per-sector export value as two full-bandwidth overlapping columns (2019 baseline behind, 2024 in front), with a change arrow + label above each pair - the vertical migration target for legacy sdg-trade BarchartVertical.",
+    element: "michi-vz-comparable-vertical-bar-chart",
+    props: {
+      title: "Merchandise exports by sector: 2019 vs 2024, US$ bn",
+      tooltipFormatter: (d) =>
+        `<strong>${d.label}</strong><br/>2019: ${d.valueBased.toLocaleString()} bn<br/>2024: ${d.valueCompared.toLocaleString()} bn`,
+      valueBasedOpacity: 1,
+      valueComparedOpacity: 1,
+      colorsBasedMapping: {
+        Agriculture: "#c8e6c9",
+        Textiles: "#f8bbd0",
+        Machinery: "#bbdefb",
+        Chemicals: "#ffe0b2",
+        Electronics: "#d1c4e9",
+      },
+      deltaIndicator: { show: true },
+      dataSet: [
+        { label: "Agriculture", valueBased: 420, valueCompared: 468, color: "#2e8b57" },
+        { label: "Textiles", valueBased: 310, valueCompared: 275, color: "#c0392b" },
+        { label: "Machinery", valueBased: 540, valueCompared: 612, color: "#2c6fbb" },
+        { label: "Chemicals", valueBased: 265, valueCompared: 251, color: "#e07b39" },
+        { label: "Electronics", valueBased: 690, valueCompared: 845, color: "#8e44ad" },
+      ],
+    },
+  },
 ];
 
 const dual: Example<DualBarChartProps>[] = [
@@ -1777,6 +1810,7 @@ export const examples = {
   "scatter-chart": scatter,
   "vertical-stack-bar-chart": verticalStackBar,
   "comparable-horizontal-bar-chart": comparable,
+  "comparable-vertical-bar-chart": comparableVertical,
   "dual-horizontal-bar-chart": dual,
   "bar-bell-chart": barBell,
   "range-chart": range,

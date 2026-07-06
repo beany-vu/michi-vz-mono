@@ -48,6 +48,7 @@ const chartOrder: string[] = [
   "radar",
   "vertical-stack-bar",
   "comparable",
+  "comparable-vertical-bar",
   "dual",
   "bar-bell",
   "gap",
