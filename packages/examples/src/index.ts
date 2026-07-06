@@ -1937,7 +1937,7 @@ const choroplethMap: Example<ChoroplethMapChartProps>[] = [
 ];
 
 // SymbolMapChart's `dataSet` items each supply their own lng/lat (core bundles no
-// coordinate table, unlike the legacy sdg-trade MapSymbolForce's CSV) - ~10
+// coordinate table, unlike the legacy sdg-trade MapSymbolForce's CSV) - ~50
 // hand-written real-world capitals/cities, not a comprehensive gazetteer.
 const symbolMap: Example<SymbolMapChartProps>[] = [
   {
@@ -1952,28 +1952,79 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
         `<strong>${d.label}</strong><br/>${d.value.toLocaleString()} bn${
           d.valueSecond !== undefined ? `<br/>of which: ${d.valueSecond.toLocaleString()} bn` : ""
         }`,
+      // ~50 hubs spanning every continent: enough dot density that the cloud
+      // itself sketches the world map (too few points reads as a scatter plot).
       dataSet: [
+        // Americas
         { id: "usa", label: "United States", lng: -95.7, lat: 38.9, value: 100 },
-        { id: "deu", label: "Germany", lng: 13.4, lat: 52.5, value: 60, valueSecond: 30 },
-        { id: "vnm", label: "Vietnam", lng: 105.8, lat: 21.0, value: 20 },
+        { id: "can", label: "Canada", lng: -75.7, lat: 45.4, value: 38 },
+        { id: "mex", label: "Mexico", lng: -99.1, lat: 19.4, value: 34 },
+        { id: "gtm", label: "Guatemala", lng: -90.5, lat: 14.6, value: 6 },
+        { id: "col", label: "Colombia", lng: -74.1, lat: 4.7, value: 12 },
+        { id: "ven", label: "Venezuela", lng: -66.9, lat: 10.5, value: 7 },
+        { id: "per", label: "Peru", lng: -77.0, lat: -12.0, value: 10 },
         { id: "bra", label: "Brazil", lng: -47.9, lat: -15.8, value: 45 },
-        { id: "zaf", label: "South Africa", lng: 28.2, lat: -25.7, value: 15 },
-        { id: "ind", label: "India", lng: 77.2, lat: 28.6, value: 70, valueSecond: 50 },
-        { id: "chn", label: "China", lng: 116.4, lat: 39.9, value: 90 },
-        { id: "aus", label: "Australia", lng: 149.1, lat: -35.3, value: 25 },
+        { id: "arg", label: "Argentina", lng: -58.4, lat: -34.6, value: 17 },
+        { id: "chl", label: "Chile", lng: -70.7, lat: -33.4, value: 14 },
+        // Europe
         { id: "gbr", label: "United Kingdom", lng: -0.1, lat: 51.5, value: 55 },
+        { id: "irl", label: "Ireland", lng: -6.3, lat: 53.3, value: 12 },
+        { id: "prt", label: "Portugal", lng: -9.1, lat: 38.7, value: 8 },
+        { id: "esp", label: "Spain", lng: -3.7, lat: 40.4, value: 30 },
+        { id: "fra", label: "France", lng: 2.3, lat: 48.9, value: 50 },
+        { id: "bel", label: "Belgium", lng: 4.4, lat: 50.8, value: 27 },
+        { id: "nld", label: "Netherlands", lng: 4.9, lat: 52.4, value: 44 },
+        { id: "che", label: "Switzerland", lng: 7.4, lat: 46.9, value: 24 },
+        { id: "deu", label: "Germany", lng: 13.4, lat: 52.5, value: 60, valueSecond: 30 },
+        { id: "ita", label: "Italy", lng: 12.5, lat: 41.9, value: 38 },
+        { id: "nor", label: "Norway", lng: 10.7, lat: 59.9, value: 11 },
+        { id: "swe", label: "Sweden", lng: 18.1, lat: 59.3, value: 15 },
+        { id: "pol", label: "Poland", lng: 21.0, lat: 52.2, value: 21 },
+        { id: "grc", label: "Greece", lng: 23.7, lat: 38.0, value: 6 },
+        { id: "tur", label: "Turkey", lng: 32.9, lat: 39.9, value: 19 },
+        // Africa
+        { id: "mar", label: "Morocco", lng: -6.8, lat: 34.0, value: 8 },
+        { id: "dza", label: "Algeria", lng: 3.0, lat: 36.8, value: 6 },
+        { id: "egy", label: "Egypt", lng: 31.2, lat: 30.0, value: 9 },
+        { id: "nga", label: "Nigeria", lng: 7.5, lat: 9.1, value: 10 },
+        { id: "gha", label: "Ghana", lng: -0.2, lat: 5.6, value: 5 },
+        { id: "civ", label: "Côte d'Ivoire", lng: -4.0, lat: 5.3, value: 4 },
+        { id: "eth", label: "Ethiopia", lng: 38.7, lat: 9.0, value: 4 },
         { id: "ken", label: "Kenya", lng: 36.8, lat: -1.3, value: 10 },
+        { id: "tza", label: "Tanzania", lng: 39.3, lat: -6.8, value: 4 },
+        { id: "zaf", label: "South Africa", lng: 28.2, lat: -25.7, value: 15 },
+        // Middle East + Central/South Asia
+        { id: "sau", label: "Saudi Arabia", lng: 46.7, lat: 24.7, value: 22 },
+        { id: "are", label: "United Arab Emirates", lng: 54.4, lat: 24.5, value: 29 },
+        { id: "rus", label: "Russia", lng: 37.6, lat: 55.8, value: 24 },
+        { id: "kaz", label: "Kazakhstan", lng: 71.4, lat: 51.2, value: 6 },
+        { id: "pak", label: "Pakistan", lng: 73.0, lat: 33.7, value: 6 },
+        { id: "ind", label: "India", lng: 77.2, lat: 28.6, value: 70, valueSecond: 50 },
+        { id: "bgd", label: "Bangladesh", lng: 90.4, lat: 23.8, value: 9 },
+        // East + Southeast Asia
+        { id: "tha", label: "Thailand", lng: 100.5, lat: 13.8, value: 18 },
+        { id: "vnm", label: "Vietnam", lng: 105.8, lat: 21.0, value: 20 },
+        { id: "mys", label: "Malaysia", lng: 101.7, lat: 3.1, value: 21 },
+        { id: "sgp", label: "Singapore", lng: 103.8, lat: 1.4, value: 33 },
+        { id: "idn", label: "Indonesia", lng: 106.8, lat: -6.2, value: 19 },
+        { id: "phl", label: "Philippines", lng: 121.0, lat: 14.6, value: 9 },
+        { id: "chn", label: "China", lng: 116.4, lat: 39.9, value: 90 },
+        { id: "kor", label: "South Korea", lng: 127.0, lat: 37.6, value: 40 },
+        { id: "jpn", label: "Japan", lng: 139.7, lat: 35.7, value: 44 },
+        // Oceania
+        { id: "aus", label: "Australia", lng: 149.1, lat: -35.3, value: 25 },
+        { id: "nzl", label: "New Zealand", lng: 174.8, lat: -41.3, value: 7 },
       ],
     },
   },
   {
     id: "symbol-map-with-backdrop",
-    title: "Regional trade value with a muted backdrop",
+    title: "Trade value by country with a muted backdrop",
     description:
       "The OPTIONAL `geography` backdrop (a new capability - the legacy chart never drew landmass): reuses the real world atlas (176 countries, ISO-A3) so the symbol coordinates and the muted landmass share one consistent geographic framing.",
     element: "michi-vz-symbol-map-chart",
     props: {
-      title: "Regional trade value with a muted backdrop",
+      title: "Trade value by country with a muted backdrop",
       geography: world,
       // Explicit overrides: the engine defaults (geographyColor #eef1f5, strokeColor
       // #d7dce3) read as near-invisible against this docs theme's stage background
@@ -1982,11 +2033,25 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
       geographyColor: "#d2d7dd",
       strokeColor: "#aab3bf",
       dataSet: [
-        { id: "usa", label: "North America", lng: -100, lat: 40, value: 80 },
-        { id: "deu", label: "Europe", lng: 15, lat: 50, value: 65 },
-        { id: "chn", label: "East Asia", lng: 115, lat: 35, value: 90 },
-        { id: "zaf", label: "Africa", lng: 20, lat: -10, value: 30 },
-        { id: "aus", label: "Australia", lng: 135, lat: -25, value: 20 },
+        { id: "usa", label: "United States", lng: -95.7, lat: 38.9, value: 80 },
+        { id: "can", label: "Canada", lng: -75.7, lat: 45.4, value: 25 },
+        { id: "mex", label: "Mexico", lng: -99.1, lat: 19.4, value: 22 },
+        { id: "bra", label: "Brazil", lng: -47.9, lat: -15.8, value: 35 },
+        { id: "arg", label: "Argentina", lng: -58.4, lat: -34.6, value: 12 },
+        { id: "gbr", label: "United Kingdom", lng: -0.1, lat: 51.5, value: 40 },
+        { id: "deu", label: "Germany", lng: 13.4, lat: 52.5, value: 65 },
+        { id: "esp", label: "Spain", lng: -3.7, lat: 40.4, value: 20 },
+        { id: "tur", label: "Turkey", lng: 32.9, lat: 39.9, value: 14 },
+        { id: "nga", label: "Nigeria", lng: 7.5, lat: 9.1, value: 9 },
+        { id: "ken", label: "Kenya", lng: 36.8, lat: -1.3, value: 8 },
+        { id: "zaf", label: "South Africa", lng: 28.2, lat: -25.7, value: 18 },
+        { id: "sau", label: "Saudi Arabia", lng: 46.7, lat: 24.7, value: 16 },
+        { id: "ind", label: "India", lng: 77.2, lat: 28.6, value: 50 },
+        { id: "sgp", label: "Singapore", lng: 103.8, lat: 1.4, value: 24 },
+        { id: "chn", label: "China", lng: 116.4, lat: 39.9, value: 90 },
+        { id: "kor", label: "South Korea", lng: 127.0, lat: 37.6, value: 28 },
+        { id: "jpn", label: "Japan", lng: 139.7, lat: 35.7, value: 32 },
+        { id: "aus", label: "Australia", lng: 149.1, lat: -35.3, value: 15 },
       ],
     },
   },

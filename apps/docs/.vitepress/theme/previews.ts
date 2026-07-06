@@ -29,6 +29,10 @@ import {
   mountBubbleChart,
   mountSankeyChart,
   mountFountainChart,
+  mountComparableVerticalBarChart,
+  mountChoroplethMapChart,
+  mountSymbolMapChart,
+  mountRadialTreeChart,
 } from "@michi-vz/core";
 import type {
   ChartInstance,
@@ -49,7 +53,17 @@ import type {
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
+  ComparableVerticalBarChartProps,
+  ChoroplethMapChartProps,
+  SymbolMapChartProps,
+  RadialTreeChartProps,
 } from "@michi-vz/core";
+// Real 176-country world atlas, reused from the examples package (geography is
+// ALWAYS consumer-supplied; core bundles no topology). Vite dedupes the module,
+// so the thumbnail shares the JSON already bundled for the chart pages.
+import { examples } from "@michi-vz/examples";
+
+const world = (examples["choropleth-map-chart"][0].props as ChoroplethMapChartProps).geography;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Mount = (el: HTMLElement, props: any) => ChartInstance<any>;
@@ -355,5 +369,115 @@ export const previews: Record<string, Preview> = {
         },
       ],
     } satisfies FanChartProps,
+  },
+
+  "comparable-vertical-bar-chart": {
+    mount: mountComparableVerticalBarChart as Mount,
+    props: {
+      // Pale tint behind + solid in front (the legacy-parity recipe): the
+      // before/after overlap is the chart's signature, so the thumbnail keeps it.
+      valueBasedOpacity: 1,
+      valueComparedOpacity: 1,
+      colorsBasedMapping: { A: "#f2dcaf", B: "#c5d9ee", C: "#c9e0d1", D: "#ddd0e7" },
+      dataSet: [
+        { label: "A", valueBased: 24, valueCompared: 33, color: GOLD },
+        { label: "B", valueBased: 30, valueCompared: 25, color: BLUE },
+        { label: "C", valueBased: 15, valueCompared: 27, color: GREEN },
+        { label: "D", valueBased: 22, valueCompared: 35, color: PLUM },
+      ],
+    } satisfies ComparableVerticalBarChartProps,
+  },
+
+  "choropleth-map-chart": {
+    mount: mountChoroplethMapChart as Mount,
+    props: {
+      geography: world,
+      noDataColor: "#ece5d8",
+      colorScale: {
+        domain: [20, 45, 70],
+        range: ["#f5e7c6", GOLD, RED, "#7c1f14"],
+      },
+      dataSet: [
+        { id: "USA", label: "United States", value: 75 },
+        { id: "CAN", label: "Canada", value: 30 },
+        { id: "BRA", label: "Brazil", value: 50 },
+        { id: "ARG", label: "Argentina", value: 25 },
+        { id: "FRA", label: "France", value: 55 },
+        { id: "DEU", label: "Germany", value: 72 },
+        { id: "DZA", label: "Algeria", value: 18 },
+        { id: "NGA", label: "Nigeria", value: 35 },
+        { id: "ZAF", label: "South Africa", value: 48 },
+        { id: "EGY", label: "Egypt", value: 22 },
+        { id: "RUS", label: "Russia", value: 40 },
+        { id: "IND", label: "India", value: 60 },
+        { id: "CHN", label: "China", value: 78 },
+        { id: "IDN", label: "Indonesia", value: 42 },
+        { id: "AUS", label: "Australia", value: 52 },
+      ],
+    } satisfies ChoroplethMapChartProps,
+  },
+
+  "symbol-map-chart": {
+    mount: mountSymbolMapChart as Mount,
+    props: {
+      showLabels: false,
+      radiusRange: [2, 11],
+      // Dense enough that the dot-cloud sketches the continents; too few points
+      // and the card reads as a scatter plot.
+      dataSet: [
+        { id: "usa", label: "United States", lng: -95.7, lat: 38.9, value: 90, color: BLUE },
+        { id: "can", label: "Canada", lng: -75.7, lat: 45.4, value: 30, color: RED },
+        { id: "mex", label: "Mexico", lng: -99.1, lat: 19.4, value: 26, color: GOLD },
+        { id: "col", label: "Colombia", lng: -74.1, lat: 4.7, value: 12, color: PLUM },
+        { id: "per", label: "Peru", lng: -77.0, lat: -12.0, value: 10, color: BLUE },
+        { id: "bra", label: "Brazil", lng: -47.9, lat: -15.8, value: 45, color: GREEN },
+        { id: "arg", label: "Argentina", lng: -58.4, lat: -34.6, value: 16, color: GOLD },
+        { id: "chl", label: "Chile", lng: -70.7, lat: -33.4, value: 12, color: RED },
+        { id: "gbr", label: "United Kingdom", lng: -0.1, lat: 51.5, value: 40, color: RED },
+        { id: "esp", label: "Spain", lng: -3.7, lat: 40.4, value: 22, color: PLUM },
+        { id: "fra", label: "France", lng: 2.3, lat: 48.9, value: 36, color: BLUE },
+        { id: "nld", label: "Netherlands", lng: 4.9, lat: 52.4, value: 28, color: GREEN },
+        { id: "deu", label: "Germany", lng: 13.4, lat: 52.5, value: 55, color: GOLD },
+        { id: "ita", label: "Italy", lng: 12.5, lat: 41.9, value: 26, color: GREEN },
+        { id: "swe", label: "Sweden", lng: 18.1, lat: 59.3, value: 12, color: BLUE },
+        { id: "pol", label: "Poland", lng: 21.0, lat: 52.2, value: 15, color: RED },
+        { id: "tur", label: "Turkey", lng: 32.9, lat: 39.9, value: 14, color: GOLD },
+        { id: "mar", label: "Morocco", lng: -6.8, lat: 34.0, value: 8, color: GREEN },
+        { id: "egy", label: "Egypt", lng: 31.2, lat: 30.0, value: 9, color: BLUE },
+        { id: "nga", label: "Nigeria", lng: 7.5, lat: 9.1, value: 10, color: RED },
+        { id: "ken", label: "Kenya", lng: 36.8, lat: -1.3, value: 8, color: GOLD },
+        { id: "zaf", label: "South Africa", lng: 28.2, lat: -25.7, value: 20, color: PLUM },
+        { id: "sau", label: "Saudi Arabia", lng: 46.7, lat: 24.7, value: 16, color: GREEN },
+        { id: "rus", label: "Russia", lng: 37.6, lat: 55.8, value: 20, color: PLUM },
+        { id: "ind", label: "India", lng: 77.2, lat: 28.6, value: 60, color: GOLD },
+        { id: "tha", label: "Thailand", lng: 100.5, lat: 13.8, value: 14, color: RED },
+        { id: "sgp", label: "Singapore", lng: 103.8, lat: 1.4, value: 22, color: BLUE },
+        { id: "idn", label: "Indonesia", lng: 106.8, lat: -6.2, value: 15, color: GOLD },
+        { id: "chn", label: "China", lng: 116.4, lat: 39.9, value: 85, color: RED },
+        { id: "kor", label: "South Korea", lng: 127.0, lat: 37.6, value: 26, color: GREEN },
+        { id: "jpn", label: "Japan", lng: 139.7, lat: 35.7, value: 50, color: BLUE },
+        { id: "aus", label: "Australia", lng: 151.2, lat: -33.9, value: 30, color: GREEN },
+        { id: "nzl", label: "New Zealand", lng: 174.8, lat: -41.3, value: 8, color: PLUM },
+      ],
+    } satisfies SymbolMapChartProps,
+  },
+
+  "radial-tree-chart": {
+    mount: mountRadialTreeChart as Mount,
+    props: {
+      // Labels off entirely: 12 leaves at 124px would be pure clutter.
+      labelDensityThresholds: { hideAbove: 0 },
+      dataSet: [
+        { label: "Alpha", color: GOLD, children: [
+          { label: "a1", value: 12, color: GOLD }, { label: "a2", value: 7, color: GOLD },
+          { label: "a3", value: 9, color: GOLD }, { label: "a4", value: 5, color: GOLD }] },
+        { label: "Beta", color: BLUE, children: [
+          { label: "b1", value: 15, color: BLUE }, { label: "b2", value: 6, color: BLUE },
+          { label: "b3", value: 11, color: BLUE }, { label: "b4", value: 8, color: BLUE }] },
+        { label: "Gamma", color: GREEN, children: [
+          { label: "g1", value: 10, color: GREEN }, { label: "g2", value: 13, color: GREEN },
+          { label: "g3", value: 4, color: GREEN }, { label: "g4", value: 7, color: GREEN }] },
+      ],
+    } satisfies RadialTreeChartProps,
   },
 };
