@@ -28,6 +28,7 @@ import type {
   FountainChartProps,
   ChoroplethMapChartProps,
   GeoFeatureItem,
+  SymbolMapChartProps,
 } from "@michi-vz/core";
 
 export interface Example<P = Record<string, unknown>> {
@@ -2080,6 +2081,56 @@ const choroplethMap: Example<ChoroplethMapChartProps>[] = [
   },
 ];
 
+// SymbolMapChart's `dataSet` items each supply their own lng/lat (core bundles no
+// coordinate table, unlike the legacy sdg-trade MapSymbolForce's CSV) - ~10
+// hand-written real-world capitals/cities, not a comprehensive gazetteer.
+const symbolMap: Example<SymbolMapChartProps>[] = [
+  {
+    id: "symbol-map-trade-hubs",
+    title: "Merchandise trade value by hub, 2024 (US$ bn)",
+    description:
+      "Dot-only look (no `geography` - the legacy MapSymbolForce parity default): each item projects through an untuned geoMercator(), then a one-shot force simulation de-overlaps the circles. Germany and India also carry a concentric `valueSecond` ring (a sub-metric, e.g. \"of which intra-regional\").",
+    element: "michi-vz-symbol-map-chart",
+    props: {
+      title: "Merchandise trade value by hub, 2024 (US$ bn)",
+      tooltipFormatter: (d) =>
+        `<strong>${d.label}</strong><br/>${d.value.toLocaleString()} bn${
+          d.valueSecond !== undefined ? `<br/>of which: ${d.valueSecond.toLocaleString()} bn` : ""
+        }`,
+      dataSet: [
+        { id: "usa", label: "United States", lng: -95.7, lat: 38.9, value: 100 },
+        { id: "deu", label: "Germany", lng: 13.4, lat: 52.5, value: 60, valueSecond: 30 },
+        { id: "vnm", label: "Vietnam", lng: 105.8, lat: 21.0, value: 20 },
+        { id: "bra", label: "Brazil", lng: -47.9, lat: -15.8, value: 45 },
+        { id: "zaf", label: "South Africa", lng: 28.2, lat: -25.7, value: 15 },
+        { id: "ind", label: "India", lng: 77.2, lat: 28.6, value: 70, valueSecond: 50 },
+        { id: "chn", label: "China", lng: 116.4, lat: 39.9, value: 90 },
+        { id: "aus", label: "Australia", lng: 149.1, lat: -35.3, value: 25 },
+        { id: "gbr", label: "United Kingdom", lng: -0.1, lat: 51.5, value: 55 },
+        { id: "ken", label: "Kenya", lng: 36.8, lat: -1.3, value: 10 },
+      ],
+    },
+  },
+  {
+    id: "symbol-map-with-backdrop",
+    title: "Regional trade value with a muted backdrop",
+    description:
+      "The OPTIONAL `geography` backdrop (a new capability - the legacy chart never drew landmass): reuses ChoroplethMapChart's tiny illustrative region sample so the symbol coordinates and the muted landmass share one consistent geographic framing.",
+    element: "michi-vz-symbol-map-chart",
+    props: {
+      title: "Regional trade value with a muted backdrop",
+      geography: worldRegionsSample,
+      dataSet: [
+        { id: "usa", label: "North America", lng: -100, lat: 40, value: 80 },
+        { id: "deu", label: "Europe", lng: 15, lat: 50, value: 65 },
+        { id: "chn", label: "East Asia", lng: 115, lat: 35, value: 90 },
+        { id: "zaf", label: "Africa", lng: 20, lat: -10, value: 30 },
+        { id: "aus", label: "Australia", lng: 135, lat: -25, value: 20 },
+      ],
+    },
+  },
+];
+
 /** Canonical examples, keyed by chart id. Consumers index by key. */
 export const examples = {
   "gap-chart": gap,
@@ -2101,6 +2152,7 @@ export const examples = {
   "sankey-chart": sankey,
   "fountain-chart": fountain,
   "choropleth-map-chart": choroplethMap,
+  "symbol-map-chart": symbolMap,
 };
 
 /** Ordered chart ids (for nav / iteration). */

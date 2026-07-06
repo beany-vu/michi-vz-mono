@@ -5127,7 +5127,7 @@
         },
         {
           "name": "projection",
-          "type": "| \"geoEqualEarth\" | \"geoMercator\" | \"geoTransverseMercator\" | \"geoAlbers\" | \"geoAlbersUsa\" | \"geoAzimuthalEqualArea\" | \"geoAzimuthalEquidistant\" | \"geoOrthographic\" | \"geoConicConformal\" | \"geoConicEqualArea\" | \"geoConicEquidistant\" | \"geoRobinson\" | \"geoGilbert\"",
+          "type": "GeoProjectionName",
           "optional": true,
           "description": "d3-geo / d3-geo-projection projection to use (default \"geoRobinson\", the legacy sdg-trade MapChoropleth default). `geoAlbersUsa` is a fixed composite projection - it ignores `rotate`/`center`/`parallels`.",
           "default": "",
@@ -5135,7 +5135,7 @@
         },
         {
           "name": "projectionConfig",
-          "type": "{ /** Below 600px width the effective scale is x0.7; below 400px, x0.5 (legacy * responsive step-down) - only applied when `scale` is explicitly set. */ scale?: number; rotate?: [number, number, number?]; center?: [number, number]; parallels?: [number, number]; }",
+          "type": "GeoProjectionConfig",
           "optional": true,
           "description": "Fine-tunes the chosen projection. Omitted fields fall back to the legacy MapChoropleth defaults (rotate [-18, 0], center [0, 10], base scale derived from width) rather than `projection.fitSize` - this matches the legacy chart's visual result exactly; pass your own values to frame a different geography extent (e.g. a single-region subset).",
           "default": "",
@@ -5284,6 +5284,262 @@
           "description": "Animate updates with CSS transitions (default true)",
           "default": "true",
           "common": true
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called when the hovered/highlighted label(s) change",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
+    "symbol-map-chart": {
+      "element": "michi-vz-symbol-map-chart",
+      "propsType": "SymbolMapChartProps",
+      "context": "SymbolMapChartContext",
+      "mount": "mountSymbolMapChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "SymbolMapDataItem[]",
+          "optional": false,
+          "description": "Array of symbols; each supplies its own lng/lat (core bundles no coordinate table).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "geography",
+          "type": "GeoJSON.FeatureCollection | GeoFeatureItem[]",
+          "optional": true,
+          "description": "OPTIONAL muted backdrop landmass (new capability - the legacy chart never drew one). A full GeoJSON FeatureCollection or a pre-normalized `GeoFeatureItem[]`, same contract as `ChoroplethMapChartProps.geography`. Omit for the legacy chart's dot-only look (the default).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "Optional chart title rendered above the plot",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "520",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 40, right: 10, bottom: 10, left: 10 }",
+          "common": true
+        },
+        {
+          "name": "projection",
+          "type": "GeoProjectionName",
+          "optional": true,
+          "description": "d3-geo / d3-geo-projection projection (default \"geoMercator\", matching the legacy chart). With no `geography`, the projection is used UNTUNED (bare `factory()`, no translate/scale/rotate/center) and the projected point extent is rescaled to fill the plot - see the chart's docs page. With `geography` supplied, the SAME tuned dispatch as ChoroplethMapChart is used instead, so the backdrop and the symbols share one consistent geographic framing.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "projectionConfig",
+          "type": "GeoProjectionConfig",
+          "optional": true,
+          "description": "Fine-tunes the projection; only consulted when `geography` is supplied (see `projection`).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "radiusRange",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "[min, max] circle radius in px (default [3, 70], the legacy `circleRange`).",
+          "default": "DEFAULT_RADIUS_RANGE",
+          "common": false
+        },
+        {
+          "name": "radiusVisibleMin",
+          "type": "number",
+          "optional": true,
+          "description": "Hides items whose RAW `value` is <= this threshold (and, when `valueSecond` is set, whose `valueSecond` is also < this threshold) BEFORE the force layout runs - ported from the legacy chart's own filter, which compares the raw value/valueSecond, not the scaled radius. Omit to show every located item.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "geographyColor",
+          "type": "string",
+          "optional": true,
+          "description": "Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral).",
+          "default": "DEFAULT_GEOGRAPHY_COLOR",
+          "common": false
+        },
+        {
+          "name": "strokeColor",
+          "type": "string",
+          "optional": true,
+          "description": "Border colour for the optional backdrop `geography` (default `#d7dce3`).",
+          "default": "DEFAULT_STROKE_COLOR",
+          "common": false
+        },
+        {
+          "name": "strokeWidth",
+          "type": "number",
+          "optional": true,
+          "description": "Border width for the optional backdrop `geography`, in px (default 1).",
+          "default": "1",
+          "common": false
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "showLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw a fitted label inside each circle when it is large enough (default true).",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\" | \"webgpu\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Loading overlay (stale symbols hidden while true)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: SymbolMapDataItem[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data predicate/flag; default = empty dataSet",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the built-in no-data overlay",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "Set by a framework wrapper passing its own overlay node - suppresses the default overlay",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: SymbolMapDataItem) => string",
+          "optional": true,
+          "description": "Formats the tooltip for a hovered symbol.",
+          "default": "",
+          "common": false
         },
         {
           "name": "onHighlightItem",

@@ -55,6 +55,11 @@
      CSS. Single-element selector (no descendant contract needed - a region has no
      sub-marks, unlike ComparableBar's based/compared pair). */
   #choroContract .region[data-label-safe="Alpha"] { fill: rgb(215, 40, 150); }
+  /* SymbolMap consumer colour contract: recolour ONE symbol's fill purely via
+     CSS. Single-element selector (no descendant contract needed - a symbol
+     has no sub-marks beyond its own optional concentric second circle, which
+     shares the primary's colour, not a separate CSS-styleable one). */
+  #symbolContract .symbol[data-label-safe="Alpha"] { fill: rgb(30, 160, 220); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -170,6 +175,17 @@
 </div>
 <h2>ChoroplethMap consumer-CSS fill contract (canvas, single-element path.region[data-label-safe] probe)</h2>
 <div class="card" id="choroContract"><michi-vz-choropleth-map-chart id="choroContractChart"></michi-vz-choropleth-map-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc - SymbolMap (geo, force-de-overlapped bubble map)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer (dot-only)</h2><michi-vz-symbol-map-chart id="symbolSvg"></michi-vz-symbol-map-chart></div>
+  <div class="card"><h2>Canvas renderer (dot-only)</h2><michi-vz-symbol-map-chart id="symbolCanvas"></michi-vz-symbol-map-chart></div>
+  <div class="card"><h2>SVG renderer + optional backdrop geography</h2><michi-vz-symbol-map-chart id="symbolBackdrop"></michi-vz-symbol-map-chart></div>
+</div>
+<h2>SymbolMap consumer-CSS fill contract (canvas, single-element circle.symbol[data-label-safe] probe)</h2>
+<div class="card" id="symbolContract"><michi-vz-symbol-map-chart id="symbolContractChart"></michi-vz-symbol-map-chart></div>
+<h2>SymbolMap de-overlap sanity check (two identical-coordinate points)</h2>
+<div class="card"><michi-vz-symbol-map-chart id="symbolOverlap"></michi-vz-symbol-map-chart></div>
 
 <div id="results">running…</div>
 
@@ -421,6 +437,38 @@ const choroContractEl = document.getElementById("choroContractChart");
 Object.assign(choroSvgEl, { dataSet: choroData, chartTitle: "Choropleth (geo)", renderer: "svg", ...choroCommon });
 Object.assign(choroCanvasEl, { dataSet: choroData, chartTitle: "Choropleth (geo)", renderer: "canvas", ...choroCommon });
 Object.assign(choroContractEl, { dataSet: choroData, chartTitle: "Choropleth canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...choroCommon });
+
+// ---- SymbolMap setup ---- (dataSet items each supply their own lng/lat - core
+// bundles no coordinate table, unlike the legacy MapSymbolForce's CSV)
+const symbolCommon = { width: 460, height: 280 };
+const symbolData = [
+  { id: "Alpha", label: "Alpha", lng: -30, lat: 0, value: 40 },
+  { id: "Beta", label: "Beta", lng: 20, lat: 0, value: 90, valueSecond: 45 }, // concentric second ring
+  { id: "Gamma", label: "Gamma", lng: 50, lat: 5, value: 15 },
+];
+const symbolSvgEl = document.getElementById("symbolSvg");
+const symbolCanvasEl = document.getElementById("symbolCanvas");
+const symbolContractEl = document.getElementById("symbolContractChart");
+const symbolBackdropEl = document.getElementById("symbolBackdrop");
+const symbolOverlapEl = document.getElementById("symbolOverlap");
+Object.assign(symbolSvgEl, { dataSet: symbolData, chartTitle: "SymbolMap (dot-only)", renderer: "svg", ...symbolCommon });
+Object.assign(symbolCanvasEl, { dataSet: symbolData, chartTitle: "SymbolMap (dot-only)", renderer: "canvas", ...symbolCommon });
+Object.assign(symbolContractEl, { dataSet: symbolData, chartTitle: "SymbolMap canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...symbolCommon });
+// Reuses ChoroplethMap's tiny illustrative geography sample as the optional
+// muted backdrop, so the same three symbols read against a landmass context.
+Object.assign(symbolBackdropEl, {
+  dataSet: symbolData,
+  chartTitle: "SymbolMap + backdrop",
+  geography: choroGeography,
+  ...symbolCommon,
+});
+// De-overlap sanity check: two items at the EXACT same lng/lat must settle to
+// different, non-overlapping pixel positions once the force simulation runs.
+const symbolOverlapData = [
+  { id: "Same1", label: "Same1", lng: 0, lat: 0, value: 30 },
+  { id: "Same2", label: "Same2", lng: 0, lat: 0, value: 30 },
+];
+Object.assign(symbolOverlapEl, { dataSet: symbolOverlapData, chartTitle: "De-overlap check", renderer: "svg", ...symbolCommon });
 
 await nextFrame();
 
@@ -858,6 +906,50 @@ try {
     }
   }
   log(choroContractOk, "CHORO CANVAS colour contract: consumer CSS rgb(215,40,150) reached canvas pixels");
+
+  // ---- SymbolMap checks ----
+  const symbolCircles = symbolSvgEl.querySelectorAll("circle.symbol");
+  log(symbolCircles.length === 3, `SYMBOL: SVG renders 3 circle.symbol marks (got ${symbolCircles.length})`);
+  log(!!symbolSvgEl.querySelector('circle.symbol[data-label-safe="Alpha"]'), 'SYMBOL: circle carries data-label-safe="Alpha"');
+  log(symbolSvgEl.querySelectorAll("circle.symbol-second").length === 1, "SYMBOL: exactly 1 concentric second ring (Beta's valueSecond)");
+  log(symbolSvgEl.querySelectorAll("path.geography").length === 0, "SYMBOL: no backdrop geography by default (dot-only look)");
+  log(symbolBackdropEl.querySelectorAll("path.geography").length === 3, "SYMBOL: backdrop mode draws 3 muted geography paths");
+
+  const symCtx = symbolSvgEl.getContext();
+  log(symCtx && symCtx.chartType === "symbol-map-chart" && symCtx.stats.visibleCount === 3, "SYMBOL: getContext() returns symbol-map-chart with 3 visible symbols");
+  log(symCtx && symCtx.projection === "geoMercator", "SYMBOL: default projection is geoMercator");
+  log(symCtx && typeof symCtx.summary === "string" && symCtx.summary.includes("Symbol map"), "SYMBOL: getContext() includes an NL summary");
+
+  const symA = JSON.stringify({ ...symbolSvgEl.getContext(), renderer: 0 });
+  const symB = JSON.stringify({ ...symbolCanvasEl.getContext(), renderer: 0 });
+  log(symA === symB, "SYMBOL: getContext() identical in SVG vs canvas (renderer aside)");
+
+  // THE symbol colour contract: canvas pixels must reflect consumer CSS fill rgb(30,160,220)
+  const symCnv = symbolContractEl.querySelector("canvas");
+  let symbolContractOk = false;
+  if (symCnv) {
+    const c = symCnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, symCnv.width, symCnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 60 && px[i + 1] > 135 && px[i + 1] < 185 && px[i + 2] > 195 && px[i + 3] > 0) { symbolContractOk = true; break; }
+    }
+  }
+  log(symbolContractOk, "SYMBOL CANVAS colour contract: consumer CSS rgb(30,160,220) reached canvas pixels");
+
+  // De-overlap sanity check: two identical-coordinate points must settle to
+  // DIFFERENT pixel centres, at least as far apart as their combined radii
+  // (minus the small forceCollide padding tolerance) - never left stacked.
+  const overlapCircles = Array.from(symbolOverlapEl.querySelectorAll("circle.symbol"));
+  log(overlapCircles.length === 2, `SYMBOL DE-OVERLAP: renders 2 circles (got ${overlapCircles.length})`);
+  if (overlapCircles.length === 2) {
+    const cells = overlapCircles.map((c) => c.closest("g.symbol-cell"));
+    const coords = cells.map((g) => g.getAttribute("transform").match(/-?[\d.]+/g).map(Number));
+    const radii = overlapCircles.map((c) => Number(c.getAttribute("r")));
+    const dx = coords[0][0] - coords[1][0];
+    const dy = coords[0][1] - coords[1][1];
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    log(dist > radii[0] + radii[1] - 2, `SYMBOL DE-OVERLAP: two identical-coordinate points end up non-overlapping (dist=${dist.toFixed(1)}, radii sum=${(radii[0] + radii[1]).toFixed(1)})`);
+  }
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
