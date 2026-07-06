@@ -20,6 +20,7 @@ export { mountPieChart } from "./engine/pieChart";
 export { mountBubbleChart } from "./engine/bubbleChart";
 export { mountSankeyChart } from "./engine/sankeyChart";
 export { mountFountainChart } from "./engine/fountainChart";
+export { mountChoroplethMapChart } from "./engine/choroplethMapChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -154,6 +155,18 @@ export { createFountainScales } from "./fountainChart/scales";
 export { buildJetPath, buildFrothSlices, buildDropletPaths, buildMistPath } from "./fountainChart/geometry";
 export { buildFountainRenderModel } from "./fountainChart/renderModel";
 export { buildFountainContext } from "./context/buildFountainContext";
+// ChoroplethMap pure layer (geo - the house's first geo chart; d3-geo/d3-geo-projection)
+export { normalizeGeography, processChoroplethMapData } from "./choroplethMap/data";
+export { buildChoroplethColors } from "./choroplethMap/colors";
+export {
+  createChoroplethProjection,
+  createChoroplethPathGenerator,
+  DEFAULT_PROJECTION as CHOROPLETH_DEFAULT_PROJECTION,
+} from "./choroplethMap/scales";
+export { buildChoroplethRenderModel } from "./choroplethMap/renderModel";
+export { pointInGeometry } from "./choroplethMap/hitTest";
+export { buildChoroplethMapContext } from "./context/buildChoroplethMapContext";
+export { checkChoroplethMapData } from "./validate/choroplethMapWarnings";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -284,4 +297,9 @@ export type {
   FountainChartProps,
   FountainJetContext,
   FountainChartContext,
+  GeoFeatureItem,
+  ChoroplethDataItem,
+  ChoroplethMapChartProps,
+  ChoroplethRegionContext,
+  ChoroplethMapChartContext,
 } from "./types";

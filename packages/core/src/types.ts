@@ -1785,6 +1785,175 @@ export interface FountainChartContext extends BaseChartContext {
   };
 }
 
+// ---- ChoroplethMapChart (geo) ----
+// The house's first geo chart. Geography is ALWAYS a prop (see
+// ChoroplethMapChartProps.geography) - core bundles no topology/world data, so a
+// consumer imports its own world/region GeoJSON and passes it straight through.
+
+/** One region's geometry, normalized out of a GeoJSON FeatureCollection or
+ * supplied directly as a flat array. `id` is the join key against
+ * `ChoroplethDataItem.id` (see `ChoroplethMapChartProps.joinBy`); when the
+ * source is a FeatureCollection, `id` is read from the GeoJSON `Feature.id`
+ * (falling back to `properties.id`) and `name` from `properties.name`. */
+export interface GeoFeatureItem {
+  id: string;
+  geometry: GeoJSON.Geometry;
+  /** Display name, used for the no-match tooltip fallback and for `joinBy: "name"`. */
+  name?: string;
+}
+
+/** One row of choropleth data, joined against a geography feature by `id`
+ * (default) or by name (see `ChoroplethMapChartProps.joinBy`). */
+export interface ChoroplethDataItem {
+  /** Join key against `GeoFeatureItem.id` / GeoJSON `Feature.id` (default join mode). */
+  id: string;
+  /** Display label; also the join key against `GeoFeatureItem.name` under `joinBy: "name"`,
+   * and the key used by `colorsMapping`/`highlightItems`/`disabledItems`. */
+  label: string;
+  /** Numeric value driving `colorScale` (scaleThreshold domain/range). Omit for a
+   * purely categorical row resolved via `colorsMapping` or `color`. */
+  value?: number;
+  /** Optional explicit colour for this row, overriding the generated palette colour
+   * (still loses to `colorsMapping` and `colorScale`). */
+  color?: string;
+}
+
+export interface ChoroplethMapChartProps {
+  /** The world/region geography to draw. A full GeoJSON FeatureCollection (its
+   * per-feature `id`/`properties.name` are read automatically) or a pre-normalized
+   * flat array. Core bundles NO topology data - import your own (e.g. a
+   * `world-atlas` TopoJSON converted via `topojson-client`, or a hand-curated
+   * GeoJSON) and pass it here. */
+  geography: GeoJSON.FeatureCollection | GeoFeatureItem[];
+  /** Choropleth values/colours, joined against `geography` (see `joinBy`). */
+  dataSet: ChoroplethDataItem[];
+  /** Optional chart title rendered above the map */
+  title?: string;
+  /** Chart width in pixels */
+  width?: number;
+  /** Chart height in pixels */
+  height?: number;
+  /** Inner margins (top/right/bottom/left, in px) reserved for the title */
+  margin?: Margin;
+  /** d3-geo / d3-geo-projection projection to use (default "geoRobinson", the
+   * legacy sdg-trade MapChoropleth default). `geoAlbersUsa` is a fixed composite
+   * projection - it ignores `rotate`/`center`/`parallels`. */
+  projection?:
+    | "geoEqualEarth"
+    | "geoMercator"
+    | "geoTransverseMercator"
+    | "geoAlbers"
+    | "geoAlbersUsa"
+    | "geoAzimuthalEqualArea"
+    | "geoAzimuthalEquidistant"
+    | "geoOrthographic"
+    | "geoConicConformal"
+    | "geoConicEqualArea"
+    | "geoConicEquidistant"
+    | "geoRobinson"
+    | "geoGilbert";
+  /** Fine-tunes the chosen projection. Omitted fields fall back to the legacy
+   * MapChoropleth defaults (rotate [-18, 0], center [0, 10], base scale derived
+   * from width) rather than `projection.fitSize` - this matches the legacy
+   * chart's visual result exactly; pass your own values to frame a different
+   * geography extent (e.g. a single-region subset). */
+  projectionConfig?: {
+    /** Below 600px width the effective scale is x0.7; below 400px, x0.5 (legacy
+     * responsive step-down) - only applied when `scale` is explicitly set. */
+    scale?: number;
+    rotate?: [number, number, number?];
+    center?: [number, number];
+    parallels?: [number, number];
+  };
+  /** Continuous choropleth encoding: a resolved hex `range` keyed to a numeric
+   * `domain`, built into a d3 `scaleThreshold`. Pass already-resolved colours
+   * (NOT a d3-scale-chromatic scheme name - core stays free of that dependency);
+   * generate the range yourself (e.g. via `d3-scale-chromatic` in your app) if you
+   * want a named scheme. Loses to `colorsMapping`. */
+  colorScale?: { domain: number[]; range: string[] };
+  /** Categorical encoding: explicit label -> colour map: takes precedence over
+   * `colorScale`, `ChoroplethDataItem.color`, and the palette (the sdg-trade Data
+   * Availability "latest year available" use case: a handful of fixed
+   * label -> colour buckets, not a numeric gradient). */
+  colorsMapping?: Record<string, string>;
+  /** Fill for features with no matching `dataSet` row (legacy MapChoropleth
+   * default: `#d2d7dd`, ported from `colors.WHITE_SMOKE_DARKEST`). */
+  noDataColor?: string;
+  /** Categorical palette for rows without an explicit colour, `colorsMapping` entry,
+   * or `colorScale` match */
+  colors?: string[];
+  /** How `dataSet` rows join `geography` features: "id" (default) matches
+   * `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id` -
+   * the clean, stable join (e.g. ISO-A3 codes), used by sdg-trade's real
+   * indicator map (`uniqueIDKeyMap="alpha3Code"`). "name" matches `label` against
+   * `GeoFeatureItem.name` / `properties.name` instead, replicating the legacy
+   * MapChoropleth chart's OWN default (`uniqueIDKeyMap="countryName"`) for
+   * consumers migrating data keyed by country name rather than code. */
+  joinBy?: "id" | "name";
+  /** Country border colour (legacy default: `#F4F7FC`, `colors.WHITE_SMOKE`) */
+  strokeColor?: string;
+  /** Country border width in px (default 1) */
+  strokeWidth?: number;
+  /** Formats the tooltip for a hovered region. Matched rows receive the full
+   * `ChoroplethDataItem`; regions with no matching row receive the fallback
+   * `{ id, name }` shape (mirrors the legacy chart's "N/A" tooltip). */
+  tooltipFormatter?: (d: ChoroplethDataItem | { id: string; name?: string }) => string;
+  /** Loading overlay (stale regions hidden while true) */
+  isLoading?: boolean;
+  /** No-data predicate/flag; default = empty dataSet */
+  isNodata?: boolean | ((dataSet: ChoroplethDataItem[] | null | undefined) => boolean);
+  /** Text for the built-in no-data overlay */
+  noDataLabel?: string;
+  /** Set by a framework wrapper passing its own overlay node - suppresses the default overlay */
+  suppressDefaultOverlay?: boolean;
+  /** Labels to emphasise; all other regions dim */
+  highlightItems?: string[];
+  /** Labels to hide and exclude from the join (features with no other match render `noDataColor`) */
+  disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas (faster for large geographies); getContext() is identical either way. "webgpu" DELEGATES to the canvas 2D renderer (see choroplethMap/renderWebgpu.ts) rather than tessellating arbitrary polygons on the GPU. */
+  renderer?: "svg" | "canvas" | "webgpu";
+  /** BCP-47 locale used for number formatting */
+  locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
+  skipColorMappingDispatch?: boolean;
+  /** Animate updates with CSS transitions (default true) */
+  enableTransitions?: boolean;
+  /** Called when the hovered/highlighted label(s) change */
+  onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
+  onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (unmatched dataSet ids, features
+   * without ids, invalid geometry) */
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface ChoroplethRegionContext {
+  id: string;
+  label: string;
+  name?: string;
+  value?: number;
+  color: string;
+  /** false when this region had no matching `dataSet` row (rendered with `noDataColor`) */
+  matched: boolean;
+}
+
+export interface ChoroplethMapChartContext extends BaseChartContext {
+  chartType: "choropleth-map-chart";
+  projection: string;
+  stats: {
+    featureCount: number;
+    matchedCount: number;
+    unmatchedCount: number;
+    /** [min, max] over matched rows with a finite `value`; null when none */
+    valueDomain: [number, number] | null;
+    lowest: { id: string; label: string; value: number } | null;
+    highest: { id: string; label: string; value: number } | null;
+  };
+  regions: ChoroplethRegionContext[];
+}
+
 // ---- RadarChart (polar) ----
 
 export interface RadarDataItem {
@@ -2487,7 +2656,8 @@ export type ChartContext =
   | PieChartContext
   | BubbleChartContext
   | SankeyChartContext
-  | FountainChartContext;
+  | FountainChartContext
+  | ChoroplethMapChartContext;
 
 export interface DataWarning {
   type:
@@ -2498,7 +2668,10 @@ export interface DataWarning {
     | "non-monotonic-date"
     | "duplicate-date"
     | "layout-overflow"
-    | "non-positive-log-value";
+    | "non-positive-log-value"
+    | "unmatched-dataset-id"
+    | "missing-feature-id"
+    | "invalid-geometry";
   message: string;
   label?: string;
 }
