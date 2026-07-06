@@ -65,6 +65,9 @@
      its group's colour contract, so this ONE selector recolours the group circle
      AND every one of its leaf circles. */
   #radialContract .radial-tree-node-circle[data-label-safe="Sectors"] { fill: rgb(230, 70, 20); }
+  /* Treemap consumer colour contract: recolour ONE tile's fill purely via CSS.
+     Flat (non-nested) dataset -> colorKey == the leaf's own label. */
+  #treemapContract .tile[data-label-safe="Coffee"] { fill: rgb(230, 60, 180); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -101,6 +104,7 @@
 <div class="row">
   <div class="card"><h2>SVG renderer</h2><michi-vz-scatter-chart id="scatterSvg"></michi-vz-scatter-chart></div>
   <div class="card"><h2>Canvas renderer</h2><michi-vz-scatter-chart id="scatterCanvas"></michi-vz-scatter-chart></div>
+  <div class="card"><h2>pointLabels + drawOrder="sizeDescending"</h2><michi-vz-scatter-chart id="scatterLabels"></michi-vz-scatter-chart></div>
 </div>
 <h2>Scatter consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="scatterContract"><michi-vz-scatter-chart id="scatterContractChart"></michi-vz-scatter-chart></div>
@@ -201,6 +205,15 @@
 <h2>RadialTree consumer-CSS fill contract (canvas, single-element circle.radial-tree-node-circle[data-label-safe] probe)</h2>
 <div class="card" id="radialContract"><michi-vz-radial-tree-chart id="radialContractChart"></michi-vz-radial-tree-chart></div>
 
+<h1 style="margin-top:36px">@michi-vz/wc - Treemap (squarified tiling, tileValueLabels)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-treemap-chart id="treemapSvg"></michi-vz-treemap-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-treemap-chart id="treemapCanvas"></michi-vz-treemap-chart></div>
+  <div class="card"><h2>tileValueLabels (value + % of total, 2nd line)</h2><michi-vz-treemap-chart id="treemapValueLabels"></michi-vz-treemap-chart></div>
+</div>
+<h2>Treemap consumer-CSS fill contract (canvas, rect.tile[data-label-safe] probe)</h2>
+<div class="card" id="treemapContract"><michi-vz-treemap-chart id="treemapContractChart"></michi-vz-treemap-chart></div>
+
 <div id="results">running…</div>
 
 <script type="module">
@@ -280,9 +293,19 @@ const scatterCommon = { width: 460, height: 280, xAxisDataType: "number" };
 const scatterSvgEl = document.getElementById("scatterSvg");
 const scatterCanvasEl = document.getElementById("scatterCanvas");
 const scatterContractEl = document.getElementById("scatterContractChart");
+const scatterLabelsEl = document.getElementById("scatterLabels");
 Object.assign(scatterSvgEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "svg", ...scatterCommon });
 Object.assign(scatterCanvasEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "canvas", ...scatterCommon });
 Object.assign(scatterContractEl, { dataSet: scatterData, chartTitle: "Scatter canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...scatterCommon });
+// pointLabels (default off elsewhere) + drawOrder="sizeDescending" (explicit opt-in).
+Object.assign(scatterLabelsEl, {
+  dataSet: scatterData,
+  chartTitle: "Labels",
+  renderer: "svg",
+  pointLabels: true,
+  drawOrder: "sizeDescending",
+  ...scatterCommon,
+});
 
 // ---- VerticalStackBar setup (each DataSet owns ONLY its key -> guard territory) ----
 const stackData = [
@@ -538,6 +561,38 @@ const radialDenseData = [
 ];
 Object.assign(radialDenseEl, { dataSet: radialDenseData, chartTitle: "Dense tree", renderer: "svg", ...radialCommon });
 
+// ---- Treemap setup ---- (flat leaves -> colorKey == the leaf's own label, same
+// group-keyed colour contract RadialTree/Treemap share - see the CSS comment above)
+const treemapCommon = { width: 460, height: 280 };
+const treemapData = [
+  { label: "Coffee", value: 100 },
+  { label: "Tea", value: 60 },
+  { label: "Cocoa", value: 40 },
+];
+const treemapSvgEl = document.getElementById("treemapSvg");
+const treemapCanvasEl = document.getElementById("treemapCanvas");
+const treemapValueLabelsEl = document.getElementById("treemapValueLabels");
+const treemapContractEl = document.getElementById("treemapContractChart");
+Object.assign(treemapSvgEl, { dataSet: treemapData, chartTitle: "Treemap", renderer: "svg", showSplit: false, ...treemapCommon });
+Object.assign(treemapCanvasEl, { dataSet: treemapData, chartTitle: "Treemap", renderer: "canvas", showSplit: false, ...treemapCommon });
+// tileValueLabels (default off elsewhere): "{value} ({pct}%)" 2nd line under the name.
+Object.assign(treemapValueLabelsEl, {
+  dataSet: treemapData,
+  chartTitle: "Treemap value labels",
+  renderer: "svg",
+  showSplit: false,
+  tileValueLabels: true,
+  ...treemapCommon,
+});
+Object.assign(treemapContractEl, {
+  dataSet: treemapData,
+  chartTitle: "Treemap canvas + CSS",
+  renderer: "canvas",
+  showSplit: false,
+  skipColorMappingDispatch: true,
+  ...treemapCommon,
+});
+
 await nextFrame();
 
 try {
@@ -662,6 +717,15 @@ try {
     }
   }
   log(scatterContractOk, "SCATTER CANVAS colour contract: consumer CSS rgb(40,200,120) reached canvas pixels");
+
+  // pointLabels (default off elsewhere - none of the marks above have it) + drawOrder.
+  log(scatterSvgEl.querySelectorAll(".mv-point-label").length === 0, "SCATTER: pointLabels omitted -> zero .mv-point-label nodes");
+  const pointLabelEls = scatterLabelsEl.querySelectorAll(".mv-point-label");
+  log(pointLabelEls.length > 0, `SCATTER LABELS: renders ${pointLabelEls.length} point label(s) (pointLabels:true)`);
+  log(!!scatterLabelsEl.querySelector('.mv-point-label[data-label="Alpha One"]'), 'SCATTER LABELS: label carries data-label="Alpha One"');
+  const labelRadii = Array.from(scatterLabelsEl.querySelectorAll("circle.scatter-point")).map((c) => Number(c.getAttribute("r")));
+  const sizeDescOk = labelRadii.every((r, i) => i === 0 || labelRadii[i - 1] >= r);
+  log(sizeDescOk, `SCATTER DRAWORDER: drawOrder="sizeDescending" paints largest-first (radii ${JSON.stringify(labelRadii)})`);
 
   // ---- VerticalStackBar checks (incl. the hasOwnProperty guard) ----
   const stackBars = stackSvgEl.querySelectorAll("rect.bar");
@@ -1052,6 +1116,38 @@ try {
     }
   }
   log(radialContractOk, "RADIAL CANVAS colour contract: consumer CSS rgb(230,70,20) reached canvas pixels");
+
+  // ---- Treemap checks ----
+  const treemapTiles = treemapSvgEl.querySelectorAll("rect.tile");
+  log(treemapTiles.length === 3, `TREEMAP: SVG renders 3 tiles (got ${treemapTiles.length})`);
+  log(!!treemapSvgEl.querySelector('rect.tile[data-label-safe="Coffee"]'), 'TREEMAP: tile carries data-label-safe="Coffee"');
+
+  const tmCtx = treemapSvgEl.getContext();
+  log(tmCtx && tmCtx.chartType === "treemap-chart" && tmCtx.leaves.length === 3, "TREEMAP: getContext() returns treemap-chart with 3 leaves");
+
+  const tmA = JSON.stringify({ ...treemapSvgEl.getContext(), renderer: 0 });
+  const tmB = JSON.stringify({ ...treemapCanvasEl.getContext(), renderer: 0 });
+  log(tmA === tmB, "TREEMAP: getContext() identical in SVG vs canvas (renderer aside)");
+
+  // tileValueLabels: default-off has none; the dedicated element (tileValueLabels:true) shows one per big-enough tile.
+  log(treemapSvgEl.querySelectorAll(".tile-value-label").length === 0, "TREEMAP: tileValueLabels omitted -> zero .tile-value-label nodes");
+  const treemapValueLabelEls = treemapValueLabelsEl.querySelectorAll(".tile-value-label");
+  log(treemapValueLabelEls.length > 0, `TREEMAP VALUE LABELS: renders ${treemapValueLabelEls.length} value label(s) (tileValueLabels:true)`);
+  const coffeeTile = treemapValueLabelsEl.querySelector('rect.tile[data-label-safe="Coffee"]');
+  const coffeeValueLabel = coffeeTile && coffeeTile.closest(".tile-cell").querySelector(".tile-value-label");
+  log(!!coffeeValueLabel && /100/.test(coffeeValueLabel.textContent) && /50%/.test(coffeeValueLabel.textContent), `TREEMAP VALUE LABELS: Coffee (100 of 200 total) shows "100 (50%)" (got "${coffeeValueLabel && coffeeValueLabel.textContent}")`);
+
+  // THE treemap colour contract: canvas pixels must reflect consumer CSS fill rgb(230,60,180)
+  const tmCnv = treemapContractEl.querySelector("canvas");
+  let treemapContractOk = false;
+  if (tmCnv) {
+    const c = tmCnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, tmCnv.width, tmCnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 205 && px[i + 1] < 95 && px[i + 1] > 35 && px[i + 2] > 155 && px[i + 3] > 0) { treemapContractOk = true; break; }
+    }
+  }
+  log(treemapContractOk, "TREEMAP CANVAS colour contract: consumer CSS rgb(230,60,180) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
