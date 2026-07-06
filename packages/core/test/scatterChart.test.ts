@@ -482,30 +482,26 @@ describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
   });
 });
 
-describe("drawOrder (default 'none', additive)", () => {
+describe("drawOrder (default 'sizeDescending', additive)", () => {
   const varyingSizes: ScatterDataPoint[] = [
     { label: "Small", x: 1, y: 1, d: 1 },
     { label: "Large", x: 5, y: 5, d: 20 },
     { label: "Medium", x: 3, y: 3, d: 10 },
   ];
 
-  it("absent prop, 'none', and 'sizeDescending' are byte-identical (today's ordering already IS size-descending)", () => {
+  it("absent prop and explicit 'sizeDescending' are byte-identical (today's default ordering already IS size-descending)", () => {
     const omitted = mount({ dataSet: varyingSizes });
-    const none = mount({ dataSet: varyingSizes, drawOrder: "none" });
     const sizeDesc = mount({ dataSet: varyingSizes, drawOrder: "sizeDescending" });
     const markAttrs = (host: HTMLElement) =>
       Array.from(host.querySelectorAll(".scatter-point")).map((m) => m.outerHTML);
-    expect(markAttrs(none.host)).toEqual(markAttrs(omitted.host));
     expect(markAttrs(sizeDesc.host)).toEqual(markAttrs(omitted.host));
     omitted.chart.destroy();
     omitted.host.remove();
-    none.chart.destroy();
-    none.host.remove();
     sizeDesc.chart.destroy();
     sizeDesc.host.remove();
   });
 
-  it("draws the largest bubble first (behind) and the smallest last (on top), matching the documented contract", () => {
+  it("'sizeDescending' draws the largest bubble first (behind) and the smallest last (on top), matching the documented contract", () => {
     const { host, chart } = mount({ dataSet: varyingSizes, drawOrder: "sizeDescending" });
     const marks = Array.from(host.querySelectorAll<SVGCircleElement>("circle.scatter-point"));
     const rs = marks.map((m) => Number(m.getAttribute("r")));
@@ -513,6 +509,18 @@ describe("drawOrder (default 'none', additive)", () => {
     for (let i = 1; i < rs.length; i++) expect(rs[i - 1]).toBeGreaterThanOrEqual(rs[i]);
     expect(marks[0].getAttribute("data-label")).toBe("Large");
     expect(marks[marks.length - 1].getAttribute("data-label")).toBe("Small");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("'sizeAscending' flips the DOM sibling order: largest bubble drawn last (on top), reproducing legacy's real z-order", () => {
+    const { host, chart } = mount({ dataSet: varyingSizes, drawOrder: "sizeAscending" });
+    const marks = Array.from(host.querySelectorAll<SVGCircleElement>("circle.scatter-point"));
+    const rs = marks.map((m) => Number(m.getAttribute("r")));
+    // Strictly ascending: each mark's radius <= the next one's (smallest-first, largest-last/on top).
+    for (let i = 1; i < rs.length; i++) expect(rs[i - 1]).toBeLessThanOrEqual(rs[i]);
+    expect(marks[0].getAttribute("data-label")).toBe("Small");
+    expect(marks[marks.length - 1].getAttribute("data-label")).toBe("Large");
     chart.destroy();
     host.remove();
   });

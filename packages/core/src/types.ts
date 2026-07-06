@@ -718,30 +718,26 @@ export interface ScatterChartProps {
    */
   pointLabels?: boolean | ScatterPointLabelsConfig;
   /**
-   * Draw-order for overlapping bubbles. Default `"none"`: today's existing,
-   * pre-existing behaviour - unchanged, zero-diff. `buildScatterRenderModel`
-   * has, since before this prop existed, unconditionally sorted points
-   * largest-first whenever radii vary, so smaller marks already paint last (on
-   * top of larger ones). `"sizeDescending"` names that exact ordering
-   * explicitly - larger bubbles render first (behind/underneath), smaller
-   * bubbles render last (on top) - and is intentionally IDENTICAL output to
-   * `"none"` today (see the `BuildScatterModelOptions` JSDoc in
-   * `scatterChart/renderModel.ts`).
+   * Draw-order for overlapping bubbles. Two values, no "off" state - the
+   * chart always draws bubbles in SOME order, so the default just names the
+   * pre-existing one instead of pretending there's no ordering at all.
    *
-   * IMPORTANT legacy-parity caveat found while re-reading the actual legacy
-   * source (`sdg-trade/.../Scatterplot/Scatterplot.js` +
-   * `.../Scatterplot/Chart.js`): legacy's real rendered z-order is the
-   * OPPOSITE of "small on top". Its wrapper sorts `data` ASCENDING by the raw
-   * size value (`data.sort((a,b) => a[rValueKey]-b[rValueKey])`) and Chart.js
-   * then draws circles via `data.map` in that array order, and later SVG
-   * siblings paint over earlier ones - so the LARGEST bubble ends up drawn
-   * LAST / on top there, not the smallest. Neither `"none"` nor
-   * `"sizeDescending"` reproduces that true legacy visual; both already match
-   * (and this prop preserves) this library's own pre-existing "small on top"
-   * convention instead. Reproducing the legacy's actual "large on top" order
-   * would need a new, different opt-in value - out of scope here.
+   * - `"sizeDescending"` (default, omitted resolves here): today's existing,
+   *   zero-diff behaviour. `buildScatterRenderModel` has, since before this
+   *   prop existed, unconditionally sorted points largest-first whenever
+   *   radii vary, so smaller bubbles paint over larger ones (readability:
+   *   small bubbles don't get hidden behind big ones).
+   * - `"sizeAscending"`: a genuine opt-in that flips the comparator so the
+   *   LARGEST bubble draws LAST / on top instead. This reproduces the actual
+   *   legacy sdg-trade z-order, confirmed by reading
+   *   `sdg-trade/.../Scatterplot/Scatterplot.js` (`data.sort((a,b) =>
+   *   a[rValueKey]-b[rValueKey])` - ascending by raw size) and
+   *   `.../Scatterplot/Chart.js` (draws circles via `data.map` in that array
+   *   order; later SVG siblings paint over earlier ones) - net effect: the
+   *   LARGEST bubble is drawn last and ends up on top there, the opposite of
+   *   this chart's own default. Use `"sizeAscending"` for true legacy parity.
    */
-  drawOrder?: "none" | "sizeDescending";
+  drawOrder?: "sizeDescending" | "sizeAscending";
   /** Pre-serialised SVG markup injected as direct <svg> children (the React wrapper fills this from `children`). */
   svgChildren?: string;
 }

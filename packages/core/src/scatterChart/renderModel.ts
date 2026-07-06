@@ -29,16 +29,14 @@ export interface BuildScatterModelOptions {
   /** fixed radius for points without a `d` size value. */
   defaultRadius: number;
   /**
-   * @see ScatterChartProps["drawOrder"]. Both `"none"` (default/omitted) and
-   * the explicit `"sizeDescending"` opt-in resolve to the SAME sort below -
-   * this function has unconditionally sorted points largest-first (so smaller
-   * marks draw last / on top) since before `drawOrder` existed. This option
-   * doesn't change that sort; it lets a caller name the ordering explicitly
-   * instead of depending on an undocumented implementation detail. See
-   * ScatterChartProps["drawOrder"] JSDoc for the legacy-parity caveat this
-   * name does NOT resolve (true legacy is the opposite: large-on-top).
+   * @see ScatterChartProps["drawOrder"]. Default/omitted resolves to
+   * `"sizeDescending"` (this function's pre-existing, zero-diff behaviour:
+   * points sorted largest-first so smaller marks draw last / on top).
+   * `"sizeAscending"` is a genuine opt-in that flips the comparator so the
+   * LARGEST bubble draws LAST / on top instead, reproducing the actual
+   * legacy sdg-trade z-order (see ScatterChartProps["drawOrder"] JSDoc).
    */
-  drawOrder?: "none" | "sizeDescending";
+  drawOrder?: "sizeDescending" | "sizeAscending";
 }
 
 export function buildScatterRenderModel(
@@ -79,13 +77,16 @@ export function buildScatterRenderModel(
     };
   });
 
-  // Largest first so smaller points end up on top (z-order). Skipped when every
-  // radius is identical (sizeRange pinned or no `d` values): sort is stable, so
-  // the order would be unchanged and at 50k points it is pure O(n log n) cost.
-  // This is the SAME ordering `drawOrder: "sizeDescending"` documents (see the
-  // interface JSDoc above) - both `o.drawOrder` values below intentionally
-  // produce identical output today; `o.drawOrder` doesn't gate this sort.
-  void o.drawOrder;
-  if (!uniformR) models.sort((a, b) => b.r - a.r);
+  // Default (`"sizeDescending"`, or omitted): largest first so smaller points
+  // end up on top (z-order) - this library's pre-existing, zero-diff sort.
+  // `"sizeAscending"` flips it (smallest first / largest last) to reproduce
+  // the actual legacy sdg-trade z-order (see ScatterChartProps["drawOrder"]
+  // JSDoc). Skipped entirely when every radius is identical (sizeRange
+  // pinned or no `d` values): sort is stable, so the order would be
+  // unchanged either way, and at 50k points it is pure O(n log n) cost.
+  if (!uniformR) {
+    if (o.drawOrder === "sizeAscending") models.sort((a, b) => a.r - b.r);
+    else models.sort((a, b) => b.r - a.r);
+  }
   return { points: models };
 }

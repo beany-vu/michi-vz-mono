@@ -96,7 +96,7 @@ export class ScatterChartElement extends LitElement {
   pinIcon?: boolean;
   svgChildren?: string;
   pointLabels?: boolean | ScatterPointLabelsConfig;
-  drawOrder?: "none" | "sizeDescending";
+  drawOrder?: "sizeDescending" | "sizeAscending";
 
   private chart?: ChartInstance<ScatterChartProps>;
 

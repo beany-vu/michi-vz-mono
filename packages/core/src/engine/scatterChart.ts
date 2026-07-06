@@ -71,7 +71,7 @@ interface Resolved {
   crosshairSpan: "full" | "half";
   crosshairPlacement: "auto" | "fixed";
   pointLabels: ScatterPointLabelsConfig | null;
-  drawOrder: "none" | "sizeDescending";
+  drawOrder: "sizeDescending" | "sizeAscending";
 }
 
 function resolveGrid(g: ScatterChartProps["showGrid"], axis: "x" | "y"): boolean {
@@ -108,7 +108,7 @@ function resolve(p: ScatterChartProps): Resolved {
     crosshairSpan: p.crosshairSpan ?? "full",
     crosshairPlacement: p.crosshairLabelPlacement ?? "auto",
     pointLabels: resolvePointLabels(p.pointLabels),
-    drawOrder: p.drawOrder ?? "none",
+    drawOrder: p.drawOrder ?? "sizeDescending",
   };
 }
 

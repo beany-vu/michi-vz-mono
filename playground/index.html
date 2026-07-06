@@ -105,6 +105,7 @@
   <div class="card"><h2>SVG renderer</h2><michi-vz-scatter-chart id="scatterSvg"></michi-vz-scatter-chart></div>
   <div class="card"><h2>Canvas renderer</h2><michi-vz-scatter-chart id="scatterCanvas"></michi-vz-scatter-chart></div>
   <div class="card"><h2>pointLabels + drawOrder="sizeDescending"</h2><michi-vz-scatter-chart id="scatterLabels"></michi-vz-scatter-chart></div>
+  <div class="card"><h2>drawOrder="sizeAscending" (legacy z-order parity)</h2><michi-vz-scatter-chart id="scatterAscending"></michi-vz-scatter-chart></div>
 </div>
 <h2>Scatter consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="scatterContract"><michi-vz-scatter-chart id="scatterContractChart"></michi-vz-scatter-chart></div>
@@ -294,6 +295,7 @@ const scatterSvgEl = document.getElementById("scatterSvg");
 const scatterCanvasEl = document.getElementById("scatterCanvas");
 const scatterContractEl = document.getElementById("scatterContractChart");
 const scatterLabelsEl = document.getElementById("scatterLabels");
+const scatterAscendingEl = document.getElementById("scatterAscending");
 Object.assign(scatterSvgEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "svg", ...scatterCommon });
 Object.assign(scatterCanvasEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "canvas", ...scatterCommon });
 Object.assign(scatterContractEl, { dataSet: scatterData, chartTitle: "Scatter canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...scatterCommon });
@@ -304,6 +306,15 @@ Object.assign(scatterLabelsEl, {
   renderer: "svg",
   pointLabels: true,
   drawOrder: "sizeDescending",
+  ...scatterCommon,
+});
+// drawOrder="sizeAscending": genuine opt-in, flips z-order so the LARGEST
+// bubble draws last/on top (reproduces legacy sdg-trade's real z-order).
+Object.assign(scatterAscendingEl, {
+  dataSet: scatterData,
+  chartTitle: "Ascending",
+  renderer: "svg",
+  drawOrder: "sizeAscending",
   ...scatterCommon,
 });
 
@@ -726,6 +737,9 @@ try {
   const labelRadii = Array.from(scatterLabelsEl.querySelectorAll("circle.scatter-point")).map((c) => Number(c.getAttribute("r")));
   const sizeDescOk = labelRadii.every((r, i) => i === 0 || labelRadii[i - 1] >= r);
   log(sizeDescOk, `SCATTER DRAWORDER: drawOrder="sizeDescending" paints largest-first (radii ${JSON.stringify(labelRadii)})`);
+  const ascRadii = Array.from(scatterAscendingEl.querySelectorAll("circle.scatter-point")).map((c) => Number(c.getAttribute("r")));
+  const sizeAscOk = ascRadii.every((r, i) => i === 0 || ascRadii[i - 1] <= r);
+  log(sizeAscOk, `SCATTER DRAWORDER: drawOrder="sizeAscending" paints smallest-first / largest-last-on-top (radii ${JSON.stringify(ascRadii)})`);
 
   // ---- VerticalStackBar checks (incl. the hasOwnProperty guard) ----
   const stackBars = stackSvgEl.querySelectorAll("rect.bar");
