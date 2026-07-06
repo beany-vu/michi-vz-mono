@@ -355,6 +355,43 @@ describe("deltaIndicator", () => {
   });
 });
 
+describe("chrome quad: isLoading / isNodata / noDataLabel / suppressDefaultOverlay", () => {
+  it("ready: bars drawn, data-mv-state=ready", () => {
+    const { host, chart } = mount();
+    expect(host.getAttribute("data-mv-state")).toBe("ready");
+    expect(host.querySelectorAll("rect.bar").length).toBeGreaterThan(0);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("nodata (empty dataSet): no bars, data-mv-state=nodata, .mv-nodata overlay with noDataLabel text", () => {
+    const { host, chart } = mount({ dataSet: [], noDataLabel: "Nothing to compare yet" });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelectorAll("rect.bar").length).toBe(0);
+    const overlay = host.querySelector(".mv-nodata");
+    expect(overlay).not.toBeNull();
+    expect(overlay!.textContent).toBe("Nothing to compare yet");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("isLoading: data-mv-state=loading, .mv-loading overlay, stale bars hidden", () => {
+    const { host, chart } = mount({ isLoading: true });
+    expect(host.getAttribute("data-mv-state")).toBe("loading");
+    expect(host.querySelector(".mv-loading")).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("suppressDefaultOverlay: nodata state is still stamped, but no .mv-nodata DOM node (a wrapper renders its own)", () => {
+    const { host, chart } = mount({ dataSet: [], suppressDefaultOverlay: true });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelector(".mv-nodata")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+});
+
 describe("SVG pattern fill (patternsMapping) - real <defs><pattern>", () => {
   it("emits a <pattern> in <defs> and the value-based rect fills with url(#id) for a mapped label", () => {
     const { host, chart } = mount({ patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" } });
