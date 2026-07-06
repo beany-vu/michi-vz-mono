@@ -33,6 +33,7 @@ const CARDS = [
   { examplesKey: "fountain-chart", slug: "fountain", name: "Fountain (Jet d'Eau)", family: "Comparison", roman: "XVII", blurb: "A Jet d'Eau: apex height is the value, the blooming plume is the uncertainty. Categorical x = snapshot/comparison, temporal x = trend.", tag: "<michi-vz-fountain-chart> · SVG · canvas · WebGPU" },
   { examplesKey: "choropleth-map-chart", slug: "choropleth-map", name: "Choropleth Map", family: "Geography", roman: "XVIII", blurb: "A world/region choropleth: your own GeoJSON, shaded by a threshold colour scale or an explicit category map. 13 d3-geo/d3-geo-projection projections.", tag: "<michi-vz-choropleth-map-chart> · SVG · canvas · WebGPU" },
   { examplesKey: "symbol-map-chart", slug: "symbol-map", name: "Symbol Map", family: "Geography", roman: "XIX", blurb: "A force-de-overlapped bubble map: you supply lng/lat per item, a one-shot simulation pulls overlapping circles apart. An optional muted backdrop landmass is available; dot-only by default.", tag: "<michi-vz-symbol-map-chart> · SVG · canvas · WebGPU" },
+  { examplesKey: "radial-tree-chart", slug: "radial-tree", name: "Radial Tree", family: "Composition", roman: "XX", blurb: "A radial cluster()/dendrogram: leaves sit equidistant from the centre, with circles sized at both the group and leaf level. Labels adapt (abbreviate, rotate, or hide) as leaf density grows.", tag: "<michi-vz-radial-tree-chart> · SVG · canvas · WebGPU" },
 ];
 
 const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation", "Flow", "Geography"];

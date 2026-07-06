@@ -5574,6 +5574,214 @@
           "common": true
         }
       ]
+    },
+    "radial-tree-chart": {
+      "element": "michi-vz-radial-tree-chart",
+      "propsType": "RadialTreeChartProps",
+      "context": "RadialTreeChartContext",
+      "mount": "mountRadialTreeChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "RadialTreeNode[]",
+          "optional": false,
+          "description": "Forest of nodes (each a leaf or a group with children), laid out as a radial dendrogram.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "centerLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Optional word-wrapped title drawn inside the small centre circle (legacy `titleCenter`).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "Optional chart title rendered above the plot",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "520",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 36, right: 10, bottom: 10, left: 10 }",
+          "common": true
+        },
+        {
+          "name": "radiusRange",
+          "type": "[number, number]",
+          "optional": true,
+          "description": "[min, max] circle radius in px (default [2, 32], the legacy `circleRange`).",
+          "default": "DEFAULT_RADIUS_RANGE",
+          "common": false
+        },
+        {
+          "name": "labelDensityThresholds",
+          "type": "{ rotateAbove?: number; hideAbove?: number }",
+          "optional": true,
+          "description": "Adaptive label density thresholds, compared against the total LEAF count (legacy `rotateItemThreshold` / the unnamed 100-leaf cutoff). `rotateAbove` (default 20): past this many leaves, every label is abbreviated and rotated radially instead of kept horizontal. `hideAbove` (default 100): past this many leaves, all labels are hidden.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\" | \"webgpu\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check (legacy michi-vz parity).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: RadialTreeNode[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on dataSet; default = empty dataSet.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: RadialTreeNode) => string",
+          "optional": true,
+          "description": "Returns custom tooltip HTML for a hovered node (sanitized before it is inserted)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called when the hovered/highlighted label(s) change",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
     }
   }
 }

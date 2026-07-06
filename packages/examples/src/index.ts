@@ -29,6 +29,7 @@ import type {
   ChoroplethMapChartProps,
   GeoFeatureItem,
   SymbolMapChartProps,
+  RadialTreeChartProps,
 } from "@michi-vz/core";
 
 export interface Example<P = Record<string, unknown>> {
@@ -2131,6 +2132,83 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
   },
 ];
 
+// RadialTreeChart's migration target is the legacy sdg-trade TreeRadial: a d3
+// cluster() dendrogram, 2-level (4 sectors x 5 products) - group circles sized
+// by the sector's total, leaf circles sized by each product's own value.
+const radialTree: Example<RadialTreeChartProps>[] = [
+  {
+    id: "radial-tree-trade-by-sector",
+    title: "Merchandise trade value by sector and product, 2024 (US$ bn)",
+    description:
+      "A radial cluster()/dendrogram (leaves equidistant from the centre, not a tree() layout): 4 sectors, 5 products each. Circles are sized at BOTH the sector level (the group's total) and the product level (its own value).",
+    element: "michi-vz-radial-tree-chart",
+    props: {
+      title: "Merchandise trade value by sector and product, 2024 (US$ bn)",
+      centerLabel: "Total Merchandise Trade",
+      tooltipFormatter: (d) => `<strong>${d.label}</strong><br/>${(d.value ?? 0).toLocaleString()} bn`,
+      dataSet: [
+        {
+          label: "Agriculture",
+          children: [
+            { label: "Coffee", value: 8 },
+            { label: "Tea", value: 5 },
+            { label: "Cocoa", value: 6 },
+            { label: "Cotton", value: 4 },
+            { label: "Sugar", value: 7 },
+          ],
+        },
+        {
+          label: "Manufacturing",
+          children: [
+            { label: "Textiles", value: 22 },
+            { label: "Machinery", value: 35 },
+            { label: "Electronics", value: 48 },
+            { label: "Vehicles", value: 30 },
+            { label: "Furniture", value: 9 },
+          ],
+        },
+        {
+          label: "Minerals",
+          children: [
+            { label: "Crude oil", value: 60 },
+            { label: "Natural gas", value: 25 },
+            { label: "Copper", value: 14 },
+            { label: "Gold", value: 18 },
+            { label: "Coal", value: 10 },
+          ],
+        },
+        {
+          label: "Services",
+          children: [
+            { label: "Tourism", value: 27 },
+            { label: "Transport", value: 16 },
+            { label: "Finance", value: 20 },
+            { label: "ICT", value: 24 },
+            { label: "Logistics", value: 12 },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "radial-tree-dense",
+    title: "A denser tree - adaptive label density kicking in",
+    description:
+      "More leaves push the total past the rotateAbove threshold (default 20): labels abbreviate to 3 letters and rotate radially instead of staying horizontal.",
+    element: "michi-vz-radial-tree-chart",
+    props: {
+      title: "A denser tree (adaptive label density)",
+      dataSet: Array.from({ length: 5 }, (_, g) => ({
+        label: `Group ${g + 1}`,
+        children: Array.from({ length: 6 }, (_, l) => ({
+          label: `Item ${g + 1}.${l + 1}`,
+          value: (g + 1) * (l + 1),
+        })),
+      })),
+    },
+  },
+];
+
 /** Canonical examples, keyed by chart id. Consumers index by key. */
 export const examples = {
   "gap-chart": gap,
@@ -2153,6 +2231,7 @@ export const examples = {
   "fountain-chart": fountain,
   "choropleth-map-chart": choroplethMap,
   "symbol-map-chart": symbolMap,
+  "radial-tree-chart": radialTree,
 };
 
 /** Ordered chart ids (for nav / iteration). */

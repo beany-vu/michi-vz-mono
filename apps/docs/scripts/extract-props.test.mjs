@@ -8,8 +8,8 @@ import { extract, CHARTS, SHARED } from "./extract-props.mjs";
 const data = extract();
 const prop = (key, name) => data.charts[key].props.find((p) => p.name === name);
 
-test("emits all 20 charts, keyed by element suffix", () => {
-  assert.equal(Object.keys(data.charts).length, 20);
+test("emits all 21 charts, keyed by element suffix", () => {
+  assert.equal(Object.keys(data.charts).length, 21);
   for (const c of CHARTS) assert.ok(data.charts[c.key], `missing ${c.key}`);
 });
 

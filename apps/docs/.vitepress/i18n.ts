@@ -288,6 +288,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     fountain: "Fountain (Jet d'Eau)",
     "choropleth-map": "Choropleth Map",
     "symbol-map": "Symbol Map",
+    "radial-tree": "Radial Tree",
   },
   fr: {
     line: "Graphique en courbes",
@@ -310,6 +311,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     fountain: "Fontaine (Jet d'Eau)",
     "choropleth-map": "Carte choroplèthe",
     "symbol-map": "Carte à symboles",
+    "radial-tree": "Arbre radial",
   },
   nl: {
     line: "Lijndiagram",
@@ -332,6 +334,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     fountain: "Fontein (Jet d'Eau)",
     "choropleth-map": "Choropletenkaart",
     "symbol-map": "Symboolkaart",
+    "radial-tree": "Radiale boom",
   },
   vi: {
     line: "Biểu đồ đường",
@@ -354,6 +357,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     fountain: "Đài phun (Jet d'Eau)",
     "choropleth-map": "Bản đồ phân cấp màu",
     "symbol-map": "Bản đồ ký hiệu",
+    "radial-tree": "Cây tỏa tròn",
   },
 };
 

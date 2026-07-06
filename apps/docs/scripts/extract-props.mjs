@@ -38,6 +38,7 @@ export const CHARTS = [
   { key: "fountain-chart", propsType: "FountainChartProps", element: "michi-vz-fountain-chart", engine: "fountainChart.ts", wc: "fountain-chart.ts", context: "FountainChartContext", mount: "mountFountainChart" },
   { key: "choropleth-map-chart", propsType: "ChoroplethMapChartProps", element: "michi-vz-choropleth-map-chart", engine: "choroplethMapChart.ts", wc: "choropleth-map-chart.ts", context: "ChoroplethMapChartContext", mount: "mountChoroplethMapChart" },
   { key: "symbol-map-chart", propsType: "SymbolMapChartProps", element: "michi-vz-symbol-map-chart", engine: "symbolMapChart.ts", wc: "symbol-map-chart.ts", context: "SymbolMapChartContext", mount: "mountSymbolMapChart" },
+  { key: "radial-tree-chart", propsType: "RadialTreeChartProps", element: "michi-vz-radial-tree-chart", engine: "radialTreeChart.ts", wc: "radial-tree-chart.ts", context: "RadialTreeChartContext", mount: "mountRadialTreeChart" },
 ];
 
 // Props shared (identical type) across (almost) every chart - flagged `common`
