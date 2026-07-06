@@ -2391,6 +2391,19 @@ export interface FanChartContext extends BaseChartContext {
 // configurable `splitLabels` (e.g. ["Realized","Untapped"]) - nothing here hardcodes domain words.
 // Parents render as padded containers with a header label. Generic "part-of-a-total in a tile".
 
+/**
+ * Config for `TreemapChartProps["tileValueLabels"]`. See that prop's JSDoc
+ * for the full formatting/gating contract.
+ */
+export interface TreemapTileValueLabelsConfig {
+  /** Formats the second-line text; default: `"{value} ({pct}%)"`, where
+   * `value` uses `valueFormatter` (or the locale number formatter) and `pct`
+   * is `Math.round(fractionOfTotal * 100)`. `fractionOfTotal` is the leaf's
+   * share of the WHOLE dataset's grand total (sum of every leaf's `value`),
+   * not just its siblings. */
+  formatter?: (value: number, fractionOfTotal: number, d: TreemapLeafContext) => string;
+}
+
 export interface TreemapNode {
   /** Node name (drives data-label, the colour group, legend, and the leaf label). */
   label: string;
@@ -2468,6 +2481,30 @@ export interface TreemapChartProps {
   valueFormatter?: (n: number) => string;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
   tooltipFormatter?: (leaf: TreemapLeafContext) => string;
+  /**
+   * Render each tile's value (+ share of the dataset total) as a SECOND line
+   * under the existing name label. Omitted, or `false`, is a byte-for-byte
+   * no-op - zero extra DOM, default off.
+   *
+   * Gated by the SAME tile-size fitting logic this chart already uses: a
+   * tile must qualify for its name label at all (`h >= 24 && w >= 30`, see
+   * `renderTreemapSvg` in `treemapChart/renderSvg.ts`) AND meet the larger
+   * threshold this chart already reserves for a second line - the exact same
+   * `w >= 48 && h >= 34` gate the split "percent of leaf" second line already
+   * uses right below it. Reused verbatim, not reinvented: two text lines
+   * need more room than one, and this chart had already made that call once.
+   *
+   * Ported from the legacy sdg-trade TreemapChart
+   * (`components/Charts/TreemapChart/Chart.js`), which shows
+   * `{formattedValue} ({formattedShare})` as a second line only when
+   * `leafWidth > 80 && leafHeight > 70` px (a name-only line renders down to
+   * `leafWidth >= 60 && leafHeight >= 40`; nothing smaller than that). This
+   * port reuses this library's OWN, already-shipped thresholds instead of
+   * copying the legacy's exact pixel cutoffs (a different tile-padding/
+   * font-size baseline) - the requirement is "size-gating exists and reuses
+   * the chart's existing mechanism", not byte-identical legacy pixels.
+   */
+  tileValueLabels?: boolean | TreemapTileValueLabelsConfig;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

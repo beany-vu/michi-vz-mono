@@ -37,6 +37,7 @@ import type {
   Renderer,
   TreemapChartProps,
   TreemapLeafContext,
+  TreemapTileValueLabelsConfig,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 36, right: 6, bottom: 6, left: 6 };
@@ -57,6 +58,19 @@ interface Resolved {
   splitLabels: [string, string];
   showLegend: boolean;
   enableTransitions: boolean;
+  /** Resolved from props.tileValueLabels; null when the prop is omitted/false
+   * (provable no-op - no second line computed, no extra DOM painted). */
+  tileValueLabels: TreemapTileValueLabelsConfig | null;
+}
+
+// Same boolean|config resolution shape as LineChart's resolveMouseLine /
+// resolveSinglePointLine (engine/lineChart.ts): `true` -> default config `{}`,
+// omitted/false -> null (feature off, no-op).
+function resolveTileValueLabels(
+  v: TreemapChartProps["tileValueLabels"]
+): TreemapTileValueLabelsConfig | null {
+  if (!v) return null;
+  return v === true ? {} : v;
 }
 
 function resolve(p: TreemapChartProps): Resolved {
@@ -79,6 +93,7 @@ function resolve(p: TreemapChartProps): Resolved {
     splitLabels: p.splitLabels ?? ["Filled", "Remaining"],
     showLegend: p.showLegend ?? false,
     enableTransitions: p.enableTransitions ?? true,
+    tileValueLabels: resolveTileValueLabels(p.tileValueLabels),
   };
 }
 
@@ -302,6 +317,21 @@ export function mountTreemapChart(
             paddingTop,
           });
 
+    // Bound here (not in resolve()) because the default branch needs
+    // leafToContext, which closes over nothing resolve() has access to. Mirrors
+    // defaultDeltaFormatter (engine/comparableVerticalBarChart.ts): a fresh
+    // closure per render() is cheap and keeps the public formatter's argument
+    // the same TreemapLeafContext shape tooltipFormatter already uses.
+    const tileValueLabelFormatter = r.tileValueLabels
+      ? (value: number, fraction: number, leaf: TreemapLeafMark): string => {
+          const custom = r.tileValueLabels?.formatter;
+          if (custom) return custom(value, fraction, leafToContext(leaf));
+          const fmt = props.valueFormatter ?? defaultNumberFormatter(props.locale);
+          const pct = Math.round(fraction * 100);
+          return `${fmt(value)} (${pct}%)`;
+        }
+      : null;
+
     model = buildTreemapRenderModel(laidOut, colors, {
       margin: r.margin,
       groupKeys: processed.groupKeys,
@@ -310,6 +340,7 @@ export function mountTreemapChart(
       splitLabels: r.splitLabels,
       paddingTop,
       highlightItems: props.highlightItems ?? [],
+      tileValueLabelFormatter,
     });
 
     clear(svg);

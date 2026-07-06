@@ -89,9 +89,23 @@ export function drawTreemapCanvas(
       ctx.textAlign = "left";
       ctx.font = fLabel;
       ctx.fillText(fitText(d.code ? `${d.code}` : d.label, d.w), d.x + 4, d.y + 13);
-      if (model.showSplit && d.partialPct != null && d.w >= 48 && d.h >= 34) {
+      // Second-line gate: reused verbatim (not reinvented) from the split
+      // percent line below - matches renderSvg.ts's `fitsSecondLine`.
+      const fitsSecondLine = d.w >= 48 && d.h >= 34;
+      let secondLineY = d.y + 31;
+      if (model.showSplit && d.partialPct != null && fitsSecondLine) {
         ctx.font = fPct;
-        ctx.fillText(`${Math.round(d.partialPct * 100)}%`, d.x + 4, d.y + 31);
+        ctx.fillText(`${Math.round(d.partialPct * 100)}%`, d.x + 4, secondLineY);
+        secondLineY += 16; // stack the value label below an already-shown split pct
+      }
+      if (model.tileValueLabelFormatter && fitsSecondLine) {
+        const fraction = model.grandTotal > 0 ? d.value / model.grandTotal : 0;
+        ctx.font = fLabel;
+        ctx.fillText(
+          fitText(model.tileValueLabelFormatter(d.value, fraction, d), d.w),
+          d.x + 4,
+          secondLineY
+        );
       }
     }
   }

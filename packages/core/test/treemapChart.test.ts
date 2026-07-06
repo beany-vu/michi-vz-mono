@@ -270,3 +270,83 @@ describe("TreemapChart chrome (loading/no-data quad)", () => {
     host.remove();
   });
 });
+
+describe("tileValueLabels (default-off, second line reusing the existing tile-size gate)", () => {
+  // 600x400, 3 leaves -> generous tiles (294x358 / 175x358 / 117x358 at showSplit
+  // false), comfortably over BOTH the name gate (h>=24 && w>=30) and the second-line
+  // gate this feature reuses (w>=48 && h>=34, the same one the split-pct line uses).
+  const big = flat; // Coffee 100, Tea 60, Cocoa 40 -> grandTotal 200
+
+  it("absent prop: zero .tile-value-label nodes and tile/name/pct markup is byte-identical to a mount with no tileValueLabels key at all", () => {
+    const withoutKey = mount({ dataSet: big });
+    const withFalse = mount({ dataSet: big, tileValueLabels: false });
+    expect(withoutKey.host.querySelectorAll(".tile-value-label").length).toBe(0);
+    expect(withFalse.host.querySelectorAll(".tile-value-label").length).toBe(0);
+    const cellAttrs = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll(".tile-cell")).map((c) => c.outerHTML);
+    expect(cellAttrs(withFalse.host)).toEqual(cellAttrs(withoutKey.host));
+    withoutKey.chart.destroy();
+    withoutKey.host.remove();
+    withFalse.chart.destroy();
+    withFalse.host.remove();
+  });
+
+  it("true: renders '{value} ({pct}%)' as a second line when the tile is big enough", () => {
+    const { host, chart } = mount({ dataSet: big, showSplit: false, tileValueLabels: true });
+    const coffee = host.querySelector('rect.tile[data-leaf="Coffee"]')!.closest(".tile-cell")!;
+    const valueLabel = coffee.querySelector(".tile-value-label")!;
+    expect(valueLabel).not.toBeNull();
+    // value=100, grandTotal=200 -> 50% share.
+    expect(valueLabel.textContent).toBe("100 (50%)");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("custom formatter receives (value, fractionOfTotal, leafContext)", () => {
+    const seen: Array<[number, number, string]> = [];
+    const { host, chart } = mount({
+      dataSet: big,
+      showSplit: false,
+      tileValueLabels: {
+        formatter: (value, fractionOfTotal, d) => {
+          seen.push([value, fractionOfTotal, d.label]);
+          return `V=${value}`;
+        },
+      },
+    });
+    const coffeeLabel = host
+      .querySelector('rect.tile[data-leaf="Coffee"]')!
+      .closest(".tile-cell")!
+      .querySelector(".tile-value-label")!;
+    expect(coffeeLabel.textContent).toBe("V=100");
+    expect(seen).toContainEqual([100, 0.5, "Coffee"]);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("no second line when the tile is too small for it, even though the name still fits", () => {
+    // 20 same-sized leaves in a small canvas -> some tiles pass the name gate
+    // (h>=24 && w>=30) but fail the larger second-line gate (w>=48 && h>=34).
+    const many: TreemapNode[] = Array.from({ length: 20 }, (_, i) => ({ label: `L${i}`, value: 10 + i }));
+    const { host, chart } = mount({ dataSet: many, width: 300, height: 150, showSplit: false, tileValueLabels: true });
+    const small = host.querySelector('rect.tile[data-leaf="L0"]')!; // 31x24 in this layout
+    expect(Number(small.getAttribute("width"))).toBeLessThan(48);
+    const smallCell = small.closest(".tile-cell")!;
+    expect(smallCell.querySelector(".tile-label")).not.toBeNull(); // name still shows
+    expect(smallCell.querySelector(".tile-value-label")).toBeNull(); // value label does not
+    chart.destroy();
+    host.remove();
+  });
+
+  it("stacks below the split percent line when both are shown for the same tile", () => {
+    const { host, chart } = mount({ dataSet: big, tileValueLabels: true }); // showSplit defaults true (partial present)
+    const coffee = host.querySelector('rect.tile[data-leaf="Coffee"]')!.closest(".tile-cell")!;
+    const pct = coffee.querySelector(".tile-pct")!;
+    const valueLabel = coffee.querySelector(".tile-value-label")!;
+    expect(pct).not.toBeNull();
+    expect(valueLabel).not.toBeNull();
+    expect(Number(valueLabel.getAttribute("y"))).toBeGreaterThan(Number(pct.getAttribute("y")));
+    chart.destroy();
+    host.remove();
+  });
+});

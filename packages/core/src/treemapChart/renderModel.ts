@@ -58,6 +58,17 @@ export interface TreemapRenderModel {
   /** Representative tile colour for the legend swatches (first group's colour). */
   legendColor: string;
   highlightSet: Set<string>;
+  /** Sum of every leaf's `value` (the WHOLE dataset, not per-group) - the
+   * denominator `tileValueLabels`'s default formatter uses for a leaf's
+   * `fractionOfTotal`. Matches `buildTreemapContext`'s `grandTotal` exactly
+   * (same leaves, same sum), so a11y/context and the on-tile label agree. */
+  grandTotal: number;
+  /** Resolved from `TreemapChartProps["tileValueLabels"]`; null when the prop
+   * is omitted/false (provable no-op - renderSvg/renderCanvas draw nothing
+   * extra). Already bound to the resolved value formatter + a leaf ->
+   * TreemapLeafContext conversion by the engine (see engine/treemapChart.ts),
+   * so the renderers just call it with (value, fractionOfTotal, leaf). */
+  tileValueLabelFormatter: ((value: number, fractionOfTotal: number, leaf: TreemapLeafMark) => string) | null;
 }
 
 export interface BuildTreemapModelOptions {
@@ -68,6 +79,8 @@ export interface BuildTreemapModelOptions {
   splitLabels: [string, string];
   paddingTop: number;
   highlightItems: string[];
+  /** @see TreemapRenderModel["tileValueLabelFormatter"] */
+  tileValueLabelFormatter?: ((value: number, fractionOfTotal: number, leaf: TreemapLeafMark) => string) | null;
 }
 
 export function buildTreemapRenderModel(
@@ -131,6 +144,9 @@ export function buildTreemapRenderModel(
       ]
     : [];
 
+  // Sum of every leaf's value (whole dataset) - see TreemapRenderModel.grandTotal.
+  const grandTotal = leaves.reduce((a, l) => a + l.value, 0);
+
   return {
     containers,
     leaves,
@@ -142,5 +158,7 @@ export function buildTreemapRenderModel(
     legend,
     legendColor: o.groupKeys.length ? colors.getColor(o.groupKeys[0]) : "#888888",
     highlightSet: new Set(o.highlightItems),
+    grandTotal,
+    tileValueLabelFormatter: o.tileValueLabelFormatter ?? null,
   };
 }

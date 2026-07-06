@@ -118,15 +118,32 @@ export function renderTreemapSvg(
       });
       name.textContent = fitText(d.code ? `${d.code}` : d.label, d.w);
       g.appendChild(name);
-      if (model.showSplit && d.partialPct != null && d.w >= 48 && d.h >= 34) {
+      // Second-line gate: reused verbatim (not reinvented) from the split
+      // percent line below - two text lines need more room than the name
+      // alone (see TreemapChartProps["tileValueLabels"] JSDoc in types.ts).
+      const fitsSecondLine = d.w >= 48 && d.h >= 34;
+      let secondLineY = d.y + 30;
+      if (model.showSplit && d.partialPct != null && fitsSecondLine) {
         const pct = svgEl("text", {
           class: "tile-pct",
           x: d.x + 4,
-          y: d.y + 30,
+          y: secondLineY,
           fill: ink,
         });
         pct.textContent = `${Math.round(d.partialPct * 100)}%`;
         g.appendChild(pct);
+        secondLineY += 16; // stack the value label below an already-shown split pct
+      }
+      if (model.tileValueLabelFormatter && fitsSecondLine) {
+        const fraction = model.grandTotal > 0 ? d.value / model.grandTotal : 0;
+        const valueLabel = svgEl("text", {
+          class: "tile-value-label",
+          x: d.x + 4,
+          y: secondLineY,
+          fill: ink,
+        });
+        valueLabel.textContent = fitText(model.tileValueLabelFormatter(d.value, fraction, d), d.w);
+        g.appendChild(valueLabel);
       }
     }
 
