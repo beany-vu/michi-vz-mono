@@ -197,6 +197,29 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
   });
 });
 
+describe("SVG pattern fill (patternsMapping) - backported from ComparableVerticalBarChart", () => {
+  it("emits a <pattern> in <defs> and the value-based rect fills with url(#id) for a mapped label", () => {
+    const { host, chart } = mount({ patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" } });
+    const pattern = host.querySelector("defs.mv-pattern-defs pattern");
+    expect(pattern).toBeTruthy();
+    expect(pattern!.querySelector("image")!.getAttribute("href")).toBe("data:image/svg+xml,<svg/>");
+    const g = host.querySelector('g.data-group[data-label="Alpha One"]')!;
+    const based = g.querySelector("rect.value-based")!;
+    expect(based.getAttribute("fill")).toBe(`url(#${pattern!.id})`);
+    const beta = host.querySelector('g.data-group[data-label="Beta"] rect.value-based')!;
+    expect(beta.getAttribute("fill")!.startsWith("url(")).toBe(false);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("canvas mode is unaffected (still tiles via ctx.createPattern, no <defs> needed)", () => {
+    const { host, chart } = mount({ patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" }, renderer: "canvas" });
+    expect(host.querySelector("defs.mv-pattern-defs")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+});
+
 describe("layout: overlay (default) vs grouped", () => {
   it("default (layout omitted) keeps overlay geometry: based/compared share the full band", () => {
     const { host, chart } = mount();

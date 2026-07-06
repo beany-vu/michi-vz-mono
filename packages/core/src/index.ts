@@ -8,6 +8,7 @@ export { mountAreaChart } from "./engine/areaChart";
 export { mountScatterChart } from "./engine/scatterChart";
 export { mountVerticalStackBarChart } from "./engine/verticalStackBarChart";
 export { mountComparableHorizontalBarChart } from "./engine/comparableHorizontalBarChart";
+export { mountComparableVerticalBarChart } from "./engine/comparableVerticalBarChart";
 export { mountDualHorizontalBarChart } from "./engine/dualHorizontalBarChart";
 export { mountBarBellChart } from "./engine/barBellChart";
 export { mountRangeChart } from "./engine/rangeChart";
@@ -231,6 +232,9 @@ export type {
   ComparableBarSeriesContext,
   ComparableBarChartContext,
   DeltaIndicatorConfig,
+  ComparableVerticalBarChartProps,
+  ComparableVerticalBarSeriesContext,
+  ComparableVerticalBarChartContext,
   DualBarDataPoint,
   DualBarChartProps,
   DualBarSeriesContext,

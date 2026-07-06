@@ -28,3 +28,6 @@ export type { OverlayOptions } from "./overlay";
 
 export { renderAnnotationsSvg } from "./annotations";
 export type { AnnotationRenderContext } from "./annotations";
+
+export { ensurePatternDefs } from "./patternDefs";
+export type { PatternDefsOptions } from "./patternDefs";

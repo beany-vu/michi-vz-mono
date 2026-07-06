@@ -1102,6 +1102,167 @@ export interface ComparableBarChartContext extends BaseChartContext {
   };
 }
 
+// ---- ComparableVerticalBarChart ----
+//
+// Per-category comparison COLUMNS: two FULL-BANDWIDTH overlapping bars per label
+// (band x = categories, linear y = values, diverging from 0), the vertical
+// sibling of ComparableHorizontalBarChart - and the direct migration target for
+// legacy sdg-trade `BarchartVertical`. Reuses `ComparableBarDataPoint` and
+// `DeltaIndicatorConfig` verbatim (same fields, same diff convention) so a
+// dataset can be dropped into either chart unchanged.
+//
+// Geometry ported from legacy sdg-trade BarchartVertical/Chart.js: BOTH
+// sub-bars sit at the SAME x and the FULL column bandwidth (no half-band
+// split, unlike ComparableHorizontalBarChart's optional "grouped" layout -
+// this chart is overlay-only). Z-order is FIXED (not width-dependent like the
+// horizontal chart): `valueBased` (the rear/reference value) is always drawn
+// BEHIND, `valueCompared` (the front/current value) always drawn IN FRONT -
+// mirroring the legacy chart's `BarCompare` (hatched, painted first) vs `Bar`
+// (solid, painted second, opacity toggles on hover).
+
+export interface ComparableVerticalBarChartProps {
+  /** Array of column categories; each renders two overlaid sub-bars (valueBased behind, valueCompared in front), full column bandwidth, diverging from y=0 */
+  dataSet: ComparableBarDataPoint[];
+  /** Optional chart title rendered above the plot */
+  title?: string;
+  /** Chart width in pixels */
+  width?: number;
+  /** Chart height in pixels */
+  height?: number;
+  /** Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels */
+  margin?: Margin;
+  /** Categorical palette for series/labels without an explicit colour or colorsMapping entry */
+  colors?: string[];
+  /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
+  colorsMapping?: Record<string, string>;
+  /** Optional label -> colour map for the value-based sub-bar ONLY (falls back to the row
+   * colour). Pair an opaque light tint here with valueBasedOpacity 1 for the crispest
+   * before/after contrast (legacy michi-vz parity). */
+  colorsBasedMapping?: Record<string, string>;
+  /** Formats a category (x tick) label */
+  xAxisFormat?: (d: string) => string;
+  /** Formats a y tick value into its display label */
+  yAxisFormat?: (d: number | string) => string;
+  /** Fix the y-axis (value) range instead of deriving it from the data */
+  yAxisDomain?: [number, number];
+  /** Force a symmetric y-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits
+   * centred and the negative/positive sides mirror. Wins over yAxisDomain. */
+  symmetricYDomain?: boolean;
+  /** Approximate number of y-axis (value) ticks */
+  ticks?: number;
+  /** Min gap (px) a column label needs before it tilts -45° (chooseAxisMode). Default 8. */
+  xAxisLabelPadding?: number;
+  /** "auto" (default) tilts crowded column labels -45°, else thins; "horizontal" keeps
+   * them flat (thinning instead), so no rotated-label bottom margin is reserved. */
+  xAxisMode?: "auto" | "horizontal";
+  /** Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based
+   * sub-bar - the canvas tiles it via ctx.createPattern, the SVG renderer via a real
+   * `<pattern>`/`<image>` def (same contract as ComparableHorizontalBarChart). */
+  patternsMapping?: Record<string, string>;
+  /** Fill opacity of the rear valueBased sub-bar (historical look: 0.45) */
+  valueBasedOpacity?: number;
+  /** Fill opacity of the front valueCompared sub-bar (default 0.9) */
+  valueComparedOpacity?: number;
+  /** Draw a solid horizontal line at y=0 on the value axis (diverging charts) */
+  showZeroLineForYAxis?: boolean;
+  /** Draw horizontal gridlines on the value axis (default false, legacy parity) */
+  showGrid?: boolean;
+  /** Hide the x-axis category labels */
+  hideTickLabels?: boolean;
+  /** Floor for a sub-bar's pixel height so near-zero values stay visible (default 5) */
+  minBarHeight?: number;
+  /** Cap each column's thickness (px). When few categories would otherwise balloon the
+   * bandwidth, the band range shrinks to yield exactly this thickness and is centred in
+   * the plot. No-op for dense charts whose natural bandwidth is already below the cap. */
+  maxBarWidth?: number;
+  /** Row-level change indicator (arrow + formatted diff label) comparing valueCompared to
+   * valueBased, drawn ABOVE each column pair (legacy `translate(bandwidth/3, -32)`
+   * placement). Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero
+   * `.mv-delta` DOM). Unlike ComparableHorizontalBarChart, THIS chart's context DOES
+   * reflect the indicator (per-series direction/color/label) - see DeltaIndicatorConfig
+   * JSDoc for the full decision-logic contract. */
+  deltaIndicator?: DeltaIndicatorConfig;
+  /** Loading overlay (stale bars hidden while true) */
+  isLoading?: boolean;
+  /** No-data predicate/flag; default = empty dataSet */
+  isNodata?:
+    | boolean
+    | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
+  /** Text for the built-in no-data overlay */
+  noDataLabel?: string;
+  /** Set by a framework wrapper passing its own overlay node - suppresses the default overlay */
+  suppressDefaultOverlay?: boolean;
+  /** Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc) */
+  filter?: {
+    limit: number;
+    criteria: "valueBased" | "valueCompared";
+    sortingDir: "asc" | "desc";
+  };
+  /** Labels to emphasise; all other marks dim */
+  highlightItems?: string[];
+  /** Labels to hide and exclude from scales */
+  disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
+  renderer?: "svg" | "canvas" | "webgpu";
+  /** BCP-47 locale used for number and date formatting */
+  locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
+  skipColorMappingDispatch?: boolean;
+  /** Animate updates with CSS transitions (default true) */
+  enableTransitions?: boolean;
+  /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted).
+   * `type` is the hovered sub-bar ("based" | "compared"); `dataSet` is all rows. */
+  tooltipFormatter?: (
+    d: ComparableBarDataPoint,
+    dataSet?: ComparableBarDataPoint[],
+    type?: "based" | "compared",
+  ) => string;
+  /** Called when the hovered/highlighted label(s) change */
+  onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
+  onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, ...) */
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface ComparableVerticalBarSeriesContext {
+  label: string;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
+  color: string;
+  valueBased: number;
+  valueCompared: number;
+  /** valueCompared - valueBased. */
+  difference: number;
+  /** Only present when `deltaIndicator.show` was true for this render. */
+  deltaDirection?: "up" | "down" | "flat";
+  deltaColor?: string;
+  deltaLabel?: string;
+}
+
+export interface ComparableVerticalBarChartContext extends BaseChartContext {
+  chartType: "comparable-vertical-bar-chart";
+  xAxis: { labels: string[] };
+  yAxis: { domain: [number, number] };
+  series: ComparableVerticalBarSeriesContext[];
+  stats: {
+    count: number;
+    totalBased: number;
+    totalCompared: number;
+    largestMover: { label: string; difference: number } | null;
+    /** Purely data-derived (independent of deltaIndicator): count of rows whose
+     * valueCompared grew / shrank / stayed exactly equal vs valueBased. */
+    grew: number;
+    shrank: number;
+    unchanged: number;
+    /** Only meaningful when deltaIndicator was active for this render (else both 0);
+     * counts rows whose resolved delta colour was "good" vs "bad" per positiveIsGood. */
+    improved: number;
+    worsened: number;
+  };
+}
+
 // ---- DualHorizontalBarChart (diverging / tornado) ----
 
 export interface DualBarDataPoint {
@@ -2315,6 +2476,7 @@ export type ChartContext =
   | ScatterChartContext
   | VerticalStackBarChartContext
   | ComparableBarChartContext
+  | ComparableVerticalBarChartContext
   | DualBarChartContext
   | BarBellChartContext
   | RangeChartContext

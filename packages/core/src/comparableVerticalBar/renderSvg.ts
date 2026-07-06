@@ -1,35 +1,34 @@
-// Imperative SVG renderer for ComparableHorizontalBar: two <rect class="bar"> per
-// label (based behind at valueBasedOpacity, compared in front at
-// valueComparedOpacity), each with data-label + data-label-safe. Hover per group.
+// Imperative SVG renderer for ComparableVerticalBar: two <rect class="bar"> per
+// category (valueBased behind at valueBasedOpacity, valueCompared in front at
+// valueComparedOpacity), each with data-label + data-label-safe, drawn in a
+// FIXED z-order (see renderModel.ts). Hover per sub-bar rect.
 import { svgEl } from "../dom";
-import { comparableDrawOrder } from "./renderModel";
-import type { ComparableBarModel, ComparableRenderModel } from "./renderModel";
+import { comparableVerticalDrawOrder } from "./renderModel";
+import type { ComparableVerticalBarModel, ComparableVerticalRenderModel } from "./renderModel";
 
-export interface ComparableSvgOptions {
+export interface ComparableVerticalSvgOptions {
   valueBasedOpacity: number;
   valueComparedOpacity: number;
   enableTransitions: boolean;
   /** label (or its data-label-safe form) -> a `<pattern>` element id already
-   * present in the SVG's `<defs>` (see render/svg/patternDefs.ts, backported
-   * from ComparableVerticalBarChart). When set for a label, its value-based
-   * sub-bar fills with `url(#id)` instead of a flat colour - the SVG-mode
-   * equivalent of the canvas renderer's patternsMapping tiling. */
+   * present in the SVG's `<defs>` (see render/svg/patternDefs.ts). When set for
+   * a label, its value-based sub-bar fills with `url(#id)` instead of a flat colour. */
   patternIdFor?: (label: string, safe: string) => string | undefined;
 }
 
-export interface ComparableInteractions {
-  onEnter: (bar: ComparableBarModel, ev: MouseEvent, type: "based" | "compared") => void;
+export interface ComparableVerticalInteractions {
+  onEnter: (bar: ComparableVerticalBarModel, ev: MouseEvent, type: "based" | "compared") => void;
   onLeave: (ev: MouseEvent) => void;
-  onClick: (bar: ComparableBarModel, ev: MouseEvent, type: "based" | "compared") => void;
+  onClick: (bar: ComparableVerticalBarModel, ev: MouseEvent, type: "based" | "compared") => void;
 }
 
-export function renderComparableSvg(
+export function renderComparableVerticalSvg(
   parent: SVGElement,
-  model: ComparableRenderModel,
-  o: ComparableSvgOptions,
-  ia: ComparableInteractions
+  model: ComparableVerticalRenderModel,
+  o: ComparableVerticalSvgOptions,
+  ia: ComparableVerticalInteractions
 ): void {
-  const root = svgEl("g", { class: "comparable-bar-content" });
+  const root = svgEl("g", { class: "comparable-vertical-bar-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
 
   for (const bar of model.bars) {
@@ -37,7 +36,7 @@ export function renderComparableSvg(
     g.style.opacity = bar.dimmed ? "0.3" : "1";
     g.style.transition = transition;
 
-    for (const type of comparableDrawOrder(bar)) {
+    for (const type of comparableVerticalDrawOrder) {
       const part =
         type === "based"
           ? { seg: bar.based, opacity: o.valueBasedOpacity, cls: "value-based", fill: bar.basedColor }

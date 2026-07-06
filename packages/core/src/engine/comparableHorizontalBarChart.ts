@@ -7,6 +7,7 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
+import { ensurePatternDefs } from "../render/svg/patternDefs";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processComparableBarData } from "../comparableBar/data";
 import { buildComparableBarColors } from "../comparableBar/colors";
@@ -414,6 +415,13 @@ export function mountComparableHorizontalBarChart(
         : undefined,
     });
 
+    // Real <defs><pattern> SVG hatch fill for patternsMapping (svg mode only -
+    // canvas/webgpu tile the same data-URI via ctx.createPattern instead).
+    // Backported from ComparableVerticalBarChart's native implementation - this
+    // SVG path previously ignored patternsMapping despite the prop's doc-comment
+    // promising it (canvas mode already honoured it via drawComparableCanvas).
+    const patternIds = r.renderer === "svg" ? ensurePatternDefs(svg, props.patternsMapping) : new Map<string, string>();
+
     if (r.renderer === "svg") {
       renderComparableSvg(
         svg,
@@ -422,6 +430,7 @@ export function mountComparableHorizontalBarChart(
           valueBasedOpacity: r.valueBasedOpacity,
           valueComparedOpacity: r.valueComparedOpacity,
           enableTransitions: r.enableTransitions,
+          patternIdFor: (label, safe) => patternIds.get(label) ?? patternIds.get(safe),
         },
         {
           onEnter: (bar, ev, type) => {
