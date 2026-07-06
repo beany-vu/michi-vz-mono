@@ -18,6 +18,8 @@ import { buildScatterColors } from "../scatterChart/colors";
 import { createScatterScales } from "../scatterChart/scales";
 import { buildScatterRenderModel } from "../scatterChart/renderModel";
 import type { ScatterPointModel } from "../scatterChart/renderModel";
+import { buildScatterPointLabels } from "../scatterChart/pointLabels";
+import { renderScatterPointLabelsSvg } from "../scatterChart/renderPointLabelsSvg";
 import { renderScatterSvg } from "../scatterChart/renderSvg";
 import { drawScatterCanvas } from "../scatterChart/renderCanvas";
 import { drawScatterWebgpu } from "../scatterChart/renderWebgpu";
@@ -42,6 +44,7 @@ import type {
   Renderer,
   ScatterChartProps,
   ScatterDataPoint,
+  ScatterPointLabelsConfig,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
@@ -67,12 +70,22 @@ interface Resolved {
   crosshairDashed: boolean;
   crosshairSpan: "full" | "half";
   crosshairPlacement: "auto" | "fixed";
+  pointLabels: ScatterPointLabelsConfig | null;
+  drawOrder: "none" | "sizeDescending";
 }
 
 function resolveGrid(g: ScatterChartProps["showGrid"], axis: "x" | "y"): boolean {
   if (g === undefined) return true;
   if (typeof g === "boolean") return g;
   return g[axis] ?? true;
+}
+
+// Same boolean|config resolution shape as LineChart's resolveMouseLine /
+// resolveSinglePointLine (engine/lineChart.ts): `true` -> default config `{}`,
+// omitted/false -> null (feature off, no-op).
+function resolvePointLabels(v: ScatterChartProps["pointLabels"]): ScatterPointLabelsConfig | null {
+  if (!v) return null;
+  return v === true ? {} : v;
 }
 
 function resolve(p: ScatterChartProps): Resolved {
@@ -94,6 +107,8 @@ function resolve(p: ScatterChartProps): Resolved {
     crosshairDashed: p.crosshairLineStyle !== "solid",
     crosshairSpan: p.crosshairSpan ?? "full",
     crosshairPlacement: p.crosshairLabelPlacement ?? "auto",
+    pointLabels: resolvePointLabels(p.pointLabels),
+    drawOrder: p.drawOrder ?? "none",
   };
 }
 
@@ -342,6 +357,7 @@ export function mountScatterChart(
       xAxisDataType,
       highlightItems,
       defaultRadius: Math.min(...r.sizeRange) + 1,
+      drawOrder: r.drawOrder,
     });
 
     const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
@@ -493,6 +509,16 @@ export function mountScatterChart(
     } else {
       removeCanvas();
       removeWebgpuCanvas();
+    }
+
+    // Point labels: painted on the SVG scaffold layer unconditionally (same
+    // treatment as title/axis text and ComparableBar's delta indicator - see
+    // scatterChart/renderPointLabelsSvg.ts), so labels appear identically
+    // whichever `renderer` painted the points themselves. No-op when the prop
+    // is absent/false (r.pointLabels is null).
+    if (r.pointLabels) {
+      const formatter = r.pointLabels.formatter ?? ((d: ScatterDataPoint) => d.label);
+      renderScatterPointLabelsSvg(svg, buildScatterPointLabels(model.points, formatter));
     }
 
     // Crosshair config the canvas hover handler (onHostMove) reads; null when off.

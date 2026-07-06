@@ -390,3 +390,130 @@ describe("canvas-mode hover throttle (rAF)", () => {
     host.remove();
   });
 });
+
+describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
+  // Uniform `d` (equal radius) -> buildScatterRenderModel skips its size sort
+  // (uniformR), so draw order == input order - makes label-order assertions
+  // below unambiguous and independent of the drawOrder feature.
+  const spread: ScatterDataPoint[] = [
+    { label: "Point A", x: 1, y: 2, d: 5 },
+    { label: "Beta", x: 3, y: 6, d: 5 },
+    { label: "Gamma", x: 5, y: 10, d: 5 },
+    { label: "Delta", x: 7, y: 14, d: 5 },
+  ];
+
+  it("absent prop: zero .mv-point-label nodes and mark markup is byte-identical to a mount with no pointLabels key at all", () => {
+    const withoutKey = mount({ dataSet: spread });
+    const withFalse = mount({ dataSet: spread, pointLabels: false });
+    expect(withoutKey.host.querySelectorAll(".mv-point-label").length).toBe(0);
+    expect(withFalse.host.querySelectorAll(".mv-point-label").length).toBe(0);
+    const markAttrs = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll(".scatter-point")).map((m) => m.outerHTML);
+    expect(markAttrs(withFalse.host)).toEqual(markAttrs(withoutKey.host));
+    withoutKey.chart.destroy();
+    withoutKey.host.remove();
+    withFalse.chart.destroy();
+    withFalse.host.remove();
+  });
+
+  it("true: renders one label per point (using the point's label) when they don't collide", () => {
+    const { host, chart } = mount({ dataSet: spread, pointLabels: true });
+    const labels = host.querySelectorAll(".mv-point-label");
+    expect(labels.length).toBe(4);
+    const texts = Array.from(labels).map((g) => g.querySelector(".mv-point-label-text")!.textContent);
+    expect(texts).toEqual(["Point A", "Beta", "Gamma", "Delta"]);
+    const first = labels[0];
+    expect(first.getAttribute("data-label")).toBe("Point A");
+    expect(first.getAttribute("data-label-safe")).toBe(sanitizeForClassName("Point A"));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("custom formatter overrides the default label-name text", () => {
+    const { host, chart } = mount({
+      dataSet: spread,
+      pointLabels: { formatter: (d) => `${d.label}!` },
+    });
+    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+    expect(texts).toEqual(["Point A!", "Beta!", "Gamma!", "Delta!"]);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("a formatter returning '' suppresses just that point's label", () => {
+    const { host, chart } = mount({
+      dataSet: spread,
+      pointLabels: { formatter: (d) => (d.label === "Gamma" ? "" : d.label) },
+    });
+    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+    expect(texts).not.toContain("Gamma");
+    expect(texts.length).toBe(3);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("overlap-hide: two same-position points - only the earlier one (draw order) gets a label", () => {
+    const overlapping: ScatterDataPoint[] = [
+      { label: "First", x: 4, y: 8, d: 5 },
+      { label: "Second", x: 4, y: 8, d: 5 }, // identical pixel position -> guaranteed box overlap
+    ];
+    const { host, chart } = mount({ dataSet: overlapping, pointLabels: true });
+    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+    expect(texts).toEqual(["First"]); // "Second"'s label box collides with "First"'s and is skipped
+    chart.destroy();
+    host.remove();
+  });
+
+  it("overlap-hide is deterministic across repeated mounts (same input -> same visible labels)", () => {
+    const overlapping: ScatterDataPoint[] = [
+      { label: "First", x: 4, y: 8, d: 5 },
+      { label: "Second", x: 4, y: 8, d: 5 },
+      { label: "Third", x: 4, y: 8, d: 5 },
+    ];
+    const run = () => {
+      const { host, chart } = mount({ dataSet: overlapping, pointLabels: true });
+      const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+      chart.destroy();
+      host.remove();
+      return texts;
+    };
+    expect(run()).toEqual(["First"]);
+    expect(run()).toEqual(run());
+  });
+});
+
+describe("drawOrder (default 'none', additive)", () => {
+  const varyingSizes: ScatterDataPoint[] = [
+    { label: "Small", x: 1, y: 1, d: 1 },
+    { label: "Large", x: 5, y: 5, d: 20 },
+    { label: "Medium", x: 3, y: 3, d: 10 },
+  ];
+
+  it("absent prop, 'none', and 'sizeDescending' are byte-identical (today's ordering already IS size-descending)", () => {
+    const omitted = mount({ dataSet: varyingSizes });
+    const none = mount({ dataSet: varyingSizes, drawOrder: "none" });
+    const sizeDesc = mount({ dataSet: varyingSizes, drawOrder: "sizeDescending" });
+    const markAttrs = (host: HTMLElement) =>
+      Array.from(host.querySelectorAll(".scatter-point")).map((m) => m.outerHTML);
+    expect(markAttrs(none.host)).toEqual(markAttrs(omitted.host));
+    expect(markAttrs(sizeDesc.host)).toEqual(markAttrs(omitted.host));
+    omitted.chart.destroy();
+    omitted.host.remove();
+    none.chart.destroy();
+    none.host.remove();
+    sizeDesc.chart.destroy();
+    sizeDesc.host.remove();
+  });
+
+  it("draws the largest bubble first (behind) and the smallest last (on top), matching the documented contract", () => {
+    const { host, chart } = mount({ dataSet: varyingSizes, drawOrder: "sizeDescending" });
+    const marks = Array.from(host.querySelectorAll<SVGCircleElement>("circle.scatter-point"));
+    const rs = marks.map((m) => Number(m.getAttribute("r")));
+    // Strictly descending: each mark's radius >= the next one's (largest-first).
+    for (let i = 1; i < rs.length; i++) expect(rs[i - 1]).toBeGreaterThanOrEqual(rs[i]);
+    expect(marks[0].getAttribute("data-label")).toBe("Large");
+    expect(marks[marks.length - 1].getAttribute("data-label")).toBe("Small");
+    chart.destroy();
+    host.remove();
+  });
+});

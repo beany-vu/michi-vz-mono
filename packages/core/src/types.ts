@@ -597,6 +597,16 @@ export interface ScatterDataPoint {
   label2?: string;
 }
 
+/**
+ * Config for `ScatterChartProps["pointLabels"]`. See that prop's JSDoc for the
+ * full placement contract + the legacy-parity caveat.
+ */
+export interface ScatterPointLabelsConfig {
+  /** Formats the visible label text for a point; default: the point's `label`.
+   * Return "" (or any falsy value) to suppress a specific point's label. */
+  formatter?: (d: ScatterDataPoint) => string;
+}
+
 export interface ScatterChartProps {
   /** Array of points to plot in the cloud */
   dataSet: ScatterDataPoint[];
@@ -684,6 +694,54 @@ export interface ScatterChartProps {
   showGrid?: boolean | { x?: boolean; y?: boolean };
   /** Pass false to suppress the sticky-tooltip pin icon. Default: shown (no-op until an icon exists). */
   pinIcon?: boolean;
+  /**
+   * Per-point text label (the point's `label` by default). Omitted, or
+   * `false`, is a byte-for-byte no-op - zero `.mv-point-label` DOM, default off.
+   *
+   * Placement is a SIMPLIFIED right-of-point + overlap-hide strategy: each
+   * label anchors just to the right of its point (at the current z/draw-order
+   * position - see `drawOrder`), and a label is skipped entirely if its
+   * estimated bounding box would overlap an already-placed label's box (points
+   * processed in that same draw order, so the result never depends on
+   * unordered iteration). This intentionally diverges from the legacy
+   * sdg-trade Scatterplot (`components/Charts/Scatterplot/Chart.js`), which
+   * used d3-voronoi to pick a non-colliding label DIRECTION (right/left/top/
+   * bottom, from the point toward its voronoi cell's centroid) and hid a label
+   * only when its voronoi cell's polygon area was <= 10000px². No d3-voronoi
+   * dependency was added for this port (none allowed) - the parity bar accepts
+   * a cosmetically different placement; the requirement is that labels exist
+   * and don't visually collide.
+   *
+   * Painted on the SVG scaffold layer unconditionally (same treatment as the
+   * title/axes and ComparableBar's `deltaIndicator`), so labels look identical
+   * whichever `renderer` painted the points themselves.
+   */
+  pointLabels?: boolean | ScatterPointLabelsConfig;
+  /**
+   * Draw-order for overlapping bubbles. Default `"none"`: today's existing,
+   * pre-existing behaviour - unchanged, zero-diff. `buildScatterRenderModel`
+   * has, since before this prop existed, unconditionally sorted points
+   * largest-first whenever radii vary, so smaller marks already paint last (on
+   * top of larger ones). `"sizeDescending"` names that exact ordering
+   * explicitly - larger bubbles render first (behind/underneath), smaller
+   * bubbles render last (on top) - and is intentionally IDENTICAL output to
+   * `"none"` today (see the `BuildScatterModelOptions` JSDoc in
+   * `scatterChart/renderModel.ts`).
+   *
+   * IMPORTANT legacy-parity caveat found while re-reading the actual legacy
+   * source (`sdg-trade/.../Scatterplot/Scatterplot.js` +
+   * `.../Scatterplot/Chart.js`): legacy's real rendered z-order is the
+   * OPPOSITE of "small on top". Its wrapper sorts `data` ASCENDING by the raw
+   * size value (`data.sort((a,b) => a[rValueKey]-b[rValueKey])`) and Chart.js
+   * then draws circles via `data.map` in that array order, and later SVG
+   * siblings paint over earlier ones - so the LARGEST bubble ends up drawn
+   * LAST / on top there, not the smallest. Neither `"none"` nor
+   * `"sizeDescending"` reproduces that true legacy visual; both already match
+   * (and this prop preserves) this library's own pre-existing "small on top"
+   * convention instead. Reproducing the legacy's actual "large on top" order
+   * would need a new, different opt-in value - out of scope here.
+   */
+  drawOrder?: "none" | "sizeDescending";
   /** Pre-serialised SVG markup injected as direct <svg> children (the React wrapper fills this from `children`). */
   svgChildren?: string;
 }
