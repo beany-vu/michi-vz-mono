@@ -11,7 +11,13 @@ import type { ScatterPointModel, ScatterRenderModel } from "./renderModel";
 // `<g data-label-safe>` wrapping the mark, so getComputedStyle on the inner element
 // picks up that fill. A FLAT probe (bare <circle>) would NOT match the descendant
 // selector → every label resolves to the transparent skip-mode fallback → an
-// invisible chart. Mirrors makeSubBarProbe's nested-probe pattern.
+// invisible chart. Same family of fix as ComparableHorizontalBar's
+// makeSubBarProbe (see canvas/resolveMarkColors.ts) - a descendant-only
+// consumer selector needs a real ancestor element in the probe, not just a
+// flat mark - though scatter's wrapper needs no extra class of its own since
+// MonitorV2's selector targets the ancestor by attribute + a wildcard child
+// (`g[data-label-safe] > *`), unlike ComparableBar's contract which ALSO
+// needs the "bar" class replicated onto the descendant for same-element CSS.
 export const makeGroupedScatterProbe = (
   label: string,
   labelSafe: string,

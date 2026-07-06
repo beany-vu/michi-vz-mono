@@ -92,29 +92,50 @@ export const makeMultiPropProbe =
     return { root: node, target: node };
   };
 
-// Probe for sub-bar charts (ComparableHorizontalBar). Mirrors the REAL SVG
-// markup emitted by renderComparableSvg EXACTLY: a single flat
-// `<rect class="bar value-based|value-compared" data-label data-label-safe>`
-// - both classes and data-label-safe live on the SAME element, there is no
-// wrapping `<g class="bar">` ancestor. A previous version of this probe used a
-// nested `<g class="bar" data-label-safe><rect class="value-based"></g>`
-// shape; that broke a plain consumer rule like `.bar { fill: ... }`, because
-// the rule matched the outer `g` (which has the "bar" class) while
-// resolveMarkColors reads getComputedStyle on the INNER rect - and the rect's
-// own `fill` presentation attribute (the fallback colour) counts as a
-// specified value, so it wins over inheriting the ancestor's CSS-set fill
-// (a specified value on an element always beats inheriting from an ancestor,
-// no matter how low its priority). Reading with colorProp ['fill','stroke']
-// still lets a `url(#pattern)` fill fall through to the stroke colour.
+// Probe for sub-bar charts (ComparableHorizontalBar). Satisfies TWO consumer
+// CSS contracts simultaneously, both real (see thd
+// frontend/src/sites/ato/pages/MonitorV2/Result/MacMap/TariffStructure/ByPattern.jsx
+// and .../TradeMap/TradeGrowthPotential.jsx):
+//
+//   1. DESCENDANT selectors keyed on an ANCESTOR "bar" class, e.g.
+//      `.bar[data-label="X"] .value-compared { fill: ... }` or
+//      `.bar[data-label-safe="K"] .value-based { fill: ...; stroke: ... }`.
+//      This needs a real ancestor carrying class="bar" + the data attributes,
+//      with the probed element as its descendant.
+//   2. SAME-ELEMENT / compound selectors, e.g. a plain `.bar { fill: ... }`
+//      or `.bar.value-based { fill: ... }`, or an attribute selector applied
+//      directly to the sub-bar element. This needs the probed element ITSELF
+//      to carry class="bar" (plus the sub-bar class) and the data attributes.
+//
+// So the probe is a `<g class="bar" data-label data-label-safe>` ancestor
+// wrapping a `<rect class="bar value-based|value-compared" data-label
+// data-label-safe fill=fallback>` descendant, and getComputedStyle is read
+// from the RECT (the compound classes on the rect make form 2 match directly
+// on it; the ancestor g's matching "bar" class + attributes make form 1's
+// descendant combinator match too). A prior version of this probe was FLAT
+// (rect only, no wrapping g) - that satisfies form 2 but can never match a
+// descendant combinator (form 1), silently breaking every thd consumer that
+// colours canvas sub-bars that way. An even earlier version had the "bar"
+// class ONLY on the ancestor g (not on the rect) - that satisfies form 1 but
+// breaks form 2, because the rect's own `fill` presentation attribute (the
+// fallback colour) is a specified value and always wins over inheriting the
+// ancestor's CSS-set fill, however low its priority. Only carrying "bar" on
+// BOTH elements satisfies both forms at once. Reading with colorProp
+// ['fill','stroke'] still lets a `url(#pattern)` fill fall through to stroke.
 export const makeSubBarProbe =
   (subBarClass: "value-based" | "value-compared") =>
   (label: string, labelSafe: string, fallback: string): ColorProbe => {
     const NS = "http://www.w3.org/2000/svg";
+    const g = document.createElementNS(NS, "g") as SVGGElement;
+    g.setAttribute("class", "bar");
+    g.setAttribute("data-label", label);
+    g.setAttribute("data-label-safe", labelSafe);
     const rect = document.createElementNS(NS, "rect") as SVGRectElement;
     rect.setAttribute("class", `bar ${subBarClass}`);
     rect.setAttribute("data-label", label);
     rect.setAttribute("data-label-safe", labelSafe);
     rect.setAttribute("fill", fallback);
     rect.setAttribute("visibility", "hidden");
-    return { root: rect, target: rect };
+    g.appendChild(rect);
+    return { root: g, target: rect };
   };

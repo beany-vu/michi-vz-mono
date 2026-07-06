@@ -23,6 +23,14 @@
   #stackContract .bar { fill: rgb(230, 150, 20); }
   /* ComparableBar consumer colour contract: recolour bar fills purely via CSS. */
   #cmpContract .bar { fill: rgb(120, 40, 200); }
+  /* ComparableBar DESCENDANT consumer colour contract - thd's real MonitorV2
+     shape (TariffStructure/ByPattern.jsx + TradeMap/TradeGrowthPotential.jsx):
+     an ancestor `.bar[data-label-safe="X"]` selector styling a DESCENDANT
+     `.value-based`/`.value-compared` element, not the same element. value-based
+     also exercises the url()-fill-falls-through-to-stroke behaviour (a real
+     thd pattern via patternsMapping). */
+  #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-based { fill: url(#nonexistent-pattern); stroke: rgb(10, 200, 10); }
+  #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-compared { fill: rgb(220, 20, 140); }
   /* DualBar consumer colour contract: recolour bar fills purely via CSS. */
   #dualContract .bar { fill: rgb(0, 160, 160); }
   /* BarBell consumer colour contract: recolour bar fills purely via CSS. */
@@ -88,6 +96,8 @@
 </div>
 <h2>Comparable consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="cmpContract"><michi-vz-comparable-horizontal-bar-chart id="cmpContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
+<h2>Comparable consumer-CSS DESCENDANT selector contract (canvas, thd MonitorV2 shape)</h2>
+<div class="card" id="cmpDescendantContract"><michi-vz-comparable-horizontal-bar-chart id="cmpDescendantContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
 
 <h1 style="margin-top:36px">@michi-vz/wc - DualHorizontalBar (tornado)</h1>
 <div class="row">
@@ -241,6 +251,16 @@ const cmpContractEl = document.getElementById("cmpContractChart");
 Object.assign(cmpSvgEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "svg", ...cmpCommon });
 Object.assign(cmpCanvasEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "canvas", ...cmpCommon });
 Object.assign(cmpContractEl, { dataSet: cmpData, chartTitle: "Comparable canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...cmpCommon });
+const cmpDescendantContractEl = document.getElementById("cmpDescendantContractChart");
+Object.assign(cmpDescendantContractEl, {
+  dataSet: cmpData,
+  chartTitle: "Comparable canvas + descendant CSS",
+  renderer: "canvas",
+  skipColorMappingDispatch: true,
+  valueBasedOpacity: 1,
+  valueComparedOpacity: 1,
+  ...cmpCommon,
+});
 
 // ---- DualHorizontalBar (tornado) setup ----
 const dualData = [
@@ -501,6 +521,26 @@ try {
     }
   }
   log(cmpContractOk, "CMP CANVAS colour contract: consumer CSS rgb(120,40,200) reached canvas pixels");
+
+  // THE comparable DESCENDANT colour contract: thd's real MonitorV2 shape is a
+  // descendant selector keyed on an ancestor `.bar[data-label-safe="X"]` styling
+  // a DESCENDANT `.value-based`/`.value-compared` element (not the same element
+  // as a plain `.bar { fill }` rule). value-based also exercises the
+  // url()-fill-falls-through-to-stroke behaviour. Both sub-bars are rendered at
+  // opacity 1 here so pixels are exact, unblended colours.
+  const cdcnv = cmpDescendantContractEl.querySelector("canvas");
+  let cmpDescendantBasedOk = false;
+  let cmpDescendantComparedOk = false;
+  if (cdcnv) {
+    const c = cdcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, cdcnv.width, cdcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] < 40 && px[i + 1] > 175 && px[i + 2] < 40 && px[i + 3] > 0) cmpDescendantBasedOk = true;
+      if (px[i] > 195 && px[i + 1] < 50 && px[i + 2] > 110 && px[i + 2] < 170 && px[i + 3] > 0) cmpDescendantComparedOk = true;
+    }
+  }
+  log(cmpDescendantBasedOk, "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-based { stroke: rgb(10,200,10) }` (url() fill falls through) reached canvas pixels");
+  log(cmpDescendantComparedOk, "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels");
 
   // ---- DualHorizontalBar checks ----
   const dualBars = dualSvgEl.querySelectorAll("rect.bar");
