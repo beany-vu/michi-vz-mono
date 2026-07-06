@@ -421,9 +421,18 @@ export const previews: Record<string, Preview> = {
     mount: mountSymbolMapChart as Mount,
     props: {
       showLabels: false,
-      radiusRange: [2, 11],
-      // Dense enough that the dot-cloud sketches the continents; too few points
-      // and the card reads as a scatter plot.
+      radiusRange: [1.5, 7],
+      // The muted landmass is what makes the tiny card read as a MAP: without
+      // geography the projection fits the points' own bounding box and the
+      // de-overlap scatters them into an abstract cloud. Warm tint to sit on
+      // the cream card body.
+      geography: world,
+      geographyColor: "#eadfc4",
+      strokeColor: "#dbcda8",
+      // precise: at thumbnail scale the force sim's charge overpowers the
+      // position pull and blasts every dot to the boundary clamp (a ring, not
+      // a map). True lng/lat + tiny radii read correctly.
+      positionMode: "precise",
       dataSet: [
         { id: "usa", label: "United States", lng: -95.7, lat: 38.9, value: 90, color: BLUE },
         { id: "can", label: "Canada", lng: -75.7, lat: 45.4, value: 30, color: RED },

@@ -14,6 +14,21 @@ A concentric second ring (`valueSecond`) reads as a sub-metric of the outer circ
 
 <ChartDemo chart="symbol-map-chart" :index="1" :legend="[]" />
 
+## Precise positions or force de-overlap
+
+`positionMode` chooses what a symbol's position means:
+
+- **`"force"` (default, legacy parity)**: the one-shot simulation pulls colliding circles apart. Readable when many symbols crowd one area, but every symbol can drift from its true coordinates, and on small plots the drift can be large.
+- **`"precise"`**: every symbol stays at its exact projected `lng`/`lat`; overlapping circles are allowed.
+
+A symbol drawn over the wrong country is a cartographic-accuracy problem and, for some audiences, a politically sensitive one. Prefer `"precise"` whenever a `geography` backdrop is visible: a landmass invites reading positions literally.
+
+<PositionModeDemo />
+
+::: warning Demo geography only
+The world atlas on this page is a simplified public-domain GeoJSON file bundled with the docs examples for illustration. Boundaries, names, and shapes are NOT authoritative. Review the borders and naming of the `geography` file you pass against your organization's cartographic policy before production use: the library renders the file as-is and applies no corrections.
+:::
+
 > The chart above is the **same engine** in every framework - only the integration code below differs.
 
 ## Bring your own coordinates
@@ -100,7 +115,7 @@ Props are typed as `SymbolMapChartProps` in [`@michi-vz/core`](https://github.co
 
 ### The one-shot force de-overlap
 
-Every item's `lng`/`lat` projects to a "true" pixel position; `forceX`/`forceY` pin the simulation to that exact position as its target, `forceManyBody()` adds mild separation, and `forceCollide` (radius + 2px padding, 3 iterations) is what actually pushes overlapping circles apart. The simulation settles synchronously to the SAME alpha threshold the legacy chart used (`0.0011`) - deterministic: identical inputs always settle to the identical layout, so two mounts of the same data produce pixel-identical positions. Two items with the *exact same* coordinates start stacked and separate cleanly once the simulation settles.
+Every item's `lng`/`lat` projects to a "true" pixel position; `forceX`/`forceY` pin the simulation to that exact position as its target, `forceManyBody()` adds mild separation, and `forceCollide` (radius + 2px padding, 3 iterations) is what actually pushes overlapping circles apart. The simulation settles synchronously to the SAME alpha threshold the legacy chart used (`0.0011`) - deterministic: identical inputs always settle to the identical layout, so two mounts of the same data produce pixel-identical positions. Two items with the *exact same* coordinates start stacked and separate cleanly once the simulation settles. Set `positionMode: "precise"` to skip the simulation entirely: every symbol then stays at its exact projected position and overlaps are allowed (see the toggle demo above).
 
 ### Dot-only vs. backdrop projection
 

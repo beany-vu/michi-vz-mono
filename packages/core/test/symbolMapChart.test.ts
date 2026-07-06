@@ -522,3 +522,56 @@ describe("mountSymbolMapChart - update/destroy", () => {
     b.host.remove();
   });
 });
+
+describe("positionMode", () => {
+  // Two co-located items: only the force sim can separate them; only precise
+  // mode can keep them coincident. A third far-away point keeps the dot-only
+  // extent rescale two-dimensional.
+  const coLocated: SymbolMapDataItem[] = [
+    { id: "a", label: "Alpha", lng: 10, lat: 10, value: 100 },
+    { id: "b", label: "Beta", lng: 10, lat: 10, value: 100 },
+    { id: "c", label: "Gamma", lng: -60, lat: -20, value: 100 },
+  ];
+
+  // Positions live on the parent <g class="symbol-cell" transform="translate(x, y)">,
+  // not on the circle (which has no cx/cy) - parse the translate.
+  function centreOf(host: HTMLElement, label: string): { x: number; y: number } {
+    const c = host.querySelector<SVGCircleElement>(
+      `circle.symbol[data-label-safe="${sanitizeForClassName(label)}"]`
+    );
+    expect(c).not.toBeNull();
+    const transform = (c!.closest("g.symbol-cell") as SVGGElement).getAttribute("transform")!;
+    const m = /translate\(([-\d.eE+]+),\s*([-\d.eE+]+)\)/.exec(transform)!;
+    return { x: Number(m[1]), y: Number(m[2]) };
+  }
+
+  it('"precise" keeps co-located items at IDENTICAL centres (overlap allowed, true lng/lat)', () => {
+    const { host, chart } = mount({ dataSet: coLocated, positionMode: "precise" });
+    const a = centreOf(host, "Alpha");
+    const b = centreOf(host, "Beta");
+    expect(a.x).toBe(b.x);
+    expect(a.y).toBe(b.y);
+    chart.destroy();
+    host.remove();
+  });
+
+  it('default ("force") de-overlaps co-located items (centres separate)', () => {
+    const { host, chart } = mount({ dataSet: coLocated });
+    const a = centreOf(host, "Alpha");
+    const b = centreOf(host, "Beta");
+    const dist = Math.hypot(a.x - b.x, a.y - b.y);
+    expect(dist).toBeGreaterThan(1);
+    chart.destroy();
+    host.remove();
+  });
+
+  it('"precise" positions are stable across re-renders (no sim, pure projection)', () => {
+    const { host, chart } = mount({ dataSet: coLocated, positionMode: "precise" });
+    const before = centreOf(host, "Gamma");
+    chart.update({ dataSet: coLocated, positionMode: "precise", width: 600, height: 400, title: "Demo" });
+    const after = centreOf(host, "Gamma");
+    expect(after).toEqual(before);
+    chart.destroy();
+    host.remove();
+  });
+});

@@ -14,6 +14,21 @@ Một vòng thứ hai đồng tâm (`valueSecond`) được đọc như một ch
 
 <ChartDemo chart="symbol-map-chart" :index="1" :legend="[]" />
 
+## Vị trí chính xác hay tách chồng lấn
+
+`positionMode` quyết định ý nghĩa vị trí của mỗi symbol:
+
+- **`"force"` (mặc định, giữ tương thích legacy)**: mô phỏng một lần đẩy các vòng tròn chồng nhau tách ra. Dễ đọc khi nhiều symbol dồn về một chỗ, nhưng symbol có thể lệch khỏi tọa độ thật, và trên biểu đồ nhỏ độ lệch có thể rất lớn.
+- **`"precise"`**: mỗi symbol nằm đúng tại `lng`/`lat` đã chiếu; chấp nhận chồng lấn.
+
+Symbol vẽ nhầm sang nước khác là lỗi chính xác bản đồ, với nhiều đối tượng người xem còn là vấn đề nhạy cảm chính trị. Nên dùng `"precise"` khi có nền `geography`: thấy đất liền là người xem sẽ đọc vị trí theo nghĩa đen.
+
+<PositionModeDemo labelPrecise="precise: vị trí thật" labelForce="force: tách chồng lấn" hint="Chuyển sang force để thấy các bong bóng lệch khỏi tọa độ thật nhằm tránh va chạm. Khi có nền bản đồ, precise thường là lựa chọn trung thực hơn." />
+
+::: warning Bản đồ chỉ để minh họa
+Atlas thế giới trên trang này là file GeoJSON đơn giản hóa thuộc phạm vi công cộng, đi kèm ví dụ tài liệu chỉ để minh họa. Đường biên giới, tên gọi và hình dạng KHÔNG mang tính chính thức. Hãy rà soát biên giới và tên gọi trong file `geography` của bạn theo chính sách bản đồ của tổ chức trước khi dùng thật: thư viện vẽ nguyên trạng file được truyền vào, không hiệu chỉnh gì.
+:::
+
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ mã tích hợp bên dưới là khác.
 
 ## Mang theo tọa độ của riêng bạn
@@ -101,6 +116,7 @@ Các thuộc tính được định kiểu là `SymbolMapChartProps` trong [`@mi
 ### Khử chồng lấn bằng lực một lần
 
 `lng`/`lat` của mỗi mục được chiếu tới một vị trí pixel "thực"; `forceX`/`forceY` ghim mô phỏng vào đúng vị trí đó làm mục tiêu, `forceManyBody()` thêm một chút tách biệt nhẹ, và `forceCollide` (bán kính + đệm 2px, 3 lần lặp) mới là thứ thực sự đẩy các vòng tròn chồng lấn ra xa nhau. Mô phỏng ổn định đồng bộ tới CÙNG ngưỡng alpha mà biểu đồ cũ đã dùng (`0.0011`) - có tính xác định: đầu vào giống nhau luôn ổn định về cùng một bố cục, vì vậy hai lần dựng cùng dữ liệu cho ra vị trí giống hệt nhau đến từng pixel. Hai mục có tọa độ *hoàn toàn giống nhau* bắt đầu chồng lên nhau và tách ra gọn gàng khi mô phỏng ổn định.
+`positionMode: "precise"` bỏ qua hoàn toàn mô phỏng: mỗi symbol giữ nguyên vị trí chiếu chính xác của nó và chấp nhận chồng lấn (xem demo chuyển chế độ ở trên).
 
 ### Chiếu chỉ-có-chấm so với nền
 

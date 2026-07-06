@@ -2021,7 +2021,7 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
     id: "symbol-map-with-backdrop",
     title: "Trade value by country with a muted backdrop",
     description:
-      "The OPTIONAL `geography` backdrop (a new capability - the legacy chart never drew landmass): reuses the real world atlas (176 countries, ISO-A3) so the symbol coordinates and the muted landmass share one consistent geographic framing.",
+      "The OPTIONAL `geography` backdrop (a new capability - the legacy chart never drew landmass) with `positionMode: \"precise\"`: every bubble sits at its exact projected lng/lat (overlaps allowed). When a landmass is visible, readers take positions literally, so the default force de-overlap - which drifts symbols off their true coordinates - is the wrong choice here. The atlas is a simplified public-domain demo file; review boundaries and names against your own cartographic policy before production use.",
     element: "michi-vz-symbol-map-chart",
     props: {
       title: "Trade value by country with a muted backdrop",
@@ -2032,6 +2032,7 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
       // keeps continents clearly visible behind the bubbles without competing with them.
       geographyColor: "#d2d7dd",
       strokeColor: "#aab3bf",
+      positionMode: "precise",
       dataSet: [
         { id: "usa", label: "United States", lng: -95.7, lat: 38.9, value: 80 },
         { id: "can", label: "Canada", lng: -75.7, lat: 45.4, value: 25 },

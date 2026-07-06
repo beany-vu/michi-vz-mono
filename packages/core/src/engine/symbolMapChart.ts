@@ -63,6 +63,7 @@ interface Resolved {
   margin: Margin;
   renderer: Renderer;
   radiusRange: [number, number];
+  positionMode: "force" | "precise";
   geographyColor: string;
   strokeColor: string;
   strokeWidth: number;
@@ -80,6 +81,7 @@ function resolve(p: SymbolMapChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     radiusRange: p.radiusRange ?? DEFAULT_RADIUS_RANGE,
+    positionMode: p.positionMode ?? "force",
     geographyColor: p.geographyColor ?? DEFAULT_GEOGRAPHY_COLOR,
     strokeColor: p.strokeColor ?? DEFAULT_STROKE_COLOR,
     strokeWidth: p.strokeWidth ?? 1,
@@ -304,11 +306,24 @@ export function mountSymbolMapChart(
       effectiveRadiusOf
     );
 
-    const laidOut = layoutSymbolMap(points, (point) => radiusOf(point.node.value), {
-      width: innerWidth,
-      height: innerHeight,
-      radiusOf: (point) => effectiveRadiusOf(point.node),
-    });
+    // "precise" keeps every symbol at its exact projected lng/lat (overlaps
+    // allowed, no clamp - scales.ts's radius-aware fit inset already reserves
+    // edge room). "force" (default, legacy parity) runs the one-shot de-overlap
+    // sim, which trades positional accuracy for readability - see the
+    // positionMode JSDoc for when that trade-off is NOT acceptable.
+    const laidOut =
+      r.positionMode === "precise"
+        ? points.map((point) => ({
+            point,
+            radius: radiusOf(point.node.value),
+            x: point.x,
+            y: point.y,
+          }))
+        : layoutSymbolMap(points, (point) => radiusOf(point.node.value), {
+            width: innerWidth,
+            height: innerHeight,
+            radiusOf: (point) => effectiveRadiusOf(point.node),
+          });
 
     const backdrop = hasGeography ? buildSymbolMapBackdrop(normalizeGeography(props.geography!), projection) : [];
 

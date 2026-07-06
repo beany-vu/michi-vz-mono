@@ -2091,6 +2091,16 @@ export interface SymbolMapChartProps {
    * runs - ported from the legacy chart's own filter, which compares the raw
    * value/valueSecond, not the scaled radius. Omit to show every located item. */
   radiusVisibleMin?: number;
+  /** How symbols are placed (default "force", the legacy parity behaviour).
+   * - "force": a one-shot de-overlap simulation pulls colliding circles apart -
+   *   readable for dense data, but symbols DRIFT from their true lng/lat (on
+   *   small plots the drift can be large). Avoid it when the audience will read
+   *   exact geographic position off the chart: a symbol drawn over the wrong
+   *   country is a cartographic-accuracy problem and can be politically sensitive.
+   * - "precise": every symbol stays at its exact projected lng/lat; overlapping
+   *   circles are allowed. Prefer this whenever a `geography` backdrop is shown,
+   *   since a visible landmass invites reading positions literally. */
+  positionMode?: "force" | "precise";
   /** Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral). */
   geographyColor?: string;
   /** Border colour for the optional backdrop `geography` (default `#d7dce3`). */

@@ -5430,6 +5430,14 @@
           "common": false
         },
         {
+          "name": "positionMode",
+          "type": "\"force\" | \"precise\"",
+          "optional": true,
+          "description": "How symbols are placed (default \"force\", the legacy parity behaviour). - \"force\": a one-shot de-overlap simulation pulls colliding circles apart - readable for dense data, but symbols DRIFT from their true lng/lat (on small plots the drift can be large). Avoid it when the audience will read exact geographic position off the chart: a symbol drawn over the wrong country is a cartographic-accuracy problem and can be politically sensitive. - \"precise\": every symbol stays at its exact projected lng/lat; overlapping circles are allowed. Prefer this whenever a `geography` backdrop is shown, since a visible landmass invites reading positions literally.",
+          "default": "\"force\"",
+          "common": false
+        },
+        {
           "name": "geographyColor",
           "type": "string",
           "optional": true,

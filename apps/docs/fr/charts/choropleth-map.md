@@ -14,6 +14,10 @@ Mode catégoriel - `colorsMapping` l'emporte sur `colorScale` (le cas d'usage sd
 
 <ChartDemo chart="choropleth-map-chart" :index="1" :legend="[]" />
 
+::: warning Géographie de démonstration uniquement
+L'atlas mondial de cette page est un fichier GeoJSON simplifié du domaine public, fourni avec les exemples de la documentation à titre d'illustration. Frontières, noms et tracés ne font PAS autorité. Vérifiez les frontières et la toponymie de votre propre fichier `geography` selon la politique cartographique de votre organisation avant tout usage en production : la bibliothèque rend le fichier tel quel, sans correction.
+:::
+
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
 
 ## Apportez votre propre géographie

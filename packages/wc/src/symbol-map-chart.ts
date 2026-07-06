@@ -27,6 +27,7 @@ export class SymbolMapChartElement extends LitElement {
     projectionConfig: { attribute: false },
     radiusRange: { attribute: false },
     radiusVisibleMin: { type: Number, attribute: "radius-visible-min" },
+    positionMode: { type: String, attribute: "position-mode" },
     geographyColor: { type: String, attribute: "geography-color" },
     strokeColor: { type: String, attribute: "stroke-color" },
     strokeWidth: { type: Number, attribute: "stroke-width" },
@@ -56,6 +57,7 @@ export class SymbolMapChartElement extends LitElement {
   projectionConfig?: SymbolMapChartProps["projectionConfig"];
   radiusRange?: [number, number];
   radiusVisibleMin?: number;
+  positionMode?: "force" | "precise";
   geographyColor?: string;
   strokeColor?: string;
   strokeWidth?: number;
@@ -100,6 +102,7 @@ export class SymbolMapChartElement extends LitElement {
       projectionConfig: this.projectionConfig,
       radiusRange: this.radiusRange,
       radiusVisibleMin: this.radiusVisibleMin,
+      positionMode: this.positionMode,
       geographyColor: this.geographyColor,
       strokeColor: this.strokeColor,
       strokeWidth: this.strokeWidth,

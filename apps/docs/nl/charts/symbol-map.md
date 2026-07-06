@@ -14,6 +14,21 @@ Een concentrische tweede ring (`valueSecond`) leest als een submetriek van de bu
 
 <ChartDemo chart="symbol-map-chart" :index="1" :legend="[]" />
 
+## Exacte posities of force-ontklontering
+
+`positionMode` bepaalt wat de positie van een symbool betekent:
+
+- **`"force"` (standaard, legacy-pariteit)**: de eenmalige simulatie duwt overlappende cirkels uit elkaar. Leesbaar wanneer veel symbolen op één plek samenklonteren, maar elk symbool kan van zijn echte coördinaten afdrijven, en op een klein plot kan die afwijking groot zijn.
+- **`"precise"`**: elk symbool blijft exact op zijn geprojecteerde `lng`/`lat`; overlappende cirkels zijn toegestaan.
+
+Een symbool boven het verkeerde land is een cartografisch nauwkeurigheidsprobleem en voor sommige doelgroepen politiek gevoelig. Kies `"precise"` zodra er een `geography`-achtergrond zichtbaar is: een landmassa nodigt uit om posities letterlijk te lezen.
+
+<PositionModeDemo labelPrecise="precise: echte posities" labelForce="force: ontklonteren" hint="Schakel naar force en zie de bellen van hun echte coördinaten wegdrijven om botsingen op te lossen. Met een zichtbare landmassa is precise meestal de eerlijke keuze." />
+
+::: warning Alleen demogeografie
+De wereldatlas op deze pagina is een vereenvoudigd publiek-domein GeoJSON-bestand, alleen ter illustratie meegeleverd met de documentatievoorbeelden. Grenzen, namen en vormen zijn NIET gezaghebbend. Controleer de grenzen en naamgeving van je eigen `geography`-bestand tegen het cartografische beleid van je organisatie vóór productiegebruik: de bibliotheek tekent het bestand zoals het is, zonder correcties.
+:::
+
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
 
 ## Breng je eigen coördinaten mee
@@ -101,6 +116,7 @@ Props zijn getypeerd als `SymbolMapChartProps` in [`@michi-vz/core`](https://git
 ### De eenmalige krachtgebaseerde overlap-oplossing
 
 De `lng`/`lat` van elk item projecteert naar een "echte" pixelpositie; `forceX`/`forceY` zetten de simulatie vast op precies die positie als doel, `forceManyBody()` voegt lichte scheiding toe, en `forceCollide` (straal + 2px opvulling, 3 iteraties) is wat overlappende cirkels daadwerkelijk uit elkaar duwt. De simulatie stabiliseert synchroon tot DEZELFDE alfa-drempel als de legacy-grafiek (`0.0011`) - deterministisch: identieke invoer stabiliseert altijd tot dezelfde lay-out, dus twee keer dezelfde data monteren levert pixel-identieke posities op. Twee items met *exact dezelfde* coördinaten beginnen gestapeld en scheiden netjes zodra de simulatie stabiliseert.
+`positionMode: "precise"` slaat de simulatie volledig over: elk symbool blijft dan op zijn exacte geprojecteerde positie en overlappingen zijn toegestaan (zie de schakel-demo hierboven).
 
 ### Dot-only vs. achtergrondprojectie
 
