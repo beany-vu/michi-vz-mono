@@ -5070,6 +5070,254 @@
           "common": true
         }
       ]
+    },
+    "choropleth-map-chart": {
+      "element": "michi-vz-choropleth-map-chart",
+      "propsType": "ChoroplethMapChartProps",
+      "context": "ChoroplethMapChartContext",
+      "mount": "mountChoroplethMapChart",
+      "props": [
+        {
+          "name": "geography",
+          "type": "GeoJSON.FeatureCollection | GeoFeatureItem[]",
+          "optional": false,
+          "description": "The world/region geography to draw. A full GeoJSON FeatureCollection (its per-feature `id`/`properties.name` are read automatically) or a pre-normalized flat array. Core bundles NO topology data - import your own (e.g. a `world-atlas` TopoJSON converted via `topojson-client`, or a hand-curated GeoJSON) and pass it here.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "dataSet",
+          "type": "ChoroplethDataItem[]",
+          "optional": false,
+          "description": "Choropleth values/colours, joined against `geography` (see `joinBy`).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "Optional chart title rendered above the map",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "900",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "520",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "default": "{ top: 40, right: 10, bottom: 10, left: 10 }",
+          "common": true
+        },
+        {
+          "name": "projection",
+          "type": "| \"geoEqualEarth\" | \"geoMercator\" | \"geoTransverseMercator\" | \"geoAlbers\" | \"geoAlbersUsa\" | \"geoAzimuthalEqualArea\" | \"geoAzimuthalEquidistant\" | \"geoOrthographic\" | \"geoConicConformal\" | \"geoConicEqualArea\" | \"geoConicEquidistant\" | \"geoRobinson\" | \"geoGilbert\"",
+          "optional": true,
+          "description": "d3-geo / d3-geo-projection projection to use (default \"geoRobinson\", the legacy sdg-trade MapChoropleth default). `geoAlbersUsa` is a fixed composite projection - it ignores `rotate`/`center`/`parallels`.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "projectionConfig",
+          "type": "{ /** Below 600px width the effective scale is x0.7; below 400px, x0.5 (legacy * responsive step-down) - only applied when `scale` is explicitly set. */ scale?: number; rotate?: [number, number, number?]; center?: [number, number]; parallels?: [number, number]; }",
+          "optional": true,
+          "description": "Fine-tunes the chosen projection. Omitted fields fall back to the legacy MapChoropleth defaults (rotate [-18, 0], center [0, 10], base scale derived from width) rather than `projection.fitSize` - this matches the legacy chart's visual result exactly; pass your own values to frame a different geography extent (e.g. a single-region subset).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "colorScale",
+          "type": "{ domain: number[]; range: string[] }",
+          "optional": true,
+          "description": "Continuous choropleth encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold`. Pass already-resolved colours (NOT a d3-scale-chromatic scheme name - core stays free of that dependency); generate the range yourself (e.g. via `d3-scale-chromatic` in your app) if you want a named scheme. Loses to `colorsMapping`.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "noDataColor",
+          "type": "string",
+          "optional": true,
+          "description": "Fill for features with no matching `dataSet` row (legacy MapChoropleth default: `#d2d7dd`, ported from `colors.WHITE_SMOKE_DARKEST`).",
+          "default": "DEFAULT_NO_DATA_COLOR",
+          "common": false
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "joinBy",
+          "type": "\"id\" | \"name\"",
+          "optional": true,
+          "description": "How `dataSet` rows join `geography` features: \"id\" (default) matches `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id` - the clean, stable join (e.g. ISO-A3 codes), used by sdg-trade's real indicator map (`uniqueIDKeyMap=\"alpha3Code\"`). \"name\" matches `label` against `GeoFeatureItem.name` / `properties.name` instead, replicating the legacy MapChoropleth chart's OWN default (`uniqueIDKeyMap=\"countryName\"`) for consumers migrating data keyed by country name rather than code.",
+          "default": "\"id\"",
+          "common": false
+        },
+        {
+          "name": "strokeColor",
+          "type": "string",
+          "optional": true,
+          "description": "Country border colour (legacy default: `#F4F7FC`, `colors.WHITE_SMOKE`)",
+          "default": "DEFAULT_STROKE_COLOR",
+          "common": false
+        },
+        {
+          "name": "strokeWidth",
+          "type": "number",
+          "optional": true,
+          "description": "Country border width in px (default 1)",
+          "default": "1",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(d: ChoroplethDataItem | { id: string; name?: string }) => string",
+          "optional": true,
+          "description": "Formats the tooltip for a hovered region. Matched rows receive the full `ChoroplethDataItem`; regions with no matching row receive the fallback `{ id, name }` shape (mirrors the legacy chart's \"N/A\" tooltip).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Loading overlay (stale regions hidden while true)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: ChoroplethDataItem[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data predicate/flag; default = empty dataSet",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the built-in no-data overlay",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "Set by a framework wrapper passing its own overlay node - suppresses the default overlay",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise; all other marks dim",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide and exclude from scales/stacks",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\" | \"webgpu\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number and date formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate updates with CSS transitions (default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called when the hovered/highlighted label(s) change",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
     }
   }
 }

@@ -57,6 +57,7 @@ const chartOrder: string[] = [
   "bubble",
   "sankey",
   "fountain",
+  "choropleth-map",
 ];
 
 // Build one locale's nav + sidebar + footer + label strings. `loc` selects the

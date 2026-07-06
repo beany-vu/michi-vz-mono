@@ -286,6 +286,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     bubble: "Bubble Chart",
     sankey: "Sankey",
     fountain: "Fountain (Jet d'Eau)",
+    "choropleth-map": "Choropleth Map",
   },
   fr: {
     line: "Graphique en courbes",
@@ -306,6 +307,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     bubble: "Graphique à bulles",
     sankey: "Sankey",
     fountain: "Fontaine (Jet d'Eau)",
+    "choropleth-map": "Carte choroplèthe",
   },
   nl: {
     line: "Lijndiagram",
@@ -326,6 +328,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     bubble: "Bellendiagram",
     sankey: "Sankey",
     fountain: "Fontein (Jet d'Eau)",
+    "choropleth-map": "Choropletenkaart",
   },
   vi: {
     line: "Biểu đồ đường",
@@ -346,6 +349,7 @@ export const chartNames: Record<LocaleKey, Record<string, string>> = {
     bubble: "Biểu đồ bong bóng",
     sankey: "Sankey",
     fountain: "Đài phun (Jet d'Eau)",
+    "choropleth-map": "Bản đồ phân cấp màu",
   },
 };
 

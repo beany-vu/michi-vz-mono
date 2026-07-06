@@ -26,6 +26,8 @@ import type {
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
+  ChoroplethMapChartProps,
+  GeoFeatureItem,
 } from "@michi-vz/core";
 
 export interface Example<P = Record<string, unknown>> {
@@ -1802,6 +1804,282 @@ const fountain: Example<FountainChartProps>[] = [
   },
 ];
 
+// ChoroplethMapChart's `geography` is ALWAYS a consumer-supplied prop (core
+// bundles no topology data - see the chart's docs page for the
+// `import worldJson from "./world.json"` real-world consumer pattern). This
+// package ships only a TINY, hand-curated, illustrative sample: 12 low-vertex
+// region blobs at roughly-correct relative positions, NOT authoritative
+// coastlines - do not use these shapes for anything but this demo.
+const worldRegionsSample: GeoFeatureItem[] = [
+  {
+    id: "NAM",
+    name: "North America",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [-170, 72],
+          [-95, 72],
+          [-70, 50],
+          [-80, 25],
+          [-105, 15],
+          [-130, 32],
+          [-170, 72],
+        ],
+      ],
+    },
+  },
+  {
+    id: "GRL",
+    name: "Greenland",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [-60, 83],
+          [-20, 83],
+          [-20, 60],
+          [-55, 60],
+          [-60, 83],
+        ],
+      ],
+    },
+  },
+  {
+    id: "SAM",
+    name: "South America",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [-80, 10],
+          [-35, 5],
+          [-35, -55],
+          [-70, -55],
+          [-82, -5],
+          [-80, 10],
+        ],
+      ],
+    },
+  },
+  {
+    id: "EUR",
+    name: "Europe",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [-10, 60],
+          [30, 68],
+          [40, 45],
+          [20, 36],
+          [-5, 40],
+          [-10, 60],
+        ],
+      ],
+    },
+  },
+  {
+    id: "AFR",
+    name: "Africa",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [-18, 35],
+          [50, 30],
+          [50, -5],
+          [35, -35],
+          [12, -35],
+          [-18, 5],
+          [-18, 35],
+        ],
+      ],
+    },
+  },
+  {
+    id: "MDE",
+    name: "Middle East",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [35, 40],
+          [60, 38],
+          [60, 12],
+          [43, 12],
+          [35, 40],
+        ],
+      ],
+    },
+  },
+  {
+    id: "RUS",
+    name: "Russia & Central Asia",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [40, 78],
+          [179, 78],
+          [179, 50],
+          [90, 45],
+          [40, 50],
+          [40, 78],
+        ],
+      ],
+    },
+  },
+  {
+    id: "SAS",
+    name: "South Asia",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [60, 38],
+          [90, 35],
+          [92, 5],
+          [68, 5],
+          [60, 38],
+        ],
+      ],
+    },
+  },
+  {
+    id: "EAS",
+    name: "East Asia",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [90, 50],
+          [145, 50],
+          [145, 20],
+          [100, 20],
+          [90, 50],
+        ],
+      ],
+    },
+  },
+  {
+    id: "SEA",
+    name: "Southeast Asia",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [95, 22],
+          [140, 22],
+          [140, -10],
+          [95, -10],
+          [95, 22],
+        ],
+      ],
+    },
+  },
+  {
+    id: "AUS",
+    name: "Australia",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [112, -10],
+          [154, -10],
+          [154, -44],
+          [112, -44],
+          [112, -10],
+        ],
+      ],
+    },
+  },
+  {
+    id: "OCE",
+    name: "Oceania",
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [160, -5],
+          [179, -5],
+          [179, -25],
+          [160, -25],
+          [160, -5],
+        ],
+      ],
+    },
+  },
+];
+
+const choroplethMap: Example<ChoroplethMapChartProps>[] = [
+  {
+    id: "choropleth-map-export-value",
+    title: "Merchandise export value by region, 2024 (US$ bn)",
+    description:
+      "Continuous encoding: colorScale (a resolved hex range + numeric domain, built into a d3 scaleThreshold) shades each region by export value. A region with no matching dataSet row (Antarctica-style gap) renders noDataColor.",
+    element: "michi-vz-choropleth-map-chart",
+    props: {
+      title: "Merchandise export value by region, 2024 (US$ bn)",
+      geography: worldRegionsSample,
+      colorScale: {
+        domain: [200, 500, 1000, 2000],
+        range: ["#eaf3fb", "#a9d0ea", "#5b9bd5", "#2c6fbb", "#123a63"],
+      },
+      tooltipFormatter: (d) =>
+        "value" in d && d.value !== undefined
+          ? `<strong>${d.label}</strong><br/>${d.value.toLocaleString()} bn`
+          : `<strong>${"name" in d ? (d.name ?? d.id) : d.id}</strong><br/>No data`,
+      dataSet: [
+        { id: "NAM", label: "North America", value: 2450 },
+        { id: "SAM", label: "South America", value: 480 },
+        { id: "EUR", label: "Europe", value: 2100 },
+        { id: "AFR", label: "Africa", value: 310 },
+        { id: "MDE", label: "Middle East", value: 620 },
+        { id: "RUS", label: "Russia & Central Asia", value: 410 },
+        { id: "SAS", label: "South Asia", value: 540 },
+        { id: "EAS", label: "East Asia", value: 1980 },
+        { id: "SEA", label: "Southeast Asia", value: 890 },
+        { id: "AUS", label: "Australia", value: 260 },
+        // GRL and OCE intentionally left unmatched to show noDataColor.
+      ],
+    },
+  },
+  {
+    id: "choropleth-map-data-availability",
+    title: "Latest available survey year by region",
+    description:
+      "Categorical encoding via colorsMapping (wins over colorScale) - the sdg-trade Data Availability use case: a handful of fixed label -> colour buckets (a survey year band or \"no data\"), not a numeric gradient.",
+    element: "michi-vz-choropleth-map-chart",
+    props: {
+      title: "Latest available survey year by region",
+      geography: worldRegionsSample,
+      joinBy: "id",
+      noDataColor: "#eeeeee",
+      colorsMapping: {
+        "2024": "#425a85",
+        "2023": "#be0000",
+        "2022": "#d3a029",
+        "2021 or earlier": "#e11484",
+      },
+      tooltipFormatter: (d) =>
+        "label" in d ? `<strong>${d.label}</strong>` : `<strong>${d.name ?? d.id}</strong><br/>No data`,
+      dataSet: [
+        { id: "NAM", label: "2024" },
+        { id: "EUR", label: "2024" },
+        { id: "EAS", label: "2023" },
+        { id: "SAS", label: "2023" },
+        { id: "SAM", label: "2022" },
+        { id: "AUS", label: "2022" },
+        { id: "AFR", label: "2021 or earlier" },
+        { id: "MDE", label: "2021 or earlier" },
+        { id: "SEA", label: "2021 or earlier" },
+        { id: "RUS", label: "2021 or earlier" },
+      ],
+    },
+  },
+];
+
 /** Canonical examples, keyed by chart id. Consumers index by key. */
 export const examples = {
   "gap-chart": gap,
@@ -1822,6 +2100,7 @@ export const examples = {
   "bubble-chart": bubble,
   "sankey-chart": sankey,
   "fountain-chart": fountain,
+  "choropleth-map-chart": choroplethMap,
 };
 
 /** Ordered chart ids (for nav / iteration). */

@@ -31,9 +31,10 @@ const CARDS = [
   { examplesKey: "bubble-chart", slug: "bubble", name: "Bubble", family: "Composition", roman: "XV", blurb: "Circles sized by value, pulled into a cluster by gravity; each can split into a realized core inside a lighter untapped ring.", tag: "<michi-vz-bubble-chart> · SVG · canvas · WebGPU" },
   { examplesKey: "sankey-chart", slug: "sankey", name: "Sankey", family: "Flow", roman: "XVI", blurb: "Flows between nodes laid out in columns; each band's thickness is the flow value. Built on d3-sankey.", tag: "<michi-vz-sankey-chart> · SVG · canvas · WebGPU" },
   { examplesKey: "fountain-chart", slug: "fountain", name: "Fountain (Jet d'Eau)", family: "Comparison", roman: "XVII", blurb: "A Jet d'Eau: apex height is the value, the blooming plume is the uncertainty. Categorical x = snapshot/comparison, temporal x = trend.", tag: "<michi-vz-fountain-chart> · SVG · canvas · WebGPU" },
+  { examplesKey: "choropleth-map-chart", slug: "choropleth-map", name: "Choropleth Map", family: "Geography", roman: "XVIII", blurb: "A world/region choropleth: your own GeoJSON, shaded by a threshold colour scale or an explicit category map. 13 d3-geo/d3-geo-projection projections.", tag: "<michi-vz-choropleth-map-chart> · SVG · canvas · WebGPU" },
 ];
 
-const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation", "Flow"];
+const FAMILIES = ["All", "Trends", "Composition", "Comparison", "Correlation", "Flow", "Geography"];
 const active = ref("All");
 const visible = (family: string) => active.value === "All" || active.value === family;
 </script>

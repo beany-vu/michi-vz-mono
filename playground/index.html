@@ -51,6 +51,10 @@
   #ribbonContract .bar { fill: rgb(200, 30, 90); }
   /* Radar consumer colour contract: recolour polygon fills purely via CSS. */
   #radarContract .radar-area { fill: rgb(20, 170, 90); }
+  /* ChoroplethMap consumer colour contract: recolour ONE region's fill purely via
+     CSS. Single-element selector (no descendant contract needed - a region has no
+     sub-marks, unlike ComparableBar's based/compared pair). */
+  #choroContract .region[data-label-safe="Alpha"] { fill: rgb(215, 40, 150); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -158,6 +162,14 @@
 </div>
 <h2>Radar consumer-CSS fill contract (canvas)</h2>
 <div class="card" id="radarContract"><michi-vz-radar-chart id="radarContractChart"></michi-vz-radar-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc - ChoroplethMap (geo, first geo chart)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-choropleth-map-chart id="choroSvg"></michi-vz-choropleth-map-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-choropleth-map-chart id="choroCanvas"></michi-vz-choropleth-map-chart></div>
+</div>
+<h2>ChoroplethMap consumer-CSS fill contract (canvas, single-element path.region[data-label-safe] probe)</h2>
+<div class="card" id="choroContract"><michi-vz-choropleth-map-chart id="choroContractChart"></michi-vz-choropleth-map-chart></div>
 
 <div id="results">running…</div>
 
@@ -382,6 +394,33 @@ const radarContractEl = document.getElementById("radarContractChart");
 Object.assign(radarSvgEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar", renderer: "svg", ...radarCommon });
 Object.assign(radarCanvasEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar", renderer: "canvas", ...radarCommon });
 Object.assign(radarContractEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...radarCommon });
+
+// ---- ChoroplethMap setup ---- (geography is ALWAYS a prop - a tiny inline
+// GeoFeatureItem[] sample here, same spirit as @michi-vz/examples' hand-curated
+// sample; NOT real coastlines)
+const choroGeography = [
+  { id: "Alpha", name: "Alpha", geometry: { type: "Polygon", coordinates: [[[-40, -10], [-20, -10], [-20, 10], [-40, 10], [-40, -10]]] } },
+  { id: "Beta", name: "Beta", geometry: { type: "Polygon", coordinates: [[[10, -10], [30, -10], [30, 10], [10, 10], [10, -10]]] } },
+  { id: "Gamma", name: "Gamma", geometry: { type: "Polygon", coordinates: [[[40, -10], [60, -10], [60, 10], [40, 10], [40, -10]]] } },
+];
+const choroData = [
+  { id: "Alpha", label: "Alpha", value: 10 },
+  { id: "Beta", label: "Beta", value: 90 },
+  // "Gamma" intentionally unmatched - exercises noDataColor.
+];
+const choroCommon = {
+  width: 460,
+  height: 280,
+  geography: choroGeography,
+  colorScale: { domain: [50], range: ["rgb(230,230,250)", "rgb(40,40,160)"] },
+  noDataColor: "rgb(200,200,200)",
+};
+const choroSvgEl = document.getElementById("choroSvg");
+const choroCanvasEl = document.getElementById("choroCanvas");
+const choroContractEl = document.getElementById("choroContractChart");
+Object.assign(choroSvgEl, { dataSet: choroData, chartTitle: "Choropleth (geo)", renderer: "svg", ...choroCommon });
+Object.assign(choroCanvasEl, { dataSet: choroData, chartTitle: "Choropleth (geo)", renderer: "canvas", ...choroCommon });
+Object.assign(choroContractEl, { dataSet: choroData, chartTitle: "Choropleth canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...choroCommon });
 
 await nextFrame();
 
@@ -782,6 +821,43 @@ try {
     }
   }
   log(radarContractOk, "RADAR CANVAS colour contract: consumer CSS rgb(20,170,90) reached canvas pixels");
+
+  // ---- ChoroplethMap checks ----
+  const choroPaths = choroSvgEl.querySelectorAll("path.region");
+  log(choroPaths.length === 3, `CHORO: SVG renders 3 region paths (got ${choroPaths.length})`);
+  log(!!choroSvgEl.querySelector('path.region[data-label-safe="Alpha"]'), 'CHORO: path carries data-label-safe="Alpha"');
+
+  const gammaPath = choroSvgEl.querySelector('path.region[data-label="Gamma"]');
+  log(!!gammaPath && gammaPath.getAttribute("fill") === "rgb(200,200,200)", "CHORO: unmatched feature (Gamma) renders noDataColor");
+
+  const alphaPath = choroSvgEl.querySelector('path.region[data-label="Alpha"]');
+  const betaPath = choroSvgEl.querySelector('path.region[data-label="Beta"]');
+  log(!!alphaPath && alphaPath.getAttribute("fill") === "rgb(230,230,250)", "CHORO: colorScale assigns the low-domain colour (value 10 < 50)");
+  log(!!betaPath && betaPath.getAttribute("fill") === "rgb(40,40,160)", "CHORO: colorScale assigns the high-domain colour (value 90 >= 50)");
+
+  const chctx = choroSvgEl.getContext();
+  log(chctx && chctx.chartType === "choropleth-map-chart" && chctx.stats.featureCount === 3, "CHORO: getContext() returns choropleth-map-chart with 3 features");
+  log(chctx && chctx.stats.matchedCount === 2 && chctx.stats.unmatchedCount === 1, "CHORO: getContext() reports 2 matched / 1 unmatched");
+  log(chctx && chctx.projection === "geoRobinson", "CHORO: default projection is geoRobinson");
+  log(chctx && typeof chctx.summary === "string" && chctx.summary.includes("Choropleth"), "CHORO: getContext() includes an NL summary");
+
+  const cha = JSON.stringify({ ...choroSvgEl.getContext(), renderer: 0 });
+  const chb = JSON.stringify({ ...choroCanvasEl.getContext(), renderer: 0 });
+  log(cha === chb, "CHORO: getContext() identical in SVG vs canvas (renderer aside)");
+
+  log(choroSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "CHORO: a11y table mirror has 3 rows");
+
+  // THE choropleth colour contract: canvas pixels must reflect consumer CSS fill rgb(215,40,150)
+  const chcnv = choroContractEl.querySelector("canvas");
+  let choroContractOk = false;
+  if (chcnv) {
+    const c = chcnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, chcnv.width, chcnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 195 && px[i + 1] < 65 && px[i + 2] > 125 && px[i + 2] < 175 && px[i + 3] > 0) { choroContractOk = true; break; }
+    }
+  }
+  log(choroContractOk, "CHORO CANVAS colour contract: consumer CSS rgb(215,40,150) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
