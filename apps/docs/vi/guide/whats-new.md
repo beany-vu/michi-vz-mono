@@ -10,6 +10,36 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.8.1
+
+Phiên bản các package: react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·
+devtools, insights **0.2.8**.
+
+- **Bốn biểu đồ mới: atlas tăng lên 21.** [Comparable Vertical Bar](/vi/charts/comparable-vertical-bar)
+  (hai cột chồng nhau theo từng nhóm, cột "trước" kẻ sọc nằm sau cột "sau" đặc, kèm mũi tên
+  thay đổi phía trên mỗi cặp), cùng họ biểu đồ địa lý đầu tiên của thư viện:
+  [Choropleth Map](/vi/charts/choropleth-map) (dùng GeoJSON của riêng bạn, 13 phép chiếu,
+  tô màu theo ngưỡng hoặc theo nhóm), [Symbol Map](/vi/charts/symbol-map) (bong bóng theo
+  lng/lat với nền đất liền mờ tùy chọn) và [Radial Tree](/vi/charts/radial-tree) (dendrogram
+  dạng tròn, vòng tròn có kích thước ở cả cấp nhóm lẫn cấp lá).
+- **Trục log trên LineChart.** `yAxisScale: "log"` cho dữ liệu trải nhiều bậc độ lớn: giá trị
+  không dương được coi là thiếu (kèm cảnh báo dữ liệu) và nhãn quá dày sẽ rút gọn về lũy thừa
+  của mười. Xem [Line](/vi/charts/line).
+- **Xếp chồng 100% thật sự trên AreaChart.** `stackOffset: "expand"` biến mọi biểu đồ vùng
+  xếp chồng thành tỷ trọng trên tổng: xếp chồng d3 thật, không phải mẹo hiển thị.
+  Xem [Area](/vi/charts/area).
+- **Thanh so sánh có thêm hai công cụ.** `layout: "grouped"` tách mỗi dải thành hai nửa cạnh
+  nhau thay vì chồng lên nhau, còn `deltaIndicator` vẽ mũi tên thay đổi đỏ/xanh cho từng hàng.
+  Xem [Comparable](/vi/charts/comparable).
+- **Vị trí symbol trung thực.** `positionMode: "precise"` của Symbol Map giữ mỗi bong bóng
+  đúng tại lng/lat đã chiếu (chấp nhận chồng lấn) thay cho mô phỏng tách chồng lấn mặc định:
+  lựa chọn đúng khi nền bản đồ hiện rõ khiến người xem đọc vị trí theo nghĩa đen. Nút chuyển
+  trực tiếp trên [trang Symbol Map](/vi/charts/symbol-map) cho thấy khác biệt.
+- **Nhãn ở những chỗ còn thiếu.** Scatter có `pointLabels` cùng lựa chọn `drawOrder` (mặc
+  định nhỏ-nằm-trên, hoặc kiểu cũ lớn-nằm-trên); Treemap in được giá trị từng ô với
+  `tileValueLabels`. Lớp phủ đang tải và không-có-dữ-liệu giờ phủ cả Radar, Sankey và
+  Treemap, và các hình vẽ ẩn đúng cách khi lớp phủ đang hiển thị.
+
 ## v1.6.5
 
 Version các package: react **1.6.5** · core, wc, angular **1.6.0** · vue, svelte **1.5.7** ·

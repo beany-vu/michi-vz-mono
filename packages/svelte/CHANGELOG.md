@@ -1,5 +1,29 @@
 # @michi-vz/svelte
 
+## 1.6.0
+
+### Minor Changes
+
+- d489c39: SymbolMapChart `positionMode: "force" | "precise"` (default `"force"`, the legacy parity behaviour). `"precise"` skips the one-shot de-overlap simulation entirely: every symbol stays at its exact projected lng/lat and overlapping circles are allowed. Use it whenever the audience will read exact geographic position off the chart - the force simulation drifts symbols from their true coordinates (a cartographic-accuracy problem, and on small plots the drift can be large), which matters especially when a `geography` backdrop landmass is visible. WC attribute `position-mode`; forwarded by every wrapper.
+- 2d94944: Credit the real new API these packages shipped alongside `@michi-vz/core`'s
+  ComparableVerticalBarChart/ChoroplethMapChart/SymbolMapChart/RadialTreeChart
+  additions (charts #18-21), which had previously only bumped these two packages
+  as a dependency-only patch: Vue gains the `ComparableVerticalBarChart`,
+  `ChoroplethMapChart`, `SymbolMapChart`, and `RadialTreeChart` components;
+  Svelte gains the `comparableVerticalBarChart`, `choroplethMapChart`,
+  `symbolMapChart`, and `radialTreeChart` actions.
+
+### Patch Changes
+
+- Updated dependencies [849fcf0]
+- Updated dependencies [2303099]
+- Updated dependencies [88d5d8f]
+- Updated dependencies [9386db8]
+- Updated dependencies [1d1a000]
+- Updated dependencies [69f6b96]
+- Updated dependencies [d489c39]
+  - @michi-vz/core@1.9.0
+
 ## 1.5.9
 
 ### Patch Changes

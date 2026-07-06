@@ -12,6 +12,38 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.8.1
+
+Versions des paquets : react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·
+devtools, insights **0.2.8**.
+
+- **Quatre nouveaux graphiques : l'atlas passe à 21.** [Comparable Vertical Bar](/fr/charts/comparable-vertical-bar)
+  (deux colonnes superposées par catégorie, l'« avant » hachuré derrière l'« après » plein,
+  avec une flèche d'évolution au-dessus de chaque paire), et la première famille géographique
+  de la bibliothèque : [Choropleth Map](/fr/charts/choropleth-map) (votre propre GeoJSON,
+  13 projections, coloration par seuils ou par catégories), [Symbol Map](/fr/charts/symbol-map)
+  (bulles lng/lat avec fond de carte discret optionnel) et [Radial Tree](/fr/charts/radial-tree)
+  (dendrogramme radial, cercles dimensionnés au niveau du groupe et de la feuille).
+- **Axes logarithmiques sur LineChart.** `yAxisScale: "log"` pour des données couvrant
+  plusieurs décades : les valeurs non positives deviennent manquantes (avec avertissement)
+  et les étiquettes trop denses se réduisent aux puissances de dix. Voir [Line](/fr/charts/line).
+- **Vrai empilement 100 % sur AreaChart.** `stackOffset: "expand"` transforme toute aire
+  empilée en parts du total : un vrai empilement d3, pas un simple rescale d'affichage.
+  Voir [Area](/fr/charts/area).
+- **Barres comparables, deux nouveautés.** `layout: "grouped"` scinde chaque bande en deux
+  moitiés côte à côte au lieu de les superposer, et `deltaIndicator` dessine une flèche
+  d'évolution rouge/verte par ligne. Voir [Comparable](/fr/charts/comparable).
+- **Des positions de symboles honnêtes.** Le `positionMode: "precise"` de Symbol Map garde
+  chaque bulle exactement à son lng/lat projeté (chevauchements permis) au lieu de la
+  simulation anti-chevauchement par défaut : le bon choix dès qu'un fond de carte visible
+  invite à lire les positions au pied de la lettre. Une bascule en direct sur la
+  [page Symbol Map](/fr/charts/symbol-map) montre la différence.
+- **Des étiquettes là où il en manquait.** Scatter gagne `pointLabels` et un choix
+  `drawOrder` (petits au-dessus par défaut, ou l'ordre hérité grands au-dessus) ; Treemap
+  peut afficher la valeur de chaque tuile avec `tileValueLabels`. Les recouvrements de
+  chargement et d'absence de données couvrent désormais aussi Radar, Sankey et Treemap,
+  et les marques s'effacent correctement tant qu'un recouvrement est affiché.
+
 ## v1.6.5
 
 Versions des packages : react **1.6.5** · core, wc, angular **1.6.0** · vue, svelte **1.5.7** ·

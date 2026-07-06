@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/insights",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Opt-in, client-side AI insights (forecast/fan, anomaly, validate, narrate, embeddings, agent + MCP) for michi-vz",
   "keywords": [
     "ai",

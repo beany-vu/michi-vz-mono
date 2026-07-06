@@ -1,5 +1,74 @@
 # @michi-vz/core
 
+## 1.9.0
+
+### Minor Changes
+
+- 9386db8: Closes consumer-parity gaps found migrating sdg-trade's Scatterplot and TreemapChart, all additive and default-off (or default-zero-diff for the enum prop).
+
+  - **ScatterChart**: `pointLabels?: boolean | { formatter? }` renders a per-point text label, painted on the SVG scaffold layer (same treatment as `deltaIndicator`) so it looks identical across `svg`/`canvas`/`webgpu`. Placement is a simplified right-of-point + overlap-hide strategy (bounding-box collision, deterministic given draw order) - intentionally NOT the legacy's d3-voronoi cell-picking (no new dependency added).
+  - **ScatterChart**: `drawOrder?: "sizeDescending" | "sizeAscending"` controls bubble z-order. `"sizeDescending"` (default, zero-diff) is this chart's existing "largest bubble behind, smallest on top" ordering. `"sizeAscending"` is a genuine opt-in that flips the sort so the LARGEST bubble draws last/on top instead, reproducing the actual legacy sdg-trade z-order - confirmed by re-reading `Scatterplot.js` (ascending sort by raw size value) + `Chart.js` (draws in that array order; later SVG siblings paint over earlier ones), which shows legacy's real z-order is "large on top," not "small on top" as first assumed. This genuinely closes the drawOrder parity gap via the `sizeAscending` mode.
+  - **TreemapChart**: `tileValueLabels?: boolean | { formatter? }` renders `"{value} ({pct}%)"` as a second line under the existing tile name, reusing the SAME tile-size gate the split "percent of leaf" second line already uses (`w >= 48 && h >= 34`, on top of the existing name gate `h >= 24 && w >= 30`) rather than inventing a new threshold. `fractionOfTotal` is the leaf's share of the grand total across every leaf (matching `buildTreemapContext`'s `grandTotal`).
+
+  `pointLabels`/`tileValueLabels` absent or `false`, and `drawOrder` absent, are byte-for-byte no-ops (proven by DOM-identity tests). Wired through the WC elements (object props as `{attribute: false}`) and the Angular applicators; `@michi-vz/react`/`vue`/`svelte` need no changes since they pass props through wholesale.
+
+- d489c39: SymbolMapChart `positionMode: "force" | "precise"` (default `"force"`, the legacy parity behaviour). `"precise"` skips the one-shot de-overlap simulation entirely: every symbol stays at its exact projected lng/lat and overlapping circles are allowed. Use it whenever the audience will read exact geographic position off the chart - the force simulation drifts symbols from their true coordinates (a cartographic-accuracy problem, and on small plots the drift can be large), which matters especially when a `geography` backdrop landmass is visible. WC attribute `position-mode`; forwarded by every wrapper.
+
+### Patch Changes
+
+- 849fcf0: ChoroplethMapChart: fixed a latent margin-offset bug in the canvas/webgpu
+  host-level hover/hit-test (same bug class as SymbolMapChart's B3.7 fix).
+  `onHostMove` measured the pointer in host/full-SVG space but compared it
+  against a projection built from margin-excluded plot space, with no
+  (margin.left, margin.top) subtraction — every region polygon was offset by a
+  constant margin vector, so hover/tooltip hit-testing was wrong whenever
+  `margin` differed from a small/zero default. Fixed by converting the pointer
+  to plot-local space before running the point-in-polygon test. No forgiveness
+  radius is added (regions are area targets, not point targets), and the SVG
+  renderer is unaffected (its `<path>` elements already carry native mouse
+  listeners). No API changes.
+- 2303099: Fixes label overprint on `LineChart` `yAxisScale: "log"` when the y-domain spans more
+  than ~2 decades: previously every d3 log tick (1, 2, 3…9, 10, 20, 30…) got a text
+  label, which smeared into unreadable overlapping text on wide-range data (e.g. values
+  from 0.0007 to 446, ~7 decades after `.nice()`). The y-axis now labels only the powers
+  of 10 within the domain on wide log axes, while minor ticks still draw their
+  (unlabeled) gridlines - matching d3's own log-axis convention. Narrow log domains
+  (~2 decades or less) are unchanged, an explicit `yAxisFormat` still applies to
+  whichever ticks remain labeled, and linear-mode y-axis rendering is untouched. No new
+  props; `yAxisScale` itself is still unpublished (added in the still-unreleased 1.7.0
+  line).
+- 88d5d8f: RadarChart, SankeyChart, and TreemapChart: the `isNodata` overlay no longer
+  draws alongside a fully-rendered chart underneath it. The chrome backfill
+  (`applyChartChrome`) stamped `data-mv-state="nodata"` and showed the overlay,
+  but each engine discarded the returned `DataState` and kept drawing the
+  grid/polygons (Radar), nodes/links (Sankey), and tiles/legend (Treemap) plus
+  their canvas/webgpu layers regardless - so a wrapped chart with a custom
+  `isNodataComponent` (or a consumer-forced `isNodata: true` with non-empty
+  data) showed the "no data" overlay on top of a chart that was still fully
+  drawn. Fixed by mirroring LineChart's `dataState !== "nodata"` gate around
+  every mark/axis/canvas draw call in all three engines; the title still
+  renders in the nodata state (as it already did), and context/a11y/warnings
+  are unaffected (they run regardless of DataState, same as every other
+  chart). No API changes.
+- 1d1a000: SymbolMapChart: bubbles can no longer clip at the plot edges. The
+  projected-extent rescale now insets its target range by the maximum bubble
+  radius, and the de-overlap simulation clamps every node to
+  `[r, width - r] x [r, height - r]` per tick — large bubbles whose data sits at
+  the extent (e.g. a max-value point at the far west) render fully inside the
+  canvas. No API changes.
+- 69f6b96: SymbolMapChart: small/unlabeled circles now respond to hover in both the SVG
+  and canvas renderers. Root cause: the canvas/webgpu host-level hit-test
+  measured the pointer in host/full-SVG space but compared it against
+  plot-local mark coordinates, leaving every mark short by a constant
+  (margin.left, margin.top) offset — only marks whose radius exceeded that
+  offset's magnitude could ever be hit, regardless of pointer precision. Fixed
+  by converting the pointer to plot-local space before hit-testing. On top of
+  that, every mark now gets a forgiving effective hit radius of
+  `max(radius, 8px)`, with nearest-match-wins when a pointer qualifies for more
+  than one mark (e.g. a tiny dot next to a big bubble); the SVG renderer gets an
+  equivalent invisible, appropriately-sized hit target per mark. Large-bubble
+  hover behaviour is unchanged. No API changes.
+
 ## 1.8.0
 
 ### Minor Changes

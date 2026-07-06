@@ -10,6 +10,37 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.8.1
+
+Pakketversies: react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·
+devtools, insights **0.2.8**.
+
+- **Vier nieuwe grafieken: de atlas groeit naar 21.** [Comparable Vertical Bar](/nl/charts/comparable-vertical-bar)
+  (twee overlappende kolommen per categorie, het gearceerde "voor" achter het gevulde "na",
+  met een veranderingspijl boven elk paar), en de eerste geografiefamilie van de bibliotheek:
+  [Choropleth Map](/nl/charts/choropleth-map) (je eigen GeoJSON, 13 projecties, drempel- of
+  categoriekleuring), [Symbol Map](/nl/charts/symbol-map) (lng/lat-bellen met optionele
+  gedempte landmassa) en [Radial Tree](/nl/charts/radial-tree) (een radiaal dendrogram met
+  cirkels op groeps- en bladniveau).
+- **Logaritmische assen op LineChart.** `yAxisScale: "log"` voor data die decaden omspant:
+  niet-positieve waarden worden ontbrekend (met een datawaarschuwing) en te drukke labels
+  dunnen uit naar machten van tien. Zie [Line](/nl/charts/line).
+- **Echt 100%-stapelen op AreaChart.** `stackOffset: "expand"` maakt van elke gestapelde
+  vlakgrafiek aandelen van het geheel: echt d3-stapelen, geen weergavetruc.
+  Zie [Area](/nl/charts/area).
+- **Vergelijkbare balken, twee nieuwe opties.** `layout: "grouped"` splitst elke band in twee
+  helften naast elkaar in plaats van overlappen, en `deltaIndicator` tekent per rij een
+  rood/groene veranderingspijl. Zie [Comparable](/nl/charts/comparable).
+- **Eerlijke symboolposities.** Symbol Maps `positionMode: "precise"` houdt elke bel exact op
+  zijn geprojecteerde lng/lat (overlappen toegestaan) in plaats van de standaard
+  ontklonteringssimulatie: de juiste keuze zodra een zichtbare landmassa uitnodigt om
+  posities letterlijk te lezen. Een live schakelaar op de
+  [Symbol Map-pagina](/nl/charts/symbol-map) toont het verschil.
+- **Labels waar ze ontbraken.** Scatter krijgt `pointLabels` plus een `drawOrder`-keuze
+  (klein-bovenop standaard, of het oude groot-bovenop); Treemap kan met `tileValueLabels`
+  de waarde van elke tegel tonen. De laad- en geen-data-overlays dekken nu ook Radar,
+  Sankey en Treemap, en markeringen wijken correct zolang een overlay zichtbaar is.
+
 ## v1.6.5
 
 Packageversies: react **1.6.5** · core, wc, angular **1.6.0** · vue, svelte **1.5.7** ·

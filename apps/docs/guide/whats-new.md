@@ -10,6 +10,35 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.8.1
+
+Package versions: react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·
+devtools, insights **0.2.8**.
+
+- **Four new charts - the atlas grows to 21.** [Comparable Vertical Bar](/charts/comparable-vertical-bar)
+  (two full-width overlapping columns per category, hatched "before" behind a solid "after",
+  with a change arrow above each pair), and the library's first geography family:
+  [Choropleth Map](/charts/choropleth-map) (bring your own GeoJSON, 13 projections, threshold
+  or categorical colouring), [Symbol Map](/charts/symbol-map) (lng/lat bubbles with an optional
+  muted landmass backdrop), and [Radial Tree](/charts/radial-tree) (a radial dendrogram with
+  circles sized at both the group and leaf level).
+- **Log axes on LineChart.** `yAxisScale: "log"` for data spanning decades: non-positive
+  values step aside as missing (with a data warning) and crowded labels thin to powers of
+  ten. See [Line](/charts/line).
+- **True 100% stacking on AreaChart.** `stackOffset: "expand"` turns any stacked area into
+  shares of the whole - real d3 stacking, not a display-only rescale. See [Area](/charts/area).
+- **Comparable bars, two new tools.** `layout: "grouped"` splits each band into side-by-side
+  halves instead of overlaying, and `deltaIndicator` draws a red/green change arrow per row.
+  See [Comparable](/charts/comparable).
+- **Honest symbol positions.** Symbol Map's `positionMode: "precise"` keeps every bubble at
+  its exact projected lng/lat (overlaps allowed) instead of the default de-overlap simulation -
+  the right choice whenever a visible landmass invites reading positions literally. A live
+  toggle on the [Symbol Map page](/charts/symbol-map) shows the difference.
+- **Labels where they were missing.** Scatter gains `pointLabels` plus a `drawOrder` choice
+  (small-on-top default, or the legacy large-on-top); Treemap can print each tile's value
+  with `tileValueLabels`. The loading and no-data overlays now also cover Radar, Sankey, and
+  Treemap - and marks correctly stand down while an overlay shows.
+
 ## v1.6.5
 
 Package versions: react **1.6.5** · core, wc, angular **1.6.0** · vue, svelte **1.5.7** ·
