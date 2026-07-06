@@ -1975,6 +1975,12 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
     props: {
       title: "Regional trade value with a muted backdrop",
       geography: world,
+      // Explicit overrides: the engine defaults (geographyColor #eef1f5, strokeColor
+      // #d7dce3) read as near-invisible against this docs theme's stage background
+      // (VitePress --vp-c-bg-soft ~ #f6f6f7) - a few steps darker than the default
+      // keeps continents clearly visible behind the bubbles without competing with them.
+      geographyColor: "#d2d7dd",
+      strokeColor: "#aab3bf",
       dataSet: [
         { id: "usa", label: "North America", lng: -100, lat: 40, value: 80 },
         { id: "deu", label: "Europe", lng: 15, lat: 50, value: 65 },

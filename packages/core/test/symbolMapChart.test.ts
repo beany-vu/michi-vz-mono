@@ -207,6 +207,102 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
     host.remove();
   });
 
+  // jsdom's <canvas> has no real 2D context (HTMLCanvasElement.getContext("2d")
+  // returns null, so setupCanvas/drawSymbolMapCanvas silently no-op in every
+  // other test above) - only the SVG describe block above actually asserted
+  // backdrop geography gets drawn. A canvas-only backdrop regression (e.g. the
+  // geography loop getting dropped from drawSymbolMapCanvas, or geographyColor/
+  // strokeColor not reaching the 2D context) would be invisible to this suite.
+  // Fake the 2D context so the real draw routine runs and its calls can be
+  // asserted directly - same fill/stroke/beginPath surface d3-geo's geoPath(...,
+  // context) needs, per ChoroplethMap's renderCanvas.ts convention.
+  it("draws the backdrop geography on <canvas> (fill+stroke per feature, honouring geographyColor/strokeColor)", () => {
+    const geography: GeoFeatureItem[] = [
+      {
+        id: "A",
+        name: "Alpha",
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [-10, 0],
+              [-5, 0],
+              [-5, 5],
+              [-10, 5],
+              [-10, 0],
+            ],
+          ],
+        },
+      },
+    ];
+
+    const fillStyleHistory: string[] = [];
+    const strokeStyleHistory: string[] = [];
+    let fillStyleValue = "";
+    let strokeStyleValue = "";
+    const fakeCtx = {
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      closePath: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      clearRect: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      scale: vi.fn(),
+      translate: vi.fn(),
+      rotate: vi.fn(),
+      setTransform: vi.fn(),
+      measureText: vi.fn(() => ({ width: 0 })),
+      fillText: vi.fn(),
+      get fillStyle() {
+        return fillStyleValue;
+      },
+      set fillStyle(v: string) {
+        fillStyleValue = v;
+        fillStyleHistory.push(v);
+      },
+      get strokeStyle() {
+        return strokeStyleValue;
+      },
+      set strokeStyle(v: string) {
+        strokeStyleValue = v;
+        strokeStyleHistory.push(v);
+      },
+      lineWidth: 0,
+      globalAlpha: 1,
+      textAlign: "center",
+      textBaseline: "middle",
+      font: "",
+    } as unknown as CanvasRenderingContext2D;
+
+    const getContextSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, "getContext")
+      .mockImplementation(() => fakeCtx);
+
+    const { host, chart } = mount({
+      renderer: "canvas",
+      geography,
+      geographyColor: "#abcdef",
+      strokeColor: "#123456",
+    });
+
+    expect(fakeCtx.beginPath).toHaveBeenCalled();
+    expect(fakeCtx.fill).toHaveBeenCalled();
+    expect(fakeCtx.stroke).toHaveBeenCalled();
+    // The backdrop paints FIRST (before any symbol circle) in
+    // drawSymbolMapCanvas, so the first fillStyle/strokeStyle assignment must be
+    // the geography colours, not a symbol's own fill.
+    expect(fillStyleHistory[0]).toBe("#abcdef");
+    expect(strokeStyleHistory[0]).toBe("#123456");
+
+    getContextSpy.mockRestore();
+    chart.destroy();
+    host.remove();
+  });
+
   it("host-level point-in-circle hit-test fires onHighlightItem", () => {
     // Read a symbol's pixel coords from an SVG mount (same layout/model as canvas).
     const svgMount = mount({ renderer: "svg" });
