@@ -564,4 +564,94 @@ describe("mountLineChart yAxisScale (log y-axis)", () => {
     b.chart.destroy();
     b.host.remove();
   });
+
+  it("thins y-axis labels to powers of 10 on a wide (4+ decade) log domain, keeping minor gridlines unlabeled (B3.5)", () => {
+    // Reproduces the sdg-trade demo smear: values from 0.0007 to 446 (~6 raw
+    // decades, nice()s to 0.0001..1000 = 7 decades) used to label EVERY d3 log
+    // tick (1,2,3…9,10,20,30…), overprinting into unreadable text.
+    const wideRange: LineDataItem[] = [
+      {
+        label: "Wide",
+        color: "#00f",
+        series: annual([0.0007, 446, 12]),
+      },
+    ];
+    const { host, chart } = mount({
+      dataSet: wideRange,
+      yAxisScale: "log",
+      // Bypass the default Intl formatter's 3-fraction-digit rounding (it would
+      // otherwise print 0.0001 as "0") so the assertion below reads the exact
+      // labeled value, not a presentation artifact.
+      yAxisFormat: (v) => String(v),
+      width: 600,
+      height: 300,
+    });
+    const yLabels = Array.from(host.querySelectorAll(".mv-y-axis text.mv-axis-label")).map(
+      (l) => l.textContent
+    );
+    const yGrid = host.querySelectorAll(".mv-y-axis line.mv-grid");
+    // Every remaining label is an exact power of 10 (no "2", "30", "500", …).
+    expect(yLabels.length).toBeGreaterThan(0);
+    for (const text of yLabels) {
+      const n = Number(text);
+      expect(Number.isFinite(n)).toBe(true);
+      expect(Number.isInteger(Math.log10(n))).toBe(true);
+    }
+    // Minor ticks are still drawn as gridlines, just unlabeled.
+    expect(yGrid.length).toBeGreaterThan(yLabels.length);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("respects an explicit yAxisFormat on the thinned wide-log-domain label subset", () => {
+    const wideRange: LineDataItem[] = [
+      { label: "Wide", color: "#00f", series: annual([0.001, 5000, 3]) },
+    ];
+    const { host, chart } = mount({
+      dataSet: wideRange,
+      yAxisScale: "log",
+      yAxisFormat: (v) => `~${v}~`,
+      width: 600,
+      height: 300,
+    });
+    const yLabels = Array.from(host.querySelectorAll(".mv-y-axis text.mv-axis-label")).map(
+      (l) => l.textContent
+    );
+    expect(yLabels.length).toBeGreaterThan(0);
+    expect(yLabels.every((t) => t!.startsWith("~") && t!.endsWith("~"))).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("keeps every generated y-tick labeled on a narrow (~1 decade) log domain", () => {
+    const narrowRange: LineDataItem[] = [
+      { label: "Narrow", color: "#0f0", series: annual([2, 20, 3]) },
+    ];
+    const { host, chart } = mount({
+      dataSet: narrowRange,
+      yAxisScale: "log",
+      width: 600,
+      height: 300,
+    });
+    const yLabels = host.querySelectorAll(".mv-y-axis text.mv-axis-label");
+    const yGrid = host.querySelectorAll(".mv-y-axis line.mv-grid");
+    expect(yLabels.length).toBe(yGrid.length);
+    expect(yLabels.length).toBeGreaterThan(2);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("linear mode y-axis labeling is unaffected (every tick still labeled)", () => {
+    const { host, chart } = mount({
+      dataSet: powersOfTen,
+      width: 600,
+      height: 300,
+      margin,
+    });
+    const yLabels = host.querySelectorAll(".mv-y-axis text.mv-axis-label");
+    const yGrid = host.querySelectorAll(".mv-y-axis line.mv-grid");
+    expect(yLabels.length).toBe(yGrid.length);
+    chart.destroy();
+    host.remove();
+  });
 });
