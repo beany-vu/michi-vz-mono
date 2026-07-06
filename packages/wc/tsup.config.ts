@@ -9,6 +9,7 @@ export default defineConfig({
     "src/scatter-chart.ts",
     "src/vertical-stack-bar-chart.ts",
     "src/comparable-horizontal-bar-chart.ts",
+    "src/comparable-vertical-bar-chart.ts",
     "src/dual-horizontal-bar-chart.ts",
     "src/bar-bell-chart.ts",
     "src/range-chart.ts",

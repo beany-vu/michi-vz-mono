@@ -8,6 +8,7 @@ import {
   mountScatterChart,
   mountVerticalStackBarChart,
   mountComparableHorizontalBarChart,
+  mountComparableVerticalBarChart,
   mountDualHorizontalBarChart,
   mountBarBellChart,
   mountRangeChart,
@@ -27,6 +28,7 @@ import type {
   ScatterChartProps,
   VerticalStackBarChartProps,
   ComparableBarChartProps,
+  ComparableVerticalBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
@@ -48,6 +50,7 @@ export type {
   ScatterChartProps,
   VerticalStackBarChartProps,
   ComparableBarChartProps,
+  ComparableVerticalBarChartProps,
   DualBarChartProps,
   BarBellChartProps,
   RangeChartProps,
@@ -167,6 +170,24 @@ export function comparableHorizontalBarChart(
   const chart = mountComparableHorizontalBarChart(node, props);
   return {
     update: (next: ComparableBarChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface ComparableVerticalBarChartAction {
+  update(props: ComparableVerticalBarChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<ComparableVerticalBarChartProps>["getContext"];
+}
+
+export function comparableVerticalBarChart(
+  node: HTMLElement,
+  props: ComparableVerticalBarChartProps
+): ComparableVerticalBarChartAction {
+  const chart = mountComparableVerticalBarChart(node, props);
+  return {
+    update: (next: ComparableVerticalBarChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };
