@@ -6,6 +6,7 @@ import type {
   AgentTool,
   ScatterChartProps,
   ScatterDataPoint,
+  ScatterPointLabelsConfig,
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
@@ -53,6 +54,8 @@ export class ScatterChartElement extends LitElement {
     showGrid: { attribute: false },
     pinIcon: { type: Boolean, attribute: "pin-icon" },
     svgChildren: { type: String, attribute: "svg-children" },
+    pointLabels: { attribute: false },
+    drawOrder: { type: String, attribute: "draw-order" },
   };
 
   dataSet: ScatterDataPoint[] = [];
@@ -92,6 +95,8 @@ export class ScatterChartElement extends LitElement {
   showGrid?: boolean | { x?: boolean; y?: boolean };
   pinIcon?: boolean;
   svgChildren?: string;
+  pointLabels?: boolean | ScatterPointLabelsConfig;
+  drawOrder?: "none" | "sizeDescending";
 
   private chart?: ChartInstance<ScatterChartProps>;
 
@@ -145,6 +150,8 @@ export class ScatterChartElement extends LitElement {
       showGrid: this.showGrid,
       pinIcon: this.pinIcon,
       svgChildren: this.svgChildren,
+      pointLabels: this.pointLabels,
+      drawOrder: this.drawOrder,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

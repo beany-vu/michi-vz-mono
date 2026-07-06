@@ -9,6 +9,7 @@ import type {
   TreemapChartProps,
   TreemapNode,
   TreemapLeafContext,
+  TreemapTileValueLabelsConfig,
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
@@ -46,6 +47,7 @@ export class TreemapChartElement extends LitElement {
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
+    tileValueLabels: { attribute: false },
   };
 
   dataSet: TreemapNode[] = [];
@@ -77,6 +79,7 @@ export class TreemapChartElement extends LitElement {
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: TreemapNode[] | null | undefined) => boolean);
   noDataLabel?: string;
+  tileValueLabels?: boolean | TreemapTileValueLabelsConfig;
 
   private chart?: ChartInstance<TreemapChartProps>;
 
@@ -122,6 +125,7 @@ export class TreemapChartElement extends LitElement {
       isLoading: this.isLoading,
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
+      tileValueLabels: this.tileValueLabels,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

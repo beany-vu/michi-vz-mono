@@ -316,6 +316,8 @@ export function applyScatterChartProps(el: ScatterChartElement, props: ScatterCh
   if (props.showGrid !== undefined) el.showGrid = props.showGrid;
   if (props.pinIcon !== undefined) el.pinIcon = props.pinIcon;
   if (props.svgChildren !== undefined) el.svgChildren = props.svgChildren;
+  if (props.pointLabels !== undefined) el.pointLabels = props.pointLabels;
+  if (props.drawOrder !== undefined) el.drawOrder = props.drawOrder;
 }
 
 /** Apply engine props onto a <michi-vz-vertical-stack-bar-chart> element. */
@@ -635,6 +637,7 @@ export function applyTreemapChartProps(el: TreemapChartElement, props: TreemapCh
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
+  if (props.tileValueLabels !== undefined) el.tileValueLabels = props.tileValueLabels;
 }
 
 /** Apply engine props onto a <michi-vz-pie-chart> element (property binding). */

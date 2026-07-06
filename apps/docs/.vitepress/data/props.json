@@ -1302,6 +1302,22 @@
           "common": false
         },
         {
+          "name": "pointLabels",
+          "type": "boolean | ScatterPointLabelsConfig",
+          "optional": true,
+          "description": "Per-point text label (the point's `label` by default). Omitted, or `false`, is a byte-for-byte no-op - zero `.mv-point-label` DOM, default off. Placement is a SIMPLIFIED right-of-point + overlap-hide strategy: each label anchors just to the right of its point (at the current z/draw-order position - see `drawOrder`), and a label is skipped entirely if its estimated bounding box would overlap an already-placed label's box (points processed in that same draw order, so the result never depends on unordered iteration). This intentionally diverges from the legacy sdg-trade Scatterplot (`components/Charts/Scatterplot/Chart.js`), which used d3-voronoi to pick a non-colliding label DIRECTION (right/left/top/ bottom, from the point toward its voronoi cell's centroid) and hid a label only when its voronoi cell's polygon area was <= 10000px². No d3-voronoi dependency was added for this port (none allowed) - the parity bar accepts a cosmetically different placement; the requirement is that labels exist and don't visually collide. Painted on the SVG scaffold layer unconditionally (same treatment as the title/axes and ComparableBar's `deltaIndicator`), so labels look identical whichever `renderer` painted the points themselves.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "drawOrder",
+          "type": "\"none\" | \"sizeDescending\"",
+          "optional": true,
+          "description": "Draw-order for overlapping bubbles. Default `\"none\"`: today's existing, pre-existing behaviour - unchanged, zero-diff. `buildScatterRenderModel` has, since before this prop existed, unconditionally sorted points largest-first whenever radii vary, so smaller marks already paint last (on top of larger ones). `\"sizeDescending\"` names that exact ordering explicitly - larger bubbles render first (behind/underneath), smaller bubbles render last (on top) - and is intentionally IDENTICAL output to `\"none\"` today (see the `BuildScatterModelOptions` JSDoc in `scatterChart/renderModel.ts`). IMPORTANT legacy-parity caveat found while re-reading the actual legacy source (`sdg-trade/.../Scatterplot/Scatterplot.js` + `.../Scatterplot/Chart.js`): legacy's real rendered z-order is the OPPOSITE of \"small on top\". Its wrapper sorts `data` ASCENDING by the raw size value (`data.sort((a,b) => a[rValueKey]-b[rValueKey])`) and Chart.js then draws circles via `data.map` in that array order, and later SVG siblings paint over earlier ones - so the LARGEST bubble ends up drawn LAST / on top there, not the smallest. Neither `\"none\"` nor `\"sizeDescending\"` reproduces that true legacy visual; both already match (and this prop preserves) this library's own pre-existing \"small on top\" convention instead. Reproducing the legacy's actual \"large on top\" order would need a new, different opt-in value - out of scope here.",
+          "default": "\"none\"",
+          "common": false
+        },
+        {
           "name": "svgChildren",
           "type": "string",
           "optional": true,
@@ -4050,6 +4066,14 @@
           "type": "(leaf: TreemapLeafContext) => string",
           "optional": true,
           "description": "Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tileValueLabels",
+          "type": "boolean | TreemapTileValueLabelsConfig",
+          "optional": true,
+          "description": "Render each tile's value (+ share of the dataset total) as a SECOND line under the existing name label. Omitted, or `false`, is a byte-for-byte no-op - zero extra DOM, default off. Gated by the SAME tile-size fitting logic this chart already uses: a tile must qualify for its name label at all (`h >= 24 && w >= 30`, see `renderTreemapSvg` in `treemapChart/renderSvg.ts`) AND meet the larger threshold this chart already reserves for a second line - the exact same `w >= 48 && h >= 34` gate the split \"percent of leaf\" second line already uses right below it. Reused verbatim, not reinvented: two text lines need more room than one, and this chart had already made that call once. Ported from the legacy sdg-trade TreemapChart (`components/Charts/TreemapChart/Chart.js`), which shows `{formattedValue} ({formattedShare})` as a second line only when `leafWidth > 80 && leafHeight > 70` px (a name-only line renders down to `leafWidth >= 60 && leafHeight >= 40`; nothing smaller than that). This port reuses this library's OWN, already-shipped thresholds instead of copying the legacy's exact pixel cutoffs (a different tile-padding/ font-size baseline) - the requirement is \"size-gating exists and reuses the chart's existing mechanism\", not byte-identical legacy pixels.",
           "default": "",
           "common": false
         },
