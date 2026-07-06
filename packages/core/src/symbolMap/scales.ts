@@ -92,10 +92,22 @@ export interface SymbolMapRadiusScale {
 
 /**
  * Builds the radius + opacity scales over ALL `located` items (both `value` and
- * `valueSecond`), independent of the `radiusVisibleMin` visibility filter -
- * mirrors legacy Chart.js, whose `rExtent`/`opScale` domains were computed from
- * the FULL dataset before that filter ran, so a symbol's radius stays
- * comparable across renders even as `radiusVisibleMin` hides small items.
+ * `valueSecond`), independent of the `radiusVisibleMin` visibility filter - the
+ * domain is computed from the FULL dataset before that filter runs, so a
+ * symbol's radius stays comparable across renders even as `radiusVisibleMin`
+ * hides small items (this much mirrors legacy Chart.js's `rExtent`/`opScale`).
+ *
+ * DELIBERATE DIVERGENCE from legacy: this uses the TRUE combined extent of
+ * `value` and `valueSecond` (`min(all values)` .. `max(all values)`). Legacy
+ * Chart.js instead computed `[min(primaryMin, secondaryMax), max(primaryMin,
+ * secondaryMax)]` when a `radiusSecondValueKey` was present - a defective
+ * formula that silently drops the primary max and the secondary min from the
+ * domain entirely. Example: `value` extent [60,70], `valueSecond` extent
+ * [20,30] -> legacy domain [30,60] (wrong: 70 and 20 never considered), this
+ * chart's domain [20,70] (correct: spans every value actually drawn). We do
+ * NOT port that bug - see `symbolMapPureLayer.test.ts`'s
+ * "matches the reviewer's numeric case" test, which pins this chart's chosen
+ * (correct) behaviour against the legacy formula's result for the same input.
  */
 export function buildSymbolMapRadiusScale(
   located: SymbolMapNode[],

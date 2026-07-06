@@ -34,6 +34,12 @@ apart without moving them far from their true position.
   the legacy source: strictly before radius scaling) - ported exactly,
   including the "domain floor raised to `radiusVisibleMin` when the max value
   exceeds 100" quirk.
+- **Deliberate divergence from legacy**: the radius/opacity scale's domain is
+  the TRUE combined extent of every item's `value`/`valueSecond`, NOT legacy
+  Chart.js's own domain formula (`[min(primaryMin, secondaryMax),
+  max(primaryMin, secondaryMax)]`), which was defective and silently dropped
+  the primary max and secondary min - so relative circle sizes differ from
+  legacy whenever `value`/`valueSecond` ranges diverge.
 - The concentric second ring (`valueSecond`) ports legacy `ForceNode.js`'s
   exact layering: same colour as the primary circle, `opacity - 0.3` (clamped
   to non-negative), drawn on top.

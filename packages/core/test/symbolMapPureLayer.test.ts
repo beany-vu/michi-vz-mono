@@ -178,6 +178,37 @@ describe("symbolMap/scales - buildSymbolMapRadiusScale", () => {
     const { radiusOf } = buildSymbolMapRadiusScale(located, [3, 70], 20);
     expect(radiusOf(1)).toBeCloseTo(3, 5);
   });
+
+  // Pins the CHOSEN (deliberately non-legacy-parity) domain formula against the
+  // reviewer's numeric counter-example. `value` extent is [60,70], `valueSecond`
+  // extent is [20,30]. Legacy Chart.js computed
+  // `[min(primaryMin, secondaryMax), max(primaryMin, secondaryMax)]` =
+  // `[min(60,30), max(60,30)]` = [30,60] - a defective formula that silently
+  // drops 70 (the primary max) and 20 (the secondary min) from the domain. This
+  // chart uses the TRUE combined extent instead: [20,70]. See scales.ts's
+  // buildSymbolMapRadiusScale JSDoc and the symbol-map-chart changeset for the
+  // disclosure of this divergence.
+  it("uses the TRUE combined value/valueSecond extent, NOT legacy's defective min(primaryMin,secondaryMax)/max(...) formula", () => {
+    const located = processSymbolMapData([
+      { id: "a", label: "A", lng: 0, lat: 0, value: 60, valueSecond: 30 },
+      { id: "b", label: "B", lng: 0, lat: 0, value: 70, valueSecond: 20 },
+    ]).located;
+    const { radiusOf } = buildSymbolMapRadiusScale(located, [3, 70], undefined);
+    // Our domain: [20, 70] (the true min/max across value+valueSecond).
+    expect(radiusOf(20)).toBeCloseTo(3, 5);
+    expect(radiusOf(70)).toBeCloseTo(70, 5);
+    // Legacy's domain would have been [30, 60] - under THAT domain, 20 would
+    // extrapolate below radiusRange[0] and 70 would extrapolate above
+    // radiusRange[1]. Confirm our scale does NOT clamp/collapse to those
+    // legacy bounds: 60 and 30 land strictly INSIDE our [20,70] domain, not at
+    // its edges.
+    const rAt60 = radiusOf(60);
+    const rAt30 = radiusOf(30);
+    expect(rAt60).toBeGreaterThan(3);
+    expect(rAt60).toBeLessThan(70);
+    expect(rAt30).toBeGreaterThan(3);
+    expect(rAt30).toBeLessThan(70);
+  });
 });
 
 describe("symbolMap/layout - layoutSymbolMap (deterministic de-overlap)", () => {

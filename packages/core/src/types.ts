@@ -2020,7 +2020,15 @@ export interface SymbolMapChartProps {
   projection?: GeoProjectionName;
   /** Fine-tunes the projection; only consulted when `geography` is supplied (see `projection`). */
   projectionConfig?: GeoProjectionConfig;
-  /** [min, max] circle radius in px (default [3, 70], the legacy `circleRange`). */
+  /** [min, max] circle radius in px (default [3, 70], the legacy `circleRange`).
+   * Mapped from the value domain via `buildSymbolMapRadiusScale`, whose domain
+   * is the TRUE combined extent of every item's `value` and `valueSecond` -
+   * DELIBERATELY NOT legacy Chart.js's own domain formula, which was defective
+   * (`[min(primaryMin, secondaryMax), max(primaryMin, secondaryMax)]` silently
+   * drops the primary max and secondary min). Relative circle sizes will differ
+   * from the legacy chart whenever `value` and `valueSecond` ranges diverge -
+   * see `symbolMap/scales.ts`'s `buildSymbolMapRadiusScale` for the worked
+   * example and the pinned regression test. */
   radiusRange?: [number, number];
   /** Hides items whose RAW `value` is <= this threshold (and, when `valueSecond`
    * is set, whose `valueSecond` is also < this threshold) BEFORE the force layout
