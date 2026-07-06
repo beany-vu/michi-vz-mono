@@ -2786,6 +2786,125 @@ export interface SankeyChartContext extends BaseChartContext {
   };
 }
 
+// ---- RadialTreeChart (radial cluster/dendrogram) ----
+// Migration target: legacy sdg-trade TreeRadial - a d3-hierarchy `cluster()`
+// dendrogram (leaves equidistant from the centre, NOT `tree()`) drawn in polar
+// coordinates. Circles are linearly scaled (verified against the legacy chart's
+// own `scaleLinear`) at BOTH the group (depth 1) AND leaf (depth 2) level - a
+// "dual-level" bubble dendrogram, not a leaf-only one. `RadialTreeNode` deliberately mirrors
+// `TreemapNode`'s shape (label/code/value/color/children) for API consistency
+// across the two hierarchical charts; a node's colour group is its TOP-LEVEL
+// ancestor's label, exactly like TreemapChart.
+
+export interface RadialTreeNode {
+  /** Node name (drives data-label, the tooltip heading, and the rendered label). */
+  label: string;
+  /** Optional identifier carried through to the node context. */
+  code?: string;
+  /** Leaf size; for a node with children the value is derived as the sum of its children
+   * (an own `value` on a non-leaf node is ignored, same convention as TreemapNode). */
+  value?: number;
+  /** Optional explicit colour; on a top-level node it seeds the colour for that whole group. */
+  color?: string;
+  /** Child nodes. The consumer contract uses 2 levels (group + leaf); deeper nesting is
+   * tolerated (a data warning is emitted) - every level still gets a sized circle. */
+  children?: RadialTreeNode[];
+}
+
+export interface RadialTreeChartProps {
+  /** Forest of nodes (each a leaf or a group with children), laid out as a radial dendrogram. */
+  dataSet: RadialTreeNode[];
+  /** Optional word-wrapped title drawn inside the small centre circle (legacy `titleCenter`). */
+  centerLabel?: string;
+  /** Optional chart title rendered above the plot */
+  title?: string;
+  /** Chart width in pixels */
+  width?: number;
+  /** Chart height in pixels */
+  height?: number;
+  /** Inner margins (top/right/bottom/left, in px) reserved for the title */
+  margin?: Margin;
+  /** [min, max] circle radius in px (default [2, 32], the legacy `circleRange`). */
+  radiusRange?: [number, number];
+  /** Adaptive label density thresholds, compared against the total LEAF count (legacy
+   * `rotateItemThreshold` / the unnamed 100-leaf cutoff). `rotateAbove` (default 20):
+   * past this many leaves, every label is abbreviated and rotated radially instead of
+   * kept horizontal. `hideAbove` (default 100): past this many leaves, all labels are hidden. */
+  labelDensityThresholds?: { rotateAbove?: number; hideAbove?: number };
+  /** Categorical palette for groups without an explicit colour or colorsMapping entry */
+  colors?: string[];
+  /** Explicit label -> colour map (keyed by each node's top-level group label); takes
+   * precedence over the palette and per-item colours */
+  colorsMapping?: Record<string, string>;
+  /** Labels to emphasise; all other nodes/links dim */
+  highlightItems?: string[];
+  /** Labels to hide and exclude from the layout entirely */
+  disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is
+   * identical either way. "webgpu" DELEGATES to the canvas 2D renderer (same rationale as
+   * ChoroplethMap/SymbolMap): the curved dendrogram links are not cheaply GPU-tessellable. */
+  renderer?: "svg" | "canvas" | "webgpu";
+  /** BCP-47 locale used for number formatting */
+  locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
+  skipColorMappingDispatch?: boolean;
+  /** Animate updates with CSS transitions (default true) */
+  enableTransitions?: boolean;
+  /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on dataSet; default = empty dataSet. */
+  isNodata?: boolean | ((dataSet: RadialTreeNode[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
+  /** Returns custom tooltip HTML for a hovered node (sanitized before it is inserted) */
+  tooltipFormatter?: (d: RadialTreeNode) => string;
+  /** Called when the hovered/highlighted label(s) change */
+  onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
+  onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (empty groups, negative values, duplicate
+   * labels, nesting deeper than 2 levels, ...) */
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface RadialTreeNodeContext {
+  label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
+  code?: string;
+  /** Resolved fill colour (own `color`, else colorsMapping[groupLabel], else the palette) */
+  color: string;
+  /** 1 = top-level group, 2 = leaf in the standard 2-level contract (higher when nested deeper). */
+  depth: number;
+  /** True for a node with no children. */
+  isLeaf: boolean;
+  /** Own value for a leaf; sum of descendants for a group. */
+  value: number;
+  /** Labels from the top-level group down to this node, inclusive. */
+  path: string[];
+}
+
+export interface RadialTreeChartContext extends BaseChartContext {
+  chartType: "radial-tree-chart";
+  centerLabel?: string;
+  /** Every node in the tree (groups AND leaves), in layout order. */
+  nodes: RadialTreeNodeContext[];
+  stats: {
+    /** Total number of leaf nodes (drives the label density thresholds). */
+    leafCount: number;
+    /** Number of top-level (depth 1) groups. */
+    groupCount: number;
+    /** Sum of every top-level group's value. */
+    grandTotal: number;
+    largest: { label: string; value: number } | null;
+    /** Maximum nesting depth (2 = the standard group+leaf contract). */
+    maxDepth: number;
+  };
+}
+
 export type ChartContext =
   | GapChartContext
   | LineChartContext
@@ -2806,7 +2925,8 @@ export type ChartContext =
   | SankeyChartContext
   | FountainChartContext
   | ChoroplethMapChartContext
-  | SymbolMapChartContext;
+  | SymbolMapChartContext
+  | RadialTreeChartContext;
 
 export interface DataWarning {
   type:
@@ -2820,7 +2940,9 @@ export interface DataWarning {
     | "non-positive-log-value"
     | "unmatched-dataset-id"
     | "missing-feature-id"
-    | "invalid-geometry";
+    | "invalid-geometry"
+    | "empty-group"
+    | "excess-depth";
   message: string;
   label?: string;
 }

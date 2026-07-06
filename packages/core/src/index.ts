@@ -22,6 +22,7 @@ export { mountSankeyChart } from "./engine/sankeyChart";
 export { mountFountainChart } from "./engine/fountainChart";
 export { mountChoroplethMapChart } from "./engine/choroplethMapChart";
 export { mountSymbolMapChart } from "./engine/symbolMapChart";
+export { mountRadialTreeChart } from "./engine/radialTreeChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -182,6 +183,19 @@ export { layoutSymbolMap } from "./symbolMap/layout";
 export { buildSymbolMapRenderModel, buildSymbolMapBackdrop } from "./symbolMap/renderModel";
 export { buildSymbolMapContext } from "./context/buildSymbolMapContext";
 export { checkSymbolMapData } from "./validate/symbolMapWarnings";
+// RadialTree pure layer (radial cluster()/dendrogram; d3-hierarchy + d3-scale)
+export { processRadialTreeData } from "./radialTree/data";
+export { buildRadialTreeColors } from "./radialTree/colors";
+export { buildRadialTreeRadiusScale } from "./radialTree/scales";
+export { layoutRadialTree, radialProjection } from "./radialTree/layout";
+export {
+  buildRadialTreeRenderModel,
+  computeLabelDensity,
+  wrapCenterLabel,
+  centerLineOffsets,
+} from "./radialTree/renderModel";
+export { buildRadialTreeContext } from "./context/buildRadialTreeContext";
+export { checkRadialTreeData } from "./validate/radialTreeWarnings";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -323,4 +337,8 @@ export type {
   SymbolMapChartProps,
   SymbolMapSymbolContext,
   SymbolMapChartContext,
+  RadialTreeNode,
+  RadialTreeChartProps,
+  RadialTreeNodeContext,
+  RadialTreeChartContext,
 } from "./types";
