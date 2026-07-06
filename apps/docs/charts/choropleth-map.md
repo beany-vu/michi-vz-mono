@@ -35,7 +35,7 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 />
 ```
 
-A `FeatureCollection`'s per-feature `id` is read from the GeoJSON `Feature.id` (falling back to `properties.id`); `name` from `properties.name`. Popular sources: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - convert with `topojson-client`'s `feature()`), [Natural Earth](https://www.naturalearthdata.com/), or a region-specific file your own team maintains. This package's own docs/examples ship only a tiny 12-shape illustrative sample - not real coastlines - to keep the library dependency-free of any topology data.
+A `FeatureCollection`'s per-feature `id` is read from the GeoJSON `Feature.id` (falling back to `properties.id`); `name` from `properties.name`. Popular sources: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - convert with `topojson-client`'s `feature()`), [Natural Earth](https://www.naturalearthdata.com/), or a region-specific file your own team maintains. The demo above, and this package's own examples, use a real 176-country world atlas (ISO-A3 ids) so the shapes on screen are actual coastlines - `@michi-vz/core` itself still bundles no topology data; the GeoJSON lives only in `@michi-vz/examples`, one directory up from your own app's copy.
 
 ## Usage
 

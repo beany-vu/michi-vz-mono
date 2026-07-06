@@ -27,10 +27,18 @@ import type {
   SankeyChartProps,
   FountainChartProps,
   ChoroplethMapChartProps,
-  GeoFeatureItem,
   SymbolMapChartProps,
   RadialTreeChartProps,
 } from "@michi-vz/core";
+// Real-world geography for the geo charts (ChoroplethMapChart, SymbolMapChart's
+// optional backdrop): the SAME 110m-resolution world atlas the sdg-trade
+// production consumer uses (176 countries, id = ISO-A3, properties.name),
+// Antarctica (ATA) dropped for a nicer default framing. This lives ONLY in the
+// examples/docs layer - @michi-vz/core stays geography-free (see each chart's
+// `geography` prop docs).
+import worldJson from "./data/world.json";
+
+const world = worldJson as unknown as GeoJSON.FeatureCollection;
 
 export interface Example<P = Record<string, unknown>> {
   id: string;
@@ -1807,223 +1815,19 @@ const fountain: Example<FountainChartProps>[] = [
 ];
 
 // ChoroplethMapChart's `geography` is ALWAYS a consumer-supplied prop (core
-// bundles no topology data - see the chart's docs page for the
-// `import worldJson from "./world.json"` real-world consumer pattern). This
-// package ships only a TINY, hand-curated, illustrative sample: 12 low-vertex
-// region blobs at roughly-correct relative positions, NOT authoritative
-// coastlines - do not use these shapes for anything but this demo.
-const worldRegionsSample: GeoFeatureItem[] = [
-  {
-    id: "NAM",
-    name: "North America",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [-170, 72],
-          [-95, 72],
-          [-70, 50],
-          [-80, 25],
-          [-105, 15],
-          [-130, 32],
-          [-170, 72],
-        ],
-      ],
-    },
-  },
-  {
-    id: "GRL",
-    name: "Greenland",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [-60, 83],
-          [-20, 83],
-          [-20, 60],
-          [-55, 60],
-          [-60, 83],
-        ],
-      ],
-    },
-  },
-  {
-    id: "SAM",
-    name: "South America",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [-80, 10],
-          [-35, 5],
-          [-35, -55],
-          [-70, -55],
-          [-82, -5],
-          [-80, 10],
-        ],
-      ],
-    },
-  },
-  {
-    id: "EUR",
-    name: "Europe",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [-10, 60],
-          [30, 68],
-          [40, 45],
-          [20, 36],
-          [-5, 40],
-          [-10, 60],
-        ],
-      ],
-    },
-  },
-  {
-    id: "AFR",
-    name: "Africa",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [-18, 35],
-          [50, 30],
-          [50, -5],
-          [35, -35],
-          [12, -35],
-          [-18, 5],
-          [-18, 35],
-        ],
-      ],
-    },
-  },
-  {
-    id: "MDE",
-    name: "Middle East",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [35, 40],
-          [60, 38],
-          [60, 12],
-          [43, 12],
-          [35, 40],
-        ],
-      ],
-    },
-  },
-  {
-    id: "RUS",
-    name: "Russia & Central Asia",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [40, 78],
-          [179, 78],
-          [179, 50],
-          [90, 45],
-          [40, 50],
-          [40, 78],
-        ],
-      ],
-    },
-  },
-  {
-    id: "SAS",
-    name: "South Asia",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [60, 38],
-          [90, 35],
-          [92, 5],
-          [68, 5],
-          [60, 38],
-        ],
-      ],
-    },
-  },
-  {
-    id: "EAS",
-    name: "East Asia",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [90, 50],
-          [145, 50],
-          [145, 20],
-          [100, 20],
-          [90, 50],
-        ],
-      ],
-    },
-  },
-  {
-    id: "SEA",
-    name: "Southeast Asia",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [95, 22],
-          [140, 22],
-          [140, -10],
-          [95, -10],
-          [95, 22],
-        ],
-      ],
-    },
-  },
-  {
-    id: "AUS",
-    name: "Australia",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [112, -10],
-          [154, -10],
-          [154, -44],
-          [112, -44],
-          [112, -10],
-        ],
-      ],
-    },
-  },
-  {
-    id: "OCE",
-    name: "Oceania",
-    geometry: {
-      type: "Polygon",
-      coordinates: [
-        [
-          [160, -5],
-          [179, -5],
-          [179, -25],
-          [160, -25],
-          [160, -5],
-        ],
-      ],
-    },
-  },
-];
-
+// bundles no topology data); `world` above is the real geography, imported
+// from the examples/docs layer only (see this chart's docs page for the
+// `import worldJson from "./world.json"` real-world consumer pattern).
 const choroplethMap: Example<ChoroplethMapChartProps>[] = [
   {
     id: "choropleth-map-export-value",
     title: "Merchandise export value by region, 2024 (US$ bn)",
     description:
-      "Continuous encoding: colorScale (a resolved hex range + numeric domain, built into a d3 scaleThreshold) shades each region by export value. A region with no matching dataSet row (Antarctica-style gap) renders noDataColor.",
+      "Continuous encoding: colorScale (a resolved hex range + numeric domain, built into a d3 scaleThreshold) shades each country by export value. A country with no matching dataSet row (most of the 176-country world atlas here) renders noDataColor.",
     element: "michi-vz-choropleth-map-chart",
     props: {
       title: "Merchandise export value by region, 2024 (US$ bn)",
-      geography: worldRegionsSample,
+      geography: world,
       colorScale: {
         domain: [200, 500, 1000, 2000],
         range: ["#eaf3fb", "#a9d0ea", "#5b9bd5", "#2c6fbb", "#123a63"],
@@ -2033,17 +1837,37 @@ const choroplethMap: Example<ChoroplethMapChartProps>[] = [
           ? `<strong>${d.label}</strong><br/>${d.value.toLocaleString()} bn`
           : `<strong>${"name" in d ? (d.name ?? d.id) : d.id}</strong><br/>No data`,
       dataSet: [
-        { id: "NAM", label: "North America", value: 2450 },
-        { id: "SAM", label: "South America", value: 480 },
-        { id: "EUR", label: "Europe", value: 2100 },
-        { id: "AFR", label: "Africa", value: 310 },
-        { id: "MDE", label: "Middle East", value: 620 },
-        { id: "RUS", label: "Russia & Central Asia", value: 410 },
-        { id: "SAS", label: "South Asia", value: 540 },
-        { id: "EAS", label: "East Asia", value: 1980 },
-        { id: "SEA", label: "Southeast Asia", value: 890 },
-        { id: "AUS", label: "Australia", value: 260 },
-        // GRL and OCE intentionally left unmatched to show noDataColor.
+        { id: "USA", label: "United States", value: 2064 },
+        { id: "CHN", label: "China", value: 3380 },
+        { id: "DEU", label: "Germany", value: 1690 },
+        { id: "JPN", label: "Japan", value: 717 },
+        { id: "GBR", label: "United Kingdom", value: 460 },
+        { id: "FRA", label: "France", value: 617 },
+        { id: "KOR", label: "South Korea", value: 683 },
+        { id: "NLD", label: "Netherlands", value: 870 },
+        { id: "ITA", label: "Italy", value: 620 },
+        { id: "BRA", label: "Brazil", value: 340 },
+        { id: "IND", label: "India", value: 450 },
+        { id: "RUS", label: "Russia", value: 425 },
+        { id: "MEX", label: "Mexico", value: 593 },
+        { id: "CAN", label: "Canada", value: 594 },
+        { id: "AUS", label: "Australia", value: 344 },
+        { id: "ZAF", label: "South Africa", value: 123 },
+        { id: "NGA", label: "Nigeria", value: 62 },
+        { id: "EGY", label: "Egypt", value: 43 },
+        { id: "SAU", label: "Saudi Arabia", value: 340 },
+        { id: "ARE", label: "United Arab Emirates", value: 599 },
+        { id: "IDN", label: "Indonesia", value: 292 },
+        { id: "VNM", label: "Vietnam", value: 371 },
+        { id: "MYS", label: "Malaysia", value: 351 },
+        { id: "CHE", label: "Switzerland", value: 420 },
+        { id: "ESP", label: "Spain", value: 425 },
+        { id: "TUR", label: "Turkey", value: 262 },
+        { id: "POL", label: "Poland", value: 351 },
+        { id: "SWE", label: "Sweden", value: 195 },
+        { id: "KEN", label: "Kenya", value: 8 },
+        // Every other country in `geography` is intentionally left unmatched
+        // to show noDataColor across the rest of the world atlas.
       ],
     },
   },
@@ -2051,11 +1875,11 @@ const choroplethMap: Example<ChoroplethMapChartProps>[] = [
     id: "choropleth-map-data-availability",
     title: "Latest available survey year by region",
     description:
-      "Categorical encoding via colorsMapping (wins over colorScale) - the sdg-trade Data Availability use case: a handful of fixed label -> colour buckets (a survey year band or \"no data\"), not a numeric gradient.",
+      "Categorical encoding via colorsMapping (wins over colorScale) - the sdg-trade Data Availability use case: a handful of fixed label -> colour buckets, not a numeric gradient.",
     element: "michi-vz-choropleth-map-chart",
     props: {
       title: "Latest available survey year by region",
-      geography: worldRegionsSample,
+      geography: world,
       joinBy: "id",
       noDataColor: "#eeeeee",
       colorsMapping: {
@@ -2067,16 +1891,46 @@ const choroplethMap: Example<ChoroplethMapChartProps>[] = [
       tooltipFormatter: (d) =>
         "label" in d ? `<strong>${d.label}</strong>` : `<strong>${d.name ?? d.id}</strong><br/>No data`,
       dataSet: [
-        { id: "NAM", label: "2024" },
-        { id: "EUR", label: "2024" },
-        { id: "EAS", label: "2023" },
-        { id: "SAS", label: "2023" },
-        { id: "SAM", label: "2022" },
-        { id: "AUS", label: "2022" },
-        { id: "AFR", label: "2021 or earlier" },
-        { id: "MDE", label: "2021 or earlier" },
-        { id: "SEA", label: "2021 or earlier" },
-        { id: "RUS", label: "2021 or earlier" },
+        { id: "USA", label: "2024" },
+        { id: "CAN", label: "2024" },
+        { id: "GBR", label: "2024" },
+        { id: "DEU", label: "2024" },
+        { id: "FRA", label: "2024" },
+        { id: "JPN", label: "2024" },
+        { id: "AUS", label: "2024" },
+        { id: "KOR", label: "2024" },
+        { id: "NLD", label: "2024" },
+        { id: "SWE", label: "2024" },
+        { id: "CHN", label: "2023" },
+        { id: "IND", label: "2023" },
+        { id: "BRA", label: "2023" },
+        { id: "MEX", label: "2023" },
+        { id: "IDN", label: "2023" },
+        { id: "ZAF", label: "2023" },
+        { id: "RUS", label: "2023" },
+        { id: "TUR", label: "2023" },
+        { id: "ESP", label: "2023" },
+        { id: "ITA", label: "2023" },
+        { id: "EGY", label: "2022" },
+        { id: "NGA", label: "2022" },
+        { id: "KEN", label: "2022" },
+        { id: "SAU", label: "2022" },
+        { id: "ARE", label: "2022" },
+        { id: "VNM", label: "2022" },
+        { id: "THA", label: "2022" },
+        { id: "PHL", label: "2022" },
+        { id: "PAK", label: "2022" },
+        { id: "BGD", label: "2022" },
+        { id: "ARG", label: "2021 or earlier" },
+        { id: "COL", label: "2021 or earlier" },
+        { id: "PER", label: "2021 or earlier" },
+        { id: "CHL", label: "2021 or earlier" },
+        { id: "MAR", label: "2021 or earlier" },
+        { id: "DZA", label: "2021 or earlier" },
+        { id: "ETH", label: "2021 or earlier" },
+        { id: "GHA", label: "2021 or earlier" },
+        { id: "TZA", label: "2021 or earlier" },
+        { id: "UGA", label: "2021 or earlier" },
       ],
     },
   },
@@ -2116,11 +1970,11 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
     id: "symbol-map-with-backdrop",
     title: "Regional trade value with a muted backdrop",
     description:
-      "The OPTIONAL `geography` backdrop (a new capability - the legacy chart never drew landmass): reuses ChoroplethMapChart's tiny illustrative region sample so the symbol coordinates and the muted landmass share one consistent geographic framing.",
+      "The OPTIONAL `geography` backdrop (a new capability - the legacy chart never drew landmass): reuses the real world atlas (176 countries, ISO-A3) so the symbol coordinates and the muted landmass share one consistent geographic framing.",
     element: "michi-vz-symbol-map-chart",
     props: {
       title: "Regional trade value with a muted backdrop",
-      geography: worldRegionsSample,
+      geography: world,
       dataSet: [
         { id: "usa", label: "North America", lng: -100, lat: 40, value: 80 },
         { id: "deu", label: "Europe", lng: 15, lat: 50, value: 65 },
