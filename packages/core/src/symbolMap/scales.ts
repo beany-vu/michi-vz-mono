@@ -4,9 +4,13 @@
 //    ChoroplethMap's translate/scale/rotate/center tuning, exactly like legacy
 //    MapSymbolForce/Chart.js's plain `geoMercator()` - and the projected point
 //    extent is then RESCALED to fill [0,width]x[0,height], mirroring that
-//    chart's own xScale/yScale-over-extent(...) math. Any pair of identical
-//    coordinates collapses to a single point pre-layout (by design - the force
-//    simulation's collide force is what pulls them apart; see layout.ts).
+//    chart's own xScale/yScale-over-extent(...) math - INSET on both sides by
+//    the largest effective radius in the set (B3.6), so the edge-of-extent
+//    point (often also the largest, e.g. the max-`value` item) doesn't render
+//    its circle half off-canvas. Any pair of identical coordinates collapses
+//    to a single point pre-layout (by design - the force simulation's collide
+//    force is what pulls them apart; see layout.ts, which also clamps drift
+//    back inside the canvas as a second line of defence).
 //  - "backdrop" (`geography` supplied): the SAME tuned dispatch ChoroplethMap
 //    uses (geo/projections.ts's createTunedProjection), so the landmass and the
 //    symbol coordinates share one consistent geographic framing - no extent
@@ -45,7 +49,14 @@ export function projectSymbolMapPoints(
   hasGeography: boolean,
   projectionConfig: GeoProjectionConfig | undefined,
   width: number,
-  height: number
+  height: number,
+  /** OPTIONAL, dot-only mode only: the EFFECTIVE (post-scale) radius a node
+   * will render at - callers should pass `max(radiusOf(value), radiusOf(valueSecond))`
+   * so a `valueSecond` ring larger than the primary circle is still accounted
+   * for (see symbolMapChart.ts's `effectiveRadiusOf`). Used to inset the
+   * rescale target range (B3.6 fix - see the block below); omitted (or a
+   * dataset with radius 0 everywhere) reproduces the old center-only fit. */
+  radiusOf?: (node: SymbolMapNode) => number
 ): ProjectSymbolMapResult {
   if (hasGeography) {
     const projection = createTunedProjection(projectionName, projectionConfig, width, height, {
@@ -74,8 +85,30 @@ export function projectSymbolMapPoints(
   const yExtent = extent(raw, (r) => r.y) as [number, number];
   const xFlat = xExtent[0] === xExtent[1];
   const yFlat = yExtent[0] === yExtent[1];
-  const xScale = xFlat ? null : scaleLinear().domain(xExtent).range([0, width]);
-  const yScale = yFlat ? null : scaleLinear().domain(yExtent).range([0, height]);
+
+  // B3.6 radius-aware fit: the OLD fit rescaled point CENTERS to fill
+  // [0,width]x[0,height] with no regard for how big a circle each point would
+  // actually draw at - a point that lands at the raw extent's edge (e.g. the
+  // dataset's max-value item, which also tends to get the largest radius)
+  // then overflows the canvas by its own radius. Chosen fix: a single
+  // max-radius inset applied to BOTH sides of the target range - simpler and
+  // more predictable than solving the exact per-side required inset, and for a
+  // small-radius dataset the inset is negligible so the spread isn't visibly
+  // shrunk. Guarded so a huge radius on a tiny canvas can't invert the range;
+  // it degrades to centering everything rather than producing NaN/backwards
+  // extents.
+  let maxRadius = 0;
+  if (radiusOf) {
+    for (const r of raw) {
+      const rad = radiusOf(r.node);
+      if (Number.isFinite(rad) && rad > maxRadius) maxRadius = rad;
+    }
+  }
+  const xInset = Math.max(0, Math.min(maxRadius, width / 2));
+  const yInset = Math.max(0, Math.min(maxRadius, height / 2));
+
+  const xScale = xFlat ? null : scaleLinear().domain(xExtent).range([xInset, width - xInset]);
+  const yScale = yFlat ? null : scaleLinear().domain(yExtent).range([yInset, height - yInset]);
 
   const points: ProjectedPoint[] = raw.map((r) => ({
     node: r.node,

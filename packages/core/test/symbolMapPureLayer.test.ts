@@ -211,6 +211,104 @@ describe("symbolMap/scales - buildSymbolMapRadiusScale", () => {
   });
 });
 
+describe("symbolMap/scales + layout - B3.6 edge-clipping fix", () => {
+  const WIDTH = 460;
+  const HEIGHT = 280;
+
+  // Extreme-west point carries the MAX value (US-like: largest radius, lands
+  // at the raw x-extent's edge) + an extreme-north point that also gets a
+  // large radius (UK/Germany-like) - the exact shape of the reported bug: a
+  // big bubble at the projected extent's edge used to render half off-canvas.
+  const edgeDataSet = [
+    { id: "west", label: "West", lng: -170, lat: 0, value: 100 },
+    { id: "north", label: "North", lng: 20, lat: 80, value: 90 },
+    { id: "mid", label: "Mid", lng: 40, lat: -30, value: 10 },
+  ];
+
+  function renderEdgeFixture(dataSet: typeof edgeDataSet, width = WIDTH, height = HEIGHT) {
+    const nodes = processSymbolMapData(dataSet).located;
+    const { radiusOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
+    const effectiveRadiusOf = (n: (typeof nodes)[number]) =>
+      Math.max(radiusOf(n.value), n.valueSecond != null ? radiusOf(n.valueSecond) : 0);
+    const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, width, height, effectiveRadiusOf);
+    const laidOut = layoutSymbolMap(points, (p) => radiusOf(p.node.value), {
+      width,
+      height,
+      radiusOf: (p) => effectiveRadiusOf(p.node),
+    });
+    return { laidOut, radiusOf, effectiveRadiusOf };
+  }
+
+  it("keeps every node's circle fully inside [r, width-r] x [r, height-r] (repro fixture)", () => {
+    const { laidOut, effectiveRadiusOf } = renderEdgeFixture(edgeDataSet);
+    for (const n of laidOut) {
+      const r = effectiveRadiusOf(n.point.node);
+      expect(n.x).toBeGreaterThanOrEqual(r - 1e-6);
+      expect(n.x).toBeLessThanOrEqual(WIDTH - r + 1e-6);
+      expect(n.y).toBeGreaterThanOrEqual(r - 1e-6);
+      expect(n.y).toBeLessThanOrEqual(HEIGHT - r + 1e-6);
+    }
+  });
+
+  it("without the fit inset (no radiusOf passed to projectSymbolMapPoints), the pre-fix repro fails at the edge", () => {
+    // Sanity check that the fixture actually reproduces the bug when the fit
+    // inset is skipped (only the per-tick clamp is active) - confirms the
+    // fixture is a real regression test, not a false positive.
+    const nodes = processSymbolMapData(edgeDataSet).located;
+    const { radiusOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
+    const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, WIDTH, HEIGHT); // no radiusOf
+    const west = points.find((p) => p.node.id === "west")!;
+    const westRadius = radiusOf(west.node.value);
+    // The raw fit (no inset) puts the extreme-x point AT the edge (0 or width);
+    // its radius overflows past that edge before any inset/clamp is applied.
+    const overflowsLeft = west.x - westRadius < 0;
+    const overflowsRight = west.x + westRadius > WIDTH;
+    expect(overflowsLeft || overflowsRight).toBe(true);
+  });
+
+  it("small-radius dataset: the inset doesn't visibly shrink the spread (inset scales with max radius only)", () => {
+    // A small `radiusRange` (independent of the dataset's own value spread,
+    // which always maps its min/max to the range floor/ceiling) keeps every
+    // radius tiny relative to the 460px canvas - the inset should then be
+    // negligible and the spread should still reach nearly edge-to-edge.
+    const smallDataSet = [
+      { id: "a", label: "A", lng: -170, lat: 0, value: 1 },
+      { id: "b", label: "B", lng: 170, lat: 0, value: 5 },
+    ];
+    const nodes = processSymbolMapData(smallDataSet).located;
+    const { radiusOf } = buildSymbolMapRadiusScale(nodes, [2, 4], undefined);
+    const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, WIDTH, HEIGHT, (n) =>
+      radiusOf(n.value)
+    );
+    const xs = points.map((p) => p.x);
+    const maxRadius = Math.max(...nodes.map((n) => radiusOf(n.value)));
+    expect(maxRadius).toBeLessThan(5); // confirms this really is a small-radius dataset
+    // Spread should reach within `maxRadius` of both edges (the inset), not
+    // stay pinned to a large chunk of the canvas away from them.
+    expect(Math.min(...xs)).toBeGreaterThanOrEqual(0);
+    expect(Math.min(...xs)).toBeLessThanOrEqual(maxRadius + 1e-6);
+    expect(Math.max(...xs)).toBeLessThanOrEqual(WIDTH);
+    expect(Math.max(...xs)).toBeGreaterThanOrEqual(WIDTH - maxRadius - 1e-6);
+  });
+
+  it("degenerate canvas (radius > half width/height) clamps to centre instead of inverting the range", () => {
+    const nodes = processSymbolMapData([{ id: "a", label: "A", lng: 0, lat: 0, value: 100 }]).located;
+    const { radiusOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
+    const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, 20, 20, (n) =>
+      radiusOf(n.value)
+    );
+    const laidOut = layoutSymbolMap(points, (p) => radiusOf(p.node.value), {
+      width: 20,
+      height: 20,
+      radiusOf: (p) => radiusOf(p.node.value),
+    });
+    expect(Number.isFinite(laidOut[0].x)).toBe(true);
+    expect(Number.isFinite(laidOut[0].y)).toBe(true);
+    expect(laidOut[0].x).toBeCloseTo(10, 5);
+    expect(laidOut[0].y).toBeCloseTo(10, 5);
+  });
+});
+
 describe("symbolMap/layout - layoutSymbolMap (deterministic de-overlap)", () => {
   it("returns the same layout for the same inputs across two independent runs", () => {
     const nodes = processSymbolMapData([

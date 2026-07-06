@@ -264,6 +264,25 @@ export function mountSymbolMapChart(
       }
     }
 
+    // Radius scale built BEFORE projecting points (it only depends on
+    // `processed.located` + `radiusRange`/`radiusVisibleMin` - never on
+    // width/height or the projection), so the dot-only fit below can inset
+    // for the radii it's about to draw (B3.6 - see scales.ts's
+    // projectSymbolMapPoints comment).
+    const { radiusOf, opacityOf } = buildSymbolMapRadiusScale(
+      processed.located,
+      r.radiusRange,
+      props.radiusVisibleMin
+    );
+    // Effective (rendered) radius per node - the larger of the primary and
+    // (if present) `valueSecond` ring, since both circles share one centre and
+    // either can be the one that visually overflows the plot edge.
+    const effectiveRadiusOf = (node: (typeof processed.visible)[number]): number => {
+      const primary = radiusOf(node.value);
+      const secondary = node.valueSecond != null ? radiusOf(node.valueSecond) : 0;
+      return Math.max(primary, secondary);
+    };
+
     const hasGeography = props.geography != null;
     const { points, projection } = projectSymbolMapPoints(
       processed.visible,
@@ -271,16 +290,15 @@ export function mountSymbolMapChart(
       hasGeography,
       props.projectionConfig,
       innerWidth,
-      innerHeight
+      innerHeight,
+      effectiveRadiusOf
     );
 
-    const { radiusOf, opacityOf } = buildSymbolMapRadiusScale(
-      processed.located,
-      r.radiusRange,
-      props.radiusVisibleMin
-    );
-
-    const laidOut = layoutSymbolMap(points, (point) => radiusOf(point.node.value));
+    const laidOut = layoutSymbolMap(points, (point) => radiusOf(point.node.value), {
+      width: innerWidth,
+      height: innerHeight,
+      radiusOf: (point) => effectiveRadiusOf(point.node),
+    });
 
     const backdrop = hasGeography ? buildSymbolMapBackdrop(normalizeGeography(props.geography!), projection) : [];
 

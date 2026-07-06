@@ -14,6 +14,20 @@
 // threshold on a `.stop()`ped simulation (same convention as bubbleChart/
 // layout.ts) so no real-time timer ever starts under jsdom or in the browser:
 // same inputs -> same number of ticks -> the same layout, every time.
+//
+// B3.6 boundary clamp: the classic d3 bounding pattern, applied every tick
+// (not just post-simulation) so collide-driven drift can never leave a node
+// outside the canvas even mid-settle. This is the SECOND line of defence
+// against edge clipping - scales.ts's radius-aware fit inset is the first,
+// handling the initial placement; this one handles drift the simulation
+// introduces afterward. `bounds.radiusOf` is deliberately a SEPARATE callback
+// from the collide `radiusOf` above: collide intentionally stays primary-
+// radius-only for legacy parity, but the clamp should use the node's true
+// EFFECTIVE (rendered) radius - max(primary, secondary) - since that's what
+// visually overflows. Degenerate widths/heights (radius > half the canvas)
+// are guarded by collapsing the clamp range to the centre rather than
+// inverting it. Determinism is preserved: the clamp is a pure function of
+// (tick output, width, height) with no randomness or timers.
 import { forceSimulation, forceX, forceY, forceManyBody, forceCollide } from "d3-force";
 import type { SimulationNodeDatum } from "d3-force";
 import type { ProjectedPoint } from "./scales";
@@ -36,9 +50,29 @@ interface SimNode extends SimulationNodeDatum {
 const ALPHA_STOP = 0.0011;
 const MAX_TICKS = 2000;
 
+export interface SymbolMapLayoutBounds {
+  width: number;
+  height: number;
+  /** Effective (rendered) radius for the clamp - pass `max(primaryRadius,
+   * secondaryRadius)` per node; defaults to the collide `radiusOf` above when
+   * omitted. */
+  radiusOf?: (point: ProjectedPoint) => number;
+}
+
+/** Clamp `[lo, hi]` to a single point (`mid`) rather than inverting when
+ * `hi < lo` (radius > half the extent) - a degenerate-canvas guard, not an
+ * expected case in practice. */
+function clamp(value: number, radius: number, extent: number): number {
+  const mid = extent / 2;
+  const lo = Math.min(radius, mid);
+  const hi = Math.max(extent - radius, mid);
+  return Math.min(Math.max(value, lo), hi);
+}
+
 export function layoutSymbolMap(
   points: ProjectedPoint[],
-  radiusOf: (point: ProjectedPoint) => number
+  radiusOf: (point: ProjectedPoint) => number,
+  bounds?: SymbolMapLayoutBounds
 ): SymbolMapLayoutPoint[] {
   if (points.length === 0) return [];
 
@@ -67,9 +101,18 @@ export function layoutSymbolMap(
     )
     .stop();
 
+  const boundsRadiusOf = bounds?.radiusOf ?? radiusOf;
+
   let ticks = 0;
   while (simulation.alpha() > ALPHA_STOP && ticks < MAX_TICKS) {
     simulation.tick();
+    if (bounds) {
+      for (const n of nodes) {
+        const r = boundsRadiusOf(n.point);
+        n.x = clamp(n.x ?? n.point.x, r, bounds.width);
+        n.y = clamp(n.y ?? n.point.y, r, bounds.height);
+      }
+    }
     ticks++;
   }
 

@@ -197,6 +197,9 @@
 <h2>SymbolMap de-overlap sanity check (two identical-coordinate points)</h2>
 <div class="card"><michi-vz-symbol-map-chart id="symbolOverlap"></michi-vz-symbol-map-chart></div>
 
+<h2>SymbolMap edge-clipping check (B3.6 - extreme-west max-value + extreme-north large bubble)</h2>
+<div class="card"><michi-vz-symbol-map-chart id="symbolEdge"></michi-vz-symbol-map-chart></div>
+
 <h1 style="margin-top:36px">@michi-vz/wc - RadialTree (radial cluster()/dendrogram)</h1>
 <div class="row">
   <div class="card"><h2>SVG renderer</h2><michi-vz-radial-tree-chart id="radialSvg"></michi-vz-radial-tree-chart></div>
@@ -517,6 +520,20 @@ const symbolOverlapData = [
   { id: "Same2", label: "Same2", lng: 0, lat: 0, value: 30 },
 ];
 Object.assign(symbolOverlapEl, { dataSet: symbolOverlapData, chartTitle: "De-overlap check", renderer: "svg", ...symbolCommon });
+
+// B3.6 edge-clipping check: an extreme-west point carrying the MAX value
+// (largest radius, lands at the raw x-extent's edge - US-like) + an
+// extreme-north point that also gets a large radius (UK/Germany-like) - the
+// reported bug's exact shape: a big bubble at the projected extent's edge
+// used to render half off-canvas before the radius-aware fit + boundary
+// clamp (B3.6).
+const symbolEdgeEl = document.getElementById("symbolEdge");
+const symbolEdgeData = [
+  { id: "west", label: "West", lng: -170, lat: 0, value: 100 },
+  { id: "north", label: "North", lng: 20, lat: 80, value: 90 },
+  { id: "mid", label: "Mid", lng: 40, lat: -30, value: 10 },
+];
+Object.assign(symbolEdgeEl, { dataSet: symbolEdgeData, chartTitle: "Edge-clipping check", renderer: "svg", ...symbolCommon });
 
 // ---- RadialTree setup ---- (2-level forest: RadialTreeNode mirrors TreemapNode's
 // shape - a group's value is always the sum of its children)
@@ -1096,6 +1113,28 @@ try {
     const dist = Math.sqrt(dx * dx + dy * dy);
     log(dist > radii[0] + radii[1] - 2, `SYMBOL DE-OVERLAP: two identical-coordinate points end up non-overlapping (dist=${dist.toFixed(1)}, radii sum=${(radii[0] + radii[1]).toFixed(1)})`);
   }
+
+  // B3.6 edge-clipping check: every rendered circle (both the primary
+  // circle.symbol AND any concentric circle.symbol-second) must stay fully
+  // inside the plot's inner [0,width]x[0,height] - no negative left/top
+  // extent, no right/bottom extent past the plot bounds. Reads real pixel
+  // geometry off the DOM (g.symbol-cell transform + circle r), same pattern
+  // as the de-overlap check above.
+  const edgeCircles = Array.from(symbolEdgeEl.querySelectorAll("circle.symbol, circle.symbol-second"));
+  log(edgeCircles.length >= 3, `SYMBOL EDGE: renders at least 3 circles (got ${edgeCircles.length})`);
+  const edgePlotWidth = symbolCommon.width - 20; // default margin: left 10 + right 10
+  const edgePlotHeight = symbolCommon.height - 50; // default margin: top 40 + bottom 10
+  let edgeAllInBounds = edgeCircles.length > 0;
+  for (const c of edgeCircles) {
+    const cell = c.closest("g.symbol-cell");
+    const [cx, cy] = cell.getAttribute("transform").match(/-?[\d.]+/g).map(Number);
+    const r = Number(c.getAttribute("r"));
+    const tol = 0.5; // sub-pixel float tolerance
+    if (cx - r < -tol || cx + r > edgePlotWidth + tol || cy - r < -tol || cy + r > edgePlotHeight + tol) {
+      edgeAllInBounds = false;
+    }
+  }
+  log(edgeAllInBounds, `SYMBOL EDGE: all ${edgeCircles.length} circles stay within [0,${edgePlotWidth}]x[0,${edgePlotHeight}] (no clipping at plot edges)`);
 
   // ---- RadialTree checks ----
   const radialCircles = radialSvgEl.querySelectorAll("circle.radial-tree-node-circle");
