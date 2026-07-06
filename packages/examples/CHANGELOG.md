@@ -1,5 +1,15 @@
 # @michi-vz/examples
 
+## 1.0.13
+
+### Patch Changes
+
+- Updated dependencies [e62ad08]
+- Updated dependencies [57a9150]
+- Updated dependencies [17be1b0]
+- Updated dependencies [f109971]
+  - @michi-vz/core@1.8.0
+
 ## 1.0.12
 
 ### Patch Changes

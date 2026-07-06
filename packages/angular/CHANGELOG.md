@@ -1,5 +1,208 @@
 # @michi-vz/angular
 
+## 1.8.0
+
+### Minor Changes
+
+- e62ad08: New chart: **ChoroplethMapChart** - the library's FIRST geo chart, a world/region
+  choropleth. Migration target for legacy sdg-trade `MapChoropleth` (`Chart.js` +
+  `MakeProjection.js` + `MakeColors.js`).
+
+  - **Geography is ALWAYS a consumer prop.** `@michi-vz/core` bundles NO topology
+    data - pass a GeoJSON `FeatureCollection` (its own `Feature.id`/`properties.name`
+    are read automatically) or a pre-normalized `GeoFeatureItem[]`. New dependencies:
+    `d3-geo` + `d3-geo-projection` (for `geoRobinson`, the default, and `geoGilbert`);
+    tree-shaking verified - an esbuild bundle importing only `mountLineChart` from the
+    built `dist/index.js` contains zero `geoRobinson`/`geoGilbert`/choropleth symbols.
+  - All 13 `d3-geo`/`d3-geo-projection` projections (`geoEqualEarth`, `geoMercator`,
+    `geoTransverseMercator`, `geoAlbers`, `geoAlbersUsa`, `geoAzimuthalEqualArea`,
+    `geoAzimuthalEquidistant`, `geoOrthographic`, `geoConicConformal`,
+    `geoConicEqualArea`, `geoConicEquidistant`, `geoRobinson`, `geoGilbert`).
+    `projectionConfig` defaults (rotate `[-18, 0]`, center `[0, 10]`, a width-derived
+    base scale) reproduce the legacy chart's own default view exactly, rather than
+    `projection.fitSize`.
+  - `dataSet` rows (`{ id, label, value?, color? }`) join geography features by
+    `joinBy: "id"` (default - ISO-A3-style codes, matches sdg-trade's real indicator
+    map consumer) or `"name"` (matches the legacy chart's own default, for data keyed
+    by country name).
+  - Colour resolution: `colorsMapping` (categorical - the sdg-trade Data Availability
+    use case) wins over `colorScale` (continuous - a resolved hex `range` + numeric
+    `domain` built into a d3 `scaleThreshold`; core stays free of
+    `d3-scale-chromatic`) wins over the row's own `color` wins over the palette.
+    Unmatched features render `noDataColor` (default `#d2d7dd`, ported from
+    `colors.WHITE_SMOKE_DARKEST`).
+  - Canvas renderer draws via `geoPath(projection, ctx)` (d3-geo renders natively to
+    a 2D context - no path-string reparsing). WebGPU renderer DELEGATES to the
+    canvas-2D renderer rather than tessellating arbitrary polygons on the GPU
+    (real-world regions are frequently concave/multi-ring/hole-containing; correct
+    GPU triangulation needs real ear-clipping, disproportionate scope here) -
+    documented at length in `renderWebgpu.ts`; always paints synchronously.
+  - Host-level hover hit-test for canvas/webgpu mode uses pure-JS even-odd
+    ray-casting against the re-projected raw geometry (handles holes correctly,
+    works identically under jsdom and in the browser - no Canvas 2D `isPointInPath`
+    dependency).
+  - `buildChoroplethMapContext`: stats over the JOINED values (matched/unmatched
+    counts, lowest/highest), NL summary, a11yTable listing every region + value +
+    matched flag. `checkChoroplethMapData` flags unmatched dataSet ids, features
+    missing an id, and invalid/empty geometry.
+  - Full `isLoading`/`isNodata`/`noDataLabel`/`suppressDefaultOverlay` chrome quad,
+    `highlightItems`/`disabledItems` dimming, `skipColorMappingDispatch`,
+    `tooltipFormatter` (matched rows get the full `ChoroplethDataItem`; unmatched
+    features get the fallback `{ id, name }` shape).
+  - Wrappers: `<michi-vz-choropleth-map-chart>` (wc), `ChoroplethMapChart` (React,
+    Vue), `choroplethMapChart` action (Svelte), `applyChoroplethMapChartProps`
+    (Angular).
+
+- 57a9150: New chart: **ComparableVerticalBarChart** - per-category comparison columns, the
+  vertical sibling of ComparableHorizontalBarChart and the direct migration target
+  for legacy sdg-trade `BarchartVertical`.
+
+  - Band x (categories) + linear y (values, diverging from 0). Each category draws
+    TWO FULL-BANDWIDTH overlapping columns at the SAME x: `valueBased` (the rear/
+    reference value, hatch-eligible via `patternsMapping`) and `valueCompared` (the
+    front/current value, solid). Unlike ComparableHorizontalBarChart's optional
+    `layout: "grouped"`, this chart is overlay-only. The z-order is **FIXED** (not
+    width-dependent like the horizontal chart): `valueBased` is always painted
+    behind, `valueCompared` always in front - ported from legacy sdg-trade
+    `BarchartVertical/Chart.js`'s `BarCompare`/`Bar` paint order.
+  - Reuses `ComparableBarDataPoint` and `DeltaIndicatorConfig` verbatim.
+    `deltaIndicator: { show: true }` draws a change arrow + formatted label ABOVE
+    the taller of the two sub-bars (legacy `translate(bandwidth/3, -32)`
+    placement). **Unlike the horizontal chart, this chart's `getContext()`
+    reflects the indicator**: `series[].deltaDirection` / `deltaColor` /
+    `deltaLabel`, `stats.grew` / `shrank` / `unchanged` / `improved` / `worsened`,
+    and a fifth a11y "Change" column when active.
+  - Real `<defs><pattern>` SVG hatch/image fill for `patternsMapping` (new
+    `render/svg/patternDefs.ts`, shared), also **backported** into
+    ComparableHorizontalBarChart's SVG renderer - its SVG path previously ignored
+    `patternsMapping` despite the prop's doc-comment promising it (canvas mode
+    already honoured it).
+  - Category axis reuses VerticalStackBarChart's `chooseAxisMode` layout (fits
+    labels horizontally, else rotates -45°, else thins) via `xAxisLabelPadding` /
+    `xAxisMode`. `maxBarWidth` caps each column's thickness (centred plot), mirroring
+    the horizontal chart's `maxBarHeight`.
+  - svg/canvas/webgpu renderers, full `isLoading`/`isNodata`/`noDataLabel`/
+    `suppressDefaultOverlay` chrome quad, dual-form canvas colour probe (reuses
+    `makeSubBarProbe` verbatim - same descendant CSS contract as the horizontal
+    chart), dedicated `validate/comparableVerticalBarWarnings.ts`.
+  - Wrappers: `<michi-vz-comparable-vertical-bar-chart>` (wc), `ComparableVerticalBarChart`
+    (React, Vue), `comparableVerticalBarChart` action (Svelte),
+    `applyComparableVerticalBarChartProps` (Angular).
+
+- 17be1b0: New chart: **RadialTreeChart** - chart #21, the last new engine of the
+  sdg-trade migration: a radial cluster()/dendrogram. Migration target for
+  legacy sdg-trade `TreeRadial` (`Chart.js`).
+
+  - d3-hierarchy `cluster()` - NOT `tree()` - verified against the legacy
+    chart's exact layout call. `cluster()` places every leaf at the SAME
+    radial distance from the centre (a true dendrogram); `tree()` would size
+    each branch by its own subtree depth instead.
+  - `RadialTreeNode` deliberately mirrors `TreemapNode`'s shape
+    (label/code/value/color/children) for API consistency across the two
+    hierarchical charts. A node's colour group is its TOP-LEVEL ancestor's
+    label, exactly like TreemapChart - verified against the legacy chart's
+    `groupBy`, which copied the same `colorValueKey` field onto a group AND
+    every one of its children. A group's own value is always the sum of its
+    children (an explicit `value` on a node with `children` is ignored).
+  - Dual-level sized circles: a LINEAR scale (verified against the legacy
+    chart's own `scaleLinear` - it is NOT a sqrt scale) over the combined
+    domain of every group's AND every leaf's own value, applied at every
+    depth via `radiusRange` (default `[2, 32]`, the legacy `circleRange`).
+  - Adaptive label density via `labelDensityThresholds` (`rotateAbove`
+    default 20, `hideAbove` default 100 - the legacy `rotateItemThreshold`
+    and its unnamed 100-leaf cutoff): full name+value at low density,
+    abbreviate-to-3-letters + rotate radially past `rotateAbove`, hide
+    entirely past `hideAbove`. A depth-1-only 10-character truncation in the
+    medium-density band is preserved as a documented legacy quirk.
+  - `centerLabel` (legacy `titleCenter`) draws a small centre circle with the
+    title word-wrapped to ~10 characters/line - a simplified, deterministic
+    port of the legacy pixel-width-aware wrap.
+  - Links: cubic-bezier dendrogram spokes, control points ported from the
+    legacy chart's `projection()` + inline path builder; rendered as one
+    background layer (a documented, cosmetic z-order simplification vs. the
+    legacy per-node DOM interleaving - a link never visually covers a circle).
+  - Canvas colour probe: single-element `circle.radial-tree-node-circle
+[data-label-safe]`, keyed by the group. WebGPU DELEGATES to canvas-2D
+    (same rationale as ChoroplethMap/SymbolMap: the curved bezier links
+    aren't cheaply GPU-tessellable).
+  - `buildRadialTreeContext`: leaf/group counts, grand total, the largest
+    leaf, max nesting depth, NL summary, a11yTable. `checkRadialTreeData`
+    flags empty datasets, empty groups (an explicit empty `children` array),
+    negative/non-finite values, duplicate labels anywhere in the tree, and
+    nesting deeper than the 2-level (group + leaf) contract (new
+    `empty-group` / `excess-depth` `DataWarning` types, additive to the
+    shared union) - deeper nesting is tolerated, not rejected: every extra
+    level still gets a sized circle and a link.
+  - Full `isLoading`/`isNodata`/`noDataLabel`/`suppressDefaultOverlay`
+    chrome quad, `highlightItems`/`disabledItems` (dimming checked by a
+    node's own label OR its group label), `skipColorMappingDispatch`,
+    `tooltipFormatter`.
+  - Wrappers: `<michi-vz-radial-tree-chart>` (wc), `RadialTreeChart` (React,
+    Vue), `radialTreeChart` action (Svelte), `applyRadialTreeChartProps`
+    (Angular).
+
+- f109971: New chart: **SymbolMapChart** - chart #20, a force-de-overlapped symbol/bubble
+  map. Migration target for legacy sdg-trade `MapSymbolForce` (`Chart.js` +
+  `ForceNode.js`) - a dot-only bubble map where each item's coordinates project
+  onto the plane, then a one-shot force simulation nudges overlapping circles
+  apart without moving them far from their true position.
+
+  - **Consumers supply lng/lat per item** (`SymbolMapDataItem`). Unlike the
+    legacy chart's bundled ~200-row static country coordinate CSV, `@michi-vz/core`
+    ships no coordinate table.
+  - Two projection modes: **dot-only** (no `geography`, the default - legacy
+    parity) uses the chosen projection UNTUNED (bare factory(), no translate/
+    scale/rotate/center) then rescales the projected point extent to fill the
+    plot, mirroring the legacy chart's own xScale/yScale-over-extent math.
+    **Backdrop** (`geography` supplied - a NEW capability the legacy chart never
+    had) reuses ChoroplethMapChart's tuned projection dispatch, so the muted
+    landmass layer and the symbol coordinates share one consistent geographic
+    framing. `geo/projections.ts` (the shared factory map + tuned-projection
+    formula) was mechanically extracted out of `choroplethMap/scales.ts` for
+    this reuse; `ChoroplethMapChartProps`'s own public API is unchanged.
+  - The one-shot de-overlap: `forceX`/`forceY` pin the simulation to each item's
+    true projected position (the exact target snapshotted at force-attach time),
+    `forceManyBody()` adds mild separation, `forceCollide` (radius + 2px, 3
+    iterations) resolves overlaps. Settles synchronously to the legacy alpha
+    threshold (`0.0011`) on a `.stop()`ped simulation - deterministic: identical
+    inputs always settle to the identical layout.
+  - `radiusVisibleMin` filters on the RAW `value`/`valueSecond` (verified against
+    the legacy source: strictly before radius scaling) - ported exactly,
+    including the "domain floor raised to `radiusVisibleMin` when the max value
+    exceeds 100" quirk.
+  - **Deliberate divergence from legacy**: the radius/opacity scale's domain is
+    the TRUE combined extent of every item's `value`/`valueSecond`, NOT legacy
+    Chart.js's own domain formula (`[min(primaryMin, secondaryMax),
+max(primaryMin, secondaryMax)]`), which was defective and silently dropped
+    the primary max and secondary min - so relative circle sizes differ from
+    legacy whenever `value`/`valueSecond` ranges diverge.
+  - The concentric second ring (`valueSecond`) ports legacy `ForceNode.js`'s
+    exact layering: same colour as the primary circle, `opacity - 0.3` (clamped
+    to non-negative), drawn on top.
+  - Canvas colour probe: single-element `circle.symbol[data-label-safe]`, same
+    convention as BubbleChart. WebGPU renderer DELEGATES to canvas-2D (same
+    rationale as ChoroplethMap: the optional backdrop is arbitrary,
+    possibly-concave GeoJSON).
+  - `buildSymbolMapContext`: stats separate located/visible/hidden(by
+    `radiusVisibleMin`)/invalid(bad coordinates) counts, largest/smallest, NL
+    summary, a11yTable. `checkSymbolMapData` flags missing/invalid lng-lat,
+    negative values, and duplicate ids.
+  - Full `isLoading`/`isNodata`/`noDataLabel`/`suppressDefaultOverlay` chrome
+    quad, `highlightItems`/`disabledItems`, `skipColorMappingDispatch`,
+    `tooltipFormatter`.
+  - Wrappers: `<michi-vz-symbol-map-chart>` (wc), `SymbolMapChart` (React, Vue),
+    `symbolMapChart` action (Svelte), `applySymbolMapChartProps` (Angular).
+  - New core dependency: `d3-array` (`extent`, for the rescale-to-fill math).
+
+### Patch Changes
+
+- Updated dependencies [e62ad08]
+- Updated dependencies [57a9150]
+- Updated dependencies [17be1b0]
+- Updated dependencies [f109971]
+  - @michi-vz/core@1.8.0
+  - @michi-vz/wc@1.8.0
+
 ## 1.7.0
 
 ### Minor Changes
