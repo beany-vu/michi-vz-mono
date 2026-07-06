@@ -269,6 +269,26 @@ describe("TreemapChart chrome (loading/no-data quad)", () => {
     chart.destroy();
     host.remove();
   });
+
+  // isNodata forced true with a NON-empty dataSet (e.g. a wrapper's custom
+  // isNodataComponent evaluating some other condition): tiles must not draw
+  // underneath the overlay - state is stamped, overlay renders, chart doesn't.
+  it("isNodata=true with non-empty dataSet: no tiles drawn, overlay still shown (svg)", () => {
+    const { host, chart } = mount({ dataSet: flat, isNodata: true });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelectorAll("rect.tile").length).toBe(0);
+    expect(host.querySelector(".mv-nodata")).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("isNodata=true with non-empty dataSet: no canvas painted (canvas renderer)", () => {
+    const { host, chart } = mount({ dataSet: flat, isNodata: true, renderer: "canvas" });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelector("canvas")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
 });
 
 describe("tileValueLabels (default-off, second line reusing the existing tile-size gate)", () => {

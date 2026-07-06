@@ -271,7 +271,10 @@ export function mountTreemapChart(
     svg.style.position = "relative";
 
     // data-mv-state + font var + default loading/no-data overlays (shared chrome).
-    applyChartChrome(host, props, props.dataSet, chrome);
+    // Mirrors LineChart: the engine gates tile/legend/canvas drawing on the
+    // returned DataState so a wrapped chart with a custom isNodataComponent
+    // doesn't show the overlay alongside a fully-drawn chart underneath.
+    const dataState = applyChartChrome(host, props, props.dataSet, chrome);
 
     const processed = processTreemapData(props.dataSet ?? [], {
       disabledItems: props.disabledItems,
@@ -346,32 +349,6 @@ export function mountTreemapChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (r.renderer === "svg") {
-      renderTreemapSvg(
-        svg,
-        model,
-        { enableTransitions: r.enableTransitions },
-        {
-          onEnter: (leaf, ev) => {
-            if (sticky) return;
-            showTooltip(leaf, ev);
-            props.onHighlightItem?.([leaf.label]);
-          },
-          onLeave: () => {
-            hideTooltip();
-            if (!sticky) props.onHighlightItem?.([]);
-          },
-          onClick: (leaf, ev) => {
-            sticky = true;
-            tooltip.classList.add("sticky");
-            showTooltip(leaf, ev);
-          },
-        }
-      );
-    }
-
-    if (legendH > 0) renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
-
     const makeLayerCanvas = (className: string): HTMLCanvasElement => {
       const c = htmlEl("canvas", { class: className });
       c.style.position = "absolute";
@@ -382,33 +359,72 @@ export function mountTreemapChart(
       return c;
     };
 
-    if (r.renderer === "webgpu") {
-      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("treemapChart-webgpu-canvas");
-      const ready = drawTreemapWebgpu(webgpuCanvas, svg, model, {
-        width: r.width,
-        height: r.height,
-        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
-        onReady: render,
-      });
-      if (ready) {
-        // GPU painted - drop any first-frame 2D fallback canvas.
+    // No-data: render only the title (tiles/legend/canvas/webgpu hidden, matching
+    // LineChart's `dataState !== "nodata"` gating); the overlay covers it.
+    if (dataState !== "nodata") {
+      if (r.renderer === "svg") {
+        renderTreemapSvg(
+          svg,
+          model,
+          { enableTransitions: r.enableTransitions },
+          {
+            onEnter: (leaf, ev) => {
+              if (sticky) return;
+              showTooltip(leaf, ev);
+              props.onHighlightItem?.([leaf.label]);
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.([]);
+            },
+            onClick: (leaf, ev) => {
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(leaf, ev);
+            },
+          }
+        );
+      }
+
+      if (legendH > 0) renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
+
+      if (r.renderer === "webgpu") {
+        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("treemapChart-webgpu-canvas");
+        const ready = drawTreemapWebgpu(webgpuCanvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+          onReady: render,
+        });
+        if (ready) {
+          // GPU painted - drop any first-frame 2D fallback canvas.
+          if (canvas) {
+            canvas.remove();
+            canvas = null;
+          }
+        } else {
+          // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+          // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+          if (!canvas) canvas = makeLayerCanvas("treemap-chart-canvas");
+          drawTreemapCanvas(canvas, svg, model, { width: r.width, height: r.height });
+        }
+      } else if (r.renderer === "canvas") {
+        if (webgpuCanvas) {
+          webgpuCanvas.remove();
+          webgpuCanvas = null;
+        }
+        if (!canvas) canvas = makeLayerCanvas("treemap-chart-canvas");
+        drawTreemapCanvas(canvas, svg, model, { width: r.width, height: r.height });
+      } else {
         if (canvas) {
           canvas.remove();
           canvas = null;
         }
-      } else {
-        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
-        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
-        if (!canvas) canvas = makeLayerCanvas("treemap-chart-canvas");
-        drawTreemapCanvas(canvas, svg, model, { width: r.width, height: r.height });
+        if (webgpuCanvas) {
+          webgpuCanvas.remove();
+          webgpuCanvas = null;
+        }
       }
-    } else if (r.renderer === "canvas") {
-      if (webgpuCanvas) {
-        webgpuCanvas.remove();
-        webgpuCanvas = null;
-      }
-      if (!canvas) canvas = makeLayerCanvas("treemap-chart-canvas");
-      drawTreemapCanvas(canvas, svg, model, { width: r.width, height: r.height });
     } else {
       if (canvas) {
         canvas.remove();

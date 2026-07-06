@@ -254,7 +254,10 @@ export function mountSankeyChart(
     svg.style.position = "relative";
 
     // data-mv-state + font var + default loading/no-data overlays (shared chrome).
-    applyChartChrome(host, props, props.nodes, chrome);
+    // Mirrors LineChart: the engine gates mark/canvas drawing on the returned
+    // DataState so a wrapped chart with a custom isNodataComponent doesn't show
+    // the overlay alongside a fully-drawn chart underneath.
+    const dataState = applyChartChrome(host, props, props.nodes, chrome);
 
     const processed = processSankeyData(props.nodes ?? [], props.links ?? [], {
       disabledItems: props.disabledItems,
@@ -301,51 +304,58 @@ export function mountSankeyChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (r.renderer === "svg") {
-      renderSankeySvg(
-        svg,
-        model,
-        { enableTransitions: r.enableTransitions },
-        {
-          onEnter: (target, ev) => {
-            if (sticky) return;
-            showTooltip(target, ev);
-            props.onHighlightItem?.(highlightFor(target));
-          },
-          onLeave: () => {
-            hideTooltip();
-            if (!sticky) props.onHighlightItem?.([]);
-          },
-          onClick: (target, ev) => {
-            sticky = true;
-            tooltip.classList.add("sticky");
-            showTooltip(target, ev);
-          },
-        }
-      );
-    }
+    // No-data: render only the title (nodes/links/canvas/webgpu hidden, matching
+    // LineChart's `dataState !== "nodata"` gating); the overlay covers it.
+    if (dataState !== "nodata") {
+      if (r.renderer === "svg") {
+        renderSankeySvg(
+          svg,
+          model,
+          { enableTransitions: r.enableTransitions },
+          {
+            onEnter: (target, ev) => {
+              if (sticky) return;
+              showTooltip(target, ev);
+              props.onHighlightItem?.(highlightFor(target));
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.([]);
+            },
+            onClick: (target, ev) => {
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(target, ev);
+            },
+          }
+        );
+      }
 
-    if (r.renderer === "webgpu") {
-      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("sankeyChart-webgpu-canvas");
-      const ready = drawSankeyWebgpu(webgpuCanvas, svg, model, {
-        width: r.width,
-        height: r.height,
-        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
-        onReady: render,
-      });
-      if (ready) {
-        // GPU painted - drop any first-frame 2D fallback canvas.
-        removeCanvas();
-      } else {
-        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
-        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+      if (r.renderer === "webgpu") {
+        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("sankeyChart-webgpu-canvas");
+        const ready = drawSankeyWebgpu(webgpuCanvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+          onReady: render,
+        });
+        if (ready) {
+          // GPU painted - drop any first-frame 2D fallback canvas.
+          removeCanvas();
+        } else {
+          // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+          // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+          if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
+          drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height });
+        }
+      } else if (r.renderer === "canvas") {
+        removeWebgpuCanvas();
         if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
         drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height });
+      } else {
+        removeCanvas();
+        removeWebgpuCanvas();
       }
-    } else if (r.renderer === "canvas") {
-      removeWebgpuCanvas();
-      if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
-      drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height });
     } else {
       removeCanvas();
       removeWebgpuCanvas();

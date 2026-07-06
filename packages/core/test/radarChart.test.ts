@@ -288,4 +288,26 @@ describe("RadarChart chrome (loading/no-data quad)", () => {
     chart.destroy();
     host.remove();
   });
+
+  // isNodata forced true with a NON-empty series (e.g. a wrapper's custom
+  // isNodataComponent evaluating some other condition): the grid + polygons must
+  // not draw underneath the overlay - state is stamped, overlay renders, chart doesn't.
+  it("isNodata=true with non-empty series: no grid/polygons drawn, overlay still shown (svg)", () => {
+    const { host, chart } = mount({ isNodata: true });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelectorAll("polygon.radar-area").length).toBe(0);
+    expect(host.querySelectorAll(".mv-radar-grid circle").length).toBe(0);
+    expect(host.querySelector(".mv-nodata")).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("isNodata=true with non-empty series: no canvas painted (canvas renderer)", () => {
+    const { host, chart } = mount({ isNodata: true, renderer: "canvas" });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelector("canvas")).toBeNull();
+    expect(host.querySelectorAll("polygon.radar-area").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
 });

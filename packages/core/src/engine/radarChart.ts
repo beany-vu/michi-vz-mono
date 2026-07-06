@@ -185,7 +185,10 @@ export function mountRadarChart(
     svg.style.overflow = "visible";
 
     // data-mv-state + font var + default loading/no-data overlays (shared chrome).
-    applyChartChrome(host, props, props.series, chrome);
+    // Mirrors LineChart: the engine gates grid/marks/canvas drawing on the
+    // returned DataState so a wrapped chart with a custom isNodataComponent
+    // doesn't show the overlay alongside a fully-drawn chart underneath.
+    const dataState = applyChartChrome(host, props, props.series, chrome);
 
     // Resolve axes (axes prop or legacy poles.labels) + normalise the series shape
     // (derive `values` from a legacy data:[{date,value}] array). Stored on module vars
@@ -229,66 +232,90 @@ export function mountRadarChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (r.renderer === "svg") {
-      renderRadarSvg(
-        svg,
-        model,
-        { fillOpacity: r.fillOpacity, enableTransitions: r.enableTransitions },
-        {
-          onEnter: (s, ev) => {
-            if (sticky) return;
-            showTooltip(s.label, ev);
-            props.onHighlightItem?.([s.label]);
-          },
-          onLeave: () => {
-            hideTooltip();
-            if (!sticky) props.onHighlightItem?.([]);
-          },
-          onClick: (s, ev) => {
-            sticky = true;
-            tooltip.classList.add("sticky");
-            showTooltip(s.label, ev);
-          },
-        }
-      );
-    } else {
-      // canvas/webgpu mode still renders the grid + axis labels in SVG for crisp
-      // text + to provide the colour-probe template; the series polygons are painted.
-      renderRadarSvg(
-        svg,
-        { grid: model.grid, series: [] },
-        { fillOpacity: r.fillOpacity, enableTransitions: r.enableTransitions },
-        { onEnter: () => {}, onLeave: () => {}, onClick: () => {} }
-      );
-    }
+    // No-data: render only the title (grid + polygons + canvas/webgpu hidden,
+    // matching LineChart's `dataState !== "nodata"` gating); the overlay covers it.
+    if (dataState !== "nodata") {
+      if (r.renderer === "svg") {
+        renderRadarSvg(
+          svg,
+          model,
+          { fillOpacity: r.fillOpacity, enableTransitions: r.enableTransitions },
+          {
+            onEnter: (s, ev) => {
+              if (sticky) return;
+              showTooltip(s.label, ev);
+              props.onHighlightItem?.([s.label]);
+            },
+            onLeave: () => {
+              hideTooltip();
+              if (!sticky) props.onHighlightItem?.([]);
+            },
+            onClick: (s, ev) => {
+              sticky = true;
+              tooltip.classList.add("sticky");
+              showTooltip(s.label, ev);
+            },
+          }
+        );
+      } else {
+        // canvas/webgpu mode still renders the grid + axis labels in SVG for crisp
+        // text + to provide the colour-probe template; the series polygons are painted.
+        renderRadarSvg(
+          svg,
+          { grid: model.grid, series: [] },
+          { fillOpacity: r.fillOpacity, enableTransitions: r.enableTransitions },
+          { onEnter: () => {}, onLeave: () => {}, onClick: () => {} }
+        );
+      }
 
-    if (isPainted(r.renderer)) {
-      if (r.renderer === "webgpu") {
-        if (!webgpuCanvas) {
-          webgpuCanvas = htmlEl("canvas", { class: "radar-chart-webgpu-canvas" });
-          webgpuCanvas.style.position = "absolute";
-          webgpuCanvas.style.top = getComputedStyle(host).paddingTop;
-          webgpuCanvas.style.left = getComputedStyle(host).paddingLeft;
-          webgpuCanvas.style.pointerEvents = "none";
-          host.insertBefore(webgpuCanvas, tooltip);
-        }
-        const ready = drawRadarWebgpu(webgpuCanvas, svg, model, {
-          width: r.width,
-          height: r.height,
-          fillOpacity: r.fillOpacity,
-          dimmedFill: r.dimmedFill,
-          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
-          onReady: render,
-        });
-        if (ready) {
-          // GPU painted - drop any first-frame 2D fallback canvas.
-          if (canvas) {
-            canvas.remove();
-            canvas = null;
+      if (isPainted(r.renderer)) {
+        if (r.renderer === "webgpu") {
+          if (!webgpuCanvas) {
+            webgpuCanvas = htmlEl("canvas", { class: "radar-chart-webgpu-canvas" });
+            webgpuCanvas.style.position = "absolute";
+            webgpuCanvas.style.top = getComputedStyle(host).paddingTop;
+            webgpuCanvas.style.left = getComputedStyle(host).paddingLeft;
+            webgpuCanvas.style.pointerEvents = "none";
+            host.insertBefore(webgpuCanvas, tooltip);
+          }
+          const ready = drawRadarWebgpu(webgpuCanvas, svg, model, {
+            width: r.width,
+            height: r.height,
+            fillOpacity: r.fillOpacity,
+            dimmedFill: r.dimmedFill,
+            // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+            onReady: render,
+          });
+          if (ready) {
+            // GPU painted - drop any first-frame 2D fallback canvas.
+            if (canvas) {
+              canvas.remove();
+              canvas = null;
+            }
+          } else {
+            // Device not ready / unavailable (incl. jsdom): paint the canvas-2D
+            // stopgap so the chart is never blank; onReady upgrades to GPU.
+            if (!canvas) {
+              canvas = htmlEl("canvas", { class: "radar-chart-canvas" });
+              canvas.style.position = "absolute";
+              canvas.style.top = getComputedStyle(host).paddingTop;
+              canvas.style.left = getComputedStyle(host).paddingLeft;
+              canvas.style.pointerEvents = "none";
+              host.insertBefore(canvas, tooltip);
+            }
+            drawRadarCanvas(canvas, svg, model, {
+              width: r.width,
+              height: r.height,
+              fillOpacity: r.fillOpacity,
+              dimmedFill: r.dimmedFill,
+            });
           }
         } else {
-          // Device not ready / unavailable (incl. jsdom): paint the canvas-2D
-          // stopgap so the chart is never blank; onReady upgrades to GPU.
+          // canvas mode
+          if (webgpuCanvas) {
+            webgpuCanvas.remove();
+            webgpuCanvas = null;
+          }
           if (!canvas) {
             canvas = htmlEl("canvas", { class: "radar-chart-canvas" });
             canvas.style.position = "absolute";
@@ -304,46 +331,39 @@ export function mountRadarChart(
             dimmedFill: r.dimmedFill,
           });
         }
+        // Forgiving hover lives on the SVG above the canvas; rebind every render since
+        // the model (and its vertex geometry) changes (canvas listener-rebind pattern).
+        if (canvasHoverTeardown) canvasHoverTeardown();
+        canvasHoverTeardown = setupRadarCanvasHover(svg, model, {
+          onEnter: (label, axisIndex, ev) => {
+            if (sticky) return;
+            showTooltip(label, ev, axisIndex);
+            props.onHighlightItem?.([label]);
+          },
+          onLeave: () => {
+            hideTooltip();
+            if (!sticky) props.onHighlightItem?.([]);
+          },
+          onClick: (label, axisIndex, ev) => {
+            sticky = true;
+            tooltip.classList.add("sticky");
+            showTooltip(label, ev, axisIndex);
+          },
+        });
       } else {
-        // canvas mode
+        if (canvas) {
+          canvas.remove();
+          canvas = null;
+        }
         if (webgpuCanvas) {
           webgpuCanvas.remove();
           webgpuCanvas = null;
         }
-        if (!canvas) {
-          canvas = htmlEl("canvas", { class: "radar-chart-canvas" });
-          canvas.style.position = "absolute";
-          canvas.style.top = getComputedStyle(host).paddingTop;
-          canvas.style.left = getComputedStyle(host).paddingLeft;
-          canvas.style.pointerEvents = "none";
-          host.insertBefore(canvas, tooltip);
+        if (canvasHoverTeardown) {
+          canvasHoverTeardown();
+          canvasHoverTeardown = null;
         }
-        drawRadarCanvas(canvas, svg, model, {
-          width: r.width,
-          height: r.height,
-          fillOpacity: r.fillOpacity,
-          dimmedFill: r.dimmedFill,
-        });
       }
-      // Forgiving hover lives on the SVG above the canvas; rebind every render since
-      // the model (and its vertex geometry) changes (canvas listener-rebind pattern).
-      if (canvasHoverTeardown) canvasHoverTeardown();
-      canvasHoverTeardown = setupRadarCanvasHover(svg, model, {
-        onEnter: (label, axisIndex, ev) => {
-          if (sticky) return;
-          showTooltip(label, ev, axisIndex);
-          props.onHighlightItem?.([label]);
-        },
-        onLeave: () => {
-          hideTooltip();
-          if (!sticky) props.onHighlightItem?.([]);
-        },
-        onClick: (label, axisIndex, ev) => {
-          sticky = true;
-          tooltip.classList.add("sticky");
-          showTooltip(label, ev, axisIndex);
-        },
-      });
     } else {
       if (canvas) {
         canvas.remove();
