@@ -68,24 +68,53 @@ export const makeSimpleProbe =
     return { root: node, target: node };
   };
 
-// Nested probe for sub-bar charts (ComparableHorizontalBar): the root is
-// `<g class="bar" data-label data-label-safe>` and the target is a child
-// `<rect class="value-based|value-compared">`, so DESCENDANT consumer CSS like
-// `.bar[data-label-safe="X"] .value-based { fill: ... }` resolves on the target.
-// Read with colorProp ['fill','stroke'] so a `url(#pattern)` fill falls through
-// to the stroke colour. Mirrors the legacy makeSubBarProbe.
+// Probe for marks whose consumer CSS may target EITHER of two colour
+// properties (e.g. RadarChart: a plain consumer recolours via `fill`, MonitorV2
+// recolours via `stroke`). Each candidate property is seeded with the sentinel
+// "none" rather than the real per-item fallback colour. Seeding a REAL fallback
+// colour on a property that resolveMarkColors checks BEFORE the one the
+// consumer actually styled would make that earlier property "win" every time
+// (its computed value is always non-none, since it's a specified presentation
+// attribute) and the genuinely-styled property would never be reached. "none"
+// is transparent to the existing not-overridden check (`computed !== "none"`),
+// so a property with no matching CSS rule correctly reads back as "not found"
+// and the caller falls through to the true fallback only when NEITHER
+// candidate property was styled by any consumer rule.
+export const makeMultiPropProbe =
+  (tag: string, className: string, props: ColorProp[]) =>
+  (label: string, labelSafe: string, _fallback: string): ColorProbe => {
+    const node = document.createElementNS("http://www.w3.org/2000/svg", tag) as SVGElement;
+    node.setAttribute("class", className);
+    node.setAttribute("data-label", label);
+    node.setAttribute("data-label-safe", labelSafe);
+    for (const prop of props) node.setAttribute(prop, "none");
+    node.setAttribute("visibility", "hidden");
+    return { root: node, target: node };
+  };
+
+// Probe for sub-bar charts (ComparableHorizontalBar). Mirrors the REAL SVG
+// markup emitted by renderComparableSvg EXACTLY: a single flat
+// `<rect class="bar value-based|value-compared" data-label data-label-safe>`
+// - both classes and data-label-safe live on the SAME element, there is no
+// wrapping `<g class="bar">` ancestor. A previous version of this probe used a
+// nested `<g class="bar" data-label-safe><rect class="value-based"></g>`
+// shape; that broke a plain consumer rule like `.bar { fill: ... }`, because
+// the rule matched the outer `g` (which has the "bar" class) while
+// resolveMarkColors reads getComputedStyle on the INNER rect - and the rect's
+// own `fill` presentation attribute (the fallback colour) counts as a
+// specified value, so it wins over inheriting the ancestor's CSS-set fill
+// (a specified value on an element always beats inheriting from an ancestor,
+// no matter how low its priority). Reading with colorProp ['fill','stroke']
+// still lets a `url(#pattern)` fill fall through to the stroke colour.
 export const makeSubBarProbe =
   (subBarClass: "value-based" | "value-compared") =>
   (label: string, labelSafe: string, fallback: string): ColorProbe => {
     const NS = "http://www.w3.org/2000/svg";
-    const g = document.createElementNS(NS, "g") as SVGGElement;
-    g.setAttribute("class", "bar");
-    g.setAttribute("data-label", label);
-    g.setAttribute("data-label-safe", labelSafe);
     const rect = document.createElementNS(NS, "rect") as SVGRectElement;
-    rect.setAttribute("class", subBarClass);
+    rect.setAttribute("class", `bar ${subBarClass}`);
+    rect.setAttribute("data-label", label);
+    rect.setAttribute("data-label-safe", labelSafe);
     rect.setAttribute("fill", fallback);
     rect.setAttribute("visibility", "hidden");
-    g.appendChild(rect);
-    return { root: g, target: rect };
+    return { root: rect, target: rect };
   };

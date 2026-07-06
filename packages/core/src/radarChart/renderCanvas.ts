@@ -2,7 +2,7 @@
 // fill resolved via the SVG colour probe (resolveMarkColors `radar-area`/fill).
 // jsdom → no-op.
 import { setupCanvas } from "../canvas/setupCanvas";
-import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
+import { resolveMarkColors, makeMultiPropProbe } from "../canvas/resolveMarkColors";
 import type { RadarRenderModel } from "./renderModel";
 
 export interface RadarCanvasOptions {
@@ -55,13 +55,17 @@ export function drawRadarCanvas(
   const labels = model.series.map((s) => s.label);
   const fallback = new Map(model.series.map((s) => [s.label, s.color]));
   // The MonitorV2 consumer colours radar polygons via CSS `polygon[data-label-safe^=…]
-  // { stroke: … }`, so probe STROKE (falling through to fill). A fill-only probe reads
-  // transparent under the stroke-only contract → every polygon paints invisible.
+  // { stroke: … }`, so probe STROKE first, falling through to fill for a plainer
+  // consumer that only sets `.radar-area { fill: ... }`. Both candidate properties
+  // are seeded with the sentinel "none" (makeMultiPropProbe), not the real fallback
+  // colour - seeding a real colour on `stroke` (checked first) would make it "win"
+  // every time (its computed value is always non-none) and a fill-only consumer's
+  // CSS would never be reached, painting every polygon with the wrong colour.
   const fillColors = resolveMarkColors(
     svg,
     labels,
     (l) => fallback.get(l) || "transparent",
-    makeSimpleProbe("polygon", "radar-area", "stroke"),
+    makeMultiPropProbe("polygon", "radar-area", ["stroke", "fill"]),
     ["stroke", "fill"]
   );
 
