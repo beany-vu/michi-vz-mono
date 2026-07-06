@@ -1802,6 +1802,36 @@ export interface GeoFeatureItem {
   name?: string;
 }
 
+/** The d3-geo / d3-geo-projection projection dispatch shared by every geo chart
+ * (ChoroplethMapChart, SymbolMapChart) - see `geo/projections.ts`. `geoAlbersUsa`
+ * is a fixed composite projection: it ignores `rotate`/`center`/`parallels`. */
+export type GeoProjectionName =
+  | "geoEqualEarth"
+  | "geoMercator"
+  | "geoTransverseMercator"
+  | "geoAlbers"
+  | "geoAlbersUsa"
+  | "geoAzimuthalEqualArea"
+  | "geoAzimuthalEquidistant"
+  | "geoOrthographic"
+  | "geoConicConformal"
+  | "geoConicEqualArea"
+  | "geoConicEquidistant"
+  | "geoRobinson"
+  | "geoGilbert";
+
+/** Fine-tunes a `GeoProjectionName` projection (shared by every geo chart).
+ * Omitted fields fall back to each chart's own tuned defaults - see
+ * `geo/projections.ts`'s `createTunedProjection`. */
+export interface GeoProjectionConfig {
+  /** Below 600px width the effective scale is x0.7; below 400px, x0.5 (legacy
+   * responsive step-down) - only applied when `scale` is explicitly set. */
+  scale?: number;
+  rotate?: [number, number, number?];
+  center?: [number, number];
+  parallels?: [number, number];
+}
+
 /** One row of choropleth data, joined against a geography feature by `id`
  * (default) or by name (see `ChoroplethMapChartProps.joinBy`). */
 export interface ChoroplethDataItem {
@@ -1838,33 +1868,13 @@ export interface ChoroplethMapChartProps {
   /** d3-geo / d3-geo-projection projection to use (default "geoRobinson", the
    * legacy sdg-trade MapChoropleth default). `geoAlbersUsa` is a fixed composite
    * projection - it ignores `rotate`/`center`/`parallels`. */
-  projection?:
-    | "geoEqualEarth"
-    | "geoMercator"
-    | "geoTransverseMercator"
-    | "geoAlbers"
-    | "geoAlbersUsa"
-    | "geoAzimuthalEqualArea"
-    | "geoAzimuthalEquidistant"
-    | "geoOrthographic"
-    | "geoConicConformal"
-    | "geoConicEqualArea"
-    | "geoConicEquidistant"
-    | "geoRobinson"
-    | "geoGilbert";
+  projection?: GeoProjectionName;
   /** Fine-tunes the chosen projection. Omitted fields fall back to the legacy
    * MapChoropleth defaults (rotate [-18, 0], center [0, 10], base scale derived
    * from width) rather than `projection.fitSize` - this matches the legacy
    * chart's visual result exactly; pass your own values to frame a different
    * geography extent (e.g. a single-region subset). */
-  projectionConfig?: {
-    /** Below 600px width the effective scale is x0.7; below 400px, x0.5 (legacy
-     * responsive step-down) - only applied when `scale` is explicitly set. */
-    scale?: number;
-    rotate?: [number, number, number?];
-    center?: [number, number];
-    parallels?: [number, number];
-  };
+  projectionConfig?: GeoProjectionConfig;
   /** Continuous choropleth encoding: a resolved hex `range` keyed to a numeric
    * `domain`, built into a d3 `scaleThreshold`. Pass already-resolved colours
    * (NOT a d3-scale-chromatic scheme name - core stays free of that dependency);
@@ -1952,6 +1962,144 @@ export interface ChoroplethMapChartContext extends BaseChartContext {
     highest: { id: string; label: string; value: number } | null;
   };
   regions: ChoroplethRegionContext[];
+}
+
+// ---- SymbolMapChart (geo, force-de-overlapped bubble map) ----
+// Migration target: legacy sdg-trade MapSymbolForce (Chart.js + ForceNode.js) - a
+// dot-only force-de-overlapped bubble map. Consumers supply lng/lat per item (no
+// bundled coordinate table, unlike the legacy chart's CSV); an OPTIONAL
+// `geography` backdrop (new capability, absent from the legacy chart) reuses
+// ChoroplethMapChart's GeoFeatureItem/projection dispatch to draw a muted
+// landmass layer behind the symbols.
+
+/** One symbol on the map. `value` sizes the primary (outer) circle; the optional
+ * `valueSecond` draws a concentric second circle (ported from the legacy
+ * ForceNode's `radiusSecond` ring - typically a sub-metric of `value`, e.g. "of
+ * which"). */
+export interface SymbolMapDataItem {
+  /** Stable identifier; also the de-overlap force simulation's node key. */
+  id: string;
+  /** Display label - drives the colour (via colorsMapping/colors), the tooltip heading, and the in-circle text. */
+  label: string;
+  /** Longitude in degrees ([-180, 180]). */
+  lng: number;
+  /** Latitude in degrees ([-90, 90]). */
+  lat: number;
+  /** Primary value; sets the outer circle's radius (via `radiusRange`). */
+  value: number;
+  /** Optional secondary value, drawn as a concentric second circle inside (or
+   * outside, if larger than `value`) the primary one - the legacy chart's
+   * `radiusSecond` ring. */
+  valueSecond?: number;
+  /** Optional explicit colour for this item, overriding the generated palette colour */
+  color?: string;
+}
+
+export interface SymbolMapChartProps {
+  /** Array of symbols; each supplies its own lng/lat (core bundles no coordinate table). */
+  dataSet: SymbolMapDataItem[];
+  /** OPTIONAL muted backdrop landmass (new capability - the legacy chart never drew
+   * one). A full GeoJSON FeatureCollection or a pre-normalized `GeoFeatureItem[]`,
+   * same contract as `ChoroplethMapChartProps.geography`. Omit for the legacy
+   * chart's dot-only look (the default). */
+  geography?: GeoJSON.FeatureCollection | GeoFeatureItem[];
+  /** Optional chart title rendered above the plot */
+  title?: string;
+  /** Chart width in pixels */
+  width?: number;
+  /** Chart height in pixels */
+  height?: number;
+  /** Inner margins (top/right/bottom/left, in px) reserved for the title */
+  margin?: Margin;
+  /** d3-geo / d3-geo-projection projection (default "geoMercator", matching the
+   * legacy chart). With no `geography`, the projection is used UNTUNED (bare
+   * `factory()`, no translate/scale/rotate/center) and the projected point extent
+   * is rescaled to fill the plot - see the chart's docs page. With `geography`
+   * supplied, the SAME tuned dispatch as ChoroplethMapChart is used instead, so
+   * the backdrop and the symbols share one consistent geographic framing. */
+  projection?: GeoProjectionName;
+  /** Fine-tunes the projection; only consulted when `geography` is supplied (see `projection`). */
+  projectionConfig?: GeoProjectionConfig;
+  /** [min, max] circle radius in px (default [3, 70], the legacy `circleRange`). */
+  radiusRange?: [number, number];
+  /** Hides items whose RAW `value` is <= this threshold (and, when `valueSecond`
+   * is set, whose `valueSecond` is also < this threshold) BEFORE the force layout
+   * runs - ported from the legacy chart's own filter, which compares the raw
+   * value/valueSecond, not the scaled radius. Omit to show every located item. */
+  radiusVisibleMin?: number;
+  /** Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral). */
+  geographyColor?: string;
+  /** Border colour for the optional backdrop `geography` (default `#d7dce3`). */
+  strokeColor?: string;
+  /** Border width for the optional backdrop `geography`, in px (default 1). */
+  strokeWidth?: number;
+  /** Categorical palette for labels without an explicit colour or colorsMapping entry */
+  colors?: string[];
+  /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
+  colorsMapping?: Record<string, string>;
+  /** Draw a fitted label inside each circle when it is large enough (default true). */
+  showLabels?: boolean;
+  /** Labels to emphasise; all other symbols dim */
+  highlightItems?: string[];
+  /** Labels to hide and exclude from the layout entirely */
+  disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way. "webgpu" DELEGATES to the canvas 2D renderer (same rationale as ChoroplethMapChart's renderWebgpu.ts) rather than tessellating the optional backdrop's arbitrary polygons on the GPU. */
+  renderer?: "svg" | "canvas" | "webgpu";
+  /** BCP-47 locale used for number formatting */
+  locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract */
+  skipColorMappingDispatch?: boolean;
+  /** Animate updates with CSS transitions (default true) */
+  enableTransitions?: boolean;
+  /** Loading overlay (stale symbols hidden while true) */
+  isLoading?: boolean;
+  /** No-data predicate/flag; default = empty dataSet */
+  isNodata?: boolean | ((dataSet: SymbolMapDataItem[] | null | undefined) => boolean);
+  /** Text for the built-in no-data overlay */
+  noDataLabel?: string;
+  /** Set by a framework wrapper passing its own overlay node - suppresses the default overlay */
+  suppressDefaultOverlay?: boolean;
+  /** Formats the tooltip for a hovered symbol. */
+  tooltipFormatter?: (d: SymbolMapDataItem) => string;
+  /** Called when the hovered/highlighted label(s) change */
+  onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
+  onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (missing/invalid coordinates, negative
+   * values, duplicate ids) */
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface SymbolMapSymbolContext {
+  id: string;
+  label: string;
+  value: number;
+  valueSecond: number | null;
+  radius: number;
+  radiusSecond: number | null;
+  color: string;
+}
+
+export interface SymbolMapChartContext extends BaseChartContext {
+  chartType: "symbol-map-chart";
+  projection: string;
+  stats: {
+    /** Items with valid lng/lat, before the `radiusVisibleMin` filter. */
+    locatedCount: number;
+    /** Items actually simulated/drawn (located AND passing `radiusVisibleMin`). */
+    visibleCount: number;
+    /** located - visible, i.e. hidden by `radiusVisibleMin`. */
+    hiddenCount: number;
+    /** Items dropped for missing/invalid lng/lat (see `symbolMapWarnings.ts`). */
+    invalidCount: number;
+    /** [min, max] over every visible item's `value`; null when none. */
+    valueDomain: [number, number] | null;
+    largest: { id: string; label: string; value: number } | null;
+    smallest: { id: string; label: string; value: number } | null;
+  };
+  symbols: SymbolMapSymbolContext[];
 }
 
 // ---- RadarChart (polar) ----
@@ -2657,7 +2805,8 @@ export type ChartContext =
   | BubbleChartContext
   | SankeyChartContext
   | FountainChartContext
-  | ChoroplethMapChartContext;
+  | ChoroplethMapChartContext
+  | SymbolMapChartContext;
 
 export interface DataWarning {
   type:

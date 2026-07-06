@@ -104,6 +104,9 @@ importers:
 
   packages/core:
     dependencies:
+      d3-array:
+        specifier: ^3.2.4
+        version: 3.2.4
       d3-force:
         specifier: ^3.0.0
         version: 3.0.0
@@ -129,6 +132,9 @@ importers:
         specifier: ^3.2.3
         version: 3.4.11
     devDependencies:
+      '@types/d3-array':
+        specifier: ^3.2.1
+        version: 3.2.2
       '@types/d3-force':
         specifier: ^3.0.10
         version: 3.0.10
@@ -1140,6 +1146,9 @@ packages:
     resolution: {integrity: sha512-dVHGaf9F8twzgibcBqKoADT/LLqf9++jDb+hq/LPWWaOmRpp4M+/pVOm7vy4z9D++xg8eaxWLT0+wQxFwhYu9A==}
     cpu: [arm64]
     os: [win32]
+
+  '@types/d3-array@3.2.2':
+    resolution: {integrity: sha512-hOLWVbm7uRza0BYXpIIW5pxfrKe0W+D5lrFiAEYR+pb6w3N2SwSMaJbXdUfSEv+dT4MfHBLtn5js0LAWaO6otw==}
 
   '@types/d3-force@3.0.10':
     resolution: {integrity: sha512-ZYeSaCF3p73RdOKcjj+swRlZfnYpK1EbaDiYICEEp5Q6sUiqFaFQ9qgoshp5CzIyyb/yD09kD9o2zEltCexlgw==}
@@ -3578,6 +3587,8 @@ snapshots:
 
   '@turbo/windows-arm64@2.10.0':
     optional: true
+
+  '@types/d3-array@3.2.2': {}
 
   '@types/d3-force@3.0.10': {}
 

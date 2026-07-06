@@ -21,6 +21,7 @@ export { mountBubbleChart } from "./engine/bubbleChart";
 export { mountSankeyChart } from "./engine/sankeyChart";
 export { mountFountainChart } from "./engine/fountainChart";
 export { mountChoroplethMapChart } from "./engine/choroplethMapChart";
+export { mountSymbolMapChart } from "./engine/symbolMapChart";
 
 // ---- Shared state (replaces React MichiVzProvider context) ----
 export { createMichiVzStore } from "./state/store";
@@ -167,6 +168,20 @@ export { buildChoroplethRenderModel } from "./choroplethMap/renderModel";
 export { pointInGeometry } from "./choroplethMap/hitTest";
 export { buildChoroplethMapContext } from "./context/buildChoroplethMapContext";
 export { checkChoroplethMapData } from "./validate/choroplethMapWarnings";
+// Shared geo dispatch (ChoroplethMap + SymbolMap)
+export { PROJECTIONS as GEO_PROJECTIONS, createTunedProjection, createGeoPathGenerator } from "./geo/projections";
+// SymbolMap pure layer (geo - force-de-overlapped bubble map; d3-force + d3-geo)
+export { processSymbolMapData, isValidCoordinate } from "./symbolMap/data";
+export { buildSymbolMapColors } from "./symbolMap/colors";
+export {
+  projectSymbolMapPoints,
+  buildSymbolMapRadiusScale,
+  DEFAULT_PROJECTION as SYMBOL_MAP_DEFAULT_PROJECTION,
+} from "./symbolMap/scales";
+export { layoutSymbolMap } from "./symbolMap/layout";
+export { buildSymbolMapRenderModel, buildSymbolMapBackdrop } from "./symbolMap/renderModel";
+export { buildSymbolMapContext } from "./context/buildSymbolMapContext";
+export { checkSymbolMapData } from "./validate/symbolMapWarnings";
 
 // ---- Shared imperative SVG builders (title/axes/loading/overlay) ----
 export {
@@ -298,8 +313,14 @@ export type {
   FountainJetContext,
   FountainChartContext,
   GeoFeatureItem,
+  GeoProjectionName,
+  GeoProjectionConfig,
   ChoroplethDataItem,
   ChoroplethMapChartProps,
   ChoroplethRegionContext,
   ChoroplethMapChartContext,
+  SymbolMapDataItem,
+  SymbolMapChartProps,
+  SymbolMapSymbolContext,
+  SymbolMapChartContext,
 } from "./types";
