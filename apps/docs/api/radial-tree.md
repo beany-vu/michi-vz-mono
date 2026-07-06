@@ -40,7 +40,7 @@ The web component dispatches these bubbling `CustomEvent`s (the engine exposes t
 
 ## getContext()
 
-`mountRadialTreeChart(el, props).getContext()` returns a renderer-agnostic **`RadialTreeChartContext`**: `stats.leafCount` / `groupCount` / `grandTotal` / `largest` (the biggest leaf) / `maxDepth`, a `nodes[]` array (one row per node - group AND leaf - with `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), a deterministic natural-language `summary`, and an `a11yTable`. See [LLM context](/guide/llm-context).
+`mountRadialTreeChart(el, props).getContext()` returns a renderer-agnostic **`RadialTreeChartContext`**: `stats.leafCount` / `groupCount` / `grandTotal` / `min` (the smallest leaf) / `max` (the biggest leaf) / `maxDepth`, a `nodes[]` array (one row per node - group AND leaf - with `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), a deterministic natural-language `summary`, and an `a11yTable`. See [LLM context](/guide/llm-context).
 
 ## Source
 

@@ -40,7 +40,7 @@ Het web component zendt deze bubbelende `CustomEvent`s uit (de engine biedt hetz
 
 ## getContext()
 
-`mountRadialTreeChart(el, props).getContext()` geeft een renderer-agnostische **`RadialTreeChartContext`** terug: `stats.leafCount` / `groupCount` / `grandTotal` / `largest` (het grootste blad) / `maxDepth`, een `nodes[]`-array (één rij per knoop - groep OF blad - met `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), een deterministische `summary` in natuurlijke taal, en een `a11yTable`. Zie [LLM-context](/nl/guide/llm-context).
+`mountRadialTreeChart(el, props).getContext()` geeft een renderer-agnostische **`RadialTreeChartContext`** terug: `stats.leafCount` / `groupCount` / `grandTotal` / `min` (het kleinste blad) / `max` (het grootste blad) / `maxDepth`, een `nodes[]`-array (één rij per knoop - groep OF blad - met `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), een deterministische `summary` in natuurlijke taal, en een `a11yTable`. Zie [LLM-context](/nl/guide/llm-context).
 
 ## Bron
 

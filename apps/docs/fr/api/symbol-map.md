@@ -40,7 +40,7 @@ Le composant web émet ces `CustomEvent`s bouillonnants (le moteur expose les m�
 
 ## getContext()
 
-`mountSymbolMapChart(el, props).getContext()` renvoie un **`SymbolMapChartContext`** agnostique du moteur de rendu : `stats.locatedCount` / `visibleCount` / `hiddenCount` (exclus par `radiusVisibleMin`) / `invalidCount` (rejetés pour coordonnées invalides) / `valueDomain` / `largest` / `smallest`, un tableau `symbols[]` (une ligne par élément visible : `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), le nom de `projection` résolu, un résumé déterministe en langage naturel, et un `a11yTable`. Voir [contexte LLM](/fr/guide/llm-context).
+`mountSymbolMapChart(el, props).getContext()` renvoie un **`SymbolMapChartContext`** agnostique du moteur de rendu : `stats.locatedCount` / `visibleCount` / `hiddenCount` (exclus par `radiusVisibleMin`) / `invalidCount` (rejetés pour coordonnées invalides) / `valueDomain` / `min` / `max`, un tableau `symbols[]` (une ligne par élément visible : `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), le nom de `projection` résolu, un résumé déterministe en langage naturel, et un `a11yTable`. Voir [contexte LLM](/fr/guide/llm-context).
 
 ## Source
 

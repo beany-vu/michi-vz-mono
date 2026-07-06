@@ -366,7 +366,8 @@ describe("context/buildRadialTreeContext", () => {
     expect(ctx.stats.leafCount).toBe(4);
     expect(ctx.stats.groupCount).toBe(2);
     expect(ctx.stats.grandTotal).toBe(100);
-    expect(ctx.stats.largest).toEqual({ label: "Asia", value: 55 });
+    expect(ctx.stats.max).toEqual({ label: "Asia", value: 55 });
+    expect(ctx.stats.min).toEqual({ label: "Africa", value: 5 });
     expect(ctx.summary).toContain("Radial tree");
     expect(ctx.a11yTable.headers).toEqual(["Label", "Depth", "Value"]);
   });

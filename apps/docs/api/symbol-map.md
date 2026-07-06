@@ -40,7 +40,7 @@ The web component dispatches these bubbling `CustomEvent`s (the engine exposes t
 
 ## getContext()
 
-`mountSymbolMapChart(el, props).getContext()` returns a renderer-agnostic **`SymbolMapChartContext`**: `stats.locatedCount` / `visibleCount` / `hiddenCount` (excluded by `radiusVisibleMin`) / `invalidCount` (dropped for bad coordinates) / `valueDomain` / `largest` / `smallest`, a `symbols[]` array (one row per visible item: `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), the resolved `projection` name, a deterministic natural-language `summary`, and an `a11yTable`. See [LLM context](/guide/llm-context).
+`mountSymbolMapChart(el, props).getContext()` returns a renderer-agnostic **`SymbolMapChartContext`**: `stats.locatedCount` / `visibleCount` / `hiddenCount` (excluded by `radiusVisibleMin`) / `invalidCount` (dropped for bad coordinates) / `valueDomain` / `min` / `max`, a `symbols[]` array (one row per visible item: `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), the resolved `projection` name, a deterministic natural-language `summary`, and an `a11yTable`. See [LLM context](/guide/llm-context).
 
 ## Source
 

@@ -40,7 +40,7 @@ Web component phát ra (dispatch) các `CustomEvent` nổi bọt (bubbling) sau 
 
 ## getContext()
 
-`mountSymbolMapChart(el, props).getContext()` trả về **`SymbolMapChartContext`** độc lập với renderer: `stats.locatedCount` / `visibleCount` / `hiddenCount` (bị loại bởi `radiusVisibleMin`) / `invalidCount` (bị loại vì tọa độ không hợp lệ) / `valueDomain` / `largest` / `smallest`, một mảng `symbols[]` (một hàng cho mỗi mục hiển thị: `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), tên `projection` đã phân giải, một bản tóm tắt bằng ngôn ngữ tự nhiên có tính xác định, và một `a11yTable`. Xem [ngữ cảnh LLM](/vi/guide/llm-context).
+`mountSymbolMapChart(el, props).getContext()` trả về **`SymbolMapChartContext`** độc lập với renderer: `stats.locatedCount` / `visibleCount` / `hiddenCount` (bị loại bởi `radiusVisibleMin`) / `invalidCount` (bị loại vì tọa độ không hợp lệ) / `valueDomain` / `min` / `max`, một mảng `symbols[]` (một hàng cho mỗi mục hiển thị: `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), tên `projection` đã phân giải, một bản tóm tắt bằng ngôn ngữ tự nhiên có tính xác định, và một `a11yTable`. Xem [ngữ cảnh LLM](/vi/guide/llm-context).
 
 ## Nguồn
 

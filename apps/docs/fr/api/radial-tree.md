@@ -40,7 +40,7 @@ Le web component émet ces `CustomEvent`s qui remontent (bubbling) (le moteur ex
 
 ## getContext()
 
-`mountRadialTreeChart(el, props).getContext()` renvoie un **`RadialTreeChartContext`** agnostique du moteur de rendu : `stats.leafCount` / `groupCount` / `grandTotal` / `largest` (la plus grande feuille) / `maxDepth`, un tableau `nodes[]` (une ligne par nœud - groupe OU feuille - avec `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), un `summary` déterministe en langage naturel, et un `a11yTable`. Voir [Contexte LLM](/fr/guide/llm-context).
+`mountRadialTreeChart(el, props).getContext()` renvoie un **`RadialTreeChartContext`** agnostique du moteur de rendu : `stats.leafCount` / `groupCount` / `grandTotal` / `min` (la plus petite feuille) / `max` (la plus grande feuille) / `maxDepth`, un tableau `nodes[]` (une ligne par nœud - groupe OU feuille - avec `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), un `summary` déterministe en langage naturel, et un `a11yTable`. Voir [Contexte LLM](/fr/guide/llm-context).
 
 ## Source
 

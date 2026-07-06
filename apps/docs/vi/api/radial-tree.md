@@ -40,7 +40,7 @@ Web component phát ra các `CustomEvent` nổi bọt (bubbling) sau (engine cũ
 
 ## getContext()
 
-`mountRadialTreeChart(el, props).getContext()` trả về **`RadialTreeChartContext`** không phụ thuộc renderer: `stats.leafCount` / `groupCount` / `grandTotal` / `largest` (lá lớn nhất) / `maxDepth`, một mảng `nodes[]` (một dòng cho mỗi nút - nhóm hoặc lá - với `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), một `summary` tất định bằng ngôn ngữ tự nhiên, và một `a11yTable`. Xem [Ngữ cảnh LLM](/vi/guide/llm-context).
+`mountRadialTreeChart(el, props).getContext()` trả về **`RadialTreeChartContext`** không phụ thuộc renderer: `stats.leafCount` / `groupCount` / `grandTotal` / `min` (lá nhỏ nhất) / `max` (lá lớn nhất) / `maxDepth`, một mảng `nodes[]` (một dòng cho mỗi nút - nhóm hoặc lá - với `label`, `code`, `color`, `depth`, `isLeaf`, `value`, `path`), một `summary` tất định bằng ngôn ngữ tự nhiên, và một `a11yTable`. Xem [Ngữ cảnh LLM](/vi/guide/llm-context).
 
 ## Nguồn
 

@@ -40,7 +40,7 @@ Web component phát ra (dispatch) các `CustomEvent` nổi bọt (bubbling) sau 
 
 ## getContext()
 
-`mountChoroplethMapChart(el, props).getContext()` trả về **`ChoroplethMapChartContext`** độc lập với renderer: `stats.featureCount` / `matchedCount` / `unmatchedCount` / `valueDomain` / `lowest` / `highest`, một mảng `regions[]` (một hàng cho mỗi feature: `id`, `label`, `value?`, `color`, `matched`), tên `projection` đã phân giải, một bản tóm tắt bằng ngôn ngữ tự nhiên có tính xác định, và một `a11yTable` liệt kê mỗi khu vực + giá trị + cờ khớp. Xem [ngữ cảnh LLM](/vi/guide/llm-context).
+`mountChoroplethMapChart(el, props).getContext()` trả về **`ChoroplethMapChartContext`** độc lập với renderer: `stats.featureCount` / `matchedCount` / `unmatchedCount` / `valueDomain` / `min` / `max`, một mảng `regions[]` (một hàng cho mỗi feature: `id`, `label`, `value?`, `color`, `matched`), tên `projection` đã phân giải, một bản tóm tắt bằng ngôn ngữ tự nhiên có tính xác định, và một `a11yTable` liệt kê mỗi khu vực + giá trị + cờ khớp. Xem [ngữ cảnh LLM](/vi/guide/llm-context).
 
 ## Nguồn
 

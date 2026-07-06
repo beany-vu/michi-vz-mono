@@ -42,7 +42,7 @@
     works identically under jsdom and in the browser - no Canvas 2D `isPointInPath`
     dependency).
   - `buildChoroplethMapContext`: stats over the JOINED values (matched/unmatched
-    counts, lowest/highest), NL summary, a11yTable listing every region + value +
+    counts, min/max), NL summary, a11yTable listing every region + value +
     matched flag. `checkChoroplethMapData` flags unmatched dataSet ids, features
     missing an id, and invalid/empty geometry.
   - Full `isLoading`/`isNodata`/`noDataLabel`/`suppressDefaultOverlay` chrome quad,
@@ -125,7 +125,7 @@
 [data-label-safe]`, keyed by the group. WebGPU DELEGATES to canvas-2D
     (same rationale as ChoroplethMap/SymbolMap: the curved bezier links
     aren't cheaply GPU-tessellable).
-  - `buildRadialTreeContext`: leaf/group counts, grand total, the largest
+  - `buildRadialTreeContext`: leaf/group counts, grand total, min/max
     leaf, max nesting depth, NL summary, a11yTable. `checkRadialTreeData`
     flags empty datasets, empty groups (an explicit empty `children` array),
     negative/non-finite values, duplicate labels anywhere in the tree, and
@@ -184,7 +184,7 @@ max(primaryMin, secondaryMax)]`), which was defective and silently dropped
     rationale as ChoroplethMap: the optional backdrop is arbitrary,
     possibly-concave GeoJSON).
   - `buildSymbolMapContext`: stats separate located/visible/hidden(by
-    `radiusVisibleMin`)/invalid(bad coordinates) counts, largest/smallest, NL
+    `radiusVisibleMin`)/invalid(bad coordinates) counts, min/max, NL
     summary, a11yTable. `checkSymbolMapData` flags missing/invalid lng-lat,
     negative values, and duplicate ids.
   - Full `isLoading`/`isNodata`/`noDataLabel`/`suppressDefaultOverlay` chrome

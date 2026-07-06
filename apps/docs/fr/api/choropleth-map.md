@@ -40,7 +40,7 @@ Le composant web émet ces `CustomEvent`s en bubbling (le moteur expose les mêm
 
 ## getContext()
 
-`mountChoroplethMapChart(el, props).getContext()` renvoie un **`ChoroplethMapChartContext`** agnostique du renderer : `stats.featureCount` / `matchedCount` / `unmatchedCount` / `valueDomain` / `lowest` / `highest`, un tableau `regions[]` (une ligne par feature : `id`, `label`, `value?`, `color`, `matched`), le nom de `projection` résolu, un `summary` déterministe en langage naturel, et un `a11yTable` listant chaque région + valeur + indicateur d'appariement. Voir [Contexte LLM](/fr/guide/llm-context).
+`mountChoroplethMapChart(el, props).getContext()` renvoie un **`ChoroplethMapChartContext`** agnostique du renderer : `stats.featureCount` / `matchedCount` / `unmatchedCount` / `valueDomain` / `min` / `max`, un tableau `regions[]` (une ligne par feature : `id`, `label`, `value?`, `color`, `matched`), le nom de `projection` résolu, un `summary` déterministe en langage naturel, et un `a11yTable` listant chaque région + valeur + indicateur d'appariement. Voir [Contexte LLM](/fr/guide/llm-context).
 
 ## Source
 

@@ -2012,8 +2012,10 @@ export interface ChoroplethMapChartContext extends BaseChartContext {
     unmatchedCount: number;
     /** [min, max] over matched rows with a finite `value`; null when none */
     valueDomain: [number, number] | null;
-    lowest: { id: string; label: string; value: number } | null;
-    highest: { id: string; label: string; value: number } | null;
+    /** The matched region with the smallest `value`; null when none. */
+    min: { id: string; label: string; value: number } | null;
+    /** The matched region with the largest `value`; null when none. */
+    max: { id: string; label: string; value: number } | null;
   };
   regions: ChoroplethRegionContext[];
 }
@@ -2158,8 +2160,10 @@ export interface SymbolMapChartContext extends BaseChartContext {
     invalidCount: number;
     /** [min, max] over every visible item's `value`; null when none. */
     valueDomain: [number, number] | null;
-    largest: { id: string; label: string; value: number } | null;
-    smallest: { id: string; label: string; value: number } | null;
+    /** The visible symbol with the smallest `value`; null when none. */
+    min: { id: string; label: string; value: number } | null;
+    /** The visible symbol with the largest `value`; null when none. */
+    max: { id: string; label: string; value: number } | null;
   };
   symbols: SymbolMapSymbolContext[];
 }
@@ -2998,7 +3002,10 @@ export interface RadialTreeChartContext extends BaseChartContext {
     groupCount: number;
     /** Sum of every top-level group's value. */
     grandTotal: number;
-    largest: { label: string; value: number } | null;
+    /** The leaf with the smallest `value`; null when there are no leaves. */
+    min: { label: string; value: number } | null;
+    /** The leaf with the largest `value`; null when there are no leaves. */
+    max: { label: string; value: number } | null;
     /** Maximum nesting depth (2 = the standard group+leaf contract). */
     maxDepth: number;
   };

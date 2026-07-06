@@ -30,13 +30,13 @@ export function buildSymbolMapContext(input: BuildSymbolMapContextInput): Symbol
     color: m.fill,
   }));
 
-  let largest: { id: string; label: string; value: number } | null = null;
-  let smallest: { id: string; label: string; value: number } | null = null;
+  let max: { id: string; label: string; value: number } | null = null;
+  let min: { id: string; label: string; value: number } | null = null;
   for (const s of symbols) {
-    if (!largest || s.value > largest.value) largest = { id: s.id, label: s.label, value: s.value };
-    if (!smallest || s.value < smallest.value) smallest = { id: s.id, label: s.label, value: s.value };
+    if (!max || s.value > max.value) max = { id: s.id, label: s.label, value: s.value };
+    if (!min || s.value < min.value) min = { id: s.id, label: s.label, value: s.value };
   }
-  const valueDomain: [number, number] | null = smallest && largest ? [smallest.value, largest.value] : null;
+  const valueDomain: [number, number] | null = min && max ? [min.value, max.value] : null;
 
   const visibleCount = symbols.length;
   const hiddenCount = Math.max(0, input.locatedCount - visibleCount);
@@ -46,8 +46,8 @@ export function buildSymbolMapContext(input: BuildSymbolMapContextInput): Symbol
   if (hiddenCount > 0) summary += ` (${hiddenCount} hidden below radiusVisibleMin)`;
   if (input.invalidCount > 0) summary += ` (${input.invalidCount} dropped for invalid coordinates)`;
   summary += ".";
-  if (largest && smallest && largest.id !== smallest.id) {
-    summary += ` Largest: ${largest.label} (${largest.value}). Smallest: ${smallest.label} (${smallest.value}).`;
+  if (max && min && max.id !== min.id) {
+    summary += ` Largest: ${max.label} (${max.value}). Smallest: ${min.label} (${min.value}).`;
   }
 
   const legendData = buildLegendData({
@@ -67,8 +67,8 @@ export function buildSymbolMapContext(input: BuildSymbolMapContextInput): Symbol
       hiddenCount,
       invalidCount: input.invalidCount,
       valueDomain,
-      largest,
-      smallest,
+      min,
+      max,
     },
     symbols,
     colorsMapping: input.colorsMapping,

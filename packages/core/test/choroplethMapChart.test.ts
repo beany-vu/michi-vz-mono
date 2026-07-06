@@ -223,8 +223,8 @@ describe("mountChoroplethMapChart (jsdom, svg renderer)", () => {
       expect(ctx.stats.featureCount).toBe(4);
       expect(ctx.stats.matchedCount).toBe(3);
       expect(ctx.stats.unmatchedCount).toBe(1);
-      expect(ctx.stats.lowest).toEqual({ id: "A", label: "Alpha", value: 10 });
-      expect(ctx.stats.highest).toEqual({ id: "D", label: "Delta", value: 90 });
+      expect(ctx.stats.min).toEqual({ id: "A", label: "Alpha", value: 10 });
+      expect(ctx.stats.max).toEqual({ id: "D", label: "Delta", value: 90 });
       expect(ctx.regions.length).toBe(4);
       expect(ctx.a11yTable.headers).toEqual(["Region", "Value", "Matched"]);
       expect(ctx.a11yTable.rows.length).toBe(4);

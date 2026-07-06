@@ -29,15 +29,18 @@ export function buildRadialTreeContext(input: BuildRadialTreeContextInput): Radi
 
   const grandTotal = input.marks.filter((m) => m.depth === 1).reduce((a, m) => a + m.value, 0);
 
-  let largest: { label: string; value: number } | null = null;
+  let max: { label: string; value: number } | null = null;
+  let min: { label: string; value: number } | null = null;
   for (const m of input.marks) {
     if (!m.isLeaf) continue;
-    if (!largest || m.value > largest.value) largest = { label: m.label, value: m.value };
+    if (!max || m.value > max.value) max = { label: m.label, value: m.value };
+    if (!min || m.value < min.value) min = { label: m.label, value: m.value };
   }
 
   const titlePart = input.title ? `"${input.title}" ` : "";
   let summary = `Radial tree ${titlePart}shows ${input.leafCount} leaf${input.leafCount === 1 ? "" : "ves"} across ${input.groupCount} group${input.groupCount === 1 ? "" : "s"}.`;
-  if (largest) summary += ` Largest: ${largest.label} (${largest.value}).`;
+  if (max) summary += ` Largest: ${max.label} (${max.value}).`;
+  if (min && max && min.label !== max.label) summary += ` Smallest: ${min.label} (${min.value}).`;
   if (input.maxDepth > 2) summary += ` Nesting goes ${input.maxDepth} levels deep.`;
 
   const legendData = buildLegendData({
@@ -56,7 +59,8 @@ export function buildRadialTreeContext(input: BuildRadialTreeContextInput): Radi
       leafCount: input.leafCount,
       groupCount: input.groupCount,
       grandTotal,
-      largest,
+      min,
+      max,
       maxDepth: input.maxDepth,
     },
     colorsMapping: input.colorsMapping,

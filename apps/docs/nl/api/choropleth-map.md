@@ -40,7 +40,7 @@ De webcomponent verzendt deze bubbelende `CustomEvent`s (de engine biedt dezelfd
 
 ## getContext()
 
-`mountChoroplethMapChart(el, props).getContext()` retourneert een renderer-onafhankelijke **`ChoroplethMapChartContext`**: `stats.featureCount` / `matchedCount` / `unmatchedCount` / `valueDomain` / `lowest` / `highest`, een `regions[]`-array (één rij per feature: `id`, `label`, `value?`, `color`, `matched`), de opgeloste `projection`-naam, een deterministische samenvatting in gewone taal, en een `a11yTable` met elke regio + waarde + koppelingsstatus. Zie [LLM-context](/nl/guide/llm-context).
+`mountChoroplethMapChart(el, props).getContext()` retourneert een renderer-onafhankelijke **`ChoroplethMapChartContext`**: `stats.featureCount` / `matchedCount` / `unmatchedCount` / `valueDomain` / `min` / `max`, een `regions[]`-array (één rij per feature: `id`, `label`, `value?`, `color`, `matched`), de opgeloste `projection`-naam, een deterministische samenvatting in gewone taal, en een `a11yTable` met elke regio + waarde + koppelingsstatus. Zie [LLM-context](/nl/guide/llm-context).
 
 ## Bron
 

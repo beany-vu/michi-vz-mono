@@ -40,7 +40,7 @@ De webcomponent verzendt deze bubbelende `CustomEvent`s (de engine biedt dezelfd
 
 ## getContext()
 
-`mountSymbolMapChart(el, props).getContext()` retourneert een renderer-onafhankelijke **`SymbolMapChartContext`**: `stats.locatedCount` / `visibleCount` / `hiddenCount` (uitgesloten door `radiusVisibleMin`) / `invalidCount` (verworpen wegens ongeldige coördinaten) / `valueDomain` / `largest` / `smallest`, een `symbols[]`-array (één rij per zichtbaar item: `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), de opgeloste `projection`-naam, een deterministische samenvatting in gewone taal, en een `a11yTable`. Zie [LLM-context](/nl/guide/llm-context).
+`mountSymbolMapChart(el, props).getContext()` retourneert een renderer-onafhankelijke **`SymbolMapChartContext`**: `stats.locatedCount` / `visibleCount` / `hiddenCount` (uitgesloten door `radiusVisibleMin`) / `invalidCount` (verworpen wegens ongeldige coördinaten) / `valueDomain` / `min` / `max`, een `symbols[]`-array (één rij per zichtbaar item: `id`, `label`, `value`, `valueSecond`, `radius`, `radiusSecond`, `color`), de opgeloste `projection`-naam, een deterministische samenvatting in gewone taal, en een `a11yTable`. Zie [LLM-context](/nl/guide/llm-context).
 
 ## Bron
 
