@@ -60,6 +60,11 @@
      has no sub-marks beyond its own optional concentric second circle, which
      shares the primary's colour, not a separate CSS-styleable one). */
   #symbolContract .symbol[data-label-safe="Alpha"] { fill: rgb(30, 160, 220); }
+  /* RadialTree consumer colour contract: recolour ONE group's circles purely via
+     CSS. Keyed by GROUP label (data-label-safe), same as Treemap - a leaf shares
+     its group's colour contract, so this ONE selector recolours the group circle
+     AND every one of its leaf circles. */
+  #radialContract .radial-tree-node-circle[data-label-safe="Sectors"] { fill: rgb(230, 70, 20); }
   #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
     background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
   .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
@@ -186,6 +191,15 @@
 <div class="card" id="symbolContract"><michi-vz-symbol-map-chart id="symbolContractChart"></michi-vz-symbol-map-chart></div>
 <h2>SymbolMap de-overlap sanity check (two identical-coordinate points)</h2>
 <div class="card"><michi-vz-symbol-map-chart id="symbolOverlap"></michi-vz-symbol-map-chart></div>
+
+<h1 style="margin-top:36px">@michi-vz/wc - RadialTree (radial cluster()/dendrogram)</h1>
+<div class="row">
+  <div class="card"><h2>SVG renderer</h2><michi-vz-radial-tree-chart id="radialSvg"></michi-vz-radial-tree-chart></div>
+  <div class="card"><h2>Canvas renderer</h2><michi-vz-radial-tree-chart id="radialCanvas"></michi-vz-radial-tree-chart></div>
+  <div class="card"><h2>Dense tree - label density (abbreviate + rotate)</h2><michi-vz-radial-tree-chart id="radialDense"></michi-vz-radial-tree-chart></div>
+</div>
+<h2>RadialTree consumer-CSS fill contract (canvas, single-element circle.radial-tree-node-circle[data-label-safe] probe)</h2>
+<div class="card" id="radialContract"><michi-vz-radial-tree-chart id="radialContractChart"></michi-vz-radial-tree-chart></div>
 
 <div id="results">running…</div>
 
@@ -469,6 +483,60 @@ const symbolOverlapData = [
   { id: "Same2", label: "Same2", lng: 0, lat: 0, value: 30 },
 ];
 Object.assign(symbolOverlapEl, { dataSet: symbolOverlapData, chartTitle: "De-overlap check", renderer: "svg", ...symbolCommon });
+
+// ---- RadialTree setup ---- (2-level forest: RadialTreeNode mirrors TreemapNode's
+// shape - a group's value is always the sum of its children)
+const radialCommon = { width: 460, height: 320 };
+const radialData = [
+  {
+    label: "Sectors",
+    children: [
+      { label: "Coffee", value: 10 },
+      { label: "Tea", value: 30 },
+    ],
+  },
+  {
+    label: "Regions",
+    children: [
+      { label: "Africa", value: 5 },
+      { label: "Asia", value: 55 },
+    ],
+  },
+];
+const radialSvgEl = document.getElementById("radialSvg");
+const radialCanvasEl = document.getElementById("radialCanvas");
+const radialContractEl = document.getElementById("radialContractChart");
+const radialDenseEl = document.getElementById("radialDense");
+Object.assign(radialSvgEl, {
+  dataSet: radialData,
+  chartTitle: "RadialTree",
+  centerLabel: "Total Trade",
+  renderer: "svg",
+  ...radialCommon,
+});
+Object.assign(radialCanvasEl, {
+  dataSet: radialData,
+  chartTitle: "RadialTree",
+  centerLabel: "Total Trade",
+  renderer: "canvas",
+  ...radialCommon,
+});
+Object.assign(radialContractEl, {
+  dataSet: radialData,
+  chartTitle: "RadialTree canvas + CSS",
+  renderer: "canvas",
+  skipColorMappingDispatch: true,
+  ...radialCommon,
+});
+// Past rotateAbove (default 20 leaves): labels abbreviate to 3 letters + "." and
+// rotate radially instead of staying horizontal.
+const radialDenseData = [
+  {
+    label: "Group",
+    children: Array.from({ length: 25 }, (_, i) => ({ label: `Item${i}`, value: i + 1 })),
+  },
+];
+Object.assign(radialDenseEl, { dataSet: radialDenseData, chartTitle: "Dense tree", renderer: "svg", ...radialCommon });
 
 await nextFrame();
 
@@ -950,6 +1018,40 @@ try {
     const dist = Math.sqrt(dx * dx + dy * dy);
     log(dist > radii[0] + radii[1] - 2, `SYMBOL DE-OVERLAP: two identical-coordinate points end up non-overlapping (dist=${dist.toFixed(1)}, radii sum=${(radii[0] + radii[1]).toFixed(1)})`);
   }
+
+  // ---- RadialTree checks ----
+  const radialCircles = radialSvgEl.querySelectorAll("circle.radial-tree-node-circle");
+  log(radialCircles.length === 6, `RADIAL: SVG renders 6 circles - 2 groups + 4 leaves (got ${radialCircles.length})`);
+  log(radialSvgEl.querySelectorAll("path.radial-tree-link").length === 6, "RADIAL: renders 6 dendrogram links");
+  log(!!radialSvgEl.querySelector('circle.radial-tree-node-circle[data-label-safe="Sectors"]'), 'RADIAL: circle carries data-label-safe="Sectors" (colour keyed by the GROUP)');
+  log(!!radialSvgEl.querySelector(".radial-tree-center-circle"), "RADIAL: draws a centre circle when centerLabel is set");
+  const centerLines = Array.from(radialSvgEl.querySelectorAll(".radial-tree-center-label tspan")).map((t) => t.textContent);
+  log(centerLines.join(" ") === "Total Trade", `RADIAL: centre label word-wraps to ["Total","Trade"] (got ${JSON.stringify(centerLines)})`);
+
+  const radCtx = radialSvgEl.getContext();
+  log(radCtx && radCtx.chartType === "radial-tree-chart" && radCtx.stats.leafCount === 4 && radCtx.stats.groupCount === 2, "RADIAL: getContext() returns radial-tree-chart with 4 leaves / 2 groups");
+  log(radCtx && typeof radCtx.summary === "string" && radCtx.summary.includes("Radial tree"), "RADIAL: getContext() includes an NL summary");
+
+  const radA = JSON.stringify({ ...radialSvgEl.getContext(), renderer: 0 });
+  const radB = JSON.stringify({ ...radialCanvasEl.getContext(), renderer: 0 });
+  log(radA === radB, "RADIAL: getContext() identical in SVG vs canvas (renderer aside)");
+
+  // Label-density check: past rotateAbove (25 leaves > 20), every label abbreviates
+  // to its own first 3 characters + "." and none of the original names remain.
+  const denseNames = Array.from(radialDenseEl.querySelectorAll("tspan.radial-tree-label-name")).map((t) => t.textContent);
+  log(denseNames.length > 0 && denseNames.every((n) => /^.{1,3}\.$/.test(n)), `RADIAL DENSITY: all ${denseNames.length} labels abbreviate to <=3 chars + "." past rotateAbove`);
+
+  // THE radial-tree colour contract: canvas pixels must reflect consumer CSS fill rgb(230,70,20)
+  const radCnv = radialContractEl.querySelector("canvas");
+  let radialContractOk = false;
+  if (radCnv) {
+    const c = radCnv.getContext("2d");
+    const { data: px } = c.getImageData(0, 0, radCnv.width, radCnv.height);
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i] > 205 && px[i + 1] < 95 && px[i + 1] > 45 && px[i + 2] < 45 && px[i + 3] > 0) { radialContractOk = true; break; }
+    }
+  }
+  log(radialContractOk, "RADIAL CANVAS colour contract: consumer CSS rgb(230,70,20) reached canvas pixels");
 } catch (e) {
   log(false, "exception: " + (e && e.message));
 }
