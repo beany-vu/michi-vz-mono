@@ -1,5 +1,14 @@
 # @michi-vz/storybook
 
+## 1.1.15
+
+### Patch Changes
+
+- Updated dependencies [04dfb80]
+  - @michi-vz/wc@1.9.1
+  - @michi-vz/devtools@0.2.9
+  - @michi-vz/examples@1.0.15
+
 ## 1.1.14
 
 ### Patch Changes

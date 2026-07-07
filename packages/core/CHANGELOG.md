@@ -1,5 +1,103 @@
 # @michi-vz/core
 
+## 1.10.0
+
+### Minor Changes
+
+- bfd75d7: Add chart export helpers so consumers can download a chart as a correctly-styled image or CSV.
+
+  - **`@michi-vz/core`**: new framework-agnostic helpers — `chartContextToCsv(ctx)` serializes any chart's `getContext().a11yTable` (the full, untruncated data table every chart carries) to RFC-4180 CSV with no per-chart code; `chartToStyledSvgString(el)` / `chartToStyledSvgDataUri(el)` rebuild a standalone SVG with `CORE_CSS` inlined, fixing the long-standing problem that the chart CSS lives in `document.adoptedStyleSheets` and is invisible to `XMLSerializer` / `save-svg-as-png` (exported images lost gridlines, axis labels and the zero-line); `chartToPngDataUrl(el)` rasterizes to PNG and composites canvas-renderer marks over the SVG axes.
+  - **`@michi-vz/react`**: every chart handle now exposes `getElement()` (alongside the existing `getContext()`) returning the chart host element, so consumers get a scoped reference to feed the export helpers instead of a fragile global DOM query.
+  - **LineChart `sharedTooltip`** (+ optional `sharedTooltipFormatter`): when on, hovering anywhere in the plot shows ONE tooltip listing every series' value at the nearest x (year), alongside the crosshair, instead of the single nearest series. Forwarded by the WC (`shared-tooltip`) and Angular wrappers; React passes it through.
+  - **LineChart `a11yTable`** is now a wide per-period table (one column per distinct x value, labelled like the axis; one row per series, `-` for gaps) instead of a per-series summary — so a CSV export off `getContext()` carries every plotted point (e.g. one column per year), and the a11y mirror shows the data itself. Per-series stats stay on `context.series`/`stats`; the narrative stays on `context.summary`.
+
+  No API removed or renamed. The only behavior change is the LineChart `a11yTable` shape above (its `summary` and `series` fields are unchanged).
+
+### Patch Changes
+
+- 04dfb80: Three band/label layout fixes surfaced by a live sdg-trade review. All are
+  internal behaviour changes - no new props, no breaking API.
+
+  ComparableVerticalBarChart / VerticalStackBarChart / FountainChart (shared
+  `chooseAxisMode`): the -45° rotated-label decision now keys on the PERPENDICULAR
+  gap between neighbouring labels (`bandWidth · cos45` vs a text line-height),
+  instead of comparing label WIDTH to 3× the band. Rotated labels trail as
+  parallel diagonal lines exactly one band apart, so a few long category labels at
+  wide bands (e.g. ~14 region names at ~50px bands) do not actually overlap when
+  rotated - they only need more bottom margin, which the engine already reserves.
+  The old width-based test wrongly forced those into horizontal thinning, dropping
+  half the region labels and overlapping the rest. Genuinely dense axes (bands
+  narrower than a line of text) still fall through to thinning exactly as before.
+
+  ComparableHorizontalBarChart: the left label gutter now auto-fits the widest row
+  label (measured via the existing `measureLabelWidth`) so long category names -
+  e.g. "Landlocked developing countries (LLDCs)" - render on one line instead of
+  being clipped to the fixed 120/100px default and forced into the 2-line ellipsis.
+  Only applies when the consumer left `margin`/`tickHtmlWidth` at their defaults
+  (an explicit value is honoured verbatim); the gutter only grows, never shrinks
+  below the default, and is capped at 40% of the chart width so one very long label
+  can't consume the plot (the 2-line ellipsis remains the safety net at the cap).
+
+  ScatterChart `pointLabels`: a point label whose default right-side placement
+  would cross the plot's right edge now flips to the LEFT of its point
+  (`text-anchor: "end"`), so a bubble hugging the right axis keeps its label
+  on-chart instead of having it cropped. Reuses the label width already measured
+  for overlap-hide; when the flipped label wouldn't fit on the left either, it
+  stays right (unchanged). Byte-identical output for any label that already fit.
+
+- 04dfb80: GapChart: added `showZeroLineForXAxis` and `maxBarHeight`, at parity with
+  ComparableHorizontalBarChart's existing props of the same name/behaviour.
+  `showZeroLineForXAxis` draws a solid (non-dashed) vertical line at x=0.
+  `maxBarHeight` caps each row's thickness so a 1-2 row chart doesn't stretch
+  its band across the full plot height (the band range shrinks to the capped
+  thickness and centres in the plot); no-op for dense charts.
+
+  ComparableHorizontalBarChart and GapChart's numeric value axis now opts into
+  the same `autoRotate`/`maxTicks` tick-collision avoidance already used by
+  LineChart/AreaChart's date axis: ticks tilt -45° before thinning, and only
+  thin (keeping the first + last tick) once even tilted labels would still
+  collide. Byte-identical output whenever ticks already fit without overlap.
+
+  Shared y-band row labels (`.mv-ylabel`, used by every band-axis chart:
+  ComparableHorizontalBarChart, GapChart, VerticalStackBarChart, BarBell) now
+  clamp to 2 lines with an ellipsis instead of wrapping unboundedly. The
+  previous behaviour let an overlong label spill into the empty inter-band
+  gap on either side - correct for an isolated long label, but adjacent rows
+  that both wrap to 2+ lines spilled into the same shared gap from opposite
+  directions and rendered as illegibly overlapping text. The full label
+  remains available via the row's existing `title` attribute.
+
+  Fixed: `showZeroLineForXAxis: true` alone did nothing when `showGrid` was left
+  at its default (`false`, e.g. ComparableHorizontalBarChart's own resolved
+  default) - the zero line's grid `<line>` was nested inside an `if (showGrid)`
+  block in the shared `renderXAxisLinear`, so no grid meant no zero line either,
+  contrary to every consumer's expectation that the two props are independent.
+  The zero line now draws as a dedicated baseline reference regardless of
+  `showGrid`; behaviour is unchanged for any consumer that already had
+  `showGrid: true` (GapChart's own default, since it never set `showGrid`
+  explicitly).
+
+  ComparableVerticalBarChart: the two sub-bars' paint order was FIXED
+  (valueBased always behind, valueCompared always in front, matching the legacy
+  vendored chart's own static order) - so whichever field was smaller on a given
+  row was drawn fully UNDER the taller one and rendered zero visible pixels,
+  not merely "harder to see". Now decided per row (mirrors
+  ComparableHorizontalBarChart's existing `comparableDrawOrder`): the shorter
+  sub-bar always paints last/on top, so neither value is ever fully hidden
+  regardless of which field it is. Colour/pattern assignment (based = hatch-
+  eligible, compared = solid) is unchanged - only paint order varies.
+
+  ComparableVerticalBarChart: the delta indicator's horizontal placement was
+  ported from the legacy chart at `bandwidth/3` (offset toward the left third of
+  the column, not centred) - an unintentional legacy quirk, not a deliberate
+  design choice. Now centred at `bandwidth/2`.
+
+  No breaking changes: all additions are optional/opt-in props or a provable
+  no-op (rotation/thinning only activates on genuine collision); the two render-
+  order/position fixes only change output for the specific cases that were
+  previously broken (a row where the "expected" field isn't the taller one; any
+  row with a delta indicator, which was never centred to begin with).
+
 ## 1.9.0
 
 ### Minor Changes
