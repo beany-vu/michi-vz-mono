@@ -164,6 +164,9 @@ export function applyGapChartProps(el: GapChartElement, props: GapChartProps): v
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
+  if (props.showZeroLineForXAxis !== undefined)
+    el.showZeroLineForXAxis = props.showZeroLineForXAxis;
+  if (props.maxBarHeight !== undefined) el.maxBarHeight = props.maxBarHeight;
 }
 
 /** Apply engine props onto a <michi-vz-line-chart> element (property binding). */
@@ -186,6 +189,9 @@ export function applyLineChartProps(el: LineChartElement, props: LineChartProps)
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.sharedTooltip !== undefined) el.sharedTooltip = props.sharedTooltip;
+  if (props.sharedTooltipFormatter !== undefined)
+    el.sharedTooltipFormatter = props.sharedTooltipFormatter;
   if (props.locale !== undefined) el.locale = props.locale;
   if (props.yTicks !== undefined) el.yTicks = props.yTicks;
   if (props.showGridLines !== undefined) el.showGridLines = props.showGridLines;

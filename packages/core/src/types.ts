@@ -113,6 +113,15 @@ export interface GapChartProps {
   tickHtmlWidth?: number;
   /** Corner radius in px for square markers (default 2) */
   squareRadius?: number;
+  /** Draw a solid vertical line at x=0 on the value axis (diverging charts). Default false. */
+  showZeroLineForXAxis?: boolean;
+  /** Cap each row's thickness (px). When few rows would otherwise balloon the bandwidth
+   * (a scaleBand stretched over the full plot height), the band range shrinks to yield
+   * exactly this thickness and is centred in the plot (symmetric whitespace), so a 1-2
+   * row chart reads tidily instead of a single row floating mid-plot. No-op for dense
+   * charts whose natural bandwidth is already below the cap. Mirrors ComparableBarChart's
+   * `maxBarHeight`. */
+  maxBarHeight?: number;
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */
   renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
@@ -385,6 +394,17 @@ export interface LineChartProps {
     series: DataPoint[],
     dataSet: LineDataItem[],
   ) => string;
+  /** When true, hovering anywhere in the plot shows ONE tooltip listing every series'
+   *  value at the nearest x (year) - the "shared"/crosshair tooltip - instead of the
+   *  single nearest series. Pairs with the crosshair (enableMouseLine, on by default). */
+  sharedTooltip?: boolean;
+  /** Custom HTML for the shared tooltip. `entries` is one row per series that has a
+   *  point at the hovered x, in dataSet order, each with its resolved colour. */
+  sharedTooltipFormatter?: (input: {
+    x: number | string;
+    xLabel: string;
+    entries: Array<{ label: string; value: number; color: string; d: DataPoint }>;
+  }) => string;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

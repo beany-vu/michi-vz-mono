@@ -655,3 +655,39 @@ describe("mountLineChart yAxisScale (log y-axis)", () => {
     host.remove();
   });
 });
+
+describe("mountLineChart sharedTooltip (all series at the hovered year)", () => {
+  it("lists every series' value at the nearest year in ONE tooltip (canvas hit-test)", () => {
+    // canvas mode = host-level hit-test path (matches the sdg LineChart); jsdom's
+    // all-zero getBoundingClientRect maps clientX straight to the model's svg x.
+    const { host, chart } = mount({ sharedTooltip: true, renderer: "canvas" });
+    const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
+    // Hover the middle of the plot -> snaps to a year that BOTH series have.
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 150, bubbles: true }));
+    expect(tooltip.style.visibility).toBe("visible");
+    expect(tooltip.innerHTML).toContain("Alpha One");
+    expect(tooltip.innerHTML).toContain("Beta");
+    // header = the year (one of 2016/2017/2018)
+    expect(/201[678]/.test(tooltip.innerHTML)).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("a custom sharedTooltipFormatter receives one entry per series with its colour", () => {
+    let received: { entries: Array<{ label: string; color: string; value: number }> } | null = null;
+    const { host, chart } = mount({
+      sharedTooltip: true,
+      renderer: "canvas",
+      sharedTooltipFormatter: (input) => {
+        received = input;
+        return `<b>${input.xLabel}</b>`;
+      },
+    });
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 150, bubbles: true }));
+    expect(received).not.toBeNull();
+    expect(received!.entries.map((e) => e.label).sort()).toEqual(["Alpha One", "Beta"]);
+    expect(received!.entries.find((e) => e.label === "Alpha One")!.color).toBe("#ff0000");
+    chart.destroy();
+    host.remove();
+  });
+});

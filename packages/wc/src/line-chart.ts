@@ -39,6 +39,8 @@ export class LineChartElement extends LitElement {
     singlePointLine: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
+    sharedTooltip: { type: Boolean, attribute: "shared-tooltip" },
+    sharedTooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
     yTicks: { type: Number, attribute: "y-ticks" },
@@ -84,6 +86,12 @@ export class LineChartElement extends LitElement {
   singlePointLine?: boolean | SinglePointLineConfig;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;
+  sharedTooltip = false;
+  sharedTooltipFormatter?: (input: {
+    x: number | string;
+    xLabel: string;
+    entries: Array<{ label: string; value: number; color: string; d: DataPoint }>;
+  }) => string;
   plugins?: MichiVzPlugin<LineChartProps>[];
   locale?: string;
   yTicks?: number;
@@ -142,6 +150,8 @@ export class LineChartElement extends LitElement {
       singlePointLine: this.singlePointLine,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
+      sharedTooltip: this.sharedTooltip,
+      sharedTooltipFormatter: this.sharedTooltipFormatter,
       locale: this.locale,
       yTicks: this.yTicks,
       showGridLines: this.showGridLines,

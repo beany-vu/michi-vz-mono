@@ -9,6 +9,7 @@ import type {
   XaxisDataType,
 } from "../types";
 import { provenanceCounts } from "../math/provenance";
+import { parseXValue } from "../lineChart/lineUtils";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
 
@@ -24,6 +25,9 @@ export interface BuildLineContextInput {
   legendData?: LegendItem[];
   /** Labels the consumer has hidden - excluded from visibleItems (legacy parity). */
   disabledItems?: string[];
+  /** Formats an x value into the period label used for the a11yTable columns (should
+   *  match the on-screen x-axis, e.g. a year). Falls back to String(). */
+  xFormat?: (d: number | string) => string;
 }
 
 function seriesContext(item: LineDataItem): LineSeriesContext {
@@ -92,6 +96,32 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
   }
   summary += ` Value range ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
 
+  // Wide per-period data table: one column per distinct x value (labelled like the
+  // axis), one row per series carrying its value at each period ("-" when absent). This
+  // makes getContext().a11yTable -> CSV export carry EVERY plotted point (e.g. one
+  // column per year) instead of a per-series summary. The per-series stats stay on
+  // `series`/`stats` and the narrative on `summary`, so nothing is lost.
+  const fmt = input.xFormat ?? ((d) => String(d));
+  // The period label must match the on-screen axis: the axis parses each raw x value
+  // (e.g. a bare year 2005) into the scale's unit (a Date for date_annual) BEFORE
+  // formatting. Formatting the raw 2005 directly with a date formatter would read it as
+  // an epoch (-> 1970). So parse first, then format (epoch for dates, number as-is).
+  const labelFor = (raw: number | string): string => {
+    const parsed = parseXValue(raw, input.xAxisDataType);
+    return fmt(parsed instanceof Date ? parsed.getTime() : parsed);
+  };
+  const periods = Array.from(
+    new Set(input.processedDataSet.flatMap((d) => d.series.map((p) => p.date)))
+  ).sort((a, b) => Number(a) - Number(b));
+  const a11yHeaders = ["Series", ...periods.map(labelFor)];
+  const a11yRows = input.processedDataSet.map((d) => {
+    const byDate = new Map(d.series.map((p) => [p.date, p.value]));
+    return [
+      d.label,
+      ...periods.map((p) => (byDate.has(p) && Number.isFinite(byDate.get(p)) ? round(byDate.get(p)!) : "-")),
+    ];
+  });
+
   return {
     chartType: "line-chart",
     title: input.title,
@@ -110,15 +140,8 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
     visibleItems,
     summary,
     a11yTable: {
-      headers: ["Series", "Points", "First", "Last", "Change", "Trend"],
-      rows: series.map((s) => [
-        s.label,
-        s.pointCount,
-        s.first ? s.first.y : "-",
-        s.last ? s.last.y : "-",
-        s.change,
-        s.trend,
-      ]),
+      headers: a11yHeaders,
+      rows: a11yRows,
     },
   };
 }

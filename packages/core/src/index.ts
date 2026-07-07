@@ -54,6 +54,15 @@ export type { MichiVzDevtoolsHook, DevtoolsChartEntry, DevtoolsHitEvent } from "
 // ---- Styling ----
 export { CORE_CSS, ensureStyles } from "./styles";
 
+// ---- Export helpers (CSV + correctly-styled SVG/PNG) ----
+export {
+  chartContextToCsv,
+  chartToStyledSvgString,
+  chartToStyledSvgDataUri,
+  chartToPngDataUrl,
+} from "./export";
+export type { CsvOptions, StyledSvgOptions, PngOptions } from "./export";
+
 // ---- i18n ----
 export { defaultNumberFormatter, defaultXAxisFormatter } from "./i18n/formatters";
 

@@ -147,6 +147,8 @@ export function mountLineChart(
   let lastContextSig = "";
   // Kept for canvas-mode hit-testing (full, undecimated points per label).
   let hitData: Array<{ label: string; points: Array<{ x: number; y: number; d: DataPoint }> }> = [];
+  // Resolved label -> colour for the shared tooltip's per-series swatches (updated each render).
+  let currentColors: Record<string, string> = {};
 
   const findPoint = (label: string, x: number): { d: DataPoint; series: DataPoint[] } | null => {
     const entry = hitData.find((h) => h.label === label);
@@ -174,6 +176,63 @@ export function mountLineChart(
   const hideTooltip = (): void => {
     if (sticky) return;
     tooltip.style.visibility = "hidden";
+  };
+
+  // ---- Shared ("all series at the hovered year") tooltip ----
+  const SHARED_X_TOL = 1; // px: a series' point must sit AT the hovered column to be listed
+  const defaultSharedTooltip = (
+    xLabel: string,
+    entries: Array<{ label: string; value: number; color: string }>
+  ): string => {
+    const rows = entries
+      .map(
+        (e) =>
+          `<div style="margin-top:2px"><span style="display:inline-block;width:8px;height:8px;` +
+          `margin-right:6px;border-radius:2px;background:${e.color}"></span>${e.label}: ${e.value}</div>`
+      )
+      .join("");
+    return `<strong>${xLabel}</strong>${rows}`;
+  };
+  const showSharedTooltip = (ev: MouseEvent): void => {
+    const svgRect = svg.getBoundingClientRect();
+    const x = ev.clientX - svgRect.left;
+    // Nearest data-point x across all series = the crosshair-snapped year column.
+    let nearestX: number | null = null;
+    for (const entry of hitData)
+      for (const pt of entry.points)
+        if (nearestX === null || Math.abs(pt.x - x) < Math.abs(nearestX - x)) nearestX = pt.x;
+    if (nearestX === null) {
+      hideTooltip();
+      return;
+    }
+    // One row per series that actually has a point AT that column (dataSet order).
+    const rows: Array<{ label: string; value: number; color: string; d: DataPoint }> = [];
+    let headerDate: DataPoint["date"] | null = null;
+    for (const entry of hitData) {
+      let best: { x: number; y: number; d: DataPoint } | null = null;
+      for (const pt of entry.points)
+        if (best === null || Math.abs(pt.x - nearestX) < Math.abs(best.x - nearestX)) best = pt;
+      if (best && Math.abs(best.x - nearestX) <= SHARED_X_TOL) {
+        rows.push({
+          label: entry.label,
+          value: best.d.value,
+          color: currentColors[entry.label] ?? "",
+          d: best.d,
+        });
+        if (headerDate === null) headerDate = best.d.date;
+      }
+    }
+    if (rows.length === 0) {
+      hideTooltip();
+      return;
+    }
+    const xLabel = headerDate === null ? "" : String(headerDate);
+    const htmlStr = baseProps.sharedTooltipFormatter
+      ? baseProps.sharedTooltipFormatter({ x: nearestX, xLabel, entries: rows })
+      : defaultSharedTooltip(xLabel, rows);
+    tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
+    tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
 
   const onHostMove = (ev: MouseEvent): void => {
@@ -206,6 +265,20 @@ export function mountLineChart(
       }
     }
     if (!isPainted(r.renderer) || sticky || hitData.length === 0 || overNoDataTick) return;
+    // Shared tooltip: whenever the cursor is within the plot x-range, list every
+    // series' value at the nearest year (no need to be near a specific line).
+    if (baseProps.sharedTooltip) {
+      const rect = svg.getBoundingClientRect();
+      const sx = ev.clientX - rect.left;
+      if (sx >= r.margin.left && sx <= r.width - r.margin.right) {
+        showSharedTooltip(ev);
+        baseProps.onHighlightItem?.(hitData.map((h) => h.label));
+      } else {
+        hideTooltip();
+        baseProps.onHighlightItem?.([]);
+      }
+      return;
+    }
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -328,6 +401,7 @@ export function mountLineChart(
         d,
       })),
     }));
+    currentColors = colors.generatedColorsMapping;
 
     // Canvas/webgpu mode: LTTB-decimate each series to ~2 points/px before drawing.
     const drawDataSet: LineDataItem[] =
@@ -588,6 +662,7 @@ export function mountLineChart(
       colorsMapping: colors.generatedColorsMapping,
       legendData,
       disabledItems: props.disabledItems,
+      xFormat: props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale),
     });
     // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.

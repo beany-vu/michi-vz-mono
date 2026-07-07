@@ -202,86 +202,149 @@ export function useChartContext(): MichiVzState {
 
 export interface GapChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface LineChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface FanChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface AreaChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface ScatterChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface VerticalStackBarChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface ComparableHorizontalBarChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface ComparableVerticalBarChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface DualHorizontalBarChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface BarBellChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface RangeChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface RibbonChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface RadarChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface TreemapChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface PieChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface BubbleChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface SankeyChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface FountainChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface ChoroplethMapChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface SymbolMapChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface RadialTreeChartHandle {
   getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export type GapChartReactProps = GapChartProps & {
@@ -311,7 +374,14 @@ export const GapChart = forwardRef<GapChartHandle, GapChartReactProps>(function 
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   const dataState = evaluateDataState({
     isLoading: coreProps.isLoading,
@@ -374,7 +444,14 @@ export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(functi
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   // Same decision the engine makes (so they agree on skip-marks vs overlay).
   const dataState = evaluateDataState({
@@ -419,7 +496,14 @@ export const FanChart = forwardRef<FanChartHandle, FanChartProps>(function FanCh
     chartRef.current?.update(props);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
 });
@@ -450,7 +534,14 @@ export const AreaChart = forwardRef<AreaChartHandle, AreaChartReactProps>(functi
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   // Area's data prop is `series`, not `dataSet`.
   const dataState = evaluateDataState({
@@ -509,7 +600,14 @@ export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartReactProp
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   const dataState = evaluateDataState({
     isLoading: coreProps.isLoading,
@@ -564,7 +662,14 @@ export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, Ver
       chartRef.current?.update(engineProps);
     });
 
-    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+    useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
@@ -638,7 +743,14 @@ export const ComparableHorizontalBarChart = forwardRef<
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   const dataState = evaluateDataState({
     isLoading: coreProps.isLoading,
@@ -711,7 +823,14 @@ export const ComparableVerticalBarChart = forwardRef<
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   const dataState = evaluateDataState({
     isLoading: coreProps.isLoading,
@@ -754,7 +873,14 @@ export const DualHorizontalBarChart = forwardRef<DualHorizontalBarChartHandle, D
       chartRef.current?.update(props);
     });
 
-    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+    useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
     return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
   }
@@ -793,7 +919,14 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProp
       chartRef.current?.update(engineProps);
     });
 
-    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+    useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
@@ -836,7 +969,14 @@ export const RangeChart = forwardRef<RangeChartHandle, RangeChartProps>(function
     chartRef.current?.update(props);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
 });
@@ -859,7 +999,14 @@ export const RibbonChart = forwardRef<RibbonChartHandle, RibbonChartProps>(funct
     chartRef.current?.update(props);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
 });
@@ -891,7 +1038,14 @@ export const RadarChart = forwardRef<RadarChartHandle, RadarChartReactProps>(fun
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   // Radar's data prop is `series`, not `dataSet`.
   const dataState = evaluateDataState({
@@ -1057,7 +1211,14 @@ export const TreemapChart = forwardRef<TreemapChartHandle, TreemapChartReactProp
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   const dataState = evaluateDataState({
     isLoading: coreProps.isLoading,
@@ -1099,7 +1260,14 @@ export const PieChart = forwardRef<PieChartHandle, PieChartProps>(function PieCh
     chartRef.current?.update(props);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   return <div ref={hostRef} style={{ width: props.width ?? 600, height: props.height ?? 420 }} />;
 });
@@ -1122,7 +1290,14 @@ export const BubbleChart = forwardRef<BubbleChartHandle, BubbleChartProps>(funct
     chartRef.current?.update(props);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   return <div ref={hostRef} style={{ width: props.width ?? 700, height: props.height ?? 500 }} />;
 });
@@ -1153,7 +1328,14 @@ export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartReactProps>(
     chartRef.current?.update(engineProps);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   // Sankey's data prop is `nodes` (no unified dataSet); empty nodes → no data.
   const dataState = evaluateDataState({
@@ -1196,7 +1378,14 @@ export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>
     chartRef.current?.update(props);
   });
 
-  useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
   return <div ref={hostRef} style={{ width: props.width ?? 800, height: props.height ?? 500 }} />;
 });
@@ -1244,7 +1433,14 @@ export const ChoroplethMapChart = forwardRef<ChoroplethMapChartHandle, Choroplet
       chartRef.current?.update(engineProps);
     });
 
-    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+    useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
@@ -1312,7 +1508,14 @@ export const SymbolMapChart = forwardRef<SymbolMapChartHandle, SymbolMapChartRea
       chartRef.current?.update(engineProps);
     });
 
-    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+    useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
@@ -1380,7 +1583,14 @@ export const RadialTreeChart = forwardRef<RadialTreeChartHandle, RadialTreeChart
       chartRef.current?.update(engineProps);
     });
 
-    useImperativeHandle(ref, () => ({ getContext: () => chartRef.current?.getContext() ?? null }), []);
+    useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+    }),
+    []
+  );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
