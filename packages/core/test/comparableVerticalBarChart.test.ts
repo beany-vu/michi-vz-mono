@@ -48,7 +48,7 @@ describe("mountComparableVerticalBarChart (jsdom)", () => {
     host.remove();
   });
 
-  it("full-bandwidth overlap: based and compared share the SAME x and width for a column (unlike ComparableHorizontalBarChart, always FIXED z-order)", () => {
+  it("full-bandwidth overlap: based and compared share the SAME x and width for a column", () => {
     const { host, chart } = mount();
     const g = host.querySelector('g.data-group[data-label="Alpha One"]')!;
     const based = g.querySelector("rect.value-based")!;
@@ -60,17 +60,17 @@ describe("mountComparableVerticalBarChart (jsdom)", () => {
     host.remove();
   });
 
-  it("draws valueBased BEHIND (first) and valueCompared IN FRONT (second) - fixed order regardless of magnitude (legacy BarCompare/Bar z-order)", () => {
+  it("draws the shorter sub-bar on top so both stay visible, per row (mirrors ComparableHorizontalBarChart's comparableDrawOrder)", () => {
     const order = (host: HTMLElement, label: string) => {
       const rects = Array.from(
         host.querySelectorAll<SVGRectElement>(`g.data-group[data-label="${label}"] rect.bar`)
       );
       return rects.map((r) => (r.classList.contains("value-based") ? "based" : "compared"));
     };
-    // Alpha One grew (10 -> 18) and Beta shrank (30 -> 22): order is IDENTICAL
-    // either way (fixed, not width-dependent like the horizontal chart).
     const { host, chart } = mount();
-    expect(order(host, "Alpha One")).toEqual(["based", "compared"]);
+    // Alpha One grew (10 -> 18): the shorter "based" bar must be drawn LAST (on top).
+    expect(order(host, "Alpha One")).toEqual(["compared", "based"]);
+    // Beta shrank (30 -> 22): the shorter "compared" bar stays on top (legacy default).
     expect(order(host, "Beta")).toEqual(["based", "compared"]);
     chart.destroy();
     host.remove();
@@ -285,7 +285,7 @@ describe("deltaIndicator", () => {
     );
     expect(model.labelY).toBeGreaterThan(model.y); // label below the glyph
     expect(model.y).toBeLessThan(80); // glyph above the taller (compared) bar's top
-    expect(model.x).toBeCloseTo(10 + 40 / 3, 5); // legacy translate(bandwidth/3, ...)
+    expect(model.x).toBeCloseTo(10 + 40 / 2, 5); // centred on the column, not the legacy bandwidth/3
   });
 
   it.each([

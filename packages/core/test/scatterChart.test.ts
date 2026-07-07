@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { mountScatterChart } from "../src/engine/scatterChart";
 import { buildScatterContext } from "../src/context/buildScatterContext";
+import { buildScatterPointLabels } from "../src/scatterChart/pointLabels";
 import { sanitizeForClassName } from "../src/math/sanitize";
+import type { ScatterPointModel } from "../src/scatterChart/renderModel";
 import type { ScatterChartProps, ScatterDataPoint } from "../src/types";
 
 const dataSet: ScatterDataPoint[] = [
@@ -479,6 +481,43 @@ describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
     };
     expect(run()).toEqual(["First"]);
     expect(run()).toEqual(run());
+  });
+});
+
+describe("buildScatterPointLabels edge-flip (right-edge labels avoid cropping)", () => {
+  // jsdom has no real canvas 2D, so measureLabelWidth falls back to 7px/char:
+  // "ExampleLabel" (12 chars) => 84px. LABEL_GAP = 4.
+  const TEXT = "ExampleLabel";
+  const pt = (cx: number, cy: number, r: number): ScatterPointModel =>
+    ({ raw: { label: TEXT, x: 0, y: 0 }, label: TEXT, safe: TEXT, cx, cy, r, shape: "circle", color: "#000", dimmed: false } as ScatterPointModel);
+  const build = (p: ScatterPointModel, bounds?: { plotLeft: number; plotRight: number }) =>
+    buildScatterPointLabels([p], () => TEXT, bounds)[0];
+
+  it("no bounds: always places right of the point (anchor start) - unchanged legacy behaviour", () => {
+    const m = build(pt(560, 100, 6));
+    expect(m.textAnchor).toBe("start");
+    expect(m.x).toBe(560 + 6 + 4);
+  });
+
+  it("flips left (anchor end) when a right-side label would cross the plot's right edge", () => {
+    // rightEnd = 570 + 84 = 654 > plotRight 600, and the flipped label (466..550)
+    // clears plotLeft 40 -> flip.
+    const m = build(pt(560, 100, 6), { plotLeft: 40, plotRight: 600 });
+    expect(m.textAnchor).toBe("end");
+    expect(m.x).toBe(560 - 6 - 4);
+  });
+
+  it("stays right when the label fits within the right edge", () => {
+    const m = build(pt(300, 100, 6), { plotLeft: 40, plotRight: 600 });
+    expect(m.textAnchor).toBe("start");
+    expect(m.x).toBe(300 + 6 + 4);
+  });
+
+  it("does not flip when there's no room on the left either (keeps it right)", () => {
+    // Same right-edge point, but plotLeft 520 leaves the flipped label (466..) off-plot.
+    const m = build(pt(560, 100, 6), { plotLeft: 520, plotRight: 600 });
+    expect(m.textAnchor).toBe("start");
+    expect(m.x).toBe(560 + 6 + 4);
   });
 });
 

@@ -64,6 +64,14 @@ export const CORE_CSS = `
      band height - worst case the TOP band, whose label was cut off. */
   white-space: normal; overflow: visible; line-height: 1.15;
 }
+.michi-vz .mv-ylabel span {
+  /* Cap a wrapped label at 2 lines: unbounded wrapping relies on the neighbouring
+     band's gap being EMPTY to spill into, which breaks down when adjacent rows both
+     have long labels (both spill into the same shared gap and collide, rendering
+     illegibly). The full label stays available via the div's title attribute. */
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; text-overflow: ellipsis;
+}
 /* Treemap / stack / annotation labels: font-size lives in CSS (NOT inline) so this
    one var controls them; weights stay here too. */
 .michi-vz .tile-label { pointer-events: none; user-select: none; font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); }

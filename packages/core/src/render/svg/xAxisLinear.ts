@@ -187,7 +187,12 @@ export function renderXAxisLinear(
       (i === last ? " mv-tick-last" : "") +
       (isZero ? " mv-tick-zero" : "");
 
-    if (showGrid) {
+    // The zero line is a dedicated baseline reference, independent of the general
+    // per-tick grid: draw it even when showGrid is off, so showZeroLine:true alone
+    // (without also turning on a full dashed grid) is enough to reproduce it -
+    // matches every consumer's own expectation of "just draw the x=0 line".
+    const drawZeroLine = isZero && o.showZeroLine === true;
+    if (showGrid || drawZeroLine) {
       const grid = svgEl("line", {
         class: `mv-grid ${tickClass}`,
         x1: p.px,
@@ -196,8 +201,7 @@ export function renderXAxisLinear(
         y2: bottom,
       });
       // A zero line (or explicitly requested) renders solid rather than dashed.
-      if (isZero && o.showZeroLine)
-        grid.setAttribute("stroke-dasharray", "none");
+      if (drawZeroLine) grid.setAttribute("stroke-dasharray", "none");
       g.appendChild(grid);
     }
 

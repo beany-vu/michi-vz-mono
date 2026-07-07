@@ -5,10 +5,14 @@
 // types.ts for the full contract) so both charts share ONE decision table.
 //
 // Geometry ported from legacy sdg-trade BarchartVertical/Chart.js: the glyph +
-// label sit ABOVE the taller of the two columns, offset `translate(bandwidth/3,
-// -32)` - not centred on the band. The label sits `y=25` below the glyph's
-// local origin inside that translated group (`LabelValue y={25}`), so the
-// label reads just above the bar, with the glyph further above it.
+// label sit ABOVE the taller of the two columns. The label sits `y=25` below
+// the glyph's local origin (`LabelValue y={25}`), so the label reads just
+// above the bar, with the glyph further above it. Horizontal placement was
+// ALSO ported verbatim at first (`translate(bandwidth/3, -32)`, i.e. offset
+// toward the left third of the band rather than centred), but that was an
+// unintentional legacy quirk, not a deliberate design choice - centred (see
+// DELTA_X_FRACTION below) reads better and is what every other delta-indicator
+// UI in this library does.
 import { DELTA_GOOD_COLOR, DELTA_BAD_COLOR, DELTA_NEUTRAL_COLOR } from "../comparableBar/delta";
 import type { ComparableDeltaDirection, ComparableDeltaGeometryOptions } from "../comparableBar/delta";
 import type { ComparableBarDataPoint } from "../types";
@@ -23,9 +27,9 @@ export const DELTA_GAP_Y = 32;
 /** Offset (px, downward) from the glyph anchor to the label baseline - ported
  * from legacy `LabelValue y={25}` (measured from the same local origin). */
 export const DELTA_LABEL_OFFSET_Y = 25;
-/** Horizontal placement fraction of the bandwidth - ported verbatim from legacy
- * `translate(bandwidth/3, -32)` (NOT centred on the column). */
-export const DELTA_X_FRACTION = 1 / 3;
+/** Horizontal placement fraction of the bandwidth. Centred (0.5), not the legacy
+ * chart's own bandwidth/3 - see the header comment. */
+export const DELTA_X_FRACTION = 1 / 2;
 
 export interface ComparableVerticalDeltaModel {
   /** valueCompared - valueBased (see DeltaIndicatorConfig JSDoc). */

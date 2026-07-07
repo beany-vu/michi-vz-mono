@@ -65,6 +65,8 @@ interface Resolved {
   colorMode: "label" | "shape";
   renderer: GapRenderer;
   enableTransitions: boolean;
+  showZeroLineForXAxis: boolean;
+  maxBarHeight?: number;
 }
 
 function resolve(p: GapChartProps): Resolved {
@@ -84,6 +86,8 @@ function resolve(p: GapChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
+    showZeroLineForXAxis: p.showZeroLineForXAxis ?? false,
+    maxBarHeight: p.maxBarHeight,
   };
 }
 
@@ -279,6 +283,7 @@ export function mountGapChart(
       r.margin,
       xAxisDataType,
       props.xAxisDomain === undefined, // explicit domain -> no nice() re-rounding
+      r.maxBarHeight,
     );
 
     const model = buildGapRenderModel(
@@ -303,6 +308,12 @@ export function mountGapChart(
       x: r.width / 2,
       y: r.margin.top / 2,
     });
+    // maxTicks thins a dense/narrow numeric axis to a legible count, keeping the
+    // first + last tick; autoRotate tilts -45deg only if the kept labels still
+    // collide. Mirrors LineChart/AreaChart's identical width-based heuristic - a
+    // no-op (byte-identical output) whenever the ticks already fit cleanly.
+    const gapPlotW = r.width - r.margin.left - r.margin.right;
+    const gapMaxTicks = gapPlotW < 480 ? 3 : 5;
     renderXAxisLinear(svg, scales.xScale, {
       width: r.width,
       height: r.height,
@@ -312,6 +323,9 @@ export function mountGapChart(
       ticks: r.ticks,
       tickValues: props.tickValues,
       enableExplicitTickValues: props.enableExplicitTickValues ?? true,
+      showZeroLine: r.showZeroLineForXAxis,
+      autoRotate: true,
+      maxTicks: gapMaxTicks,
     });
     // interactiveRowLabels: label hover/focus = leader line + row tooltip +
     // highlight; click pins (same sticky contract as the marks). Composed from the

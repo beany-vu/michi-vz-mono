@@ -1,6 +1,6 @@
 // Opt-in Canvas 2D renderer for ComparableVerticalBar. Each category has two
-// sub-bars (value-based behind, value-compared in front, FIXED z-order - see
-// renderModel.ts). Sub-bar fill colours are resolved via DUAL nested probes so
+// sub-bars (value-based, value-compared; per-row z-order - see renderModel.ts's
+// comparableVerticalDrawOrder). Sub-bar fill colours are resolved via DUAL nested probes so
 // descendant consumer CSS (`.bar[data-label-safe] .value-based`) matches;
 // ['fill','stroke'] lets a `url(#pattern)` fill fall through to the stroke
 // colour. value-based may instead be filled with a hatch PATTERN from
@@ -82,7 +82,7 @@ export function drawComparableVerticalCanvas(
   for (const bar of model.bars) {
     const groupAlpha = bar.dimmed ? 0.3 : 1;
     const patSrc = o.patternsMapping?.[bar.label] ?? o.patternsMapping?.[bar.safe];
-    const parts = comparableVerticalDrawOrder.map((type) =>
+    const parts = comparableVerticalDrawOrder(bar).map((type) =>
       type === "based"
         ? { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.basedColor, pattern: patSrc }
         : { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color, pattern: undefined as string | undefined }

@@ -7,6 +7,7 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
+import { measureLabelWidth } from "../render/svg/measureLabelWidth";
 import { ensurePatternDefs } from "../render/svg/patternDefs";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processComparableBarData } from "../comparableBar/data";
@@ -335,12 +336,38 @@ export function mountComparableHorizontalBarChart(
       }
     }
 
+    const xFormat = props.xAxisFormat ?? defaultNumberFormatter(props.locale);
+    const yFormat = props.yAxisFormat ?? ((d: number | string) => String(d));
+
+    // Auto-fit the left gutter to the widest ROW label so long category names
+    // (e.g. "Landlocked developing countries (LLDCs)") get a label box wide enough
+    // to render on one line instead of being clipped to the fixed 120/100px default
+    // and forced into the 2-line ellipsis. Only when the consumer left margin +
+    // tickHtmlWidth at their defaults (an explicit margin/tickHtmlWidth is always
+    // honoured verbatim). Capped at a fraction of the chart width so one very long
+    // label can't eat the whole plot - the .mv-ylabel 2-line ellipsis stays the
+    // safety net at the cap. Grows the gutter only, never shrinks below the default.
+    const LEFT_LABEL_PAD = 16;
+    const MAX_LEFT_FRACTION = 0.4;
+    const widestLabel = labels.reduce((m, l) => Math.max(m, measureLabelWidth(yFormat(l))), 0);
+    const autoLeft = Math.min(
+      Math.round(r.width * MAX_LEFT_FRACTION),
+      Math.max(r.margin.left, Math.ceil(widestLabel + LEFT_LABEL_PAD))
+    );
+    const effMargin: Margin =
+      props.margin?.left != null || autoLeft === r.margin.left
+        ? r.margin
+        : { ...r.margin, left: autoLeft };
+    // Fill the (possibly widened) gutter with the label box so left-aligned labels
+    // use the full width; respect an explicit tickHtmlWidth if the consumer set one.
+    const effTickHtmlWidth = props.tickHtmlWidth != null ? r.tickHtmlWidth : effMargin.left;
+
     const scales = createComparableBarScales(
       xAxisDomain,
       labels,
       r.width,
       r.height,
-      r.margin,
+      effMargin,
       r.padding,
       r.maxBarHeight
     );
@@ -352,21 +379,26 @@ export function mountComparableHorizontalBarChart(
       deltaIndicator: r.deltaIndicator,
     });
 
-    const xFormat = props.xAxisFormat ?? defaultNumberFormatter(props.locale);
-    const yFormat = props.yAxisFormat ?? ((d: number | string) => String(d));
-
     clear(svg);
-    renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
+    renderTitle(svg, { text: props.title, x: r.width / 2, y: effMargin.top / 2 });
+    // maxTicks thins a dense/narrow value axis to a legible count, keeping the
+    // first + last tick; autoRotate tilts -45deg only if the kept labels still
+    // collide. Mirrors LineChart/AreaChart's identical width-based heuristic - a
+    // no-op (byte-identical output) whenever the ticks already fit cleanly.
+    const comparablePlotW = r.width - effMargin.left - effMargin.right;
+    const comparableMaxTicks = comparablePlotW < 480 ? 3 : 5;
     renderXAxisLinear(svg, scales.xScale, {
       width: r.width,
       height: r.height,
-      margin: r.margin,
+      margin: effMargin,
       xAxisDataType: "number",
       format: (v) => xFormat(v),
       ticks: r.ticks,
       enableExplicitTickValues: false,
       showGrid: r.showGrid,
       showZeroLine: r.showZeroLineForXAxis,
+      autoRotate: true,
+      maxTicks: comparableMaxTicks,
     });
     // interactiveRowLabels: label hover/focus = leader line + row tooltip +
     // highlight; click pins (same sticky contract as the bars). Composed from the
@@ -374,7 +406,7 @@ export function mountComparableHorizontalBarChart(
     const rowByLabel = new Map(model.bars.map((b) => [b.label, b]));
     const rowStartX = (label: string): number => {
       const b = rowByLabel.get(label);
-      return b ? Math.min(b.based.x, b.compared.x) : r.margin.left;
+      return b ? Math.min(b.based.x, b.compared.x) : effMargin.left;
     };
     const labelTooltipEvent = (x: number, rowCenterY: number): MouseEvent => {
       const hostRect = host.getBoundingClientRect();
@@ -382,9 +414,9 @@ export function mountComparableHorizontalBarChart(
     };
     renderYAxisBand(svg, scales.yScale, {
       width: r.width,
-      margin: r.margin,
+      margin: effMargin,
       format: (label) => yFormat(label),
-      tickHtmlWidth: r.tickHtmlWidth,
+      tickHtmlWidth: effTickHtmlWidth,
       showGrid: false,
       hideTickLabels: r.hideTickLabels,
       tickLabelOffset: r.horizontalTickPosition,

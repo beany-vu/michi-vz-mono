@@ -342,6 +342,46 @@ describe("layout: overlay (default) vs grouped", () => {
   });
 });
 
+describe("numeric x-axis tick collision avoidance (autoRotate)", () => {
+  it("rotates -45deg tick labels when a narrow width would otherwise collide", () => {
+    const { host, chart } = mount({
+      width: 260,
+      xAxisFormat: (d) => `Value ${d} thousand units`,
+    });
+    const rotatedLabel = host.querySelector('.mv-x-axis text[transform*="rotate(-45)"]');
+    expect(rotatedLabel).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("keeps labels horizontal (no rotation) when they comfortably fit", () => {
+    const { host, chart } = mount({ width: 900 });
+    const rotatedLabel = host.querySelector('.mv-x-axis text[transform*="rotate(-45)"]');
+    expect(rotatedLabel).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+});
+
+describe("showZeroLineForXAxis draws independent of showGrid (default showGrid:false)", () => {
+  it("draws only the solid zero line, with no other x-axis grid lines, when showGrid is left at its default (false)", () => {
+    const { host, chart } = mount({ showZeroLineForXAxis: true });
+    const lines = Array.from(host.querySelectorAll(".mv-x-axis line.mv-grid"));
+    expect(lines.length).toBe(1);
+    expect(lines[0].getAttribute("class")).toContain("mv-tick-zero");
+    expect(lines[0].getAttribute("stroke-dasharray")).toBe("none");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("draws no x-axis line at all when showZeroLineForXAxis is left at its default (false)", () => {
+    const { host, chart } = mount();
+    expect(host.querySelectorAll(".mv-x-axis line.mv-grid").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+});
+
 describe("y-band gridlines respect showGrid (no phantom horizontal lines)", () => {
   it("draws NO .mv-y-axis .mv-grid line (the engine passes y-band showGrid:false)", () => {
     // Regression: the old `stroke=transparent` fallback was overridden by the

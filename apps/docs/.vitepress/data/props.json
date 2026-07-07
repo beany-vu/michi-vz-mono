@@ -3710,6 +3710,22 @@
           "common": false
         },
         {
+          "name": "showZeroLineForXAxis",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw a solid vertical line at x=0 on the value axis (diverging charts). Default false.",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "maxBarHeight",
+          "type": "number",
+          "optional": true,
+          "description": "Cap each row's thickness (px). When few rows would otherwise balloon the bandwidth (a scaleBand stretched over the full plot height), the band range shrinks to yield exactly this thickness and is centred in the plot (symmetric whitespace), so a 1-2 row chart reads tidily instead of a single row floating mid-plot. No-op for dense charts whose natural bandwidth is already below the cap. Mirrors ComparableBarChart's `maxBarHeight`.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,

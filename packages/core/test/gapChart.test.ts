@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { processGapChartData } from "../src/gapChart/data";
 import { buildGapColors } from "../src/gapChart/colors";
+import { createGapScales } from "../src/gapChart/scales";
 import { buildGapContext } from "../src/context/buildContext";
 import { checkGapData } from "../src/validate/dataWarnings";
 import { sanitizeForClassName } from "../src/math/sanitize";
@@ -484,6 +485,97 @@ describe("mountGapChart enableExplicitTickValues threading", () => {
     expect(labelCount(true)).toBe(3); // exactly the 3 supplied ticks
     expect(labelCount()).toBe(3); // default true
     expect(labelCount(false)).not.toBe(3); // d3-computed, ignores the explicit values
+  });
+});
+
+describe("showZeroLineForXAxis (GapChart)", () => {
+  function mount(extra: Partial<GapChartProps> = {}) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGapChart(host, {
+      dataSet: sample,
+      title: "Demo",
+      width: 600,
+      height: 300,
+      ...extra,
+    });
+    return { host, chart };
+  }
+
+  it("draws a solid zero line only when showZeroLineForXAxis is true", () => {
+    // Default domain is [0, 55] (see processGapChartData test above), so a zero
+    // tick is always present - only its dash style should change with the prop.
+    const off = mount();
+    const zeroLineOff = off.host.querySelector(".mv-x-axis line.mv-tick-zero")!;
+    expect(zeroLineOff.getAttribute("stroke-dasharray")).not.toBe("none");
+    off.chart.destroy();
+    off.host.remove();
+
+    const on = mount({ showZeroLineForXAxis: true });
+    const zeroLineOn = on.host.querySelector(".mv-x-axis line.mv-tick-zero")!;
+    expect(zeroLineOn.getAttribute("stroke-dasharray")).toBe("none");
+    on.chart.destroy();
+    on.host.remove();
+  });
+});
+
+describe("createGapScales - maxBarHeight cap (parity with ComparableBarChart)", () => {
+  const margin = { top: 50, right: 150, bottom: 100, left: 150 };
+
+  it("caps the row thickness and centres bands when few rows would balloon", () => {
+    const labels = ["Africa", "Rest of the World"];
+    const uncapped = createGapScales([0, 100], labels, 1000, 500, margin, "number");
+    expect(uncapped.yScale.bandwidth()).toBeGreaterThan(80); // 2 rows over ~350px = huge
+
+    const capped = createGapScales([0, 100], labels, 1000, 500, margin, "number", true, 40);
+    expect(capped.yScale.bandwidth()).toBeLessThanOrEqual(40 + 0.5);
+    // centred: equal whitespace above the first band and below the last
+    const top = capped.yScale(labels[0])!;
+    const bottom = capped.yScale(labels[1])! + capped.yScale.bandwidth();
+    const plotMid = (margin.top + (500 - margin.bottom)) / 2;
+    expect((top + bottom) / 2).toBeCloseTo(plotMid, 1);
+  });
+
+  it("is a no-op for dense charts whose natural bandwidth is already below the cap", () => {
+    const labels = Array.from({ length: 20 }, (_, i) => `row${i}`);
+    const plain = createGapScales([0, 100], labels, 1000, 500, margin, "number");
+    const withCap = createGapScales([0, 100], labels, 1000, 500, margin, "number", true, 40);
+    expect(withCap.yScale.bandwidth()).toBeCloseTo(plain.yScale.bandwidth(), 5);
+  });
+});
+
+describe("mountGapChart maxBarHeight (engine wiring)", () => {
+  function mount(extra: Partial<GapChartProps> = {}) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGapChart(host, {
+      dataSet: sample,
+      title: "Demo",
+      width: 600,
+      height: 300,
+      ...extra,
+    });
+    return { host, chart };
+  }
+
+  it("caps row thickness end-to-end through mountGapChart props", () => {
+    // The y-axis label foreignObject spans exactly one band's height.
+    const bandHeight = (host: HTMLElement) =>
+      Number(host.querySelector(".mv-ylabel-fo")?.getAttribute("height"));
+
+    const uncapped = mount({ dataSet: sample.slice(0, 2), width: 1000, height: 500 });
+    const capped = mount({
+      dataSet: sample.slice(0, 2),
+      width: 1000,
+      height: 500,
+      maxBarHeight: 40,
+    });
+    expect(bandHeight(capped.host)).toBeLessThanOrEqual(40 + 0.5);
+    expect(bandHeight(capped.host)).toBeLessThan(bandHeight(uncapped.host));
+    uncapped.chart.destroy();
+    uncapped.host.remove();
+    capped.chart.destroy();
+    capped.host.remove();
   });
 });
 

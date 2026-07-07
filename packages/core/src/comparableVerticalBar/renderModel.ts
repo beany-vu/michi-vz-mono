@@ -1,7 +1,8 @@
 // Renderer-agnostic ComparableVerticalBar model: per category, two VERTICAL
-// sub-bars (valueBased behind, valueCompared in front), both at the SAME x and
-// the FULL column bandwidth, diverging from y=0. Overlay-only (no "grouped"
-// half-band split - unlike ComparableHorizontalBarChart's optional layout).
+// sub-bars (valueBased, valueCompared - paint order decided per row by
+// comparableVerticalDrawOrder below), both at the SAME x and the FULL column
+// bandwidth, diverging from y=0. Overlay-only (no "grouped" half-band split -
+// unlike ComparableHorizontalBarChart's optional layout).
 import { sanitizeForClassName } from "../math/sanitize";
 import type { ComparableBarDataPoint } from "../types";
 import type { ComparableVerticalScales } from "./scales";
@@ -49,11 +50,22 @@ export interface BuildComparableVerticalModelOptions {
   deltaIndicator?: ComparableDeltaGeometryOptions;
 }
 
-// FIXED z-order (legacy sdg-trade BarchartVertical/Chart.js: `BarCompare`
-// painted first/behind, `Bar` painted second/in front) - unlike the horizontal
-// chart's width-dependent swap, valueBased is ALWAYS drawn first (behind,
-// hatch-eligible) and valueCompared ALWAYS second (in front, solid).
-export const comparableVerticalDrawOrder: readonly ["based", "compared"] = ["based", "compared"];
+// Legacy default (based-then-compared) on a tie; otherwise the SHORTER sub-bar
+// draws last (on top), so neither value is ever fully hidden behind the other -
+// mirrors ComparableHorizontalBarChart's comparableDrawOrder exactly, keyed on
+// HEIGHT (vertical bars diverge from y=0) instead of width. The original port
+// used a z-order FIXED to the field (based always behind, compared always
+// front, matching the legacy vendored chart's own static paint order); that
+// reproduces the legacy look when the "usual" field is taller, but silently
+// renders zero pixels for whichever field is smaller on a row where the
+// opposite holds (e.g. a declining indicator, or a mixed-direction dataset).
+// The colour/pattern ASSIGNMENT is unchanged (based keeps its hatch-eligible
+// fill, compared its solid one) - only which one paints on top varies per row.
+export function comparableVerticalDrawOrder(
+  bar: ComparableVerticalBarModel
+): ["based" | "compared", "based" | "compared"] {
+  return bar.based.height < bar.compared.height ? ["compared", "based"] : ["based", "compared"];
+}
 
 export function buildComparableVerticalRenderModel(
   points: ComparableBarDataPoint[],

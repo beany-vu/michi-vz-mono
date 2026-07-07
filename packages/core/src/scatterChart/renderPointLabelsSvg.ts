@@ -21,6 +21,7 @@ export function renderScatterPointLabelsSvg(svg: SVGElement, marks: ScatterPoint
       class: "mv-point-label-text",
       x: m.x,
       y: m.y,
+      "text-anchor": m.textAnchor ?? "start",
       "dominant-baseline": "middle",
       fill: "var(--michi-vz-ink, currentColor)",
     });

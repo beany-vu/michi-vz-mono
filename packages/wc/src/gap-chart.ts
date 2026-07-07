@@ -58,6 +58,8 @@ export class GapChartElement extends LitElement {
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
+    showZeroLineForXAxis: { type: Boolean, attribute: "show-zero-line-for-x-axis" },
+    maxBarHeight: { type: Number, attribute: "max-bar-height" },
   };
 
   dataSet: GapDataItem[] = [];
@@ -96,6 +98,8 @@ export class GapChartElement extends LitElement {
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: GapDataItem[] | null | undefined) => boolean);
   noDataLabel?: string;
+  showZeroLineForXAxis?: boolean;
+  maxBarHeight?: number;
 
   private chart?: ChartInstance<GapChartProps>;
 
@@ -149,6 +153,8 @@ export class GapChartElement extends LitElement {
       isLoading: this.isLoading,
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
+      showZeroLineForXAxis: this.showZeroLineForXAxis,
+      maxBarHeight: this.maxBarHeight,
       onHighlightItem: (item) => this.emit("michi-vz:highlight", item),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

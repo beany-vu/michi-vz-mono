@@ -138,11 +138,21 @@ export function chooseAxisMode(params: ChooseAxisModeParams): ChooseAxisModeResu
 
   if (forceMode === "auto") {
     const COS_45 = Math.SQRT1_2;
-    // Rotated labels trail diagonally, so adjacent labels can graze each other
-    // without their text colliding. 3× lets the -45° footprint extend past one
-    // band before we give up and thin - prioritizes "all labels visible".
-    const ROTATED_MAX_OVERLAP = 3;
-    if (maxLabelWidth * COS_45 <= bandWidth * ROTATED_MAX_OVERLAP) {
+    // Whether -45° labels collide depends on the PERPENDICULAR gap between
+    // neighbours, NOT on label width. Rotated labels trail as PARALLEL diagonal
+    // lines exactly one band apart, so their clearance is `bandWidth · cos45`;
+    // they stay legible as long as that gap is at least a text line-height,
+    // regardless of how long any single label is. A few long labels at wide bands
+    // therefore rotate cleanly (they only need more bottom margin, which the
+    // engine reserves), while a genuinely dense axis - bands narrower than a line
+    // of text - still falls through to thinning.
+    //
+    // (The previous check compared label WIDTH to 3× the band width, which wrongly
+    // forced long-but-sparse category labels - e.g. ~14 region names at ~50px bands
+    // - into horizontal thinning even though rotating them would not overlap at all.
+    // That produced the "labels overlap / half the regions unlabelled" symptom.)
+    const ROTATED_MIN_PERP_SLOT = 16; // ~one 12px line-height of clearance
+    if (bandWidth * COS_45 >= ROTATED_MIN_PERP_SLOT) {
       return { mode: "rotated", tickValues: domain };
     }
   }

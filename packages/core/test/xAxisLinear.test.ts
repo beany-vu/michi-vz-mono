@@ -113,6 +113,55 @@ describe("renderXAxisLinear adaptive density (autoRotate + maxTicks)", () => {
   });
 });
 
+describe("renderXAxisLinear zero line (showZeroLine independent of showGrid)", () => {
+  const zeroDomainOpts = {
+    width: 800,
+    height: 100,
+    margin: MARGIN,
+    xAxisDataType: "number" as const,
+    format: (v: number) => String(v),
+    ticks: 5,
+  };
+
+  it("draws ONLY the solid zero line when showGrid is off - not a full dashed grid", () => {
+    const svg = svgRoot();
+    renderXAxisLinear(svg, scaleLinear().domain([-10, 10]).range([20, 780]), {
+      ...zeroDomainOpts,
+      showGrid: false,
+      showZeroLine: true,
+    });
+    const lines = Array.from(svg.querySelectorAll("line.mv-grid"));
+    expect(lines.length).toBe(1);
+    expect(lines[0].getAttribute("class")).toContain("mv-tick-zero");
+    expect(lines[0].getAttribute("stroke-dasharray")).toBe("none");
+  });
+
+  it("draws no lines at all when showGrid is off and showZeroLine is not set", () => {
+    const svg = svgRoot();
+    renderXAxisLinear(svg, scaleLinear().domain([-10, 10]).range([20, 780]), {
+      ...zeroDomainOpts,
+      showGrid: false,
+    });
+    expect(svg.querySelectorAll("line.mv-grid").length).toBe(0);
+  });
+
+  it("still draws every tick's grid line when showGrid is on (unchanged full-grid behaviour)", () => {
+    const svg = svgRoot();
+    renderXAxisLinear(svg, scaleLinear().domain([-10, 10]).range([20, 780]), {
+      ...zeroDomainOpts,
+      showGrid: true,
+      showZeroLine: true,
+    });
+    const lines = Array.from(svg.querySelectorAll("line.mv-grid"));
+    expect(lines.length).toBe(5);
+    const zero = lines.find((l) => (l.getAttribute("class") ?? "").includes("mv-tick-zero"))!;
+    expect(zero.getAttribute("stroke-dasharray")).toBe("none");
+    expect(
+      lines.filter((l) => l !== zero).every((l) => l.getAttribute("stroke-dasharray") !== "none")
+    ).toBe(true);
+  });
+});
+
 describe("renderXAxisLinear no-data ticks (fillPeriodTicks marking)", () => {
   const cls = (l: Element) => l.getAttribute("class") ?? "";
 

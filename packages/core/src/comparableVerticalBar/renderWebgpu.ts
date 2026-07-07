@@ -1,7 +1,7 @@
 // EXPERIMENTAL opt-in WebGPU renderer for ComparableVerticalBar - the third
 // sibling to renderSvg.ts / renderCanvas.ts, consuming the SAME
-// ComparableVerticalRenderModel. Each category's two sub-bars (value-based
-// behind, value-compared in front, FIXED z-order) are drawn as GPU rects via
+// ComparableVerticalRenderModel. Each category's two sub-bars (per-row z-order -
+// see renderModel.ts's comparableVerticalDrawOrder) are drawn as GPU rects via
 // the shared marks.ts layer. Sub-bar fill colours are resolved through the SAME
 // dual nested probes canvas mode uses, so consumer CSS still reaches GPU
 // pixels. Text/axes/title stay on the SVG layer. PoC scope: bars are flat rects
@@ -40,7 +40,7 @@ export function drawComparableVerticalBarWebgpu(
   const batch = emptyBatch();
   for (const bar of model.bars) {
     const groupAlpha = bar.dimmed ? 0.3 : 1;
-    const parts = comparableVerticalDrawOrder.map((type) =>
+    const parts = comparableVerticalDrawOrder(bar).map((type) =>
       type === "based"
         ? { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.basedColor }
         : { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color }

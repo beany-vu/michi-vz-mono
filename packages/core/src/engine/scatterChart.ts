@@ -518,7 +518,15 @@ export function mountScatterChart(
     // is absent/false (r.pointLabels is null).
     if (r.pointLabels) {
       const formatter = r.pointLabels.formatter ?? ((d: ScatterDataPoint) => d.label);
-      renderScatterPointLabelsSvg(svg, buildScatterPointLabels(model.points, formatter));
+      // Pass the plot bounds so a label near the right edge flips left instead of
+      // being cropped (margin.left / width-margin.right are the plot's x-extent).
+      renderScatterPointLabelsSvg(
+        svg,
+        buildScatterPointLabels(model.points, formatter, {
+          plotLeft: r.margin.left,
+          plotRight: r.width - r.margin.right,
+        })
+      );
     }
 
     // Crosshair config the canvas hover handler (onHostMove) reads; null when off.

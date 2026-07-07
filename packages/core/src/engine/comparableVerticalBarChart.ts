@@ -1,7 +1,7 @@
 // ComparableVerticalBar engine: mount/update/getContext/destroy. Band x
 // (categories) + linear y; two FULL-BANDWIDTH overlapping vertical sub-bars per
-// category (valueBased behind, valueCompared in front - FIXED z-order) in LIGHT
-// DOM (SVG) or canvas. The vertical sibling of ComparableHorizontalBarChart -
+// category (valueBased, valueCompared - per-row z-order, shorter on top) in
+// LIGHT DOM (SVG) or canvas. The vertical sibling of ComparableHorizontalBarChart -
 // see comparableVerticalBar/renderModel.ts for the geometry note ported from
 // legacy sdg-trade BarchartVertical/Chart.js.
 import DOMPurify from "dompurify";

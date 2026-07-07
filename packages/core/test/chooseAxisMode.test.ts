@@ -49,18 +49,49 @@ describe("chooseAxisMode", () => {
   });
 
   test("fallback samples evenly when more than 2 ticks fit", () => {
-    const domain = Array.from({ length: 10 }, (_, i) => `2023-long-month-${String(i).padStart(2, "0")}`);
+    // 12 long labels at a 20px band: below the rotated-clearance threshold
+    // (20·cos45 ≈ 14px < 16px line-height), so it thins rather than rotates, and
+    // the band is wide enough to fit 3 evenly-spaced ticks (endpoints + midpoint).
+    const domain = Array.from({ length: 12 }, (_, i) => `2023-long-month-${String(i).padStart(2, "0")}`);
     const result = chooseAxisMode({
       domain,
       formatter: (d) => String(d),
-      bandWidth: 25,
+      bandWidth: 20,
       measure,
       padding: 8,
       maxTicks: 15,
     });
 
     expect(result.mode).toBe("fallback");
-    expect(result.tickValues).toEqual([domain[0], domain[5], domain[9]]);
+    expect(result.tickValues).toEqual([domain[0], domain[6], domain[11]]);
+  });
+
+  test("rotates a few long labels at wide bands instead of thinning them", () => {
+    // Region-name axis: ~8 long category labels on a wide (~55px) band. Horizontal
+    // can't fit a 40-char name, but rotating -45° gives a perpendicular gap of
+    // 55·cos45 ≈ 39px between neighbours (>> a text line-height), so every label
+    // stays legible and NONE are dropped. Guards the fix for the reported symptom
+    // where long region labels were forced into horizontal-thinned overlap.
+    const domain = [
+      "Middle Africa",
+      "Caribbean",
+      "Oceania (exc. Australia and New Zealand)",
+      "Central Asia",
+      "Eastern Asia",
+      "Western Asia",
+      "Northern America",
+      "Europe",
+    ];
+    const result = chooseAxisMode({
+      domain,
+      formatter: (d) => String(d),
+      bandWidth: 55,
+      measure,
+      padding: 8,
+    });
+
+    expect(result.mode).toBe("rotated");
+    expect(result.tickValues).toEqual(domain); // all kept, none thinned
   });
 
   test("empty domain returns horizontal with no ticks", () => {

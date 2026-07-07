@@ -1,7 +1,8 @@
 // Imperative SVG renderer for ComparableVerticalBar: two <rect class="bar"> per
 // category (valueBased behind at valueBasedOpacity, valueCompared in front at
 // valueComparedOpacity), each with data-label + data-label-safe, drawn in a
-// FIXED z-order (see renderModel.ts). Hover per sub-bar rect.
+// per-row z-order (see renderModel.ts's comparableVerticalDrawOrder). Hover per
+// sub-bar rect.
 import { svgEl } from "../dom";
 import { comparableVerticalDrawOrder } from "./renderModel";
 import type { ComparableVerticalBarModel, ComparableVerticalRenderModel } from "./renderModel";
@@ -36,7 +37,7 @@ export function renderComparableVerticalSvg(
     g.style.opacity = bar.dimmed ? "0.3" : "1";
     g.style.transition = transition;
 
-    for (const type of comparableVerticalDrawOrder) {
+    for (const type of comparableVerticalDrawOrder(bar)) {
       const part =
         type === "based"
           ? { seg: bar.based, opacity: o.valueBasedOpacity, cls: "value-based", fill: bar.basedColor }
