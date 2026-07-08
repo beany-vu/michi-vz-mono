@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "extract-props": "node scripts/extract-props.mjs",
+    "generate-llms": "node scripts/generate-llms.mjs",
     "test": "node --test scripts/*.test.mjs",
-    "dev": "node scripts/extract-props.mjs && vitepress dev",
-    "build": "node scripts/extract-props.mjs && vitepress build",
+    "dev": "node scripts/extract-props.mjs && node scripts/generate-llms.mjs && vitepress dev",
+    "build": "node scripts/extract-props.mjs && node scripts/generate-llms.mjs && vitepress build",
     "preview": "vitepress preview"
   },
   "dependencies": {

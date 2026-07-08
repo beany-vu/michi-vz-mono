@@ -1,0 +1,32 @@
+# michi-vz
+
+<!-- Generated file. Edit apps/docs/scripts/llms/llms.template.txt and run `npm run generate-llms`. -->
+
+> Framework-agnostic charting for the web: a plain TypeScript engine, light-DOM web components, and first-class React, Vue, Svelte, and Angular wrappers. {{chartCount}} chart types, svg and canvas renderers, a structured ChartContext on every chart for accessibility and tool use, and an opt-in, local-first insights layer for forecasting, anomaly detection, narration, agents, and MCP.
+
+Package versions: @michi-vz/core {{version:@michi-vz/core}}, wc {{version:@michi-vz/wc}}, react {{version:@michi-vz/react}}, vue {{version:@michi-vz/vue}}, svelte {{version:@michi-vz/svelte}}, angular {{version:@michi-vz/angular}}, insights {{version:@michi-vz/insights}}, devtools {{version:@michi-vz/devtools}}.
+
+## Guides
+
+- [Why michi-vz]({{site}}/guide/why): design goals and architecture
+- [Installation]({{site}}/guide/installation): packages, peer requirements, CDN usage, styles
+- [Getting started]({{site}}/guide/getting-started): a first chart in every framework
+- [Provider and shared state]({{site}}/guide/provider): colors, highlight, and disabled state shared across charts
+- [LLM context]({{site}}/guide/llm-context): the ChartContext an AI can read and drive
+- [Insights]({{site}}/guide/insights): opt-in, local-first forecasting, anomaly detection, narration, agents, and MCP
+- [Devtools]({{site}}/guide/devtools): inspect and drive mounted charts in-page
+- [What's new]({{site}}/guide/whats-new): release notes
+
+## Charts
+
+<!-- llms:chart-links -->
+
+## API
+
+- [Chart API]({{site}}/api/line): props, events, and getContext() per chart (swap the slug for any chart)
+- [Insights API]({{site}}/api/insights/forecast): forecast, anomaly, validate, narrate, embeddings, sql, sonify, and agent pages
+
+## Optional
+
+- [llms-full.txt]({{site}}/llms-full.txt): the full reference inline - every chart's props, ChartContext, insights, theming, and gotchas
+- [GitHub]({{repo}}): source repository - issues, discussions, and pull requests welcome

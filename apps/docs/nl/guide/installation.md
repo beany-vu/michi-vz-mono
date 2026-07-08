@@ -74,7 +74,7 @@ npm i @michi-vz/angular @angular/core
 Voor een prototype, een CodePen, of een gewone HTML-pagina, laad de web components rechtstreeks vanaf een CDN - geen bundler nodig:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
 
 <michi-vz-line-chart id="c" width="600" height="300"></michi-vz-line-chart>
 <script>

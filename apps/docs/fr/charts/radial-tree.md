@@ -80,7 +80,7 @@ applyRadialTreeChartProps(this.c.nativeElement, props);
 ```
 
 ```html [Web component]
-<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
 
 <michi-vz-radial-tree-chart id="c"></michi-vz-radial-tree-chart>
 <script>

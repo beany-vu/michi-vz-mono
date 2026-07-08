@@ -8,6 +8,8 @@
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "jsdelivr": "./dist/michi-vz-wc.bundle.js",
+  "unpkg": "./dist/michi-vz-wc.bundle.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {

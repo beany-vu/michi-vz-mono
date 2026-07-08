@@ -142,6 +142,8 @@ function themeForLocale(loc: LocaleKey) {
         ` · <a href="https://github.com/beany-vu/michi-vz-mono/discussions">${t.footerCommunity}</a>` +
         ` · <a href="https://github.com/beany-vu/michi-vz-mono/blob/main/CONTRIBUTING.md">${t.footerContribute}</a>` +
         ` · <a href="https://github.com/beany-vu/michi-vz-mono/blob/main/CONTRIBUTING.md#translations">${t.footerTranslate}</a>` +
+        // AI-facing docs (llmstxt.org); the filename is language-neutral on purpose.
+        ` · <a href="/llms.txt">llms.txt</a>` +
         "</span>",
       copyright: t.footerCopyright,
     },
@@ -303,6 +305,8 @@ export default defineConfig({
         href: "https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap",
       },
     ],
+    // Bing Webmaster Tools site verification (token is public by design).
+    ["meta", { name: "msvalidate.01", content: "C7FF9872BF63126CE38DF255A3D55CB6" }],
     ...gscHead,
     ...gaHead,
   ],

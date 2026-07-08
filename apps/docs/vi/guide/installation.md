@@ -74,7 +74,7 @@ npm i @michi-vz/angular @angular/core
 Làm prototype, CodePen, hay một trang HTML thuần thì cứ load web component thẳng từ CDN, không cần bundler:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
 
 <michi-vz-line-chart id="c" width="600" height="300"></michi-vz-line-chart>
 <script>

@@ -1,0 +1,52 @@
+# michi-vz
+
+<!-- Generated file. Edit apps/docs/scripts/llms/llms.template.txt and run `npm run generate-llms`. -->
+
+> Framework-agnostic charting for the web: a plain TypeScript engine, light-DOM web components, and first-class React, Vue, Svelte, and Angular wrappers. 21 chart types, svg and canvas renderers, a structured ChartContext on every chart for accessibility and tool use, and an opt-in, local-first insights layer for forecasting, anomaly detection, narration, agents, and MCP.
+
+Package versions: @michi-vz/core 1.10.0, wc 1.9.1, react 1.9.0, vue 1.6.1, svelte 1.6.1, angular 1.9.1, insights 0.2.9, devtools 0.2.9.
+
+## Guides
+
+- [Why michi-vz](https://michi-vz.netlify.app/guide/why): design goals and architecture
+- [Installation](https://michi-vz.netlify.app/guide/installation): packages, peer requirements, CDN usage, styles
+- [Getting started](https://michi-vz.netlify.app/guide/getting-started): a first chart in every framework
+- [Provider and shared state](https://michi-vz.netlify.app/guide/provider): colors, highlight, and disabled state shared across charts
+- [LLM context](https://michi-vz.netlify.app/guide/llm-context): the ChartContext an AI can read and drive
+- [Insights](https://michi-vz.netlify.app/guide/insights): opt-in, local-first forecasting, anomaly detection, narration, agents, and MCP
+- [Devtools](https://michi-vz.netlify.app/guide/devtools): inspect and drive mounted charts in-page
+- [What's new](https://michi-vz.netlify.app/guide/whats-new): release notes
+
+## Charts
+
+- [Line Chart](https://michi-vz.netlify.app/charts/line): Line chart for time series: one series or fifty, missing periods rendered as dashes, and an opt-in canvas renderer with LTTB decimation for thousands of points.
+- [Fan Chart](https://michi-vz.netlify.app/charts/fan): Fan chart for forecasts with uncertainty: solid history, a dashed most-likely path, and confidence bands that widen into the future.
+- [Area Chart](https://michi-vz.netlify.app/charts/area): Stacked area chart for composition over time: watch each category's share of the whole expand or shrink while the total rises.
+- [Scatter Plot](https://michi-vz.netlify.app/charts/scatter): Scatter plot with trend, clusters, and outliers at a glance; bubble size carries a third variable and the Pearson correlation comes back in getContext().
+- [Range Chart](https://michi-vz.netlify.app/charts/range): Range chart: shade the whole spread per series (best to worst case, forecast cones, percentile bands) so uncertainty is something readers can see.
+- [Ribbon Chart](https://michi-vz.netlify.app/charts/ribbon): Ribbon chart for rank and share shifts: ribbons connect each period's columns so you can follow a category as it swells, shrinks, and trades places.
+- [Radar Chart](https://michi-vz.netlify.app/charts/radar): Radar chart for comparing options across shared criteria: each candidate becomes a polygon whose spikes and dents show strengths and weaknesses at a glance.
+- [Vertical Stack Bar](https://michi-vz.netlify.app/charts/vertical-stack-bar): Vertical stacked bar chart for composition across categories, with an explicit guard that marks missing segments instead of flattening them to zero.
+- [Comparable Horizontal Bar](https://michi-vz.netlify.app/charts/comparable): Comparable bar chart: before and after side by side on one bar per label, so the gap that closed or opened is the first thing readers see.
+- [Comparable Vertical Bar](https://michi-vz.netlify.app/charts/comparable-vertical-bar): Comparable vertical bar chart: two full-bandwidth overlapping columns per category - a based value behind, a compared value in front - with a change arrow above each pair. The vertical migration target for legacy sdg-trade BarchartVertical.
+- [Dual Horizontal Bar (Tornado)](https://michi-vz.netlify.app/charts/dual): Dual bar chart (tornado, population pyramid): two opposing values anchored to a shared centre line so the imbalance reads at a glance.
+- [Bar-Bell](https://michi-vz.netlify.app/charts/bar-bell): Bar-bell chart: each row lays its parts end to end with an end-cap at every step, so cumulative reach and each segment's share read at a glance.
+- [Gap Chart](https://michi-vz.netlify.app/charts/gap): Gap chart: plot two values per label (before and after, target and actual) and the bar between them is the story; the wider the gap, the louder it reads.
+- [Treemap](https://michi-vz.netlify.app/charts/treemap): Treemap with tiles sized by total and an optional two-part split showing realized vs untapped share; nests under groups and folds to a stack on narrow screens.
+- [Pie / Donut](https://michi-vz.netlify.app/charts/pie): Pie and donut chart: wedges sized by value, labelled with percentages, sorted so the biggest slice reads first; set innerRadiusRatio above 0 for a donut.
+- [Bubble Chart](https://michi-vz.netlify.app/charts/bubble): Bubble chart with area-true sizing and a gravity layout; each bubble can split into a realized core and an untapped ring, showing size and progress together.
+- [Sankey](https://michi-vz.netlify.app/charts/sankey): Sankey diagram for flows: nodes laid out in columns with band thickness equal to flow value, for trade, budgets, and traffic that splits and recombines.
+- [Fountain (Jet d'Eau)](https://michi-vz.netlify.app/charts/fountain): Fountain (Jet d'Eau) chart, the michi-vz signature chart inspired by Geneva's fountain: one chart with snapshot and trend modes. Experimental.
+- [Choropleth Map](https://michi-vz.netlify.app/charts/choropleth-map): World/region choropleth: your own GeoJSON, shaded by a threshold colour scale or an explicit category map. 13 d3-geo/d3-geo-projection projections; SVG, canvas, and a delegated WebGPU layer.
+- [Symbol Map](https://michi-vz.netlify.app/charts/symbol-map): A force-de-overlapped symbol/bubble map: you supply lng/lat per item, a one-shot d3-force simulation pulls overlapping circles apart. Dot-only by default (legacy parity); an optional muted backdrop landmass is available. SVG, canvas, and a delegated WebGPU layer.
+- [Radial Tree](https://michi-vz.netlify.app/charts/radial-tree): A radial cluster()/dendrogram: leaves sit equidistant from the centre, with circles sized at both the group and leaf level. Adaptive label density (abbreviate/truncate/hide/rotate) as the leaf count grows, and an optional word-wrapped centre title. SVG, canvas, and a delegated WebGPU layer.
+
+## API
+
+- [Chart API](https://michi-vz.netlify.app/api/line): props, events, and getContext() per chart (swap the slug for any chart)
+- [Insights API](https://michi-vz.netlify.app/api/insights/forecast): forecast, anomaly, validate, narrate, embeddings, sql, sonify, and agent pages
+
+## Optional
+
+- [llms-full.txt](https://michi-vz.netlify.app/llms-full.txt): the full reference inline - every chart's props, ChartContext, insights, theming, and gotchas
+- [GitHub](https://github.com/beany-vu/michi-vz-mono): source repository - issues, discussions, and pull requests welcome

@@ -1,10 +1,10 @@
 ---
 title: Charts
-description: "The michi-vz chart catalog: 17 chart types for trends, composition, comparison, correlation, and flow, each with live demos in React, Vue, Svelte, Angular, and web components."
+description: "The michi-vz chart catalog: 21 chart types for trends, composition, comparison, correlation, and flow, each with live demos in React, Vue, Svelte, Angular, and web components."
 ---
 # Chart catalog
 
-Seventeen framework-agnostic charts. Each page has an example, usage across every framework, and an LLM-context panel.
+Twenty-one framework-agnostic charts. Each page has an example, usage across every framework, and an LLM-context panel.
 
 - [**Line Chart**](/charts/line) - _Trends_ · Trends over time across one or many series - with optional gap detection, an opt-in canvas renderer (LTTB-decimated for big data), and single-point guide lines.
 - [**Fan Chart**](/charts/fan) - _Trends · Forecast_ · A forecast fan: history, a dashed forecast median, and nested confidence bands that widen with the horizon (composed from Line + Range).

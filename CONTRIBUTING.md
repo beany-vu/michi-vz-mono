@@ -12,6 +12,11 @@ new chart types.
 - **Improve the docs** in `apps/docs`.
 - **Add or improve a chart** in the core engine and wrappers.
 
+> Prefer contributing upstream over maintaining a long-lived fork: fixes land faster for
+> everyone, and every published package stays on the canonical `@michi-vz` npm scope. GitHub
+> forks made to open a pull request are the normal flow; redistributed forks must follow the
+> [brand policy](TRADEMARK.md) (different name, no michi-vz branding).
+
 ## Getting started
 
 This is a pnpm monorepo (pnpm via corepack).
@@ -60,7 +65,7 @@ a new language:
   and open a pull request. Keep code blocks, component tags, and frontmatter keys
   unchanged; translate only the prose, and keep internal links prefixed with the
   locale (for example `/fr/guide/why`).
-- **Add a language**: open an issue or a Discussion first so we can add the locale to
+- **Add a language**: open an issue or a Discussion first so the locale gets added to
   `i18n.ts` and `config.ts`, then translate `apps/docs/<lang>/` from the English source.
 
 Not a developer? Opening an issue with corrections in plain text is just as helpful.
@@ -73,5 +78,5 @@ Not a developer? Opening an issue with corrections in plain text is just as help
 
 ## Conduct
 
-Please be respectful and constructive. We want michi-vz to be a welcoming project for
+Please be respectful and constructive. michi-vz aims to be a welcoming project for
 everyone.

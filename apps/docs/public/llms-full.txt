@@ -1,0 +1,1024 @@
+# michi-vz - full reference for AI assistants
+
+<!-- Generated file. Edit apps/docs/scripts/llms/llms-full.template.txt and run `npm run generate-llms`. -->
+
+> michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at https://michi-vz.netlify.app/llms.txt.
+
+Package versions this file was generated against: @michi-vz/core 1.10.0, wc 1.9.1, react 1.9.0, vue 1.6.1, svelte 1.6.1, angular 1.9.1, insights 0.2.9, devtools 0.2.9.
+
+## What michi-vz is
+
+michi-vz renders 21 chart types from a single plain-TypeScript engine, `@michi-vz/core`. The engine mounts into any DOM element; native web components (`@michi-vz/wc`, built with Lit) and thin React, Vue, Svelte, and Angular wrappers all delegate to it, so every framework gets the same charts, the same props, and the same behavior. Charts render to SVG by default, to canvas for large datasets, and experimentally to WebGPU; the same props work across renderers.
+
+Two design decisions shape everything else:
+
+1. **Light DOM, never shadow DOM.** Page CSS reaches every mark, so colors, fonts, and selectors work the way plain HTML does - including on canvas, where colors are resolved from the page stylesheet through probe elements.
+2. **Every chart derives a structured `ChartContext` from its data model, not from the DOM.** The context is identical in SVG and canvas mode and carries structured JSON (axes, domains, per-series statistics), a deterministic natural-language `summary` (rule-based, no model), and an `a11yTable` that drives a visually-hidden table for screen readers.
+
+AI features live in a separate opt-in package, `@michi-vz/insights`, and are local-first: statistical features need no model download, model-backed features run in the browser and fall back to rule-based output, and data stays in the browser unless a remote endpoint is explicitly configured. A chart that uses none of it ships zero AI bytes.
+
+## Packages
+
+- `@michi-vz/core` 1.10.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
+- `@michi-vz/wc` 1.9.1 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
+- `@michi-vz/react` 1.9.0 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
+- `@michi-vz/vue` 1.6.1 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
+- `@michi-vz/svelte` 1.6.1 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
+- `@michi-vz/angular` 1.9.1 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
+- `@michi-vz/insights` 0.2.9 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
+- `@michi-vz/devtools` 0.2.9 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
+
+The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
+
+## Install
+
+```bash
+npm i @michi-vz/react     # React (peers: react and react-dom >= 18)
+npm i @michi-vz/vue       # Vue (peer: vue >= 3)
+npm i @michi-vz/svelte    # Svelte (peer: svelte >= 4)
+npm i @michi-vz/angular   # Angular (peer: @angular/core >= 16)
+npm i @michi-vz/wc        # web components, no peer dependencies
+npm i @michi-vz/core      # engine only, no peer dependencies (d3 installed automatically)
+npm i @michi-vz/insights  # optional insights layer (forecast, narrate, agent, MCP)
+npm i @michi-vz/devtools  # optional in-page inspector
+```
+
+No build step is required for the web components - a single CDN script (the self-contained browser bundle) registers every element and injects the stylesheet:
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
+```
+
+Pin a major for stability (`@michi-vz/wc@1/dist/michi-vz-wc.bundle.js`); use the explicit bundle path shown, not the bare package URL. For production bundles, prefer per-element imports (`@michi-vz/wc/line-chart`) so unused charts are tree-shaken away.
+
+## Core mount API
+
+Every chart exposes a `mountXxxChart` function with the same shape (the full list is in the chart reference below):
+
+```ts
+import { mountLineChart } from "@michi-vz/core";
+
+const chart = mountLineChart(el, props, { plugins: [] }); // third argument optional
+chart.update(nextProps);  // re-render with new props; keep one instance per host
+chart.getContext();       // ChartContext snapshot (see the ChartContext section)
+chart.getTools?.();       // agent tools contributed by plugins
+chart.use?.(plugin);      // register an insights plugin after mount
+chart.destroy();          // unmount and clean up
+```
+
+The optional third argument takes `{ plugins }` for `@michi-vz/insights` plugins. A tiny stylesheet (`core.css`: layout, tooltip, transitions - never series colors) is auto-injected once at first mount; no CSS import is needed. Opt out with `globalThis.__MICHI_VZ_NO_AUTO_STYLE__ = true` and load the `@michi-vz/core/styles.css` sub-path export manually.
+
+## Using each framework
+
+### React
+
+```tsx
+import { LineChart, MichiVzProvider, useChartContext } from "@michi-vz/react";
+
+export default () => <LineChart {...props} />; // props = the engine props
+```
+
+- Components are `forwardRef`; the ref handle exposes `getContext()` and `getElement()` (the host element, useful for the export helpers).
+- `MichiVzProvider` shares state across charts: `colorsMapping`, `highlightItems`, `disabledItems`, `hiddenItems`, `visibleItems`, `fontFamily`, `locale`, `dir`, `singlePointLine`, `categoryMetadata`, `colorsBasedMapping`. Read it with `useChartContext()`.
+- `isLoadingComponent` and `isNodataComponent` accept any `ReactNode` rendered as an overlay, on the charts that declare them (most do; check the chart's props). The engine stays mounted so `onChartDataProcessed` still fires; charts without them show the engine's built-in overlay.
+- `ScatterPlotChart` is an alias of `ScatterChart` kept for legacy-name compatibility. `<MichiVzDevtools />` mounts the inspector in development.
+
+### Vue
+
+```vue
+<script setup>
+import { LineChart } from "@michi-vz/vue";
+</script>
+
+<template>
+  <LineChart :options="props" />
+</template>
+```
+
+The whole engine props object goes through the single `:options` prop. Components mount client-side (`onMounted`), so they are SSR-safe.
+
+### Svelte
+
+```svelte
+<script>
+  import { lineChart } from "@michi-vz/svelte";
+</script>
+
+<div use:lineChart={props}></div>
+```
+
+Charts are Svelte actions (`lineChart`, `gapChart`, ...); the action handles update and destroy with the element's lifecycle.
+
+### Angular
+
+```ts
+// main.ts - registers the elements once
+import "@michi-vz/angular";
+import { applyLineChartProps, bindChart } from "@michi-vz/angular";
+
+// component (module/component uses CUSTOM_ELEMENTS_SCHEMA)
+// template: <michi-vz-line-chart #c></michi-vz-line-chart>
+applyLineChartProps(this.c.nativeElement, props);
+```
+
+`applyXxxChartProps(el, props)` does typed property binding onto the element. `bindChart(el, signal, apply, injector?)` re-applies props reactively from an Angular signal.
+
+### Web components
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
+
+<michi-vz-line-chart id="c" width="600" height="300"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.dataSet = [{ label: "North", series: [{ date: 2016, value: 10, certainty: true }] }];
+  el.addEventListener("michi-vz:highlight", (e) => console.log(e.detail));
+</script>
+```
+
+- **Objects, arrays, and functions must be set as JavaScript properties, never as HTML attributes** (`el.dataSet = [...]` or `Object.assign(el, props)`). Only primitives (`width`, `height`, `renderer`, `chart-title`, `locale`, ...) work as attributes. This is the single most common integration mistake.
+- Callbacks surface as DOM CustomEvents that bubble and cross roots: `michi-vz:highlight`, `michi-vz:colormapping`, `michi-vz:dataprocessed`, `michi-vz:datawarning`; the payload is on `e.detail`.
+- Elements render in light DOM and expose `getContext()` and `getTools()` as instance methods.
+- Importing the barrel `@michi-vz/wc` registers all elements; per-element sub-paths (`@michi-vz/wc/line-chart`) register just one.
+
+### Server-side rendering
+
+Charts need `window`, `getComputedStyle`, and (for canvas) a canvas context, so rendering happens client-side: the server ships a sized placeholder and the chart mounts in the browser. The React and Vue wrappers handle this automatically; web components upgrade in `connectedCallback`. The pure layer (`processXxxData`, `buildXxxContext`) is exported from `@michi-vz/core`, so a `ChartContext` and its `summary` can be computed in Node from data alone - useful for SEO text or alt text without a DOM.
+
+## Shared props
+
+These props behave identically on every chart and are documented once here. A default is shown when it is the same across all charts.
+
+- `width`: `number` - Chart width in pixels
+- `height`: `number` - Chart height in pixels
+- `margin`: `Margin` - Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels
+- `colors`: `string[]` - Categorical palette for series/labels without an explicit colour or colorsMapping entry
+- `colorsMapping`: `Record<string, string>` - Explicit label -> colour map; takes precedence over the palette and per-item colours
+- `renderer`: `"svg" | "canvas" | "webgpu"` (default: `"svg"`) - Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way
+- `highlightItems`: `string[]` - Labels to emphasise; all other marks dim
+- `disabledItems`: `string[]` - Labels to hide and exclude from scales/stacks
+- `locale`: `string` - BCP-47 locale used for number and date formatting
+- `skipColorMappingDispatch`: `boolean` (default: `false`) - External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract
+- `enableTransitions`: `boolean` (default: `true`) - Animate updates with CSS transitions (default true)
+- `onColorMappingGenerated`: `(mapping: Record<string, string>) => void` - Called with the resolved label -> colour map after the chart assigns colours
+- `onChartDataProcessed`: `(context: ChartContext) => void` - Called with the renderer-agnostic ChartContext whenever the data is (re)processed
+- `onDataWarning`: `(warnings: DataWarning[]) => void` - Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)
+
+`onDataWarning` reports non-fatal data-quality findings (non-finite values, duplicate or non-monotonic dates, duplicate labels, empty datasets, layout overflow, non-positive values on a log scale, unmatched dataset ids, missing geo feature ids, invalid geometry, and similar) instead of throwing; charts render what they can.
+
+Loading and empty states are also uniform: `isLoading` shows a loading overlay, `isNodata` (boolean or predicate over the dataset) shows a no-data message, `noDataLabel` customizes its text, and `suppressDefaultOverlay` hides the built-in overlay when a wrapper renders its own. The host element carries `data-mv-state` (`loading` / `nodata` / `ready`) for styling.
+
+## Chart reference
+
+Each entry lists the web component element, the core mount function, the props and context types, the docs pages, and the chart-specific props. The shared props above apply to every chart.
+
+### Line Chart (`line-chart`)
+
+Line chart for time series: one series or fifty, missing periods rendered as dashes, and an opt-in canvas renderer with LTTB decimation for thousands of points.
+
+- Element: `<michi-vz-line-chart>` (import `@michi-vz/wc/line-chart`)
+- Engine: `mountLineChart(host, props)` from `@michi-vz/core`; props `LineChartProps`, context `LineChartContext`
+- Docs: https://michi-vz.netlify.app/charts/line
+- API: https://michi-vz.netlify.app/api/line
+
+Required props:
+
+- `dataSet`: `LineDataItem[]` - Array of line series, each with its own points
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `yAxisDomain`: `[number, number]` - Fix the y-axis range as [min, max] instead of deriving it from the data
+- `yAxisScale`: `"linear" | "log"` (default: `"linear"`) - Y-axis scale: "linear" (default) or a base-10 "log" scale.
+- `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `ticks`: `number` (default: `5`) - Approximate number of x-axis ticks to generate
+- `yTicks`: `number` - Number of y-axis ticks (default 10, matching the legacy denser value axis).
+- `showGridLines`: `boolean` - Draw horizontal dashed grid lines at each y tick (default true).
+- `showVerticalGridLines`: `boolean` - Draw vertical dashed grid lines at each x tick (default false - the legacy chart drew none).
+- `highlightZeroLine`: `boolean` - Emphasise the y=0 grid line with a darker solid stroke (default true).
+- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
+- `fillPeriodTicks`: `boolean` - Draw a tick for EVERY period across the axis range (every month/year), not just the periods present in the data.
+- `noDataTickTooltip`: `(date: number) => string` - Tooltip content (plain text or sanitized HTML) for a faded no-data tick; receives the tick's epoch-ms value.
+- `noDataTickColor`: `string` - Colour for faded no-data tick labels; sets the `--michi-vz-tick-nodata` CSS var on the host.
+- `curve`: `"curveBumpX" | "curveLinear" | "curveMonotoneX"` - Default interpolation for every series (per-series `curve` wins).
+- `detectGaps`: `boolean` (default: `false`) - Auto-derive `certainty` from missing periods (dashes the gap segment).
+- `expectedStep`: `number` - Expected cadence in axis units; REQUIRED for xAxisDataType "number".
+- `showDataPoints`: `boolean` (default: `false`) - Whether to draw a marker at each data point (default false)
+- `enableMouseLine`: `boolean | MouseLineConfig` (default: `true`) - Solid vertical crosshair line snapped to the nearest data point x on hover; pass a config object to style it (default true)
+- `singlePointLine`: `boolean | SinglePointLineConfig` - true / config draws a horizontal guide line for single-point series.
+- `fontFamily`: `string` - Font family for axis/title/tooltip text (SVG + canvas).
+- `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `| boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `tooltipFormatter`: `( d: DataPoint, series: DataPoint[], dataSet: LineDataItem[], ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `sharedTooltip`: `boolean` (default: `false`) - When true, hovering anywhere in the plot shows ONE tooltip listing every series' value at the nearest x (year) - the "shared"/crosshair tooltip - instead of the single nearest series.
+- `sharedTooltipFormatter`: `(input: { x: number | string; xLabel: string; entries: Array<{ label: string; value: number; color: string; d: DataPoint }>; }) => string` - Custom HTML for the shared tooltip.
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+- `svgChildren`: `string` - Pre-serialised SVG markup injected as direct <svg> children (axis-title text, reference lines).
+
+### Fan Chart (`fan-chart`)
+
+Fan chart for forecasts with uncertainty: solid history, a dashed most-likely path, and confidence bands that widen into the future.
+
+- Element: `<michi-vz-fan-chart>` (import `@michi-vz/wc/fan-chart`)
+- Engine: `mountFanChart(host, props)` from `@michi-vz/core`; props `FanChartProps`, context `FanChartContext`
+- Docs: https://michi-vz.netlify.app/charts/fan
+- API: https://michi-vz.netlify.app/api/fan
+
+Required props:
+
+- `dataSet`: `FanDataItem[]` - Array of forecast series, each a median line plus its nested confidence bands
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `yAxisDomain`: `[number, number]` - Fixed [min, max] for the y-axis; when omitted the domain auto-fits the line plus the widest band extents
+- `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
+- `curve`: `"curveBumpX" | "curveLinear" | "curveMonotoneX"` - Line interpolation: curveLinear, curveMonotoneX, or curveBumpX
+- `fillOpacity`: `number` (default: `0.18`) - band fill opacity for the widest band (narrower bands scale up from here).
+- `forecastZone`: `boolean` - shade the forecast region (from the last solid point to the end).
+- `showDataPoints`: `boolean` (default: `false`) - Draw a marker at each median data point (default false)
+- `tooltipFormatter`: `(item: FanDataItem, lastPoint: DataPoint | null) => string` - Custom HTML for the tooltip (DOMPurify-sanitized; may include `<a href>` links).
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Area Chart (`area-chart`)
+
+Stacked area chart for composition over time: watch each category's share of the whole expand or shrink while the total rises.
+
+- Element: `<michi-vz-area-chart>` (import `@michi-vz/wc/area-chart`)
+- Engine: `mountAreaChart(host, props)` from `@michi-vz/core`; props `AreaChartProps`, context `AreaChartContext`
+- Docs: https://michi-vz.netlify.app/charts/area
+- API: https://michi-vz.netlify.app/api/area
+
+Required props:
+
+- `series`: `AreaDataRow[]` - Array of rows, each carrying an x (`date`) plus one numeric value per stacked key
+- `keys`: `string[]` - Category keys to stack (bottom-to-top); disabledItems removes from the stack.
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `yAxisDomain`: `[number, number]` - Fix the y-axis range as [min, max] instead of deriving it from the data
+- `forcePercentageScale`: `boolean` (default: `false`) - Fix the y-axis to [0,100] regardless of data (display only; data not normalized).
+- `stackOffset`: `"none" | "expand"` (default: `"none"`) - Stacking normalization, named after d3-shape's own `stackOffsetExpand`.
+- `ticks`: `number` (default: `10`) - Approximate number of axis ticks to generate
+- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
+- `fillPeriodTicks`: `boolean` - Draw a tick for EVERY period across the axis range (every month/year), not just the periods present in the data.
+- `noDataTickTooltip`: `(date: number) => string` - Tooltip content (plain text or sanitized HTML) for a faded no-data tick; receives the tick's epoch-ms value.
+- `noDataTickColor`: `string` - Colour for faded no-data tick labels; sets the `--michi-vz-tick-nodata` CSS var on the host.
+- `curve`: `"curveBumpX" | "curveLinear" | "curveMonotoneX"` - Line interpolation: curveLinear, curveMonotoneX, or curveBumpX
+- `tooltipFormatter`: `( row: AreaDataRow, series: AreaDataRow[], key: string, ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `boolean | ((dataSet: AreaDataRow[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Scatter Plot (`scatter-chart`)
+
+Scatter plot with trend, clusters, and outliers at a glance; bubble size carries a third variable and the Pearson correlation comes back in getContext().
+
+- Element: `<michi-vz-scatter-chart>` (import `@michi-vz/wc/scatter-chart`)
+- Engine: `mountScatterChart(host, props)` from `@michi-vz/core`; props `ScatterChartProps`, context `ScatterChartContext`
+- Docs: https://michi-vz.netlify.app/charts/scatter
+- API: https://michi-vz.netlify.app/api/scatter
+
+Required props:
+
+- `dataSet`: `ScatterDataPoint[]` - Array of points to plot in the cloud
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - number / date / band (categorical) for x. y is always linear.
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `xAxisDomain`: `[number, number] | string[]` - Fix the x-axis range ([min,max]); for band x, the ordered category labels (string[]).
+- `yAxisDomain`: `[number, number]` - Fix the y-axis range as [min, max] instead of deriving it from the data
+- `sizeRange`: `[number, number]` (default: `[4, 20]`) - [minRadius, maxRadius] px for the size scale (default [4, 20]).
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
+- `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
+- `tooltipFormatter`: `(d: ScatterDataPoint) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `| boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+- `showCrosshair`: `boolean` (default: `false`) - Show a crosshair overlay tracking the hovered point.
+- `crosshairLabels`: `boolean` (default: `false`) - Render axis-badge value readouts at the crosshair intersection.
+- `crosshairLineStyle`: `"solid" | "dashed"` - "dashed" → both hover+pinned dashed; "solid" → both solid; undefined → hover dashed.
+- `crosshairSpan`: `"full" | "half"` (default: `"full"`) - "full" → both crosshair lines span the whole plot; "half" → an L-shaped arm from the bubble to the two axes.
+- `crosshairLabelPlacement`: `"auto" | "fixed"` - "auto" → collision-flip badges; "fixed" → anchor to bottom-left.
+- `dScaleLegend`: `{ title?: string; valueFormatter?: (d: number) => string }` - Bubble-size reference legend (half-arc trio + domain labels).
+- `yTicksQty`: `number` - Override the y-axis tick count (scale.ticks(n)); falls back to `ticks`.
+- `showGrid`: `boolean | { x?: boolean; y?: boolean }` - Grid lines per axis: boolean → both; { x?, y? } → per-axis (each defaults true).
+- `pinIcon`: `boolean` - Pass false to suppress the sticky-tooltip pin icon.
+- `pointLabels`: `boolean | ScatterPointLabelsConfig` - Per-point text label (the point's `label` by default).
+- `drawOrder`: `"sizeDescending" | "sizeAscending"` (default: `"sizeDescending"`) - Draw-order for overlapping bubbles.
+- `svgChildren`: `string` - Pre-serialised SVG markup injected as direct <svg> children (the React wrapper fills this from `children`).
+
+### Range Chart (`range-chart`)
+
+Range chart: shade the whole spread per series (best to worst case, forecast cones, percentile bands) so uncertainty is something readers can see.
+
+- Element: `<michi-vz-range-chart>` (import `@michi-vz/wc/range-chart`)
+- Engine: `mountRangeChart(host, props)` from `@michi-vz/core`; props `RangeChartProps`, context `RangeChartContext`
+- Docs: https://michi-vz.netlify.app/charts/range
+- API: https://michi-vz.netlify.app/api/range
+
+Required props:
+
+- `dataSet`: `RangeDataItem[]` - Array of series, each drawn as a filled valueMin..valueMax band over time with an optional median line
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `yAxisDomain`: `[number, number]` - Explicit [min, max] for the value (y) axis; overrides the auto domain derived from the bands
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
+- `curve`: `"curveBumpX" | "curveLinear" | "curveMonotoneX"` - Line interpolation: curveLinear, curveMonotoneX, or curveBumpX
+- `fillOpacity`: `number` (default: `0.8`) - band fill opacity (default 0.8).
+- `tooltipFormatter`: `(d: RangeDataPoint, item: RangeDataItem) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Ribbon Chart (`ribbon-chart`)
+
+Ribbon chart for rank and share shifts: ribbons connect each period's columns so you can follow a category as it swells, shrinks, and trades places.
+
+- Element: `<michi-vz-ribbon-chart>` (import `@michi-vz/wc/ribbon-chart`)
+- Engine: `mountRibbonChart(host, props)` from `@michi-vz/core`; props `RibbonChartProps`, context `RibbonChartContext`
+- Docs: https://michi-vz.netlify.app/charts/ribbon
+- API: https://michi-vz.netlify.app/api/ribbon
+
+Required props:
+
+- `series`: `RibbonDataRow[]` - Array of rows (one per date) whose keys stack into a column; same-key segments are linked across adjacent dates by ribbon trapezoids
+- `keys`: `string[]` - Ordered segment keys to stack within each column (bottom-to-top) and to connect with ribbons between columns
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `yAxisDomain`: `[number, number]` - Explicit [min, max] for the value (y) axis; overrides the auto domain from the stacked column totals
+- `columnWidth`: `number` (default: `30`) - column width in px (default 30).
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tooltipFormatter`: `(row: RibbonDataRow, key: string, value: number) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Radar Chart (`radar-chart`)
+
+Radar chart for comparing options across shared criteria: each candidate becomes a polygon whose spikes and dents show strengths and weaknesses at a glance.
+
+- Element: `<michi-vz-radar-chart>` (import `@michi-vz/wc/radar-chart`)
+- Engine: `mountRadarChart(host, props)` from `@michi-vz/core`; props `RadarChartProps`, context `RadarChartContext`
+- Docs: https://michi-vz.netlify.app/charts/radar
+- API: https://michi-vz.netlify.app/api/radar
+
+Required props:
+
+- `series`: `RadarDataItem[]` - Array of polygon series to plot, one closed shape per item drawn over the shared polar grid
+
+Chart-specific props (the shared props above also apply):
+
+- `axes`: `string[]` - spoke labels (the radial axes).
+- `poles`: `{ labels: string[]; domain?: number[]; range?: number[] }` - Legacy pole config; `poles.labels` are used as the axes when `axes` is omitted.
+- `showFilled`: `boolean` - Stroke-only when false (no polygon fill); default true (fill at fillOpacity).
+- `showDimmedFill`: `boolean` - Fill the DIMMED (e.g. non-current) polygons as a soft background; default true.
+- `radialLabelFormatter`: `(value: number) => string` - Formats each ring's value label (the radial scale).
+- `poleLabelFormatter`: `(axis: string) => string` - Formats each spoke (pole) label.
+- `tooltipContainerStyle`: `Record<string, string | number>` - Inline style merged onto the tooltip container div.
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `boolean | ((dataSet: RadarDataItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on series; default = empty series.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `title`: `string` - Optional chart title rendered above the plot
+- `maxValue`: `number` - Value mapped to the outer ring (full radius), shared by every spoke; defaults to the largest value across all series and axes (or 1 when all are zero)
+- `rings`: `number` (default: `4`) - number of concentric grid rings (default 4).
+- `fillOpacity`: `number` (default: `0.2`) - polygon fill opacity (default 0.2).
+- `tooltipFormatter`: `(item: RadarDataItem & { date?: string }) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted).
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Vertical Stack Bar (`vertical-stack-bar-chart`)
+
+Vertical stacked bar chart for composition across categories, with an explicit guard that marks missing segments instead of flattening them to zero.
+
+- Element: `<michi-vz-vertical-stack-bar-chart>` (import `@michi-vz/wc/vertical-stack-bar-chart`)
+- Engine: `mountVerticalStackBarChart(host, props)` from `@michi-vz/core`; props `VerticalStackBarChartProps`, context `VerticalStackBarChartContext`
+- Docs: https://michi-vz.netlify.app/charts/vertical-stack-bar
+- API: https://michi-vz.netlify.app/api/vertical-stack-bar
+
+Required props:
+
+- `dataSet`: `VerticalStackBarDataSet[]` - Array of grouped series; each entry contributes its own bar slot per date and stacks its segment keys vertically
+
+Chart-specific props (the shared props above also apply):
+
+- `keys`: `string[]` - Explicit stack order; present keys first (in this order), natural keys appended.
+- `keysOrder`: `"topToBottom" | "bottomToTop"` (default: `"topToBottom"`) - Where keys[0] sits in the stack: "topToBottom" (default) puts keys[0] at the top, "bottomToTop" anchors keys[0] at the bottom
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisLabelPadding`: `number` - Min gap (px) a horizontal x-axis label needs before it tilts -45°.
+- `xAxisMode`: `"auto" | "horizontal"` - "auto" (default) tilts crowded date labels -45°; "horizontal" keeps them flat (thinning instead), so no rotated-label bottom margin is reserved.
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `xAxisDomain`: `string[]` - Explicit ordered list of date band categories; overrides the auto-collected, sorted set of dates from the data
+- `yAxisDomain`: `[number, number]` - Fix the y-axis range as [min, max] instead of deriving it from the data
+- `minBarWidth`: `number` (default: `5`) - Minimum width in px for each bar slot, floored when bands get narrow (default 5)
+- `minBarHeight`: `number` (default: `15`) - Minimum height in px for a non-zero segment so thin values stay visible (default 15)
+- `minBarHeightZero`: `number` (default: `0`) - Height in px drawn for an explicit zero-value segment (default 0, i.e. nothing)
+- `missingDataMarker`: `{ height: number }` - Opt-in thin stub on the zero line for explicitly-missing (null/NaN) owned keys.
+- `filter`: `{ limit: number; sortingDir: "asc" | "desc"; date?: string }` - Keep only the top-N dates ranked by grand total across all series and keys: limit caps the count, sortingDir picks highest (desc) or lowest (asc), optional date is the reference date; chronological order is preserved in output
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check.
+- `isNodata`: `| boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean)` - No-data override: boolean or predicate; default = empty / all-empty-series.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay.
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node.
+- `fontFamily`: `string` - Font family for axis/label text (SVG + canvas) via --michi-vz-font-family.
+- `yTicks`: `number` - Number of y-axis ticks (default 10).
+- `showGridLines`: `boolean` - Draw horizontal dashed y grid lines (default true).
+- `highlightZeroLine`: `boolean` - Emphasise the y=0 line with a solid stroke (default true).
+- `tooltipFormatter`: `(d: StackTooltipData) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+- `onLegendDataChange`: `(legendData: StackLegendItem[]) => void` - Called with the computed legend items (label, color, order, disabled, dataLabelSafe) whenever the legend changes
+
+### Comparable Horizontal Bar (`comparable-horizontal-bar-chart`)
+
+Comparable bar chart: before and after side by side on one bar per label, so the gap that closed or opened is the first thing readers see.
+
+- Element: `<michi-vz-comparable-horizontal-bar-chart>` (import `@michi-vz/wc/comparable-horizontal-bar-chart`)
+- Engine: `mountComparableHorizontalBarChart(host, props)` from `@michi-vz/core`; props `ComparableBarChartProps`, context `ComparableBarChartContext`
+- Docs: https://michi-vz.netlify.app/charts/comparable
+- API: https://michi-vz.netlify.app/api/comparable
+
+Required props:
+
+- `dataSet`: `ComparableBarDataPoint[]` - Array of horizontal-bar rows; each renders two overlaid sub-bars (valueBased behind, valueCompared in front) for one label
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `xAxisDomain`: `[number, number]` - Fix the x-axis range instead of deriving it from the data
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tickHtmlWidth`: `number` (default: `100`) - Width in px reserved for each y-axis (label) tick's HTML (default 100)
+- `colorsBasedMapping`: `Record<string, string>` - Optional label -> colour map for the value-based sub-bar ONLY (falls back to the row colour).
+- `interactiveRowLabels`: `boolean` (default: `false`) - Make the row labels interactive: hovering or focusing a label draws a leader line to its row's marks, highlights the row, and shows its tooltip; clicking pins the tooltip.
+- `valueBasedOpacity`: `number` (default: `0.45`) - Fill opacity of the two sub-bars (historical look: 0.45 / 0.9).
+- `valueComparedOpacity`: `number` (default: `0.9`) - Fill opacity of the front valueCompared sub-bar (default 0.9)
+- `xAxisPredefinedDomain`: `number[]` - Legacy alias for xAxisDomain (consumers pass [min,max]); wins over xAxisDomain when length===2
+- `patternsMapping`: `Record<string, string>` - Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based sub-bar - the canvas tiles it via ctx.createPattern, an SVG renderer via <pattern>/<image>
+- `showZeroLineForXAxis`: `boolean` (default: `false`) - Draw a solid vertical line at x=0 on the value axis (diverging charts)
+- `showGrid`: `boolean` (default: `false`) - Draw vertical gridlines on the value axis (default false, legacy parity)
+- `hideTickLabels`: `boolean` (default: `false`) - Hide the y-axis category labels (consumers control them via the legend column)
+- `minBarWidth`: `number` (default: `5`) - Floor for a sub-bar's pixel width so near-zero values stay visible (default 5)
+- `padding`: `{ top: number; right: number; bottom: number; left: number }` (default: `ZERO_PADDING`) - Extra plot-area inset (px); padding.left opens a left column for the y-axis label chips without moving the labels themselves (which stay anchored to margin.left)
+- `horizontalTickPosition`: `{ x: number; y: number }` - Offset (px) applied to the y-axis category labels so they align with the legend column
+- `maxBarHeight`: `number` - Cap each bar's thickness (px).
+- `symmetricXDomain`: `boolean` - Force a symmetric x-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits centred and the negative/positive sides mirror (e.g. ± growth %).
+- `layout`: `"overlay" | "grouped"` (default: `"overlay"`) - How the two sub-bars (valueBased, valueCompared) share a row's band.
+- `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased.
+- `isLoading`: `boolean` - Loading overlay (stale bars hidden while true)
+- `isNodata`: `| boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
+- `noDataLabel`: `string` - Text for the built-in no-data overlay
+- `suppressDefaultOverlay`: `boolean` - Set by a framework wrapper passing its own overlay node - suppresses the default overlay
+- `filter`: `{ limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc"; }` - Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc)
+- `tooltipFormatter`: `( d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: "based" | "compared", ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted).
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Comparable Vertical Bar (`comparable-vertical-bar-chart`)
+
+Comparable vertical bar chart: two full-bandwidth overlapping columns per category - a based value behind, a compared value in front - with a change arrow above each pair. The vertical migration target for legacy sdg-trade BarchartVertical.
+
+- Element: `<michi-vz-comparable-vertical-bar-chart>` (import `@michi-vz/wc/comparable-vertical-bar-chart`)
+- Engine: `mountComparableVerticalBarChart(host, props)` from `@michi-vz/core`; props `ComparableVerticalBarChartProps`, context `ComparableVerticalBarChartContext`
+- Docs: https://michi-vz.netlify.app/charts/comparable-vertical-bar
+- API: https://michi-vz.netlify.app/api/comparable-vertical-bar
+
+Required props:
+
+- `dataSet`: `ComparableBarDataPoint[]` - Array of column categories; each renders two overlaid sub-bars (valueBased behind, valueCompared in front), full column bandwidth, diverging from y=0
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `colorsBasedMapping`: `Record<string, string>` - Optional label -> colour map for the value-based sub-bar ONLY (falls back to the row colour).
+- `xAxisFormat`: `(d: string) => string` - Formats a category (x tick) label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `yAxisDomain`: `[number, number]` - Fix the y-axis (value) range instead of deriving it from the data
+- `symmetricYDomain`: `boolean` - Force a symmetric y-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits centred and the negative/positive sides mirror.
+- `ticks`: `number` (default: `5`) - Approximate number of y-axis (value) ticks
+- `xAxisLabelPadding`: `number` - Min gap (px) a column label needs before it tilts -45° (chooseAxisMode).
+- `xAxisMode`: `"auto" | "horizontal"` - "auto" (default) tilts crowded column labels -45°, else thins; "horizontal" keeps them flat (thinning instead), so no rotated-label bottom margin is reserved.
+- `patternsMapping`: `Record<string, string>` - Per-label image source (data-URI, e.g. createHatchPattern) used to FILL the value-based sub-bar - the canvas tiles it via ctx.createPattern, the SVG renderer via a real `<pattern>`/`<image>` def (same contract as ComparableHorizontalBarChart).
+- `valueBasedOpacity`: `number` (default: `0.45`) - Fill opacity of the rear valueBased sub-bar (historical look: 0.45)
+- `valueComparedOpacity`: `number` (default: `0.9`) - Fill opacity of the front valueCompared sub-bar (default 0.9)
+- `showZeroLineForYAxis`: `boolean` (default: `false`) - Draw a solid horizontal line at y=0 on the value axis (diverging charts)
+- `showGrid`: `boolean` (default: `false`) - Draw horizontal gridlines on the value axis (default false, legacy parity)
+- `hideTickLabels`: `boolean` (default: `false`) - Hide the x-axis category labels
+- `minBarHeight`: `number` (default: `5`) - Floor for a sub-bar's pixel height so near-zero values stay visible (default 5)
+- `maxBarWidth`: `number` - Cap each column's thickness (px).
+- `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased, drawn above each column pair.
+- `isLoading`: `boolean` - Loading overlay (stale bars hidden while true)
+- `isNodata`: `| boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
+- `noDataLabel`: `string` - Text for the built-in no-data overlay
+- `suppressDefaultOverlay`: `boolean` - Set by a framework wrapper passing its own overlay node - suppresses the default overlay
+- `filter`: `{ limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc"; }` - Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc)
+- `tooltipFormatter`: `( d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: "based" | "compared", ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted).
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Dual Horizontal Bar (Tornado) (`dual-horizontal-bar-chart`)
+
+Dual bar chart (tornado, population pyramid): two opposing values anchored to a shared centre line so the imbalance reads at a glance.
+
+- Element: `<michi-vz-dual-horizontal-bar-chart>` (import `@michi-vz/wc/dual-horizontal-bar-chart`)
+- Engine: `mountDualHorizontalBarChart(host, props)` from `@michi-vz/core`; props `DualBarChartProps`, context `DualBarChartContext`
+- Docs: https://michi-vz.netlify.app/charts/dual
+- API: https://michi-vz.netlify.app/api/dual
+
+Required props:
+
+- `dataSet`: `DualBarDataPoint[]` - Array of diverging (tornado) rows; each row draws value1 as a bar extending right and value2 as a bar extending left from a shared center
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `xAxisDomain`: `[number, number]` - Fix the x-axis range instead of deriving it from the data
+- `ticks`: `number` - Approximate number of axis ticks to generate
+- `tickHtmlWidth`: `number` (default: `100`) - Width in px reserved for each y-axis (label) tick's HTML (default 100)
+- `yAxisPosition`: `"center" | "left"` (default: `"center"`) - Where the row labels sit: "center" (default, legacy: on the shared centre line, over the left-extending bars) or "left" (in the left margin, clear of the plot - the classic population-pyramid look).
+- `interactiveRowLabels`: `boolean` (default: `false`) - Make the row labels interactive: hovering or focusing a label draws a leader line to its row's marks, highlights the row, and shows its tooltip; clicking pins the tooltip.
+- `value1Opacity`: `number` (default: `0.9`) - value1 (right) / value2 (left) fill opacities.
+- `value2Opacity`: `number` (default: `0.55`) - Fill opacity of the left-extending value2 bar (default 0.55)
+- `filter`: `{ limit: number; criteria: "value1" | "value2"; sortingDir: "asc" | "desc"; }` - Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "value1" or "value2", sortingDir picks highest (desc) or lowest (asc)
+- `tooltipFormatter`: `(d: DualBarDataPoint) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Bar-Bell (`bar-bell-chart`)
+
+Bar-bell chart: each row lays its parts end to end with an end-cap at every step, so cumulative reach and each segment's share read at a glance.
+
+- Element: `<michi-vz-bar-bell-chart>` (import `@michi-vz/wc/bar-bell-chart`)
+- Engine: `mountBarBellChart(host, props)` from `@michi-vz/core`; props `BarBellChartProps`, context `BarBellChartContext`
+- Docs: https://michi-vz.netlify.app/charts/bar-bell
+- API: https://michi-vz.netlify.app/api/bar-bell
+
+Required props:
+
+- `dataSet`: `BarBellDataRow[]` - Array of rows (one per date/y-band); within each row the keys are laid out cumulatively along x as thin bars capped by end-cap circles
+- `keys`: `string[]` - Ordered segment keys to draw per row; their values accumulate left-to-right and each gets a colored bar plus end-cap circle
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `yAxisDomain`: `[number, number]` - Explicit [min, max] for the cumulative value (x) axis; overrides the auto domain of [0, max cumulative row total]
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tickHtmlWidth`: `number` (default: `80`) - Width in px reserved for each y-axis (date) tick's HTML (default 80)
+- `xAxisPosition`: `"top" | "bottom"` (default: `"top"`) - Where the cumulative value axis renders its tick labels: "top" (default, legacy header look) or "bottom" (clears room under the title)
+- `tooltipFormatter`: `( row: BarBellDataRow, key: string, value: number, ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `| boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `dodgeOverlappingCaps`: `boolean` - Spread overlapping end-caps vertically, centred on the row line (default ON, legacy parity); pass false to keep them stacked.
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Gap Chart (`gap-chart`)
+
+Gap chart: plot two values per label (before and after, target and actual) and the bar between them is the story; the wider the gap, the louder it reads.
+
+- Element: `<michi-vz-gap-chart>` (import `@michi-vz/wc/gap-chart`)
+- Engine: `mountGapChart(host, props)` from `@michi-vz/core`; props `GapChartProps`, context `GapChartContext`
+- Docs: https://michi-vz.netlify.app/charts/gap
+- API: https://michi-vz.netlify.app/api/gap
+
+Required props:
+
+- `dataSet`: `GapDataItem[]` - Array of rows, one horizontal value1->value2 gap bar per item
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `colorMode`: `"label" | "shape"` (default: `"label"`) - Whether marks are colored per row label ("label", default) or per role/shape via shapeColorsMapping ("shape")
+- `shapeColorsMapping`: `ShapeMapping` - When colorMode is "shape", the colors for the value1, value2, and gap parts
+- `shapesLabelsMapping`: `ShapeMapping` - Optional display labels for the value1/value2/gap roles (e.g. legend captions)
+- `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
+- `shapeValue1`: `"circle" | "square" | "triangle"` (default: `"circle"`) - Marker shape for the value1 endpoint: "circle" (default), "square", or "triangle"
+- `shapeValue2`: `"circle" | "square" | "triangle"` (default: `"circle"`) - Marker shape for the value2 endpoint: "circle" (default), "square", or "triangle"
+- `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
+- `xAxisDomain`: `[number, number]` - Fix the value-axis range as [min, max] instead of the derived zero-baseline domain (e.g. zoom a life-expectancy story into its 35-90 band)
+- `interactiveRowLabels`: `boolean` (default: `false`) - Make the row labels interactive: hovering or focusing a label draws a leader line to its row's marks, highlights the row, and shows its tooltip; clicking pins the tooltip.
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
+- `enableExplicitTickValues`: `boolean` - When false, ignore `tickValues` for tick placement and GapChart's mark-scale domain, letting the chart use its data-derived domain and generated ticks.
+- `tickHtmlWidth`: `number` (default: `100`) - Width in px of the HTML y-axis label box, which ellipsizes longer labels (default 100)
+- `squareRadius`: `number` (default: `2`) - Corner radius in px for square markers (default 2)
+- `showZeroLineForXAxis`: `boolean` (default: `false`) - Draw a solid vertical line at x=0 on the value axis (diverging charts).
+- `maxBarHeight`: `number` - Cap each row's thickness (px).
+- `showLegend`: `boolean` - Whether to render a legend
+- `legendAlign`: `"left" | "center" | "right"` - Horizontal alignment of the legend: "left", "center", or "right"
+- `tooltipFormatter`: `(d: GapDataItem) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `boolean | ((dataSet: GapDataItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `onHighlightItem`: `(item: GapDataItem | null) => void` - Called when the hovered/highlighted label(s) change
+
+### Treemap (`treemap-chart`)
+
+Treemap with tiles sized by total and an optional two-part split showing realized vs untapped share; nests under groups and folds to a stack on narrow screens.
+
+- Element: `<michi-vz-treemap-chart>` (import `@michi-vz/wc/treemap-chart`)
+- Engine: `mountTreemapChart(host, props)` from `@michi-vz/core`; props `TreemapChartProps`, context `TreemapChartContext`
+- Docs: https://michi-vz.netlify.app/charts/treemap
+- API: https://michi-vz.netlify.app/api/treemap
+
+Required props:
+
+- `dataSet`: `TreemapNode[]` - Forest of nodes (each a leaf or a parent with children) sized by value and tiled to fill the area
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `paddingInner`: `number` (default: `1`) - Gap between sibling tiles in px (default 1).
+- `paddingTop`: `number` (default: `18`) - Header strip height (px) reserved on parent tiles for their label in nested mode (default 18).
+- `layout`: `"squarify" | "stack" | "auto"` (default: `"squarify"`) - Layout algorithm: "squarify" (treemap, default), "stack" (single-column, mobile-friendly), or "auto" (stack below `stackBreakpoint` width).
+- `stackBreakpoint`: `number` - Width (px) below which `layout: "auto"` switches to the stack layout (default 480).
+- `splitLabels`: `[string, string]` (default: `["Filled", "Remaining"]`) - Names of the two split parts (default ["Filled","Remaining"]).
+- `splitOpacity`: `number` (default: `0.35`) - Apparent colour strength of the remainder/untapped segment in [0,1] (default 0.35).
+- `showSplit`: `boolean` - Render the primary/remainder split.
+- `showLegend`: `boolean` (default: `false`) - Render a 2-swatch split legend (uses splitLabels).
+- `minTileShare`: `number` - Floor each leaf's tiling area to this percent of the largest leaf, so tiny tiles stay visible.
+- `filter`: `{ limit: number; sortingDir: "asc" | "desc" }` - Keep only the top-N leaves by value.
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `boolean | ((dataSet: TreemapNode[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on dataSet; default = empty dataSet.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `valueFormatter`: `(n: number) => string` - Formats numeric values shown in the default tooltip (defaults to a locale number formatter)
+- `tooltipFormatter`: `(leaf: TreemapLeafContext) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `tileValueLabels`: `boolean | TreemapTileValueLabelsConfig` - Render each tile's value (+ share of the dataset total) as a SECOND line under the existing name label.
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Pie / Donut (`pie-chart`)
+
+Pie and donut chart: wedges sized by value, labelled with percentages, sorted so the biggest slice reads first; set innerRadiusRatio above 0 for a donut.
+
+- Element: `<michi-vz-pie-chart>` (import `@michi-vz/wc/pie-chart`)
+- Engine: `mountPieChart(host, props)` from `@michi-vz/core`; props `PieChartProps`, context `PieChartContext`
+- Docs: https://michi-vz.netlify.app/charts/pie
+- API: https://michi-vz.netlify.app/api/pie
+
+Required props:
+
+- `dataSet`: `PieDataItem[]` - Array of slices; each value becomes a wedge sized by its share of the total
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `innerRadiusRatio`: `number` (default: `0`) - 0 = full pie (default); (0,1) = donut hole as a fraction of the outer radius.
+- `padAngle`: `number` (default: `0`) - Gap between slices in radians (default 0).
+- `cornerRadius`: `number` (default: `0`) - Corner radius on the arcs in px (default 0).
+- `sortByValue`: `boolean` (default: `true`) - Sort slices by value descending (default true); false keeps data order.
+- `showLabels`: `boolean` (default: `true`) - Draw the % label inside each slice when it is large enough (default true).
+- `showLegend`: `boolean` (default: `false`) - Render a swatch+label legend below the chart (default false).
+- `filter`: `{ limit: number; sortingDir: "asc" | "desc" }` - Keep only the top-N slices by value.
+- `valueFormatter`: `(n: number) => string` - Formats a numeric value for labels and tooltips
+- `tooltipFormatter`: `(slice: PieSliceContext) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Bubble Chart (`bubble-chart`)
+
+Bubble chart with area-true sizing and a gravity layout; each bubble can split into a realized core and an untapped ring, showing size and progress together.
+
+- Element: `<michi-vz-bubble-chart>` (import `@michi-vz/wc/bubble-chart`)
+- Engine: `mountBubbleChart(host, props)` from `@michi-vz/core`; props `BubbleChartProps`, context `BubbleChartContext`
+- Docs: https://michi-vz.netlify.app/charts/bubble
+- API: https://michi-vz.netlify.app/api/bubble
+
+Required props:
+
+- `dataSet`: `BubbleDataItem[]` - Array of bubbles; each value sets the circle area (bubbles are gravity-packed into a cluster)
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `gravity`: `number` (default: `0.09`) - Strength of the pull toward the centre in [0,1] (default 0.09) - higher = tighter cluster ("suck together").
+- `chargeStrength`: `number` (default: `0`) - Many-body charge: negative repels, positive attracts (default 0).
+- `padding`: `number` (default: `2`) - Gap between packed circles in px (default 2).
+- `fillRatio`: `number` (default: `0.62`) - Fraction of the plot area the bubbles should fill, in (0,1] (default 0.62).
+- `layoutMode`: `"sync" | "async"` (default: `"sync"`) - How the force layout settles: "sync" (default; identical layout every render, blocks until settled) or "async" (the SAME deterministic settle, run in ~12ms slices so thousands of bubbles never freeze the page; the loading overlay shows while it runs).
+- `settleTicks`: `number` (default: `400`) - Force-simulation ticks to settle (default 400); fewer = faster but looser.
+- `splitLabels`: `[string, string]` (default: `["Realized", "Untapped"]`) - Names of the two split parts (default ["Realized","Untapped"]).
+- `splitOpacity`: `number` (default: `0.35`) - Apparent colour strength of the untapped veil in [0,1] (default 0.35); rendered as solid colour under a white veil so it reads as a lighter tint of the same hue on any background.
+- `showSplit`: `boolean` - Render the realized/untapped split.
+- `showLegend`: `boolean` (default: `false`) - Render a 2-swatch split legend (uses splitLabels).
+- `showLabels`: `boolean` (default: `true`) - Draw the label inside each bubble when it is large enough (default true).
+- `filter`: `{ limit: number; sortingDir: "asc" | "desc" }` - Keep only the top-N bubbles by value.
+- `valueFormatter`: `(n: number) => string` - Formats a numeric value for labels and tooltips
+- `tooltipFormatter`: `(bubble: BubbleContext) => string` - Returns custom tooltip HTML for a hovered datum/mark (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Sankey (`sankey-chart`)
+
+Sankey diagram for flows: nodes laid out in columns with band thickness equal to flow value, for trade, budgets, and traffic that splits and recombines.
+
+- Element: `<michi-vz-sankey-chart>` (import `@michi-vz/wc/sankey-chart`)
+- Engine: `mountSankeyChart(host, props)` from `@michi-vz/core`; props `SankeyChartProps`, context `SankeyChartContext`
+- Docs: https://michi-vz.netlify.app/charts/sankey
+- API: https://michi-vz.netlify.app/api/sankey
+
+Required props:
+
+- `nodes`: `SankeyNodeItem[]` - Flow nodes; each needs a unique id that links reference
+- `links`: `SankeyLinkItem[]` - Directed flows between nodes (source -> target); band thickness is proportional to value
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `nodeWidth`: `number` (default: `18`) - Node rect width in px (default 18).
+- `nodePadding`: `number` (default: `12`) - Vertical gap between nodes in a column in px (default 12).
+- `nodeRadius`: `number` (default: `2`) - Corner radius of the node rects in px (default 2; 0 = square corners).
+- `linkRadius`: `number` (default: `2`) - Corner radius (px) of the filled flow ribbons where they meet the nodes (default 2; 0 = sharp corners).
+- `linkColorMode`: `"source" | "target"` (default: `"source"`) - Colour links by their "source" (default) or "target" node.
+- `linkOpacity`: `number` (default: `0.45`) - Link opacity in [0,1] (default 0.45).
+- `showLabels`: `boolean` (default: `true`) - Draw node labels (default true).
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `boolean | ((dataSet: SankeyNodeItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on nodes; default = empty nodes.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `valueFormatter`: `(n: number) => string` - Formats a numeric value for labels and tooltips
+- `tooltipFormatter`: `(mark: SankeyNodeContext | SankeyLinkContext) => string` - Returns custom tooltip HTML for a hovered datum/mark (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Fountain (Jet d'Eau) (`fountain-chart`)
+
+Fountain (Jet d'Eau) chart, the michi-vz signature chart inspired by Geneva's fountain: one chart with snapshot and trend modes. Experimental.
+
+- Element: `<michi-vz-fountain-chart>` (import `@michi-vz/wc/fountain-chart`)
+- Engine: `mountFountainChart(host, props)` from `@michi-vz/core`; props `FountainChartProps`, context `FountainChartContext`
+- Docs: https://michi-vz.netlify.app/charts/fountain
+- API: https://michi-vz.netlify.app/api/fountain
+
+Required props:
+
+- `dataSet`: `FountainDataItem[]` - Array of jets; each item renders one fountain
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `style`: `"jet" | "plume"` (default: `"jet"`) - Silhouette style: "jet" (default) is the faithful asymmetric Jet d'Eau (vertical column + wind-blown diagonal + a triangular droplet spray curtain); "plume" is the symmetric blooming column.
+- `xAxisDataType`: `FountainXAxisType` - How the x-axis is parsed: a temporal/numeric type renders TREND mode; "band" (or omitted) renders SNAPSHOT mode
+- `yAxisDomain`: `[number, number]` - Explicit [min, max] for the value (y) axis; overrides the auto domain from value + spread
+- `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
+- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones (trend mode)
+- `frothLayers`: `number` (default: `14`) - Number of graduated-opacity froth layers per jet (default 14, max 20); a per-item density overrides it
+- `bloomExponent`: `number` (default: `5`) - Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 5)
+- `stemFraction`: `number` (default: `0.045`) - Stem half-width at the base as a fraction of the jet's slot width (default 0.045)
+- `showDroplets`: `boolean` (default: `true`) - Draw ballistic droplet arcs above each apex (default true)
+- `showMist`: `boolean` (default: `true`) - Draw the misty falling skirt around each nozzle (default true)
+- `showTrendLine`: `boolean` (default: `true`) - Draw a connecting line through the apexes in trend mode (default true)
+- `tooltipFormatter`: `(d: FountainDataItem) => string` - Returns custom tooltip HTML for a hovered jet (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Choropleth Map (`choropleth-map-chart`)
+
+World/region choropleth: your own GeoJSON, shaded by a threshold colour scale or an explicit category map. 13 d3-geo/d3-geo-projection projections; SVG, canvas, and a delegated WebGPU layer.
+
+- Element: `<michi-vz-choropleth-map-chart>` (import `@michi-vz/wc/choropleth-map-chart`)
+- Engine: `mountChoroplethMapChart(host, props)` from `@michi-vz/core`; props `ChoroplethMapChartProps`, context `ChoroplethMapChartContext`
+- Docs: https://michi-vz.netlify.app/charts/choropleth-map
+- API: https://michi-vz.netlify.app/api/choropleth-map
+
+Required props:
+
+- `geography`: `GeoJSON.FeatureCollection | GeoFeatureItem[]` - The world/region geography to draw.
+- `dataSet`: `ChoroplethDataItem[]` - Choropleth values/colours, joined against `geography` (see `joinBy`).
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the map
+- `projection`: `GeoProjectionName` - d3-geo / d3-geo-projection projection to use (default "geoRobinson", the legacy sdg-trade MapChoropleth default).
+- `projectionConfig`: `GeoProjectionConfig` - Fine-tunes the chosen projection.
+- `colorScale`: `{ domain: number[]; range: string[] }` - Continuous choropleth encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold`.
+- `noDataColor`: `string` (default: `DEFAULT_NO_DATA_COLOR`) - Fill for features with no matching `dataSet` row (default `#d2d7dd`).
+- `joinBy`: `"id" | "name"` (default: `"id"`) - How `dataSet` rows join `geography` features: "id" (default) matches `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id` (stable codes such as ISO-A3), while "name" matches `label` against `GeoFeatureItem.name` / `properties.name` for data keyed by display name.
+- `strokeColor`: `string` (default: `DEFAULT_STROKE_COLOR`) - Country border colour (legacy default: `#F4F7FC`, `colors.WHITE_SMOKE`)
+- `strokeWidth`: `number` (default: `1`) - Country border width in px (default 1)
+- `tooltipFormatter`: `(d: ChoroplethDataItem | { id: string; name?: string }) => string` - Formats the tooltip for a hovered region.
+- `isLoading`: `boolean` - Loading overlay (stale regions hidden while true)
+- `isNodata`: `boolean | ((dataSet: ChoroplethDataItem[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
+- `noDataLabel`: `string` - Text for the built-in no-data overlay
+- `suppressDefaultOverlay`: `boolean` - Set by a framework wrapper passing its own overlay node - suppresses the default overlay
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Symbol Map (`symbol-map-chart`)
+
+A force-de-overlapped symbol/bubble map: you supply lng/lat per item, a one-shot d3-force simulation pulls overlapping circles apart. Dot-only by default (legacy parity); an optional muted backdrop landmass is available. SVG, canvas, and a delegated WebGPU layer.
+
+- Element: `<michi-vz-symbol-map-chart>` (import `@michi-vz/wc/symbol-map-chart`)
+- Engine: `mountSymbolMapChart(host, props)` from `@michi-vz/core`; props `SymbolMapChartProps`, context `SymbolMapChartContext`
+- Docs: https://michi-vz.netlify.app/charts/symbol-map
+- API: https://michi-vz.netlify.app/api/symbol-map
+
+Required props:
+
+- `dataSet`: `SymbolMapDataItem[]` - Array of symbols; each supplies its own lng/lat (core bundles no coordinate table).
+
+Chart-specific props (the shared props above also apply):
+
+- `geography`: `GeoJSON.FeatureCollection | GeoFeatureItem[]` - OPTIONAL muted backdrop landmass (new capability - the legacy chart never drew one).
+- `title`: `string` - Optional chart title rendered above the plot
+- `projection`: `GeoProjectionName` - d3-geo / d3-geo-projection projection (default "geoMercator", matching the legacy chart).
+- `projectionConfig`: `GeoProjectionConfig` - Fine-tunes the projection; only consulted when `geography` is supplied (see `projection`).
+- `radiusRange`: `[number, number]` (default: `DEFAULT_RADIUS_RANGE`) - [min, max] circle radius in px (default [3, 70], the legacy `circleRange`).
+- `radiusVisibleMin`: `number` - Hides items whose RAW `value` is <= this threshold (and, when `valueSecond` is set, whose `valueSecond` is also < this threshold) BEFORE the force layout runs - ported from the legacy chart's own filter, which compares the raw value/valueSecond, not the scaled radius.
+- `positionMode`: `"force" | "precise"` (default: `"force"`) - How symbols are placed: "force" (default) runs a one-shot de-overlap simulation that pulls colliding circles apart, while "precise" keeps every symbol at its exact projected lng/lat (overlaps allowed).
+- `geographyColor`: `string` (default: `DEFAULT_GEOGRAPHY_COLOR`) - Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral).
+- `strokeColor`: `string` (default: `DEFAULT_STROKE_COLOR`) - Border colour for the optional backdrop `geography` (default `#d7dce3`).
+- `strokeWidth`: `number` (default: `1`) - Border width for the optional backdrop `geography`, in px (default 1).
+- `showLabels`: `boolean` (default: `true`) - Draw a fitted label inside each circle when it is large enough (default true).
+- `isLoading`: `boolean` - Loading overlay (stale symbols hidden while true)
+- `isNodata`: `boolean | ((dataSet: SymbolMapDataItem[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
+- `noDataLabel`: `string` - Text for the built-in no-data overlay
+- `suppressDefaultOverlay`: `boolean` - Set by a framework wrapper passing its own overlay node - suppresses the default overlay
+- `tooltipFormatter`: `(d: SymbolMapDataItem) => string` - Formats the tooltip for a hovered symbol.
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+### Radial Tree (`radial-tree-chart`)
+
+A radial cluster()/dendrogram: leaves sit equidistant from the centre, with circles sized at both the group and leaf level. Adaptive label density (abbreviate/truncate/hide/rotate) as the leaf count grows, and an optional word-wrapped centre title. SVG, canvas, and a delegated WebGPU layer.
+
+- Element: `<michi-vz-radial-tree-chart>` (import `@michi-vz/wc/radial-tree-chart`)
+- Engine: `mountRadialTreeChart(host, props)` from `@michi-vz/core`; props `RadialTreeChartProps`, context `RadialTreeChartContext`
+- Docs: https://michi-vz.netlify.app/charts/radial-tree
+- API: https://michi-vz.netlify.app/api/radial-tree
+
+Required props:
+
+- `dataSet`: `RadialTreeNode[]` - Forest of nodes (each a leaf or a group with children), laid out as a radial dendrogram.
+
+Chart-specific props (the shared props above also apply):
+
+- `centerLabel`: `string` - Optional word-wrapped title drawn inside the small centre circle (legacy `titleCenter`).
+- `title`: `string` - Optional chart title rendered above the plot
+- `radiusRange`: `[number, number]` (default: `DEFAULT_RADIUS_RANGE`) - [min, max] circle radius in px (default [2, 32], the legacy `circleRange`).
+- `labelDensityThresholds`: `{ rotateAbove?: number; hideAbove?: number }` - Adaptive label density thresholds, compared against the total LEAF count.
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
+- `isNodata`: `boolean | ((dataSet: RadialTreeNode[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on dataSet; default = empty dataSet.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `tooltipFormatter`: `(d: RadialTreeNode) => string` - Returns custom tooltip HTML for a hovered node (sanitized before it is inserted)
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+
+## ChartContext
+
+`chart.getContext()` (engine, wrappers, and elements alike) returns a `ChartContext`: a discriminated union keyed on `chartType`, derived from the data model rather than the DOM, and therefore identical across svg, canvas, and webgpu renderers. Base fields on every chart:
+
+```ts
+{
+  chartType: string;                       // e.g. "line-chart"
+  title?: string;
+  renderer: "svg" | "canvas" | "webgpu";   // the renderer that actually painted
+  colorsMapping: Record<string, string>;   // label -> resolved color
+  legendData?: LegendItem[];               // { label, color, order, disabled?, dataLabelSafe?, paleColor? }
+  summary: string;                         // deterministic natural-language summary; doubles as alt text
+  a11yTable: { headers: string[]; rows: (string | number)[][] };
+}
+```
+
+Per-chart members add axes, domains, and a `series` array with per-series statistics: min, max, first, last, absolute and percent change, trend, mean, gaps, plus chart-level stats such as the largest mover and rankings. Example (abbreviated):
+
+```jsonc
+{
+  "chartType": "line-chart",
+  "renderer": "svg",
+  "series": [{ "label": "North", "change": 20, "trend": "up", "gaps": 0 }],
+  "stats": { "seriesCount": 2, "largestMover": { "label": "North", "change": 20 } },
+  "summary": "Line chart with 2 series over 8 points. North rose the most (20).",
+  "a11yTable": { "headers": ["Series", "2016", "2017", "2018"], "rows": [["North", 10, 22, 30]] }
+}
+```
+
+The `summary` is rule-based and needs no model. The `a11yTable` also drives a visually-hidden DOM table next to the chart, so screen readers and DOM-scraping tools get real content even in canvas mode.
+
+Export helpers in `@michi-vz/core` build on the same context: `chartContextToCsv(ctx)` (CSV from the a11y table), `chartToStyledSvgString(el)` / `chartToStyledSvgDataUri(el)` (SVG with the adopted styles inlined), and `chartToPngDataUrl(el)`. Pair them with any download trigger.
+
+## Insights: the opt-in, local-first AI layer
+
+`@michi-vz/insights` is a separate package; `@michi-vz/core` has zero AI dependencies. Each capability is a tree-shakeable sub-path, so unused features ship zero bytes. No model is ever bundled: statistical paths need no download, model-backed paths are opt-in and fall back to rule-based output, and data stays in the browser unless a remote endpoint is explicitly configured.
+
+| Sub-path | What it provides |
+| --- | --- |
+| `@michi-vz/insights/forecast` | `forecast()` plugin (dashed projection, forecast-zone shading, backtested accuracy; confidence bands where the chart renders them, such as Range and Fan), `forecastFan()`, scenarios, thresholds with `onThresholdBreach`, `decompose`, `detectChangepoints`, `monteCarloForecast`, goal-seek (`requiredGrowth`, `pacingToGoal`) |
+| `@michi-vz/insights/anomaly` | `anomaly()` plugin and `detectAnomalies()` - z-score, IQR, or outside-forecast-band |
+| `@michi-vz/insights/validate` | `validate()` plugin and `validateSeries()` - richer data-quality checks than the built-in warnings |
+| `@michi-vz/insights/narrate` | `narrate()` plugin (synchronous, rule-based; localize via `strings`) and `explainChart()` - plain-language explanations; `explainChart` backends: `rules` (default, no model), `transformers`, `webllm` (in-browser models), `remote` |
+| `@michi-vz/insights/embeddings` | `createEmbedder()`, `findSimilar()`, `matchLabels()` - semantic search and label reconciliation (hash fallback, opt-in in-browser models) |
+| `@michi-vz/insights/sql` | `aggregate(rows, spec)` group-by/measures wrangling; `createSqlEngine()` for real SQL via opt-in DuckDB-Wasm |
+| `@michi-vz/insights/sonify` | `sonify()` - hear a series as pitch (accessibility) |
+| `@michi-vz/insights/agent` | `createAgent()`, `createAgentRegistry()`, `chartHandle()` - an in-page agent that reads and drives live charts |
+| `@michi-vz/insights/mcp` | `createMcpServer()`, `stdioTransport()`, `messagePortTransport()` - expose charts over the Model Context Protocol |
+
+Capabilities attach to a chart as plugins:
+
+```ts
+import { mountLineChart } from "@michi-vz/core";
+import { forecast } from "@michi-vz/insights/forecast";
+
+const chart = mountLineChart(el, { dataSet: revenue, xAxisDataType: "date_annual" }, {
+  plugins: [forecast({ method: "holt-winters", horizon: 4, level: 0.95 })],
+});
+chart.getContext().summary;
+// "...Forecast: Revenue projected to 189 by 2027 (holt-winters, MAPE 6.1%)."
+```
+
+Forecasting works on the Line, Fan, Range, Area, Vertical Stack Bar, Ribbon, and Bar Bell charts; Line, Range, and Fan render the uncertainty natively, and `forecastFan(history, opts)` builds Fan chart data in one call.
+
+The agent layer turns the `ChartContext` plus the chart's controls into tools an LLM can call. The model is bring-your-own: `createAgent` takes any `llm: LlmCaller` function returning `{ text, toolCalls }`. (The ready-made `ollamaCaller({ model })` and `openaiCompatCaller({ url, model, apiKey })` are prompt-to-text callers for narration and `explainChart`, not agent callers.)
+
+```ts
+import { createAgent, chartHandle } from "@michi-vz/insights/agent";
+
+const agent = createAgent({ charts: [chartHandle("revenue", chart, props)], llm: myCaller });
+await agent.ask("Filter to the top 5 and forecast next quarter");
+```
+
+Built-in agent tools: `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, `set_data`, `list_charts`; plugin-contributed tools are namespaced `<chart>.<tool>` (for example `revenue.forecast`). The same registry can be served over MCP, so MCP clients connect with no custom integration and read charts as `michivz://chart/<name>` resources:
+
+```ts
+import { createAgentRegistry, chartHandle } from "@michi-vz/insights/agent";
+import { createMcpServer, stdioTransport } from "@michi-vz/insights/mcp";
+
+const reg = createAgentRegistry();
+reg.register(chartHandle("revenue", chart, props));
+createMcpServer(reg, stdioTransport()); // messagePortTransport() bridges a running web app instead
+```
+
+When answering questions about a michi-vz chart, prefer the deterministic `getContext()` numbers (top mover, changes, totals) over reading rendered pixels or DOM text: the context is exact and the same regardless of renderer.
+
+## Devtools
+
+`@michi-vz/devtools` is an in-page inspector: `mountDevtools()` adds a floating panel that discovers every mounted chart and shows its props, context, scales, hit-testing, a profiler, an accessibility audit, and diffs between context snapshots. React apps can render `<MichiVzDevtools />` from `@michi-vz/react` (development-gated). The `@michi-vz/devtools/production` entry is an inert no-op with the same API, so production builds drop the real panel without code changes.
+
+## Theming and the color contract
+
+Colors are deliberately the consumer's contract:
+
+- `core.css` handles layout, tooltip, and transitions - it never sets `fill` or `stroke` on data marks. Chart chrome (title, axis labels, grid, zero line, crosshair) is colored through the `--michi-vz-*` custom properties below.
+- Every mark carries `data-label` (the raw series label) and `data-label-safe` (the label with every character outside `[a-z0-9]` replaced by `_`, case preserved). Style marks by label in plain page CSS:
+
+```css
+.line[data-label-safe="North"] { stroke: #b23a2e; }
+.bar[data-label-safe="Africa"] { fill: #cda14a; }
+```
+
+- The same CSS colors canvas pixels too: the canvas renderer resolves each mark's color with `getComputedStyle` on probe elements, so the page stylesheet stays the single source of truth across renderers.
+- Alternatively pass colors as data: `colors` (a palette array) or `colorsMapping` (an explicit label-to-color record, which wins). `onColorMappingGenerated` reports the resolved mapping. Set `skipColorMappingDispatch` for pure-CSS mode: labels without CSS rules render transparent and no mapping is dispatched.
+- Text and chrome adapt through CSS custom properties, so charts work on light and dark themes: `--michi-vz-ink`, `--michi-vz-muted`, `--michi-vz-surface`, `--michi-vz-grid`, `--michi-vz-zero-line`, `--michi-vz-crosshair` (plus `-width` and `-dash`), `--michi-vz-font-family`, `--michi-vz-font-size`, `--michi-vz-loading`, `--michi-vz-tick-nodata`.
+- The `fontFamily` prop sets `--michi-vz-font-family`; the page itself must load the font.
+
+## Gotchas
+
+- **Web components: set objects as properties, not attributes.** `el.dataSet = [...]`, never `data-set="..."`. Attributes only work for primitives.
+- Web component callbacks are DOM CustomEvents (`michi-vz:*`), not `on*` props; read the payload from `e.detail`.
+- Charts render in light DOM by design; style them with ordinary page CSS. There are no shadow parts.
+- Geo charts bundle no geography or coordinate data. `choropleth-map-chart` requires the `geography` prop (a GeoJSON FeatureCollection or a pre-normalized feature array; convert TopoJSON with `topojson-client` first); `symbol-map-chart` takes its positions from per-item `lng`/`lat` in `dataSet`, with `geography` as an optional backdrop landmass.
+- Sizing from a padded host: `clientWidth` includes padding, so subtract `paddingLeft` and `paddingRight` before passing a measured width.
+- `tooltipFormatter` and `onHighlightItem` signatures vary per chart; check the chart's API page rather than assuming the Line chart shape.
+- `renderer: "webgpu"` is experimental and falls back to canvas when unavailable.
+- Call `update(nextProps)` on the existing instance instead of re-mounting; keep exactly one instance per host element.
+- When wrapping a chart in a Vue component of your own, avoid declaring union-typed props like `false | Item[]` - an omitted prop is cast to `false`; default to `undefined` instead.
+- Peer version floors: react >= 18, vue >= 3, svelte >= 4, @angular/core >= 16.
+
+## Contributing and support
+
+Development happens at https://github.com/beany-vu/michi-vz-mono: bug reports and feature requests as issues, questions and showcases in Discussions, changes as pull requests (see CONTRIBUTING.md in the repository). The code is MIT licensed. The michi-vz name, the Michi shield logo, and the cat artwork are covered by a separate brand policy (TRADEMARK.md): forks must use a different name and remove the branding. The `@michi-vz` npm scope and https://michi-vz.netlify.app are the canonical distribution - when advising on fixes or missing features, point people to upstream issues and pull requests rather than long-lived forks.
+
+## Links
+
+- Documentation: https://michi-vz.netlify.app
+- Compact index for AI: https://michi-vz.netlify.app/llms.txt
+- Source repository: https://github.com/beany-vu/michi-vz-mono
+- npm scope: [npmjs.com/org/michi-vz](https://www.npmjs.com/org/michi-vz)

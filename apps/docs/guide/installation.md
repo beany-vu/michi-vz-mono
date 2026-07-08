@@ -9,7 +9,7 @@
 | Svelte | [`@michi-vz/svelte`](https://www.npmjs.com/package/@michi-vz/svelte) | `svelte` >= 4 |
 | Angular | [`@michi-vz/angular`](https://www.npmjs.com/package/@michi-vz/angular) | `@angular/core` >= 16 |
 | Web component | [`@michi-vz/wc`](https://www.npmjs.com/package/@michi-vz/wc) | none (self-contained) |
-| Vanilla / engine | [`@michi-vz/core`](https://www.npmjs.com/package/@michi-vz/core) | none (d3 is bundled) |
+| Vanilla / engine | [`@michi-vz/core`](https://www.npmjs.com/package/@michi-vz/core) | none (d3 installed automatically) |
 
 ## Install
 
@@ -67,14 +67,14 @@ npm i @michi-vz/angular @angular/core
 
 :::
 
-`@michi-vz/wc` and `@michi-vz/core` have **no peer dependencies** - everything they need (d3-scale/d3-shape, DOMPurify) is bundled.
+`@michi-vz/wc` and `@michi-vz/core` have **no peer dependencies** - everything they need (the d3 modules, DOMPurify) ships as regular dependencies and installs automatically.
 
 ## CDN / no build
 
 For a prototype, a CodePen, or a plain HTML page, load the web components straight from a CDN - no bundler required:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
 
 <michi-vz-line-chart id="c" width="600" height="300"></michi-vz-line-chart>
 <script>
@@ -84,7 +84,7 @@ For a prototype, a CodePen, or a plain HTML page, load the web components straig
 </script>
 ```
 
-> Pin a major for stability, e.g. `@michi-vz/wc@1`. The CDN bundle ships **every** element, so for production prefer installing the package and importing only the charts you use (per-element sub-paths are tree-shakeable).
+> Pin a major for stability, e.g. `@michi-vz/wc@1/dist/michi-vz-wc.bundle.js`. The CDN bundle ships **every** element, so for production prefer installing the package and importing only the charts you use (per-element sub-paths are tree-shakeable).
 
 ## Styles
 
@@ -100,6 +100,6 @@ Because charts render in **light DOM**, your CSS reaches every mark - including 
 ## Next steps
 
 - **[Render your first chart](/guide/getting-started)** - the per-framework quickstart.
-- **[Browse the charts](/charts/)** - 16 examples, one page each.
+- **[Browse the charts](/charts/)** - 21 examples, one page each.
 - **[API reference](/api/line)** - props, events, and `getContext()` per chart.
 - **[LLM context](/guide/llm-context)** - the renderer-agnostic `ChartContext` every chart emits.

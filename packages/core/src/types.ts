@@ -152,7 +152,7 @@ export interface GapChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -411,7 +411,7 @@ export interface LineChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
   /** Pre-serialised SVG markup injected as direct <svg> children (axis-title text,
    * reference lines). The React wrapper fills this from `children`; mirrors the
@@ -559,7 +559,7 @@ export interface AreaChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -694,7 +694,7 @@ export interface ScatterChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
   /** Show a crosshair overlay tracking the hovered point. Default false. */
   showCrosshair?: boolean;
@@ -702,7 +702,7 @@ export interface ScatterChartProps {
   crosshairLabels?: boolean;
   /** "dashed" → both hover+pinned dashed; "solid" → both solid; undefined → hover dashed. */
   crosshairLineStyle?: "solid" | "dashed";
-  /** "full" → full +through the plot; "half" → L-arm from bubble to the two axes. Default "full". */
+  /** "full" → both crosshair lines span the whole plot; "half" → an L-shaped arm from the bubble to the two axes. Default "full". */
   crosshairSpan?: "full" | "half";
   /** "auto" → collision-flip badges; "fixed" → anchor to bottom-left. Default "auto". */
   crosshairLabelPlacement?: "auto" | "fixed";
@@ -931,7 +931,7 @@ export interface VerticalStackBarChartProps {
   onLegendDataChange?: (legendData: StackLegendItem[]) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -1149,7 +1149,7 @@ export interface ComparableBarChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -1250,8 +1250,7 @@ export interface ComparableVerticalBarChartProps {
    * the plot. No-op for dense charts whose natural bandwidth is already below the cap. */
   maxBarWidth?: number;
   /** Row-level change indicator (arrow + formatted diff label) comparing valueCompared to
-   * valueBased, drawn ABOVE each column pair (legacy `translate(bandwidth/3, -32)`
-   * placement). Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero
+   * valueBased, drawn above each column pair. Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero
    * `.mv-delta` DOM). Unlike ComparableHorizontalBarChart, THIS chart's context DOES
    * reflect the indicator (per-series direction/color/label) - see DeltaIndicatorConfig
    * JSDoc for the full decision-logic contract. */
@@ -1413,7 +1412,7 @@ export interface DualBarChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -1512,7 +1511,7 @@ export interface BarBellChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -1613,7 +1612,7 @@ export interface RangeChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -1701,7 +1700,7 @@ export interface RibbonChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -1779,11 +1778,11 @@ export interface FountainChartProps {
   ticks?: number;
   /** Explicit tick values, overriding the generated ones (trend mode) */
   tickValues?: Array<number | Date>;
-  /** Number of graduated-opacity froth layers per jet (default 8, max 20); a per-item density overrides it */
+  /** Number of graduated-opacity froth layers per jet (default 14, max 20); a per-item density overrides it */
   frothLayers?: number;
-  /** Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 3) */
+  /** Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 5) */
   bloomExponent?: number;
-  /** Stem half-width at the base as a fraction of the jet's slot width (default 0.08) */
+  /** Stem half-width at the base as a fraction of the jet's slot width (default 0.045) */
   stemFraction?: number;
   /** Draw ballistic droplet arcs above each apex (default true) */
   showDroplets?: boolean;
@@ -1960,19 +1959,15 @@ export interface ChoroplethMapChartProps {
    * Availability "latest year available" use case: a handful of fixed
    * label -> colour buckets, not a numeric gradient). */
   colorsMapping?: Record<string, string>;
-  /** Fill for features with no matching `dataSet` row (legacy MapChoropleth
-   * default: `#d2d7dd`, ported from `colors.WHITE_SMOKE_DARKEST`). */
+  /** Fill for features with no matching `dataSet` row (default `#d2d7dd`). */
   noDataColor?: string;
   /** Categorical palette for rows without an explicit colour, `colorsMapping` entry,
    * or `colorScale` match */
   colors?: string[];
   /** How `dataSet` rows join `geography` features: "id" (default) matches
-   * `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id` -
-   * the clean, stable join (e.g. ISO-A3 codes), used by sdg-trade's real
-   * indicator map (`uniqueIDKeyMap="alpha3Code"`). "name" matches `label` against
-   * `GeoFeatureItem.name` / `properties.name` instead, replicating the legacy
-   * MapChoropleth chart's OWN default (`uniqueIDKeyMap="countryName"`) for
-   * consumers migrating data keyed by country name rather than code. */
+   * `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id`
+   * (stable codes such as ISO-A3), while "name" matches `label` against
+   * `GeoFeatureItem.name` / `properties.name` for data keyed by display name. */
   joinBy?: "id" | "name";
   /** Country border colour (legacy default: `#F4F7FC`, `colors.WHITE_SMOKE`) */
   strokeColor?: string;
@@ -2111,7 +2106,9 @@ export interface SymbolMapChartProps {
    * runs - ported from the legacy chart's own filter, which compares the raw
    * value/valueSecond, not the scaled radius. Omit to show every located item. */
   radiusVisibleMin?: number;
-  /** How symbols are placed (default "force", the legacy parity behaviour).
+  /** How symbols are placed: "force" (default) runs a one-shot de-overlap simulation that
+   * pulls colliding circles apart, while "precise" keeps every symbol at its exact
+   * projected lng/lat (overlaps allowed).
    * - "force": a one-shot de-overlap simulation pulls colliding circles apart -
    *   readable for dense data, but symbols DRIFT from their true lng/lat (on
    *   small plots the drift can be large). Avoid it when the audience will read
@@ -2280,7 +2277,7 @@ export interface RadarChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -2384,7 +2381,7 @@ export interface FanChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -2541,7 +2538,7 @@ export interface TreemapChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -2645,7 +2642,7 @@ export interface PieChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -2762,7 +2759,7 @@ export interface BubbleChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -2879,7 +2876,7 @@ export interface SankeyChartProps {
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...) */
+  /** Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
 }
 
@@ -2959,8 +2956,7 @@ export interface RadialTreeChartProps {
   margin?: Margin;
   /** [min, max] circle radius in px (default [2, 32], the legacy `circleRange`). */
   radiusRange?: [number, number];
-  /** Adaptive label density thresholds, compared against the total LEAF count (legacy
-   * `rotateItemThreshold` / the unnamed 100-leaf cutoff). `rotateAbove` (default 20):
+  /** Adaptive label density thresholds, compared against the total LEAF count. `rotateAbove` (default 20):
    * past this many leaves, every label is abbreviated and rotated radially instead of
    * kept horizontal. `hideAbove` (default 100): past this many leaves, all labels are hidden. */
   labelDensityThresholds?: { rotateAbove?: number; hideAbove?: number };

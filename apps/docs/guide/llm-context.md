@@ -4,6 +4,10 @@ title: LLM context - a chart an AI can read and drive
 
 # LLM context: a chart an AI can read and drive
 
+::: tip Machine-readable docs
+AI assistants can read this whole library from two files: [/llms.txt](https://michi-vz.netlify.app/llms.txt) (compact index, llmstxt.org convention) and [/llms-full.txt](https://michi-vz.netlify.app/llms-full.txt) (the full reference inline - every chart's props, ChartContext, insights, theming). Point your coding agent at either one.
+:::
+
 Hand a chart to a chatbot and the usual move is to screenshot it and hope the model reads the pixels.
 A michi-vz chart skips that: it hands over a structured **`ChartContext`** the model can read directly,
 and exposes its controls as **tools** the model can call. So an assistant can *understand* the chart and

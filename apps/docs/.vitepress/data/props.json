@@ -83,7 +83,7 @@
       "name": "onDataWarning",
       "type": "(warnings: DataWarning[]) => void",
       "optional": true,
-      "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)"
+      "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)"
     }
   ],
   "charts": {
@@ -414,6 +414,22 @@
           "common": false
         },
         {
+          "name": "sharedTooltip",
+          "type": "boolean",
+          "optional": true,
+          "description": "When true, hovering anywhere in the plot shows ONE tooltip listing every series' value at the nearest x (year) - the \"shared\"/crosshair tooltip - instead of the single nearest series. Pairs with the crosshair (enableMouseLine, on by default).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "sharedTooltipFormatter",
+          "type": "(input: { x: number | string; xLabel: string; entries: Array<{ label: string; value: number; color: string; d: DataPoint }>; }) => string",
+          "optional": true,
+          "description": "Custom HTML for the shared tooltip. `entries` is one row per series that has a point at the hovered x, in dataSet order, each with its resolved colour.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
@@ -441,7 +457,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         },
@@ -681,7 +697,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -969,7 +985,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -1225,7 +1241,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         },
@@ -1257,7 +1273,7 @@
           "name": "crosshairSpan",
           "type": "\"full\" | \"half\"",
           "optional": true,
-          "description": "\"full\" → full +through the plot; \"half\" → L-arm from bubble to the two axes. Default \"full\".",
+          "description": "\"full\" → both crosshair lines span the whole plot; \"half\" → an L-shaped arm from the bubble to the two axes. Default \"full\".",
           "default": "\"full\"",
           "common": false
         },
@@ -1537,7 +1553,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -1737,7 +1753,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -2001,7 +2017,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -2329,7 +2345,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -2689,7 +2705,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -2889,7 +2905,7 @@
           "name": "deltaIndicator",
           "type": "DeltaIndicatorConfig",
           "optional": true,
-          "description": "Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased, drawn ABOVE each column pair (legacy `translate(bandwidth/3, -32)` placement). Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero `.mv-delta` DOM). Unlike ComparableHorizontalBarChart, THIS chart's context DOES reflect the indicator (per-series direction/color/label) - see DeltaIndicatorConfig JSDoc for the full decision-logic contract.",
+          "description": "Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased, drawn above each column pair. Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero `.mv-delta` DOM). Unlike ComparableHorizontalBarChart, THIS chart's context DOES reflect the indicator (per-series direction/color/label) - see DeltaIndicatorConfig JSDoc for the full decision-logic contract.",
           "default": "",
           "common": false
         },
@@ -3017,7 +3033,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -3249,7 +3265,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -3497,7 +3513,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -3841,7 +3857,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -4121,7 +4137,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -4337,7 +4353,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -4593,7 +4609,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -4849,7 +4865,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -4977,7 +4993,7 @@
           "name": "frothLayers",
           "type": "number",
           "optional": true,
-          "description": "Number of graduated-opacity froth layers per jet (default 8, max 20); a per-item density overrides it",
+          "description": "Number of graduated-opacity froth layers per jet (default 14, max 20); a per-item density overrides it",
           "default": "14",
           "common": false
         },
@@ -4985,7 +5001,7 @@
           "name": "bloomExponent",
           "type": "number",
           "optional": true,
-          "description": "Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 3)",
+          "description": "Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 5)",
           "default": "5",
           "common": false
         },
@@ -4993,7 +5009,7 @@
           "name": "stemFraction",
           "type": "number",
           "optional": true,
-          "description": "Stem half-width at the base as a fraction of the jet's slot width (default 0.08)",
+          "description": "Stem half-width at the base as a fraction of the jet's slot width (default 0.045)",
           "default": "0.045",
           "common": false
         },
@@ -5105,7 +5121,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -5201,7 +5217,7 @@
           "name": "noDataColor",
           "type": "string",
           "optional": true,
-          "description": "Fill for features with no matching `dataSet` row (legacy MapChoropleth default: `#d2d7dd`, ported from `colors.WHITE_SMOKE_DARKEST`).",
+          "description": "Fill for features with no matching `dataSet` row (default `#d2d7dd`).",
           "default": "DEFAULT_NO_DATA_COLOR",
           "common": false
         },
@@ -5217,7 +5233,7 @@
           "name": "joinBy",
           "type": "\"id\" | \"name\"",
           "optional": true,
-          "description": "How `dataSet` rows join `geography` features: \"id\" (default) matches `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id` - the clean, stable join (e.g. ISO-A3 codes), used by sdg-trade's real indicator map (`uniqueIDKeyMap=\"alpha3Code\"`). \"name\" matches `label` against `GeoFeatureItem.name` / `properties.name` instead, replicating the legacy MapChoropleth chart's OWN default (`uniqueIDKeyMap=\"countryName\"`) for consumers migrating data keyed by country name rather than code.",
+          "description": "How `dataSet` rows join `geography` features: \"id\" (default) matches `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id` (stable codes such as ISO-A3), while \"name\" matches `label` against `GeoFeatureItem.name` / `properties.name` for data keyed by display name.",
           "default": "\"id\"",
           "common": false
         },
@@ -5353,7 +5369,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -5449,7 +5465,7 @@
           "name": "positionMode",
           "type": "\"force\" | \"precise\"",
           "optional": true,
-          "description": "How symbols are placed (default \"force\", the legacy parity behaviour). - \"force\": a one-shot de-overlap simulation pulls colliding circles apart - readable for dense data, but symbols DRIFT from their true lng/lat (on small plots the drift can be large). Avoid it when the audience will read exact geographic position off the chart: a symbol drawn over the wrong country is a cartographic-accuracy problem and can be politically sensitive. - \"precise\": every symbol stays at its exact projected lng/lat; overlapping circles are allowed. Prefer this whenever a `geography` backdrop is shown, since a visible landmass invites reading positions literally.",
+          "description": "How symbols are placed: \"force\" (default) runs a one-shot de-overlap simulation that pulls colliding circles apart, while \"precise\" keeps every symbol at its exact projected lng/lat (overlaps allowed). - \"force\": a one-shot de-overlap simulation pulls colliding circles apart - readable for dense data, but symbols DRIFT from their true lng/lat (on small plots the drift can be large). Avoid it when the audience will read exact geographic position off the chart: a symbol drawn over the wrong country is a cartographic-accuracy problem and can be politically sensitive. - \"precise\": every symbol stays at its exact projected lng/lat; overlapping circles are allowed. Prefer this whenever a `geography` backdrop is shown, since a visible landmass invites reading positions literally.",
           "default": "\"force\"",
           "common": false
         },
@@ -5617,7 +5633,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }
@@ -5689,7 +5705,7 @@
           "name": "labelDensityThresholds",
           "type": "{ rotateAbove?: number; hideAbove?: number }",
           "optional": true,
-          "description": "Adaptive label density thresholds, compared against the total LEAF count (legacy `rotateItemThreshold` / the unnamed 100-leaf cutoff). `rotateAbove` (default 20): past this many leaves, every label is abbreviated and rotated radially instead of kept horizontal. `hideAbove` (default 100): past this many leaves, all labels are hidden.",
+          "description": "Adaptive label density thresholds, compared against the total LEAF count. `rotateAbove` (default 20): past this many leaves, every label is abbreviated and rotated radially instead of kept horizontal. `hideAbove` (default 100): past this many leaves, all labels are hidden.",
           "default": "",
           "common": false
         },
@@ -5825,7 +5841,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, gaps, ...)",
+          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
           "default": "",
           "common": true
         }

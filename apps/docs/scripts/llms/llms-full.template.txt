@@ -1,0 +1,286 @@
+# michi-vz - full reference for AI assistants
+
+<!-- Generated file. Edit apps/docs/scripts/llms/llms-full.template.txt and run `npm run generate-llms`. -->
+
+> michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at {{site}}/llms.txt.
+
+Package versions this file was generated against: @michi-vz/core {{version:@michi-vz/core}}, wc {{version:@michi-vz/wc}}, react {{version:@michi-vz/react}}, vue {{version:@michi-vz/vue}}, svelte {{version:@michi-vz/svelte}}, angular {{version:@michi-vz/angular}}, insights {{version:@michi-vz/insights}}, devtools {{version:@michi-vz/devtools}}.
+
+## What michi-vz is
+
+michi-vz renders {{chartCount}} chart types from a single plain-TypeScript engine, `@michi-vz/core`. The engine mounts into any DOM element; native web components (`@michi-vz/wc`, built with Lit) and thin React, Vue, Svelte, and Angular wrappers all delegate to it, so every framework gets the same charts, the same props, and the same behavior. Charts render to SVG by default, to canvas for large datasets, and experimentally to WebGPU; the same props work across renderers.
+
+Two design decisions shape everything else:
+
+1. **Light DOM, never shadow DOM.** Page CSS reaches every mark, so colors, fonts, and selectors work the way plain HTML does - including on canvas, where colors are resolved from the page stylesheet through probe elements.
+2. **Every chart derives a structured `ChartContext` from its data model, not from the DOM.** The context is identical in SVG and canvas mode and carries structured JSON (axes, domains, per-series statistics), a deterministic natural-language `summary` (rule-based, no model), and an `a11yTable` that drives a visually-hidden table for screen readers.
+
+AI features live in a separate opt-in package, `@michi-vz/insights`, and are local-first: statistical features need no model download, model-backed features run in the browser and fall back to rule-based output, and data stays in the browser unless a remote endpoint is explicitly configured. A chart that uses none of it ships zero AI bytes.
+
+## Packages
+
+<!-- llms:packages -->
+
+The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
+
+## Install
+
+```bash
+npm i @michi-vz/react     # React (peers: react and react-dom >= 18)
+npm i @michi-vz/vue       # Vue (peer: vue >= 3)
+npm i @michi-vz/svelte    # Svelte (peer: svelte >= 4)
+npm i @michi-vz/angular   # Angular (peer: @angular/core >= 16)
+npm i @michi-vz/wc        # web components, no peer dependencies
+npm i @michi-vz/core      # engine only, no peer dependencies (d3 installed automatically)
+npm i @michi-vz/insights  # optional insights layer (forecast, narrate, agent, MCP)
+npm i @michi-vz/devtools  # optional in-page inspector
+```
+
+No build step is required for the web components - a single CDN script (the self-contained browser bundle) registers every element and injects the stylesheet:
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
+```
+
+Pin a major for stability (`@michi-vz/wc@1/dist/michi-vz-wc.bundle.js`); use the explicit bundle path shown, not the bare package URL. For production bundles, prefer per-element imports (`@michi-vz/wc/line-chart`) so unused charts are tree-shaken away.
+
+## Core mount API
+
+Every chart exposes a `mountXxxChart` function with the same shape (the full list is in the chart reference below):
+
+```ts
+import { mountLineChart } from "@michi-vz/core";
+
+const chart = mountLineChart(el, props, { plugins: [] }); // third argument optional
+chart.update(nextProps);  // re-render with new props; keep one instance per host
+chart.getContext();       // ChartContext snapshot (see the ChartContext section)
+chart.getTools?.();       // agent tools contributed by plugins
+chart.use?.(plugin);      // register an insights plugin after mount
+chart.destroy();          // unmount and clean up
+```
+
+The optional third argument takes `{ plugins }` for `@michi-vz/insights` plugins. A tiny stylesheet (`core.css`: layout, tooltip, transitions - never series colors) is auto-injected once at first mount; no CSS import is needed. Opt out with `globalThis.__MICHI_VZ_NO_AUTO_STYLE__ = true` and load the `@michi-vz/core/styles.css` sub-path export manually.
+
+## Using each framework
+
+### React
+
+```tsx
+import { LineChart, MichiVzProvider, useChartContext } from "@michi-vz/react";
+
+export default () => <LineChart {...props} />; // props = the engine props
+```
+
+- Components are `forwardRef`; the ref handle exposes `getContext()` and `getElement()` (the host element, useful for the export helpers).
+- `MichiVzProvider` shares state across charts: `colorsMapping`, `highlightItems`, `disabledItems`, `hiddenItems`, `visibleItems`, `fontFamily`, `locale`, `dir`, `singlePointLine`, `categoryMetadata`, `colorsBasedMapping`. Read it with `useChartContext()`.
+- `isLoadingComponent` and `isNodataComponent` accept any `ReactNode` rendered as an overlay, on the charts that declare them (most do; check the chart's props). The engine stays mounted so `onChartDataProcessed` still fires; charts without them show the engine's built-in overlay.
+- `ScatterPlotChart` is an alias of `ScatterChart` kept for legacy-name compatibility. `<MichiVzDevtools />` mounts the inspector in development.
+
+### Vue
+
+```vue
+<script setup>
+import { LineChart } from "@michi-vz/vue";
+</script>
+
+<template>
+  <LineChart :options="props" />
+</template>
+```
+
+The whole engine props object goes through the single `:options` prop. Components mount client-side (`onMounted`), so they are SSR-safe.
+
+### Svelte
+
+```svelte
+<script>
+  import { lineChart } from "@michi-vz/svelte";
+</script>
+
+<div use:lineChart={props}></div>
+```
+
+Charts are Svelte actions (`lineChart`, `gapChart`, ...); the action handles update and destroy with the element's lifecycle.
+
+### Angular
+
+```ts
+// main.ts - registers the elements once
+import "@michi-vz/angular";
+import { applyLineChartProps, bindChart } from "@michi-vz/angular";
+
+// component (module/component uses CUSTOM_ELEMENTS_SCHEMA)
+// template: <michi-vz-line-chart #c></michi-vz-line-chart>
+applyLineChartProps(this.c.nativeElement, props);
+```
+
+`applyXxxChartProps(el, props)` does typed property binding onto the element. `bindChart(el, signal, apply, injector?)` re-applies props reactively from an Angular signal.
+
+### Web components
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@michi-vz/wc/dist/michi-vz-wc.bundle.js"></script>
+
+<michi-vz-line-chart id="c" width="600" height="300"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.dataSet = [{ label: "North", series: [{ date: 2016, value: 10, certainty: true }] }];
+  el.addEventListener("michi-vz:highlight", (e) => console.log(e.detail));
+</script>
+```
+
+- **Objects, arrays, and functions must be set as JavaScript properties, never as HTML attributes** (`el.dataSet = [...]` or `Object.assign(el, props)`). Only primitives (`width`, `height`, `renderer`, `chart-title`, `locale`, ...) work as attributes. This is the single most common integration mistake.
+- Callbacks surface as DOM CustomEvents that bubble and cross roots: `michi-vz:highlight`, `michi-vz:colormapping`, `michi-vz:dataprocessed`, `michi-vz:datawarning`; the payload is on `e.detail`.
+- Elements render in light DOM and expose `getContext()` and `getTools()` as instance methods.
+- Importing the barrel `@michi-vz/wc` registers all elements; per-element sub-paths (`@michi-vz/wc/line-chart`) register just one.
+
+### Server-side rendering
+
+Charts need `window`, `getComputedStyle`, and (for canvas) a canvas context, so rendering happens client-side: the server ships a sized placeholder and the chart mounts in the browser. The React and Vue wrappers handle this automatically; web components upgrade in `connectedCallback`. The pure layer (`processXxxData`, `buildXxxContext`) is exported from `@michi-vz/core`, so a `ChartContext` and its `summary` can be computed in Node from data alone - useful for SEO text or alt text without a DOM.
+
+## Shared props
+
+These props behave identically on every chart and are documented once here. A default is shown when it is the same across all charts.
+
+<!-- llms:shared-props -->
+
+`onDataWarning` reports non-fatal data-quality findings (non-finite values, duplicate or non-monotonic dates, duplicate labels, empty datasets, layout overflow, non-positive values on a log scale, unmatched dataset ids, missing geo feature ids, invalid geometry, and similar) instead of throwing; charts render what they can.
+
+Loading and empty states are also uniform: `isLoading` shows a loading overlay, `isNodata` (boolean or predicate over the dataset) shows a no-data message, `noDataLabel` customizes its text, and `suppressDefaultOverlay` hides the built-in overlay when a wrapper renders its own. The host element carries `data-mv-state` (`loading` / `nodata` / `ready`) for styling.
+
+## Chart reference
+
+Each entry lists the web component element, the core mount function, the props and context types, the docs pages, and the chart-specific props. The shared props above apply to every chart.
+
+<!-- llms:charts -->
+
+## ChartContext
+
+`chart.getContext()` (engine, wrappers, and elements alike) returns a `ChartContext`: a discriminated union keyed on `chartType`, derived from the data model rather than the DOM, and therefore identical across svg, canvas, and webgpu renderers. Base fields on every chart:
+
+```ts
+{
+  chartType: string;                       // e.g. "line-chart"
+  title?: string;
+  renderer: "svg" | "canvas" | "webgpu";   // the renderer that actually painted
+  colorsMapping: Record<string, string>;   // label -> resolved color
+  legendData?: LegendItem[];               // { label, color, order, disabled?, dataLabelSafe?, paleColor? }
+  summary: string;                         // deterministic natural-language summary; doubles as alt text
+  a11yTable: { headers: string[]; rows: (string | number)[][] };
+}
+```
+
+Per-chart members add axes, domains, and a `series` array with per-series statistics: min, max, first, last, absolute and percent change, trend, mean, gaps, plus chart-level stats such as the largest mover and rankings. Example (abbreviated):
+
+```jsonc
+{
+  "chartType": "line-chart",
+  "renderer": "svg",
+  "series": [{ "label": "North", "change": 20, "trend": "up", "gaps": 0 }],
+  "stats": { "seriesCount": 2, "largestMover": { "label": "North", "change": 20 } },
+  "summary": "Line chart with 2 series over 8 points. North rose the most (20).",
+  "a11yTable": { "headers": ["Series", "2016", "2017", "2018"], "rows": [["North", 10, 22, 30]] }
+}
+```
+
+The `summary` is rule-based and needs no model. The `a11yTable` also drives a visually-hidden DOM table next to the chart, so screen readers and DOM-scraping tools get real content even in canvas mode.
+
+Export helpers in `@michi-vz/core` build on the same context: `chartContextToCsv(ctx)` (CSV from the a11y table), `chartToStyledSvgString(el)` / `chartToStyledSvgDataUri(el)` (SVG with the adopted styles inlined), and `chartToPngDataUrl(el)`. Pair them with any download trigger.
+
+## Insights: the opt-in, local-first AI layer
+
+`@michi-vz/insights` is a separate package; `@michi-vz/core` has zero AI dependencies. Each capability is a tree-shakeable sub-path, so unused features ship zero bytes. No model is ever bundled: statistical paths need no download, model-backed paths are opt-in and fall back to rule-based output, and data stays in the browser unless a remote endpoint is explicitly configured.
+
+| Sub-path | What it provides |
+| --- | --- |
+| `@michi-vz/insights/forecast` | `forecast()` plugin (dashed projection, forecast-zone shading, backtested accuracy; confidence bands where the chart renders them, such as Range and Fan), `forecastFan()`, scenarios, thresholds with `onThresholdBreach`, `decompose`, `detectChangepoints`, `monteCarloForecast`, goal-seek (`requiredGrowth`, `pacingToGoal`) |
+| `@michi-vz/insights/anomaly` | `anomaly()` plugin and `detectAnomalies()` - z-score, IQR, or outside-forecast-band |
+| `@michi-vz/insights/validate` | `validate()` plugin and `validateSeries()` - richer data-quality checks than the built-in warnings |
+| `@michi-vz/insights/narrate` | `narrate()` plugin (synchronous, rule-based; localize via `strings`) and `explainChart()` - plain-language explanations; `explainChart` backends: `rules` (default, no model), `transformers`, `webllm` (in-browser models), `remote` |
+| `@michi-vz/insights/embeddings` | `createEmbedder()`, `findSimilar()`, `matchLabels()` - semantic search and label reconciliation (hash fallback, opt-in in-browser models) |
+| `@michi-vz/insights/sql` | `aggregate(rows, spec)` group-by/measures wrangling; `createSqlEngine()` for real SQL via opt-in DuckDB-Wasm |
+| `@michi-vz/insights/sonify` | `sonify()` - hear a series as pitch (accessibility) |
+| `@michi-vz/insights/agent` | `createAgent()`, `createAgentRegistry()`, `chartHandle()` - an in-page agent that reads and drives live charts |
+| `@michi-vz/insights/mcp` | `createMcpServer()`, `stdioTransport()`, `messagePortTransport()` - expose charts over the Model Context Protocol |
+
+Capabilities attach to a chart as plugins:
+
+```ts
+import { mountLineChart } from "@michi-vz/core";
+import { forecast } from "@michi-vz/insights/forecast";
+
+const chart = mountLineChart(el, { dataSet: revenue, xAxisDataType: "date_annual" }, {
+  plugins: [forecast({ method: "holt-winters", horizon: 4, level: 0.95 })],
+});
+chart.getContext().summary;
+// "...Forecast: Revenue projected to 189 by 2027 (holt-winters, MAPE 6.1%)."
+```
+
+Forecasting works on the Line, Fan, Range, Area, Vertical Stack Bar, Ribbon, and Bar Bell charts; Line, Range, and Fan render the uncertainty natively, and `forecastFan(history, opts)` builds Fan chart data in one call.
+
+The agent layer turns the `ChartContext` plus the chart's controls into tools an LLM can call. The model is bring-your-own: `createAgent` takes any `llm: LlmCaller` function returning `{ text, toolCalls }`. (The ready-made `ollamaCaller({ model })` and `openaiCompatCaller({ url, model, apiKey })` are prompt-to-text callers for narration and `explainChart`, not agent callers.)
+
+```ts
+import { createAgent, chartHandle } from "@michi-vz/insights/agent";
+
+const agent = createAgent({ charts: [chartHandle("revenue", chart, props)], llm: myCaller });
+await agent.ask("Filter to the top 5 and forecast next quarter");
+```
+
+Built-in agent tools: `get_chart_context`, `summarize_chart`, `list_series`, `set_filter`, `highlight`, `set_disabled`, `set_data`, `list_charts`; plugin-contributed tools are namespaced `<chart>.<tool>` (for example `revenue.forecast`). The same registry can be served over MCP, so MCP clients connect with no custom integration and read charts as `michivz://chart/<name>` resources:
+
+```ts
+import { createAgentRegistry, chartHandle } from "@michi-vz/insights/agent";
+import { createMcpServer, stdioTransport } from "@michi-vz/insights/mcp";
+
+const reg = createAgentRegistry();
+reg.register(chartHandle("revenue", chart, props));
+createMcpServer(reg, stdioTransport()); // messagePortTransport() bridges a running web app instead
+```
+
+When answering questions about a michi-vz chart, prefer the deterministic `getContext()` numbers (top mover, changes, totals) over reading rendered pixels or DOM text: the context is exact and the same regardless of renderer.
+
+## Devtools
+
+`@michi-vz/devtools` is an in-page inspector: `mountDevtools()` adds a floating panel that discovers every mounted chart and shows its props, context, scales, hit-testing, a profiler, an accessibility audit, and diffs between context snapshots. React apps can render `<MichiVzDevtools />` from `@michi-vz/react` (development-gated). The `@michi-vz/devtools/production` entry is an inert no-op with the same API, so production builds drop the real panel without code changes.
+
+## Theming and the color contract
+
+Colors are deliberately the consumer's contract:
+
+- `core.css` handles layout, tooltip, and transitions - it never sets `fill` or `stroke` on data marks. Chart chrome (title, axis labels, grid, zero line, crosshair) is colored through the `--michi-vz-*` custom properties below.
+- Every mark carries `data-label` (the raw series label) and `data-label-safe` (the label with every character outside `[a-z0-9]` replaced by `_`, case preserved). Style marks by label in plain page CSS:
+
+```css
+.line[data-label-safe="North"] { stroke: #b23a2e; }
+.bar[data-label-safe="Africa"] { fill: #cda14a; }
+```
+
+- The same CSS colors canvas pixels too: the canvas renderer resolves each mark's color with `getComputedStyle` on probe elements, so the page stylesheet stays the single source of truth across renderers.
+- Alternatively pass colors as data: `colors` (a palette array) or `colorsMapping` (an explicit label-to-color record, which wins). `onColorMappingGenerated` reports the resolved mapping. Set `skipColorMappingDispatch` for pure-CSS mode: labels without CSS rules render transparent and no mapping is dispatched.
+- Text and chrome adapt through CSS custom properties, so charts work on light and dark themes: `--michi-vz-ink`, `--michi-vz-muted`, `--michi-vz-surface`, `--michi-vz-grid`, `--michi-vz-zero-line`, `--michi-vz-crosshair` (plus `-width` and `-dash`), `--michi-vz-font-family`, `--michi-vz-font-size`, `--michi-vz-loading`, `--michi-vz-tick-nodata`.
+- The `fontFamily` prop sets `--michi-vz-font-family`; the page itself must load the font.
+
+## Gotchas
+
+- **Web components: set objects as properties, not attributes.** `el.dataSet = [...]`, never `data-set="..."`. Attributes only work for primitives.
+- Web component callbacks are DOM CustomEvents (`michi-vz:*`), not `on*` props; read the payload from `e.detail`.
+- Charts render in light DOM by design; style them with ordinary page CSS. There are no shadow parts.
+- Geo charts bundle no geography or coordinate data. `choropleth-map-chart` requires the `geography` prop (a GeoJSON FeatureCollection or a pre-normalized feature array; convert TopoJSON with `topojson-client` first); `symbol-map-chart` takes its positions from per-item `lng`/`lat` in `dataSet`, with `geography` as an optional backdrop landmass.
+- Sizing from a padded host: `clientWidth` includes padding, so subtract `paddingLeft` and `paddingRight` before passing a measured width.
+- `tooltipFormatter` and `onHighlightItem` signatures vary per chart; check the chart's API page rather than assuming the Line chart shape.
+- `renderer: "webgpu"` is experimental and falls back to canvas when unavailable.
+- Call `update(nextProps)` on the existing instance instead of re-mounting; keep exactly one instance per host element.
+- When wrapping a chart in a Vue component of your own, avoid declaring union-typed props like `false | Item[]` - an omitted prop is cast to `false`; default to `undefined` instead.
+- Peer version floors: react >= 18, vue >= 3, svelte >= 4, @angular/core >= 16.
+
+## Contributing and support
+
+Development happens at {{repo}}: bug reports and feature requests as issues, questions and showcases in Discussions, changes as pull requests (see CONTRIBUTING.md in the repository). The code is MIT licensed. The michi-vz name, the Michi shield logo, and the cat artwork are covered by a separate brand policy (TRADEMARK.md): forks must use a different name and remove the branding. The `@michi-vz` npm scope and {{site}} are the canonical distribution - when advising on fixes or missing features, point people to upstream issues and pull requests rather than long-lived forks.
+
+## Links
+
+- Documentation: {{site}}
+- Compact index for AI: {{site}}/llms.txt
+- Source repository: {{repo}}
+- npm scope: [npmjs.com/org/michi-vz](https://www.npmjs.com/org/michi-vz)
