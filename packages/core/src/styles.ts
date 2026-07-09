@@ -115,6 +115,43 @@ export const CORE_CSS = `
   font-size: var(--michi-vz-font-size, 12px);
   pointer-events: none;
 }
+.michi-vz .mv-progressive-tip {
+  pointer-events: none; user-select: none;
+  font-family: var(--michi-vz-font-family, inherit);
+  font-size: calc(var(--michi-vz-font-size, 12px) * 0.92);
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--michi-vz-surface, #fff); stroke-width: 3px; stroke-linejoin: round;
+}
+.michi-vz .mv-timeline {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 4px 2px;
+  font-family: var(--michi-vz-font-family, inherit);
+  color: inherit;
+}
+.michi-vz .mv-timeline-toggle {
+  font: inherit; line-height: 1;
+  width: 30px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 5px;
+  background: transparent; color: inherit;
+  cursor: pointer; font-size: 11px;
+}
+.michi-vz .mv-timeline-toggle:hover {
+  border-color: color-mix(in srgb, currentColor 70%, transparent);
+}
+.michi-vz .mv-timeline-scrubber {
+  flex: 1; min-width: 60px; margin: 0;
+  accent-color: var(--michi-vz-timeline-accent, currentColor);
+  cursor: pointer;
+}
+.michi-vz .mv-timeline-period {
+  font-size: var(--michi-vz-font-size, 12px);
+  font-variant-numeric: tabular-nums;
+  min-width: 3.5em; text-align: right;
+  opacity: 0.85;
+}
 `;
 
 let greeted = false;

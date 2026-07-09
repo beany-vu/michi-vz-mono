@@ -150,6 +150,7 @@ export function applyGapChartProps(el: GapChartElement, props: GapChartProps): v
   if (props.shapeColorsMapping !== undefined) el.shapeColorsMapping = props.shapeColorsMapping;
   if (props.shapesLabelsMapping !== undefined) el.shapesLabelsMapping = props.shapesLabelsMapping;
   if (props.filter !== undefined) el.filter = props.filter;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
   if (props.xAxisFormat !== undefined) el.xAxisFormat = props.xAxisFormat;
   if (props.yAxisFormat !== undefined) el.yAxisFormat = props.yAxisFormat;
   if (props.ticks !== undefined) el.ticks = props.ticks;
@@ -308,6 +309,7 @@ export function applyScatterChartProps(el: ScatterChartElement, props: ScatterCh
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickValues !== undefined) el.tickValues = props.tickValues;
   if (props.filter !== undefined) el.filter = props.filter;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;

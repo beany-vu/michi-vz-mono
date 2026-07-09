@@ -34,6 +34,11 @@ import {
   setupPlugins,
 } from "../plugins/runner";
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import type {
   ChartContext,
   ChartInstance,
@@ -45,6 +50,7 @@ import type {
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 150, bottom: 100, left: 150 };
+
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
 // the host-level hit-test path. svg does not.
@@ -67,6 +73,7 @@ interface Resolved {
   enableTransitions: boolean;
   showZeroLineForXAxis: boolean;
   maxBarHeight?: number;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: GapChartProps): Resolved {
@@ -88,6 +95,7 @@ function resolve(p: GapChartProps): Resolved {
     enableTransitions: p.enableTransitions ?? true,
     showZeroLineForXAxis: p.showZeroLineForXAxis ?? false,
     maxBarHeight: p.maxBarHeight,
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -123,6 +131,10 @@ export function mountGapChart(
       render();
     },
   };
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({ ticker: opts?.ticker, requestRender: () => render() });
+
   let sticky = false;
   // While the pointer is on the row-label scrub gutter, the host-level canvas
   // hit-test must stand down (it would miss and hide the scrub tooltip).
@@ -240,9 +252,12 @@ export function mountGapChart(
     const xAxisDataType = props.xAxisDataType ?? "number";
     const explicitTickValues =
       props.enableExplicitTickValues === false ? undefined : props.tickValues;
+    // Timeline (opt-in): swap in the active period's rows; the user's own filter
+    // still applies within the period (its `date` is neutralized while playing).
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet, props.filter);
     const { processedDataSet, yAxisDomain, xAxisDomain: derivedXDomain } = processGapChartData(
-      props.dataSet,
-      props.filter,
+      tlData.dataSet,
+      tlData.filter,
       disabledItems,
       explicitTickValues,
     );
@@ -252,8 +267,8 @@ export function mountGapChart(
 
     // allLabels (incl. disabled) for stable colour generation
     const allLabels = processGapChartData(
-      props.dataSet,
-      props.filter,
+      tlData.dataSet,
+      tlData.filter,
       [],
       explicitTickValues,
     ).processedDataSet.map((d) => d.label);
@@ -498,12 +513,14 @@ export function mountGapChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<GapChartProps> = {
     update(next: GapChartProps) {
       baseProps = next;
       render();
@@ -521,6 +538,7 @@ export function mountGapChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -531,6 +549,11 @@ export function mountGapChart(
       host.classList.remove("michi-vz", "michi-vz-gap-chart");
     },
   };
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "gap-chart", () => baseProps);
 }

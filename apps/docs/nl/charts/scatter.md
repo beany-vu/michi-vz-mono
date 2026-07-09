@@ -72,6 +72,49 @@ De demo hieronder is een knipoog naar de deeltjesfysica: 50.000 gesimuleerde dim
 
 <WebgpuHeavyDemo element="michi-vz-scatter-chart" :make="makeScatter" legend caption="50.000 gesimuleerde dimuon-events" />
 
+## Speel door de jaren heen
+
+De Gapminder-truc: geef elk punt een `date`, zet `timeline` aan en zie de puntenwolk jaar na jaar verschuiven met de ingebouwde afspeelknop en scrubber. Standaard uit - zonder opt-in verandert er niets.
+
+<TimelinePlayDemo chart="scatter" hint="Druk op de afspeelknop onder de grafiek: de punten verschuiven jaar na jaar. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ScatterChartHandle>(null);
+
+<ScatterChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ScatterChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:scatterChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-scatter-chart id="c"></michi-vz-scatter-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Combineer met `pointLabels` zodat elke bubbel een naam houdt terwijl hij beweegt; een `filter` blijft binnen elke periode gelden.
+- Punten zonder `date` blijven in elke periode zichtbaar.
+
 ## Gebruik
 
 ::: code-group

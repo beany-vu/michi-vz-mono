@@ -31,6 +31,30 @@ export interface Filter {
   sortingDir: "asc" | "desc";
 }
 
+/** "Play through years" playback config (charts whose rows carry a `date`).
+ *  The chart snapshots one period at a time; the timeline steps across the
+ *  distinct `date` values found in the data. */
+export interface TimelinePeriodConfig {
+  /** Milliseconds per period step while playing (default 800) */
+  speedMs?: number;
+  /** Wrap to the first period after the last instead of stopping (default false) */
+  loop?: boolean;
+  /** Start playing on mount (default false; the user presses play) */
+  autoplay?: boolean;
+  /** Render the built-in play button + period scrubber under the chart (default true) */
+  showControl?: boolean;
+  /** Tween values between periods instead of a hard cut (default true; ignored under prefers-reduced-motion) */
+  interpolate?: boolean;
+  /** Duration of the between-period tween in ms (default: speedMs) */
+  tweenMs?: number;
+  /** Easing for the between-period tween ("easeInOutCubic" default) */
+  easing?: import("./animation/easing").EasingName | import("./animation/easing").EasingFn;
+  /** Called after each step with the active period and its index */
+  onStep?: (period: number | string, index: number) => void;
+  /** Formats the current period for the built-in control's label */
+  formatPeriod?: (period: number | string) => string;
+}
+
 export interface ShapeMapping {
   /** Color for the value1 marker when colorMode is "shape" */
   value1?: string;
@@ -85,6 +109,11 @@ export interface GapChartProps {
   disabledItems?: string[];
   /** Top-N / sort filter applied to the data before rendering */
   filter?: Filter;
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. The user's `filter` still applies within each period. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Marker shape for the value1 endpoint: "circle" (default), "square", or "triangle" */
   shapeValue1?: Shape;
   /** Marker shape for the value2 endpoint: "circle" (default), "square", or "triangle" */
@@ -691,6 +720,11 @@ export interface ScatterChartProps {
   disabledItems?: string[];
   /** Top-N / sort filter applied to the data before rendering */
   filter?: Filter;
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. The user's `filter` still applies within each period. */
+  timeline?: boolean | TimelinePeriodConfig;
   /**
    * Render as inline SVG (default), to a canvas (faster for large datasets), or
    * to WebGPU ("webgpu", EXPERIMENTAL - opt-in, capability-gated, falls back to

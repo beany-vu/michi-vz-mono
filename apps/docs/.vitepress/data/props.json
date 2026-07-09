@@ -1150,6 +1150,14 @@
           "common": false
         },
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. The user's `filter` still applies within each period.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "renderer",
           "type": "Renderer",
           "optional": true,
@@ -3634,6 +3642,14 @@
           "type": "Filter",
           "optional": true,
           "description": "Top-N / sort filter applied to the data before rendering",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. The user's `filter` still applies within each period.",
           "default": "",
           "common": false
         },

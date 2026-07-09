@@ -36,6 +36,11 @@ import {
   setupPlugins,
 } from "../plugins/runner";
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import type {
   ChartContext,
   ChartInstance,
@@ -72,6 +77,7 @@ interface Resolved {
   crosshairPlacement: "auto" | "fixed";
   pointLabels: ScatterPointLabelsConfig | null;
   drawOrder: "sizeDescending" | "sizeAscending";
+  timeline: ResolvedTimeline | null;
 }
 
 function resolveGrid(g: ScatterChartProps["showGrid"], axis: "x" | "y"): boolean {
@@ -109,6 +115,7 @@ function resolve(p: ScatterChartProps): Resolved {
     crosshairPlacement: p.crosshairLabelPlacement ?? "auto",
     pointLabels: resolvePointLabels(p.pointLabels),
     drawOrder: p.drawOrder ?? "sizeDescending",
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -146,6 +153,10 @@ export function mountScatterChart(
       render();
     },
   };
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({ ticker: opts?.ticker, requestRender: () => render() });
+
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
@@ -319,16 +330,19 @@ export function mountScatterChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
-    const { points, xAxisDomain, yAxisDomain, dDomain } = processScatterData(props.dataSet, {
+    // Timeline (opt-in): swap in the active period's rows; the user's own filter
+    // still applies within the period (its `date` is neutralized while playing).
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet, props.filter);
+    const { points, xAxisDomain, yAxisDomain, dDomain } = processScatterData(tlData.dataSet, {
       disabledItems: props.disabledItems,
-      filter: props.filter,
+      filter: tlData.filter,
       xAxisDataType,
       xAxisDomain: props.xAxisDomain,
       yAxisDomain: props.yAxisDomain,
     });
 
     const colors = buildScatterColors(
-      props.dataSet,
+      tlData.dataSet,
       props.colors,
       props.colorsMapping,
       props.skipColorMappingDispatch ?? false
@@ -574,12 +588,14 @@ export function mountScatterChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<ScatterChartProps> = {
     update(next: ScatterChartProps) {
       baseProps = next;
       render();
@@ -597,6 +613,7 @@ export function mountScatterChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -613,6 +630,11 @@ export function mountScatterChart(
       host.classList.remove("michi-vz", "michi-vz-scatter-chart");
     },
   };
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "scatter-plot-chart", () => baseProps);
 }

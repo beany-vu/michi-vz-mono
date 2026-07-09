@@ -72,6 +72,49 @@ Demo bên dưới là một lời chào gửi tới vật lý hạt: 50.000 sự
 
 <WebgpuHeavyDemo element="michi-vz-scatter-chart" :make="makeScatter" legend caption="50.000 sự kiện dimuon mô phỏng" />
 
+## Xem dữ liệu chạy theo năm
+
+Chiêu kinh điển kiểu Gapminder: gắn `date` cho từng điểm, bật `timeline`, rồi xem đám điểm dịch chuyển qua từng năm với nút play và thanh tua có sẵn. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
+
+<TimelinePlayDemo chart="scatter" hint="Bấm nút play dưới biểu đồ: các điểm dịch chuyển qua từng năm. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ScatterChartHandle>(null);
+
+<ScatterChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ScatterChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:scatterChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-scatter-chart id="c"></michi-vz-scatter-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Kết hợp với `pointLabels` để mỗi bong bóng luôn có tên khi di chuyển; `filter` vẫn áp dụng bên trong từng giai đoạn.
+- Điểm không có `date` hiển thị ở mọi giai đoạn.
+
 ## Cách dùng
 
 ::: code-group

@@ -210,6 +210,7 @@ Chart-specific props (the shared props above also apply):
 - `singlePointLine`: `boolean | SinglePointLineConfig` - true / config draws a horizontal guide line for single-point series.
 - `fontFamily`: `string` - Font family for axis/title/tooltip text (SVG + canvas).
 - `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Animate each line drawing itself left to right on mount (progressive reveal).
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
 - `isNodata`: `| boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series.
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
@@ -310,6 +311,7 @@ Chart-specific props (the shared props above also apply):
 - `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
 - `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
 - `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `tooltipFormatter`: `(d: ScatterDataPoint) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
 - `isNodata`: `| boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
@@ -621,6 +623,7 @@ Chart-specific props (the shared props above also apply):
 - `shapeColorsMapping`: `ShapeMapping` - When colorMode is "shape", the colors for the value1, value2, and gap parts
 - `shapesLabelsMapping`: `ShapeMapping` - Optional display labels for the value1/value2/gap roles (e.g. legend captions)
 - `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `shapeValue1`: `"circle" | "square" | "triangle"` (default: `"circle"`) - Marker shape for the value1 endpoint: "circle" (default), "square", or "triangle"
 - `shapeValue2`: `"circle" | "square" | "triangle"` (default: `"circle"`) - Marker shape for the value2 endpoint: "circle" (default), "square", or "triangle"
 - `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers

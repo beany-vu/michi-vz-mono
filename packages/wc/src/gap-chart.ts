@@ -18,6 +18,8 @@ import type {
   Margin,
   ShapeMapping,
   Filter,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class GapChartElement extends LitElement {
@@ -45,6 +47,7 @@ export class GapChartElement extends LitElement {
     shapeColorsMapping: { attribute: false },
     shapesLabelsMapping: { attribute: false },
     filter: { attribute: false },
+    timeline: { attribute: false },
     xAxisFormat: { attribute: false },
     yAxisFormat: { attribute: false },
     ticks: { type: Number },
@@ -85,6 +88,7 @@ export class GapChartElement extends LitElement {
   shapeColorsMapping?: ShapeMapping;
   shapesLabelsMapping?: ShapeMapping;
   filter?: Filter;
+  timeline?: boolean | TimelinePeriodConfig;
   xAxisFormat?: (d: number | string) => string;
   yAxisFormat?: (d: number | string) => string;
   ticks?: number;
@@ -140,6 +144,7 @@ export class GapChartElement extends LitElement {
       shapeColorsMapping: this.shapeColorsMapping,
       shapesLabelsMapping: this.shapesLabelsMapping,
       filter: this.filter,
+      timeline: this.timeline,
       xAxisFormat: this.xAxisFormat,
       yAxisFormat: this.yAxisFormat,
       ticks: this.ticks,
@@ -184,6 +189,11 @@ export class GapChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

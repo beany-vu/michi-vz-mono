@@ -80,6 +80,49 @@ GapChart heeft een optionele `renderer="webgpu"` die de value1/value2-markers en
     { label: 'Oceania', color: '#d7263d' },
   ]" caption="~195 landen" />
 
+## Speel door de jaren heen
+
+Geef elke rij een `date` en zet `timeline` aan: de grafiek wordt een verhaal per jaar, met een eigen afspeelknop en scrubber die telkens één periode toont. Standaard uit - zonder opt-in verandert er niets.
+
+<TimelinePlayDemo chart="gap" hint="Druk op de afspeelknop onder de grafiek: de data stapt door de jaren, één momentopname per keer. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<GapChartHandle>(null);
+
+<GapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<GapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:gapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyGapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-gap-chart id="c"></michi-vz-gap-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Een `filter` (top-N, sortering) blijft binnen elke periode gelden, dus een "top 5 per jaar" werkt meteen.
+- Rijen zonder `date` blijven in elke periode zichtbaar.
+
 ## Gebruik
 
 ::: code-group

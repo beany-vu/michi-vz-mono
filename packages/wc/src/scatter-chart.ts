@@ -13,6 +13,8 @@ import type {
   XaxisDataType,
   Margin,
   Filter,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class ScatterChartElement extends LitElement {
@@ -40,6 +42,7 @@ export class ScatterChartElement extends LitElement {
     ticks: { type: Number },
     tickValues: { attribute: false },
     filter: { attribute: false },
+    timeline: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
@@ -81,6 +84,7 @@ export class ScatterChartElement extends LitElement {
   ticks?: number;
   tickValues?: Array<number | Date>;
   filter?: Filter;
+  timeline?: boolean | TimelinePeriodConfig;
   enableTransitions?: boolean;
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean);
@@ -136,6 +140,7 @@ export class ScatterChartElement extends LitElement {
       ticks: this.ticks,
       tickValues: this.tickValues,
       filter: this.filter,
+      timeline: this.timeline,
       enableTransitions: this.enableTransitions,
       isLoading: this.isLoading,
       isNodata: this.isNodata,
@@ -180,6 +185,11 @@ export class ScatterChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

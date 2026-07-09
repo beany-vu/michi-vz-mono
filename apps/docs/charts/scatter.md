@@ -72,6 +72,49 @@ The demo below is a nod to particle physics: 50,000 simulated dimuon events over
 
 <WebgpuHeavyDemo element="michi-vz-scatter-chart" :make="makeScatter" legend caption="50,000 simulated dimuon events" />
 
+## Play through the years
+
+The Gapminder move: tag each point with a `date`, turn on `timeline`, and watch the scatter drift year by year with the built-in play button and scrubber. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="scatter" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ScatterChartHandle>(null);
+
+<ScatterChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ScatterChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:scatterChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-scatter-chart id="c"></michi-vz-scatter-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- Pair it with `pointLabels` so every bubble stays named while it moves; a `filter` still applies inside each period.
+- Points without a `date` stay visible in every period.
+
 ## Usage
 
 ::: code-group

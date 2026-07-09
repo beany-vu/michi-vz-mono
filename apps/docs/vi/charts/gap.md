@@ -80,6 +80,49 @@ GapChart có tùy chọn `renderer="webgpu"` để vẽ các marker value1/value
     { label: 'Oceania', color: '#d7263d' },
   ]" caption="~195 quốc gia" />
 
+## Xem dữ liệu chạy theo năm
+
+Gắn `date` cho từng dòng rồi bật `timeline`: biểu đồ thành câu chuyện theo từng năm với nút play và thanh tua riêng, mỗi lần hiển thị một giai đoạn. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
+
+<TimelinePlayDemo chart="gap" hint="Bấm nút play dưới biểu đồ: dữ liệu chạy qua từng năm, mỗi lần một snapshot. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<GapChartHandle>(null);
+
+<GapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<GapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:gapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyGapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-gap-chart id="c"></michi-vz-gap-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- `filter` (top-N, sắp xếp) vẫn áp dụng bên trong từng giai đoạn, nên "top 5 mỗi năm" chạy được ngay.
+- Dòng không có `date` hiển thị ở mọi giai đoạn.
+
 ## Cách dùng
 
 ::: code-group

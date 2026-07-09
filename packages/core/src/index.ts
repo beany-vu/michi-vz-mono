@@ -272,6 +272,7 @@ export type {
   MouseLineConfig,
   ProgressiveDrawConfig,
   ProgressiveDrawTipLabelConfig,
+  TimelinePeriodConfig,
   LineChartProps,
   LineSeriesContext,
   LineChartContext,

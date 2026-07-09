@@ -74,6 +74,7 @@ import type {
   MichiVzStore,
   MichiVzState,
   SinglePointLineConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export type {
@@ -205,6 +206,8 @@ export interface GapChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface LineChartHandle {
@@ -235,6 +238,8 @@ export interface ScatterChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface VerticalStackBarChartHandle {
@@ -381,6 +386,7 @@ export const GapChart = forwardRef<GapChartHandle, GapChartReactProps>(function 
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -608,6 +614,7 @@ export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartReactProp
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
