@@ -10,10 +10,10 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## Unreleased
+## v1.10.0
 
-<!-- TODO before publishing: replace this header with the real version numbers
-     once `changeset version` has consumed every pending .changeset/*.md file. -->
+Package versions: react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·
+devtools, insights **0.2.10**.
 
 - **Play through the years, on every chart.** The new opt-in `timeline` prop adds
   a built-in play button + year scrubber (and a headless `chart.timeline()`
@@ -36,6 +36,50 @@ The latest `@michi-vz` releases, newest first. All six packages -
 - **Fixed:** a re-render during a running animation now resumes it from its
   current position instead of jumping to the end - framework wrappers update the
   chart right after mounting, which previously cancelled every mount autoplay.
+- **Fixed:** the bare CDN URL for the web component bundle
+  (`cdn.jsdelivr.net/npm/@michi-vz/wc`) now resolves to the self-contained
+  browser bundle, so a plain `<script type="module">` import works without
+  spelling out the full `/dist/...` path.
+
+## v1.9.0
+
+Package versions: react **1.9.0** · core **1.10.0** · wc, angular **1.9.1** · vue, svelte **1.6.1** ·
+devtools, insights **0.2.9**.
+
+- **Download any chart as an image or CSV.** New core export helpers:
+  `chartContextToCsv(ctx)` turns any chart's `getContext().a11yTable` (the full,
+  untruncated data table every chart carries) into RFC-4180 CSV with no per-chart
+  code, and `chartToStyledSvgString` / `chartToStyledSvgDataUri` /
+  `chartToPngDataUrl` rebuild a standalone, correctly styled SVG or PNG. Exported
+  images used to lose gridlines, axis labels and the zero line because the chart
+  CSS lives in `adoptedStyleSheets`, invisible to a plain serializer; the PNG
+  helper also composites canvas-renderer marks over the SVG axes. React chart
+  handles gain `getElement()` so the helpers get a scoped element instead of a
+  fragile global DOM query.
+- **One tooltip, every series.** LineChart's `sharedTooltip` (plus an optional
+  `sharedTooltipFormatter`) shows a single tooltip listing every series' value at
+  the nearest year alongside the crosshair, instead of only the nearest series.
+  Forwarded by the web component and Angular wrappers. See [Line](/charts/line).
+- **The a11y table now carries the data itself.** LineChart's `a11yTable` became
+  a wide per-period table - one column per x value labelled like the axis, one
+  row per series, `-` for gaps - so a CSV export off `getContext()` includes
+  every plotted point. Per-series stats stay on `context.series`; this is the
+  release's only behaviour change.
+- **Gap chart axis parity.** [Gap](/charts/gap) gains `showZeroLineForXAxis` (a
+  solid vertical line at x=0, now drawn independently of `showGrid`) and
+  `maxBarHeight` (a 1-2 row chart no longer stretches its bars across the full
+  plot height), and the numeric value axes on Gap and
+  [Comparable](/charts/comparable) tilt crowded ticks -45° before thinning, as
+  the date axes already did.
+- **Label fixes across the band charts.** Row labels clamp to two lines with an
+  ellipsis instead of overlapping their neighbours; long category labels rotate
+  instead of being wrongly thinned to half the axis; a [Bubble](/charts/bubble)
+  label hugging the right edge flips to the left of its point rather than being
+  cropped; and [Comparable Vertical Bar](/charts/comparable-vertical-bar) paints
+  the shorter sub-bar on top - a row whose "before" value was smaller used to
+  hide it completely behind the taller bar - with the change arrow now centred
+  above each pair.
+
 ## v1.8.1
 
 Package versions: react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·

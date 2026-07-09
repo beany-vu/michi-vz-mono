@@ -12,10 +12,10 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## Non publié
+## v1.10.0
 
-<!-- TODO avant publication : remplacer ce titre par les vrais numéros de version
-     une fois que `changeset version` aura consommé tous les fichiers .changeset/*.md. -->
+Versions des paquets : react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·
+devtools, insights **0.2.10**.
 
 - **Faire défiler les années, sur chaque graphique.** La nouvelle prop opt-in
   `timeline` ajoute un bouton lecture + un curseur d'années intégrés (et un
@@ -43,6 +43,55 @@ par commit se trouve dans les
   sa position actuelle au lieu de sauter à la fin - les wrappers de framework
   mettent à jour le graphique juste après le montage, ce qui annulait auparavant
   chaque autoplay de montage.
+- **Corrigé :** l'URL CDN nue du bundle web component
+  (`cdn.jsdelivr.net/npm/@michi-vz/wc`) pointe désormais vers le bundle
+  navigateur autonome : un simple `<script type="module">` fonctionne sans devoir
+  épeler le chemin `/dist/...` complet.
+
+## v1.9.0
+
+Versions des paquets : react **1.9.0** · core **1.10.0** · wc, angular **1.9.1** · vue, svelte **1.6.1** ·
+devtools, insights **0.2.9**.
+
+- **Téléchargez n'importe quel graphique en image ou en CSV.** Nouveaux utilitaires
+  d'export dans core : `chartContextToCsv(ctx)` transforme le
+  `getContext().a11yTable` de n'importe quel graphique (la table de données
+  complète, jamais tronquée, que chaque graphique embarque) en CSV RFC 4180 sans
+  code par graphique, et `chartToStyledSvgString` / `chartToStyledSvgDataUri` /
+  `chartToPngDataUrl` reconstruisent un SVG ou un PNG autonome et correctement
+  stylé. Les images exportées perdaient jusqu'ici le quadrillage, les étiquettes
+  d'axes et la ligne zéro, car le CSS des graphiques vit dans
+  `adoptedStyleSheets`, invisible pour un sérialiseur naïf ; l'export PNG
+  superpose aussi les marques du renderer canvas sur les axes SVG. Les handles
+  React gagnent `getElement()` pour fournir l'élément aux utilitaires sans
+  requête DOM globale fragile.
+- **Une seule infobulle, toutes les séries.** Le `sharedTooltip` de LineChart
+  (avec un `sharedTooltipFormatter` optionnel) affiche une infobulle unique
+  listant la valeur de chaque série à l'année la plus proche, à côté du
+  réticule, au lieu de la seule série la plus proche. Relayé par le web
+  component et le wrapper Angular. Voir [Line](/fr/charts/line).
+- **La table a11y porte désormais les données elles-mêmes.** Le `a11yTable` de
+  LineChart devient une table large par période : une colonne par valeur x
+  étiquetée comme l'axe, une ligne par série, `-` pour les trous. Un export CSV
+  depuis `getContext()` contient donc chaque point tracé. Les statistiques par
+  série restent sur `context.series` ; c'est le seul changement de comportement
+  de cette version.
+- **Parité d'axes pour le graphique Gap.** [Gap](/fr/charts/gap) gagne
+  `showZeroLineForXAxis` (une ligne verticale pleine à x=0, désormais tracée
+  indépendamment de `showGrid`) et `maxBarHeight` (un graphique de 1 à 2 lignes
+  n'étire plus ses barres sur toute la hauteur), et les axes de valeurs
+  numériques de Gap et de [Comparable](/fr/charts/comparable) inclinent les
+  graduations trop denses à -45° avant de les éclaircir, comme le faisaient déjà
+  les axes de dates.
+- **Des étiquettes corrigées sur les graphiques à bandes.** Les étiquettes de
+  ligne se limitent à deux lignes avec points de suspension au lieu de chevaucher
+  leurs voisines ; les longs libellés de catégories pivotent au lieu d'être
+  éclaircis à tort ; une étiquette de [Bubble](/fr/charts/bubble) collée au bord
+  droit bascule à gauche de son point plutôt que d'être rognée ; et
+  [Comparable Vertical Bar](/fr/charts/comparable-vertical-bar) peint la
+  sous-barre la plus courte au-dessus (une ligne dont la valeur « avant » était
+  la plus petite la cachait entièrement derrière la barre la plus haute), avec la
+  flèche d'évolution désormais centrée au-dessus de chaque paire.
 
 ## v1.8.1
 

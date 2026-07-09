@@ -10,10 +10,10 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## Nog niet uitgebracht
+## v1.10.0
 
-<!-- TODO voor publicatie: vervang deze kop door de echte versienummers
-     zodra `changeset version` alle .changeset/*.md-bestanden heeft verwerkt. -->
+Pakketversies: react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·
+devtools, insights **0.2.10**.
 
 - **Speel door de jaren heen, op elke grafiek.** De nieuwe opt-in prop `timeline`
   voegt een ingebouwde afspeelknop + jaarscrubber toe (plus een headless
@@ -39,6 +39,52 @@ details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/
   huidige positie in plaats van naar het einde te springen - framework-wrappers
   updaten de grafiek direct na het mounten, wat voorheen elke mount-autoplay
   annuleerde.
+- **Opgelost:** de kale CDN-URL van de web-component-bundle
+  (`cdn.jsdelivr.net/npm/@michi-vz/wc`) verwijst nu naar de op zichzelf staande
+  browserbundle, zodat een gewone `<script type="module">`-import werkt zonder
+  het volledige `/dist/...`-pad uit te schrijven.
+
+## v1.9.0
+
+Pakketversies: react **1.9.0** · core **1.10.0** · wc, angular **1.9.1** · vue, svelte **1.6.1** ·
+devtools, insights **0.2.9**.
+
+- **Download elke grafiek als afbeelding of CSV.** Nieuwe exporthelpers in core:
+  `chartContextToCsv(ctx)` zet de `getContext().a11yTable` van elke grafiek (de
+  volledige, nooit ingekorte datatabel die elke grafiek meedraagt) om naar
+  RFC 4180-CSV zonder code per grafiek, en `chartToStyledSvgString` /
+  `chartToStyledSvgDataUri` / `chartToPngDataUrl` bouwen een op zichzelf staande,
+  correct gestylede SVG of PNG. Geëxporteerde afbeeldingen verloren tot nu toe
+  rasterlijnen, aslabels en de nullijn, omdat de grafiek-CSS in
+  `adoptedStyleSheets` leeft en onzichtbaar is voor een naïeve serializer; de
+  PNG-helper legt bovendien de marks van de canvas-renderer over de SVG-assen.
+  React-handles krijgen `getElement()`, zodat de helpers een scoped element
+  krijgen in plaats van een fragiele globale DOM-query.
+- **Eén tooltip, alle reeksen.** LineCharts `sharedTooltip` (plus een optionele
+  `sharedTooltipFormatter`) toont één tooltip met de waarde van elke reeks bij
+  het dichtstbijzijnde jaar, naast het dradenkruis, in plaats van alleen de
+  dichtstbijzijnde reeks. Doorgegeven door het web component en de
+  Angular-wrapper. Zie [Line](/nl/charts/line).
+- **De a11y-tabel bevat nu de data zelf.** LineCharts `a11yTable` werd een brede
+  tabel per periode: één kolom per x-waarde met hetzelfde label als de as, één
+  rij per reeks, `-` voor gaten. Een CSV-export via `getContext()` bevat dus elk
+  getekend punt. Statistieken per reeks blijven op `context.series`; dit is de
+  enige gedragswijziging van deze release.
+- **As-pariteit voor de Gap-grafiek.** [Gap](/nl/charts/gap) krijgt
+  `showZeroLineForXAxis` (een doorgetrokken verticale lijn op x=0, nu getekend
+  onafhankelijk van `showGrid`) en `maxBarHeight` (een grafiek met 1 of 2 rijen
+  rekt zijn balken niet langer over de volle hoogte uit), en de numerieke
+  waardeassen van Gap en [Comparable](/nl/charts/comparable) kantelen te drukke
+  ticks eerst -45° voordat ze worden uitgedund, zoals de datumassen al deden.
+- **Labelcorrecties in de bandgrafieken.** Rijlabels beperken zich tot twee
+  regels met een beletselteken in plaats van hun buren te overlappen; lange
+  categorielabels roteren in plaats van onterecht uitgedund te worden; een
+  [Bubble](/nl/charts/bubble)-label tegen de rechterrand klapt naar links van
+  zijn punt in plaats van afgesneden te worden; en
+  [Comparable Vertical Bar](/nl/charts/comparable-vertical-bar) tekent de
+  kortste subbalk bovenop (een rij waarvan de "voor"-waarde de kleinste was,
+  verborg die volledig achter de hogere balk), met de veranderingspijl nu
+  gecentreerd boven elk paar.
 
 ## v1.8.1
 

@@ -10,10 +10,10 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
-## Chưa phát hành
+## v1.10.0
 
-<!-- TODO trước khi publish: thay heading này bằng số version thật
-     sau khi `changeset version` xử lý hết các file .changeset/*.md. -->
+Phiên bản các package: react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·
+devtools, insights **0.2.10**.
 
 - **Xem dữ liệu chạy theo năm, trên mọi biểu đồ.** Prop opt-in `timeline` mới thêm
   nút play + thanh tua năm có sẵn (kèm controller headless `chart.timeline()`)
@@ -37,6 +37,51 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 - **Đã sửa:** re-render giữa lúc animation đang chạy giờ sẽ tiếp tục từ vị trí
   hiện tại thay vì nhảy thẳng về cuối - các wrapper framework gọi update ngay
   sau khi mount, trước đây khiến mọi autoplay lúc mount bị hủy.
+- **Đã sửa:** URL CDN rút gọn của bundle web component
+  (`cdn.jsdelivr.net/npm/@michi-vz/wc`) giờ trỏ đúng vào bundle trình duyệt
+  độc lập, nên chỉ cần `<script type="module">` là chạy được, không phải ghi
+  đủ đường dẫn `/dist/...`.
+
+## v1.9.0
+
+Phiên bản các package: react **1.9.0** · core **1.10.0** · wc, angular **1.9.1** · vue, svelte **1.6.1** ·
+devtools, insights **0.2.9**.
+
+- **Tải mọi biểu đồ về dưới dạng ảnh hoặc CSV.** Core có thêm bộ helper export
+  mới: `chartContextToCsv(ctx)` chuyển `getContext().a11yTable` của bất kỳ biểu
+  đồ nào (bảng dữ liệu đầy đủ, không bao giờ bị cắt bớt, mà biểu đồ nào cũng
+  mang theo) thành CSV chuẩn RFC 4180 mà không cần viết code riêng cho từng
+  biểu đồ; còn `chartToStyledSvgString` / `chartToStyledSvgDataUri` /
+  `chartToPngDataUrl` dựng lại một file SVG hoặc PNG độc lập, giữ nguyên style.
+  Trước đây ảnh export ra thường mất lưới, nhãn trục và đường zero, vì CSS của
+  biểu đồ nằm trong `adoptedStyleSheets`, vô hình với serializer thông thường;
+  helper PNG còn ghép các mark của renderer canvas lên phần trục SVG. Handle
+  React có thêm `getElement()` để đưa đúng element cho các helper thay vì phải
+  query DOM toàn cục dễ vỡ.
+- **Một tooltip cho tất cả các chuỗi.** `sharedTooltip` của LineChart (kèm
+  `sharedTooltipFormatter` tuỳ chọn) hiển thị một tooltip duy nhất liệt kê giá
+  trị của mọi chuỗi tại năm gần con trỏ nhất, đi cùng crosshair, thay vì chỉ
+  chuỗi gần nhất. Web component và wrapper Angular đều truyền prop này. Xem
+  [Line](/vi/charts/line).
+- **Bảng a11y giờ chứa chính dữ liệu.** `a11yTable` của LineChart trở thành
+  bảng rộng theo từng mốc thời gian: mỗi giá trị x một cột (nhãn giống trục),
+  mỗi chuỗi một hàng, chỗ trống ghi `-`. Nhờ vậy file CSV export từ
+  `getContext()` có đủ mọi điểm đã vẽ. Thống kê theo chuỗi vẫn nằm ở
+  `context.series`; đây là thay đổi hành vi duy nhất của bản này.
+- **Trục của biểu đồ Gap ngang hàng với các biểu đồ khác.**
+  [Gap](/vi/charts/gap) có thêm `showZeroLineForXAxis` (đường dọc liền nét tại
+  x=0, giờ vẽ độc lập với `showGrid`) và `maxBarHeight` (biểu đồ chỉ 1-2 hàng
+  không còn kéo giãn thanh ra toàn bộ chiều cao); trục giá trị số của Gap và
+  [Comparable](/vi/charts/comparable) nghiêng nhãn -45° trước khi thưa bớt khi
+  quá dày, như trục ngày tháng vẫn làm.
+- **Sửa nhãn trên các biểu đồ dạng băng.** Nhãn hàng giới hạn ở hai dòng kèm
+  dấu ba chấm thay vì đè lên hàng bên cạnh; nhãn nhóm dài sẽ xoay nghiêng thay
+  vì bị thưa bớt oan; nhãn của [Bubble](/vi/charts/bubble) sát mép phải lật
+  sang bên trái điểm thay vì bị cắt; và
+  [Comparable Vertical Bar](/vi/charts/comparable-vertical-bar) vẽ thanh con
+  ngắn hơn lên trên (hàng nào có giá trị "trước" nhỏ hơn thì trước đây thanh đó
+  bị thanh cao che khuất hoàn toàn), mũi tên thay đổi cũng được căn giữa phía
+  trên mỗi cặp.
 
 ## v1.8.1
 
