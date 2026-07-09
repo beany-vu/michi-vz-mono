@@ -4,6 +4,7 @@ import Layout from "./Layout.vue";
 import ChartDemo from "./ChartDemo.vue";
 import WebgpuHeavyDemo from "./WebgpuHeavyDemo.vue";
 import NoDataTicksDemo from "./NoDataTicksDemo.vue";
+import ProgressiveDrawDemo from "./ProgressiveDrawDemo.vue";
 import PositionModeDemo from "./PositionModeDemo.vue";
 import InsightsDemo from "./InsightsDemo.vue";
 import EmbeddingsLab from "./EmbeddingsLab.vue";
@@ -28,6 +29,7 @@ export default {
     app.component("ChartDemo", ChartDemo);
     app.component("WebgpuHeavyDemo", WebgpuHeavyDemo);
     app.component("NoDataTicksDemo", NoDataTicksDemo);
+    app.component("ProgressiveDrawDemo", ProgressiveDrawDemo);
     app.component("PositionModeDemo", PositionModeDemo);
     app.component("InsightsDemo", InsightsDemo);
     app.component("EmbeddingsLab", EmbeddingsLab);

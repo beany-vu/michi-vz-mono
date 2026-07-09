@@ -141,6 +141,59 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Tracé progressif et étiquettes de pointe
+
+Laissez le graphique raconter son histoire dans l'ordre : avec `progressiveDraw`, chaque ligne se dessine de la première à la dernière année, accompagnée d'une étiquette optionnelle qui suit la pointe de la ligne en affichant le nom de la série et sa valeur courante, avant de se poser à côté de l'extrémité. Désactivé par défaut - sans opt-in, rien ne change.
+
+<ProgressiveDrawDemo replay-label="Rejouer l'animation" hint="Chaque ligne grandit de la première à la dernière année ; l'étiquette suit la pointe puis se pose à l'extrémité de la ligne. Avec reduced motion activé, le graphique s'affiche entièrement tracé, instantanément." />
+
+`progressiveDraw: true` applique les réglages par défaut (1200 ms, easeInOutCubic). Un objet de configuration affine le comportement :
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000, tipLabel: true }}
+/>;
+// ref.current?.replay() rejoue l'animation à la demande
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000, tipLabel: true },
+});
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000, tipLabel: true };
+  // el.replay() rejoue l'animation
+</script>
+```
+
+:::
+
+- `durationMs` et `easing` ("linear", "easeOutQuad", "easeInOutCubic", ou une fonction `(t) => t` personnalisée) façonnent le rythme du tracé.
+- `tipLabel: true` dessine l'étiquette mobile ; `{ content: "name" | "value" | "both", format }` restreint ou réécrit son texte. La valeur affichée est toujours un vrai point de données, jamais un nombre interpolé.
+- `autoplay: false` rend le graphique entièrement tracé ; appelez `replay()` (handle de ref React, méthode du web component ou instance core) pour lancer l'animation à la demande. `replayOnUpdate: true` la rejoue à chaque changement de données.
+- Respecte `prefers-reduced-motion` : le graphique s'affiche alors entièrement tracé, instantanément.
+- Pendant le tracé, le réticule et les infobulles s'arrêtent au bord révélé : le survol n'inspecte jamais des données pas encore dessinées. Le renderer webgpu ignore l'animation.
+
 ## Utilisation
 
 ::: code-group

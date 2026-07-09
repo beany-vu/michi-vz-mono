@@ -141,6 +141,59 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Progressive draw and tip labels
+
+Let the chart tell its story in order: with `progressiveDraw`, every line draws itself from the first year to the last, and an optional tip label rides each line's end showing the series name and its current value, settling next to the finished line. Off by default - nothing changes until a chart opts in.
+
+<ProgressiveDrawDemo />
+
+`progressiveDraw: true` enables the defaults (1200 ms, easeInOutCubic). A config object tunes it:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000, tipLabel: true }}
+/>;
+// ref.current?.replay() re-runs the reveal on demand
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000, tipLabel: true },
+});
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000, tipLabel: true };
+  // el.replay() re-runs the reveal
+</script>
+```
+
+:::
+
+- `durationMs` and `easing` ("linear", "easeOutQuad", "easeInOutCubic", or a custom `(t) => t` function) shape the sweep.
+- `tipLabel: true` draws the moving label; `{ content: "name" | "value" | "both", format }` narrows or rewrites its text. The value shown is always a real data point, never an interpolated number.
+- `autoplay: false` renders the chart fully drawn; call `replay()` (React ref handle, web-component method, or the core instance) to run the reveal on demand. `replayOnUpdate: true` re-runs it on every data change.
+- Respects `prefers-reduced-motion`: the chart renders fully drawn instantly.
+- While the reveal runs, the crosshair and tooltips stop at the reveal edge, so hovering never inspects data that is not drawn yet. The webgpu renderer skips the animation.
+
 ## Usage
 
 ::: code-group

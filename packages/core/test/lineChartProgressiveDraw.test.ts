@@ -163,6 +163,152 @@ describe("progressiveDraw SVG reveal", () => {
   });
 });
 
+describe("progressiveDraw tip labels (SVG)", () => {
+  it("renders one tip label per series, following the reveal and settling at the line end", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear", tipLabel: true } },
+      ticker
+    );
+    const tips = () => Array.from(host.querySelectorAll<SVGTextElement>("text.mv-progressive-tip"));
+    expect(tips().length).toBe(2);
+    const xOf = (t: SVGTextElement) => Number(/translate\(([-\d.]+)/.exec(t.getAttribute("transform") ?? "")?.[1]);
+    const before = xOf(tips()[0]);
+    ticker.tick(500);
+    const mid = xOf(tips()[0]);
+    expect(mid).toBeGreaterThan(before);
+    ticker.tick(500);
+    // Settled: labels show the series name and the final value.
+    const texts = tips().map(t => t.textContent);
+    expect(texts).toContain("Alpha 30");
+    expect(texts).toContain("Beta 6");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("keeps tip labels outside the reveal clip (they are never clipped away)", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear", tipLabel: true } },
+      ticker
+    );
+    const tip = host.querySelector("text.mv-progressive-tip")!;
+    // Walk up: no ancestor of the tip label carries the clip-path.
+    let node: Element | null = tip;
+    while (node) {
+      expect(node.getAttribute?.("clip-path") ?? null).toBeNull();
+      node = node.parentElement;
+    }
+    chart.destroy();
+    host.remove();
+  });
+
+  it("content 'name' renders only the series name", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, tipLabel: { content: "name" } } },
+      ticker
+    );
+    ticker.tick(1000);
+    const texts = Array.from(host.querySelectorAll("text.mv-progressive-tip")).map(
+      t => t.textContent
+    );
+    expect(texts).toContain("Alpha");
+    expect(texts).toContain("Beta");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("no tip labels render when tipLabel is off", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount({ progressiveDraw: true }, ticker);
+    expect(host.querySelectorAll("text.mv-progressive-tip").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+});
+
+describe("progressiveDraw hover gating (canvas mode)", () => {
+  function mountAt(extra: Partial<LineChartProps>) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const ticker = createManualTicker();
+    const chart = mountLineChart(
+      host,
+      { dataSet: sample, width: WIDTH, height: 300, xAxisDataType: "date_annual", ...extra },
+      { ticker }
+    );
+    return { host, chart, ticker };
+  }
+
+  it("does not show a tooltip for points beyond the reveal position while animating", () => {
+    const { host, chart, ticker } = mountAt({
+      progressiveDraw: { durationMs: 1000, easing: "linear" },
+      renderer: "canvas",
+      sharedTooltip: true,
+    });
+    ticker.tick(100); // revealX = 60 + 0.1*540 = 114 -> only the 2016 column (x=60) revealed
+    // Hover near the LAST year's column (far beyond revealX).
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 550, clientY: 150, bubbles: true }));
+    const tooltip = host.querySelector<HTMLElement>(".tooltip")!;
+    expect(tooltip.style.visibility).toBe("hidden");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("shows the tooltip for revealed columns while animating", () => {
+    const { host, chart, ticker } = mountAt({
+      progressiveDraw: { durationMs: 1000, easing: "linear" },
+      renderer: "canvas",
+      sharedTooltip: true,
+    });
+    ticker.tick(500); // revealX = 330: 2016 (60) and 2017 (~206.7) revealed
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 150, bubbles: true }));
+    const tooltip = host.querySelector<HTMLElement>(".tooltip")!;
+    expect(tooltip.style.visibility).toBe("visible");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("hovers normally once the animation completes", () => {
+    const { host, chart, ticker } = mountAt({
+      progressiveDraw: { durationMs: 1000, easing: "linear" },
+      renderer: "canvas",
+      sharedTooltip: true,
+    });
+    ticker.tick(1000);
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 540, clientY: 150, bubbles: true }));
+    const tooltip = host.querySelector<HTMLElement>(".tooltip")!;
+    expect(tooltip.style.visibility).toBe("visible");
+    chart.destroy();
+    host.remove();
+  });
+});
+
+describe("progressiveDraw replayOnUpdate", () => {
+  it("re-animates on update() when replayOnUpdate is true", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear", replayOnUpdate: true } },
+      ticker
+    );
+    ticker.tick(1000);
+    expect(rectWidth(host)).toBe(WIDTH);
+    chart.update({
+      dataSet: sample,
+      width: WIDTH,
+      height: 300,
+      xAxisDataType: "date_annual",
+      progressiveDraw: { durationMs: 1000, easing: "linear", replayOnUpdate: true },
+    });
+    expect(rectWidth(host)).toBe(PLOT_LEFT);
+    ticker.tick(1000);
+    expect(rectWidth(host)).toBe(WIDTH);
+    chart.destroy();
+    host.remove();
+  });
+});
+
 describe("progressiveDraw canvas mode", () => {
   it("mounts and animates without throwing (jsdom has no 2d context; draw no-ops)", () => {
     const ticker = createManualTicker();

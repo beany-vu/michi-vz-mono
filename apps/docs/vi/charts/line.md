@@ -141,6 +141,59 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Vẽ dần và nhãn theo ngọn đường
+
+Để biểu đồ kể chuyện theo trình tự: bật `progressiveDraw` là mỗi đường tự vẽ từ năm đầu đến năm cuối, kèm nhãn tùy chọn chạy theo ngọn đường, hiển thị tên chuỗi và giá trị hiện tại rồi dừng lại cạnh điểm cuối. Mặc định tắt - không bật thì biểu đồ giữ nguyên như cũ.
+
+<ProgressiveDrawDemo replay-label="Chạy lại hiệu ứng" hint="Mỗi đường lớn dần từ năm đầu đến năm cuối; nhãn bám theo ngọn đường rồi dừng ở điểm cuối. Khi hệ điều hành bật reduced motion, biểu đồ hiển thị đầy đủ ngay lập tức." />
+
+`progressiveDraw: true` dùng cấu hình mặc định (1200 ms, easeInOutCubic). Truyền object để tinh chỉnh:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000, tipLabel: true }}
+/>;
+// ref.current?.replay() chạy lại hiệu ứng khi cần
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000, tipLabel: true },
+});
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000, tipLabel: true };
+  // el.replay() chạy lại hiệu ứng
+</script>
+```
+
+:::
+
+- `durationMs` và `easing` ("linear", "easeOutQuad", "easeInOutCubic", hoặc hàm `(t) => t` tự viết) quyết định nhịp vẽ.
+- `tipLabel: true` bật nhãn chạy theo ngọn đường; `{ content: "name" | "value" | "both", format }` thu gọn hoặc viết lại nội dung. Giá trị hiển thị luôn là điểm dữ liệu thật, không phải số nội suy.
+- `autoplay: false` hiển thị biểu đồ vẽ sẵn đầy đủ; gọi `replay()` (ref handle bên React, method của web component, hoặc instance của core) để chạy hiệu ứng khi cần. `replayOnUpdate: true` chạy lại mỗi lần dữ liệu thay đổi.
+- Tôn trọng `prefers-reduced-motion`: biểu đồ hiển thị đầy đủ ngay, không animation.
+- Trong lúc vẽ, crosshair và tooltip dừng ở mép đã vẽ, nên hover không bao giờ chạm vào dữ liệu chưa hiện ra. Renderer webgpu bỏ qua animation này.
+
 ## Cách dùng
 
 ::: code-group

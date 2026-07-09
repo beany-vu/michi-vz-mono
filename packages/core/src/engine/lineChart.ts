@@ -29,6 +29,9 @@ import {
   createProgressiveDrawDriver,
   installProgressiveClip,
   setProgressiveReveal,
+  installTipLabels,
+  setTipLabels,
+  computeTipLabels,
   type ResolvedProgressiveDraw,
   type ProgressiveDrawDriver,
 } from "../lineChart/progressiveDraw";
@@ -212,14 +215,18 @@ export function mountLineChart(
       .join("");
     return `<strong>${xLabel}</strong>${rows}`;
   };
-  const showSharedTooltip = (ev: MouseEvent): void => {
+  const showSharedTooltip = (ev: MouseEvent, revealCap = Infinity): void => {
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     // Nearest data-point x across all series = the crosshair-snapped year column.
+    // While a progressive draw is running, columns beyond the reveal edge are
+    // not drawn yet, so they never become the snapped column.
     let nearestX: number | null = null;
     for (const entry of hitData)
-      for (const pt of entry.points)
+      for (const pt of entry.points) {
+        if (pt.x > revealCap) continue;
         if (nearestX === null || Math.abs(pt.x - x) < Math.abs(nearestX - x)) nearestX = pt.x;
+      }
     if (nearestX === null) {
       hideTooltip();
       return;
@@ -256,6 +263,9 @@ export function mountLineChart(
 
   const onHostMove = (ev: MouseEvent): void => {
     const r = resolve(baseProps);
+    // While a progressive draw is running, everything right of the reveal edge is
+    // not drawn yet: the crosshair, snapping, and tooltips all stop at that edge.
+    const revealCap = pdDriver?.isRunning() ? pdDriver.getRevealX() : Infinity;
     if (r.mouseLine && mouseLine) {
       const svgRect = svg.getBoundingClientRect();
       const x = ev.clientX - svgRect.left;
@@ -264,13 +274,15 @@ export function mountLineChart(
       // AND canvas modes; empty hitData (e.g. every series disabled) = nothing to
       // snap to, keep the line hidden rather than show it at a stale x.
       let lineX: number | null = null;
-      if (x >= r.margin.left && x <= r.width - r.margin.right) {
+      if (x >= r.margin.left && x <= Math.min(r.width - r.margin.right, revealCap)) {
         if (r.mouseLine.snap === false) {
           lineX = x;
         } else {
           for (const entry of hitData)
-            for (const pt of entry.points)
+            for (const pt of entry.points) {
+              if (pt.x > revealCap) continue;
               if (lineX === null || Math.abs(pt.x - x) < Math.abs(lineX - x)) lineX = pt.x;
+            }
         }
       }
       if (lineX !== null) {
@@ -289,8 +301,8 @@ export function mountLineChart(
     if (baseProps.sharedTooltip) {
       const rect = svg.getBoundingClientRect();
       const sx = ev.clientX - rect.left;
-      if (sx >= r.margin.left && sx <= r.width - r.margin.right) {
-        showSharedTooltip(ev);
+      if (sx >= r.margin.left && sx <= Math.min(r.width - r.margin.right, revealCap)) {
+        showSharedTooltip(ev, revealCap);
         baseProps.onHighlightItem?.(hitData.map((h) => h.label));
       } else {
         hideTooltip();
@@ -301,11 +313,19 @@ export function mountLineChart(
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
+    if (x > revealCap) {
+      hideTooltip();
+      baseProps.onHighlightItem?.([]);
+      return;
+    }
     let hitLabel: string | null = null;
     let bestDy = 24;
     for (const entry of hitData) {
-      let nearest = entry.points[0];
-      for (const p of entry.points) if (Math.abs(p.x - x) < Math.abs(nearest.x - x)) nearest = p;
+      let nearest: (typeof entry.points)[number] | null = null;
+      for (const p of entry.points) {
+        if (p.x > revealCap) continue;
+        if (nearest === null || Math.abs(p.x - x) < Math.abs(nearest.x - x)) nearest = p;
+      }
       if (nearest) {
         const dy = Math.abs(nearest.y - y);
         if (dy < bestDy) {
@@ -667,15 +687,26 @@ export function mountLineChart(
     if (pd && dataState !== "nodata" && r.renderer !== "webgpu") {
       const startPx = r.margin.left;
       const endPx = r.width;
+      // Tip labels are computed from the undecimated hitData (same nearest-point
+      // source the tooltips use), so SVG and canvas report identical values.
+      const tipCfg = pd.tipLabel;
+      const colorOf = (label: string): string => currentColors[label] ?? "";
       let applyReveal: ((x: number) => void) | null = null;
       if (r.renderer === "svg") {
         const contentRoot = svg.querySelector<SVGGElement>("g.line-chart-content");
         if (contentRoot) {
           const rect = installProgressiveClip(svg, contentRoot, r.height);
-          applyReveal = (x) => setProgressiveReveal(rect, x);
+          const tipGroup = tipCfg ? installTipLabels(svg) : null;
+          applyReveal = (x) => {
+            setProgressiveReveal(rect, x);
+            if (tipGroup && tipCfg) {
+              setTipLabels(tipGroup, computeTipLabels(hitData, colorOf, x, tipCfg));
+            }
+          };
         }
       } else if (canvas) {
         const layer = canvas;
+        const fontFamily = props.fontFamily ?? "sans-serif";
         applyReveal = (x) =>
           drawLineCanvas(layer, svg, model, {
             width: r.width,
@@ -684,6 +715,8 @@ export function mountLineChart(
             showDataPoints: r.showDataPoints,
             singlePointLine: r.singlePointLine,
             revealX: x,
+            tipLabels: tipCfg ? computeTipLabels(hitData, colorOf, x, tipCfg) : undefined,
+            fontFamily,
           });
       }
       if (applyReveal) {

@@ -141,6 +141,59 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Progressief tekenen en tiplabels
+
+Laat de grafiek het verhaal in volgorde vertellen: met `progressiveDraw` tekent elke lijn zichzelf van het eerste tot het laatste jaar, met optioneel een tiplabel dat op het uiteinde van de lijn meebeweegt en de reeksnaam plus de actuele waarde toont, om uiteindelijk naast het lijneinde te blijven staan. Standaard uit - zonder opt-in verandert er niets.
+
+<ProgressiveDrawDemo replay-label="Animatie opnieuw afspelen" hint="Elke lijn groeit van het eerste naar het laatste jaar; het label volgt de punt en komt tot stilstand bij het lijneinde. Met reduced motion ingeschakeld verschijnt de grafiek meteen volledig getekend." />
+
+`progressiveDraw: true` gebruikt de standaardinstellingen (1200 ms, easeInOutCubic). Een configuratieobject verfijnt het gedrag:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000, tipLabel: true }}
+/>;
+// ref.current?.replay() speelt de animatie opnieuw af
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, progressiveDraw: { durationMs: 2000, tipLabel: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000, tipLabel: true },
+});
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000, tipLabel: true };
+  // el.replay() speelt de animatie opnieuw af
+</script>
+```
+
+:::
+
+- `durationMs` en `easing` ("linear", "easeOutQuad", "easeInOutCubic", of een eigen `(t) => t`-functie) bepalen het tempo.
+- `tipLabel: true` tekent het meebewegende label; `{ content: "name" | "value" | "both", format }` beperkt of herschrijft de tekst. De getoonde waarde is altijd een echt datapunt, nooit een geïnterpoleerd getal.
+- `autoplay: false` rendert de grafiek volledig getekend; roep `replay()` aan (React-ref-handle, webcomponent-methode of de core-instantie) om de animatie op aanvraag te starten. `replayOnUpdate: true` herhaalt de animatie bij elke datawijziging.
+- Respecteert `prefers-reduced-motion`: de grafiek verschijnt dan meteen volledig getekend.
+- Tijdens de animatie stoppen het kruisdraadje en de tooltips bij de tekenrand, zodat hoveren nooit gegevens toont die nog niet getekend zijn. De webgpu-renderer slaat de animatie over.
+
 ## Gebruik
 
 ::: code-group

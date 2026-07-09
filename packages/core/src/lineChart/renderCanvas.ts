@@ -6,6 +6,7 @@
 // contract. jsdom has no 2D context -> setupCanvas returns null and this no-ops.
 import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
+import { drawTipLabelsCanvas, type TipLabelTarget } from "./progressiveDraw";
 import type { LineRenderModel } from "./renderModel";
 import type { Shape, SinglePointLineConfig } from "../types";
 
@@ -18,6 +19,11 @@ export interface LineCanvasOptions {
   /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
    *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
   revealX?: number;
+  /** Progressive-draw tip labels, drawn OUTSIDE the reveal clip (they trail the
+   *  tip to its right, like the SVG labels living outside the <clipPath>). */
+  tipLabels?: TipLabelTarget[];
+  /** Font family for canvas tip-label text (default sans-serif). */
+  fontFamily?: string;
 }
 
 function drawPoint(ctx: CanvasRenderingContext2D, shape: Shape, x: number, y: number, color: string): void {
@@ -103,4 +109,8 @@ export function drawLineCanvas(
   }
 
   if (o.revealX !== undefined) ctx.restore();
+
+  if (o.tipLabels && o.tipLabels.length > 0) {
+    drawTipLabelsCanvas(ctx, o.tipLabels, o.fontFamily ?? "sans-serif");
+  }
 }
