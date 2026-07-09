@@ -54,8 +54,12 @@ export function applyTimelineControl(
     range.addEventListener("input", () => {
       const tl = getController();
       if (tl) {
+        // Read the target BEFORE pausing: pause() triggers a play-state sync
+        // that rewrites range.value back to the current index, which would
+        // turn the seek into a no-op while playing.
+        const target = Number(range.value);
         tl.pause();
-        tl.seek(Number(range.value));
+        tl.seek(target);
       }
     });
     root.appendChild(button);

@@ -157,6 +157,22 @@ describe("gap chart timeline control UI", () => {
     host.remove();
   });
 
+  it("scrubbing WHILE PLAYING pauses and seeks to the chosen period (sync must not clobber the input value)", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount({ timeline: { speedMs: 800, loop: true } }, ticker);
+    const tl = chart.timeline!()!;
+    tl.play();
+    ticker.tick(800); // step to 2019; a tween is in flight
+    const range = host.querySelector<HTMLInputElement>('.mv-timeline input[type="range"]')!;
+    range.value = "0";
+    range.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(tl.getState().playing).toBe(false);
+    expect(tl.getState().index).toBe(0);
+    expect(host.querySelector(".mv-timeline-period")!.textContent).toBe("2018");
+    chart.destroy();
+    host.remove();
+  });
+
   it("showControl: false renders no control but the API still works", () => {
     const { host, chart } = mount({ timeline: { showControl: false } });
     expect(host.querySelector(".mv-timeline")).toBeNull();
