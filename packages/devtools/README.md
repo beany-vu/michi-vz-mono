@@ -78,4 +78,8 @@ hook - `enableDevtools` / `getDevtoolsHook` are re-exported here.
 | [@michi-vz/insights](https://www.npmjs.com/package/@michi-vz/insights) | Forecast, anomaly, narration, agent/MCP |
 | **@michi-vz/devtools** | This package |
 
+## For AI assistants
+
+The whole library is documented in one machine-readable file: [llms-full.txt](https://michi-vz.netlify.app/llms-full.txt) (compact index: [llms.txt](https://michi-vz.netlify.app/llms.txt)). Point a coding agent at it for correct props, usage per framework, and the ChartContext shape.
+
 MIT © Hoang VU

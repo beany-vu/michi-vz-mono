@@ -112,6 +112,17 @@ chart.getContext();
 chart.destroy();
 ```
 
+## Docs for AI assistants
+
+The whole library ships as machine-readable docs (llmstxt.org convention), regenerated on
+every docs build:
+
+- [llms.txt](https://michi-vz.netlify.app/llms.txt) - compact index: packages, guides, all 21 charts
+- [llms-full.txt](https://michi-vz.netlify.app/llms-full.txt) - the full reference in one file:
+  per-chart props, usage in every framework, `ChartContext`, insights, theming, gotchas
+
+Point a coding agent at either URL (also in-repo at `apps/docs/public/`).
+
 ## Hard rules (light DOM, colour contract)
 
 Charts render into **light DOM only** - the canvas renderer resolves mark colours

@@ -27,6 +27,10 @@ Full usage, the chart gallery, and the light-DOM colour contract are in the
 [monorepo README](https://github.com/beany-vu/michi-vz-mono) and the
 [live docs](https://michi-vz.netlify.app/).
 
+## For AI assistants
+
+The whole library is documented in one machine-readable file: [llms-full.txt](https://michi-vz.netlify.app/llms-full.txt) (compact index: [llms.txt](https://michi-vz.netlify.app/llms.txt)). Point a coding agent at it for correct props, usage per framework, and the ChartContext shape.
+
 ## License
 
 MIT © Beany Vu

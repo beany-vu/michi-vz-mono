@@ -83,4 +83,8 @@ createMcpServer(reg, stdioTransport());
 
 Full guide: **[michi-vz docs → Insights](https://michi-vz.netlify.app/guide/insights)**.
 
+## For AI assistants
+
+The whole library is documented in one machine-readable file: [llms-full.txt](https://michi-vz.netlify.app/llms-full.txt) (compact index: [llms.txt](https://michi-vz.netlify.app/llms.txt)). Point a coding agent at it for correct props, usage per framework, and the ChartContext shape.
+
 MIT © Beany Vu
