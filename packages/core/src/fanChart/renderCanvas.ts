@@ -27,6 +27,9 @@ export interface FanCanvasArgs {
 export interface FanCanvasOptions {
   width: number;
   height: number;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 export function drawFanCanvas(
@@ -38,6 +41,13 @@ export function drawFanCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return; // jsdom / no 2D context
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   // ----- Bands (fill, graduated opacity) - probe the .area fill contract -----
   const bandLabels = [...new Set(args.bands.map((b) => b.label))];
@@ -84,4 +94,6 @@ export function drawFanCanvas(
     ctx.setLineDash([]);
     ctx.restore();
   }
+
+  if (o.revealX !== undefined) ctx.restore();
 }

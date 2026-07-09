@@ -9,6 +9,9 @@ import type {
   ChartInstance,
   MichiVzPlugin,
   Margin,
+  ProgressiveDrawConfig,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class RadarChartElement extends LitElement {
@@ -41,6 +44,8 @@ export class RadarChartElement extends LitElement {
     margin: { attribute: false },
     colors: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    progressiveDraw: { attribute: false },
+    timeline: { attribute: false },
   };
 
   series: RadarDataItem[] = [];
@@ -71,6 +76,8 @@ export class RadarChartElement extends LitElement {
   margin?: Margin;
   colors?: string[];
   enableTransitions?: boolean;
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
+  timeline?: boolean | TimelinePeriodConfig;
 
   private chart?: ChartInstance<RadarChartProps>;
 
@@ -115,6 +122,8 @@ export class RadarChartElement extends LitElement {
       margin: this.margin,
       colors: this.colors,
       enableTransitions: this.enableTransitions,
+      progressiveDraw: this.progressiveDraw,
+      timeline: this.timeline,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
@@ -143,6 +152,16 @@ export class RadarChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void {
+    this.chart?.replay?.();
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

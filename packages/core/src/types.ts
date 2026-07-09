@@ -53,6 +53,9 @@ export interface TimelinePeriodConfig {
   onStep?: (period: number | string, index: number) => void;
   /** Formats the current period for the built-in control's label */
   formatPeriod?: (period: number | string) => string;
+  /** LineChart only: label riding the growing line's tip while the timeline
+   * plays (same shape as progressiveDraw's tipLabel). Ignored by other charts. */
+  tipLabel?: boolean | ProgressiveDrawTipLabelConfig;
 }
 
 export interface ShapeMapping {
@@ -352,6 +355,12 @@ export interface ProgressiveDrawConfig {
 }
 
 export interface LineChartProps {
+  /** Opt-in "play through years" (cumulative): the marks draw UP TO the active
+   * period and extend as the timeline steps; `interpolate` sweeps smoothly
+   * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
+   * plus the built-in play button + scrubber. Off by default; wins over
+   * `progressiveDraw` when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Array of line series, each with its own points */
   dataSet: LineDataItem[];
   /** Optional chart title rendered above the plot */
@@ -534,6 +543,18 @@ export interface AreaDataRow {
 }
 
 export interface AreaChartProps {
+  /** Opt-in "play through years" (cumulative): the marks draw UP TO the active
+   * period and extend as the timeline steps; `interpolate` sweeps smoothly
+   * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
+   * plus the built-in play button + scrubber. Off by default; wins over
+   * `progressiveDraw` when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of rows, each carrying an x (`date`) plus one numeric value per stacked key */
   series: AreaDataRow[];
   /** Category keys to stack (bottom-to-top); disabledItems removes from the stack. */
@@ -909,6 +930,18 @@ export interface StackLegendItem {
 }
 
 export interface VerticalStackBarChartProps {
+  /** Opt-in "play through years" (cumulative): the marks draw UP TO the active
+   * period and extend as the timeline steps; `interpolate` sweeps smoothly
+   * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
+   * plus the built-in play button + scrubber. Off by default; wins over
+   * `progressiveDraw` when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of grouped series; each entry contributes its own bar slot per date and stacks its segment keys vertically */
   dataSet: VerticalStackBarDataSet[];
   /** Explicit stack order; present keys first (in this order), natural keys appended. */
@@ -1024,6 +1057,9 @@ export interface VerticalStackBarChartContext extends BaseChartContext {
 // ---- ComparableHorizontalBarChart ----
 
 export interface ComparableBarDataPoint {
+  /** Optional period tag (e.g. "2021" or 2021). Rows sharing a period form one
+   * snapshot of the opt-in `timeline` playback; ignored when `timeline` is unset. */
+  date?: number | string;
   /** Row label, shown on the y-axis and used as the color key */
   label: string;
   /** Optional per-row bar color; overrides the generated color mapping for this label */
@@ -1094,6 +1130,11 @@ export interface DeltaIndicatorConfig {
 }
 
 export interface ComparableBarChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. Values tween between periods unless `interpolate: false`. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Array of horizontal-bar rows; each renders two overlaid sub-bars (valueBased behind, valueCompared in front) for one label */
   dataSet: ComparableBarDataPoint[];
   /** Optional chart title rendered above the plot */
@@ -1256,6 +1297,11 @@ export interface ComparableBarChartContext extends BaseChartContext {
 // (solid, painted second, opacity toggles on hover).
 
 export interface ComparableVerticalBarChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. Values tween between periods unless `interpolate: false`. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Array of column categories; each renders two overlaid sub-bars (valueBased behind, valueCompared in front), full column bandwidth, diverging from y=0 */
   dataSet: ComparableBarDataPoint[];
   /** Optional chart title rendered above the plot */
@@ -1400,6 +1446,9 @@ export interface ComparableVerticalBarChartContext extends BaseChartContext {
 // ---- DualHorizontalBarChart (diverging / tornado) ----
 
 export interface DualBarDataPoint {
+  /** Optional period tag (e.g. "2021" or 2021). Rows sharing a period form one
+   * snapshot of the opt-in `timeline` playback; ignored when `timeline` is unset. */
+  date?: number | string;
   /** Row label, shown on the y-axis and used as the color key */
   label: string;
   /** Optional per-row bar color; overrides the generated color mapping for this label */
@@ -1411,6 +1460,11 @@ export interface DualBarDataPoint {
 }
 
 export interface DualBarChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. Values tween between periods unless `interpolate: false`. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Array of diverging (tornado) rows; each row draws value1 as a bar extending right and value2 as a bar extending left from a shared center */
   dataSet: DualBarDataPoint[];
   /** Optional chart title rendered above the plot */
@@ -1502,12 +1556,28 @@ export interface DualBarChartContext extends BaseChartContext {
 // ---- BarBellChart (cumulative horizontal bar + end-cap circles) ----
 
 export interface BarBellDataRow {
+  /** Optional period tag (e.g. "2021") for the opt-in `timeline` playback. Named
+   * `period` (not `date`) because this chart already uses `date` for another
+   * meaning. Ignored when `timeline` is unset. */
+  period?: number | string;
   /** The row's category, placed on the band y-axis */
   date: string | number;
   [key: string]: number | string | undefined;
 }
 
 export interface BarBellChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the
+   * period tags in the data, with a headless controller (`chart.timeline()`)
+   * plus the built-in play button + scrubber. Values tween between periods
+   * unless `interpolate: false`. Off by default; wins over `progressiveDraw`
+   * when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of rows (one per date/y-band); within each row the keys are laid out cumulatively along x as thin bars capped by end-cap circles */
   dataSet: BarBellDataRow[];
   /** Ordered segment keys to draw per row; their values accumulate left-to-right and each gets a colored bar plus end-cap circle */
@@ -1623,6 +1693,18 @@ export interface RangeDataItem {
 }
 
 export interface RangeChartProps {
+  /** Opt-in "play through years" (cumulative): the marks draw UP TO the active
+   * period and extend as the timeline steps; `interpolate` sweeps smoothly
+   * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
+   * plus the built-in play button + scrubber. Off by default; wins over
+   * `progressiveDraw` when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of series, each drawn as a filled valueMin..valueMax band over time with an optional median line */
   dataSet: RangeDataItem[];
   /** Optional chart title rendered above the plot */
@@ -1715,6 +1797,18 @@ export interface RibbonDataRow {
 }
 
 export interface RibbonChartProps {
+  /** Opt-in "play through years" (cumulative): the marks draw UP TO the active
+   * period and extend as the timeline steps; `interpolate` sweeps smoothly
+   * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
+   * plus the built-in play button + scrubber. Off by default; wins over
+   * `progressiveDraw` when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of rows (one per date) whose keys stack into a column; same-key segments are linked across adjacent dates by ribbon trapezoids */
   series: RibbonDataRow[];
   /** Ordered segment keys to stack within each column (bottom-to-top) and to connect with ribbons between columns */
@@ -1810,6 +1904,18 @@ export interface FountainDataItem {
 }
 
 export interface FountainChartProps {
+  /** Opt-in "play through years" (cumulative): the marks draw UP TO the active
+   * period and extend as the timeline steps; `interpolate` sweeps smoothly
+   * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
+   * plus the built-in play button + scrubber. Off by default; wins over
+   * `progressiveDraw` when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of jets; each item renders one fountain */
   dataSet: FountainDataItem[];
   /** Optional chart title rendered above the plot */
@@ -1969,6 +2075,9 @@ export interface GeoProjectionConfig {
 /** One row of choropleth data, joined against a geography feature by `id`
  * (default) or by name (see `ChoroplethMapChartProps.joinBy`). */
 export interface ChoroplethDataItem {
+  /** Optional period tag (e.g. "2021" or 2021). Rows sharing a period form one
+   * snapshot of the opt-in `timeline` playback; ignored when `timeline` is unset. */
+  date?: number | string;
   /** Join key against `GeoFeatureItem.id` / GeoJSON `Feature.id` (default join mode). */
   id: string;
   /** Display label; also the join key against `GeoFeatureItem.name` under `joinBy: "name"`,
@@ -1983,6 +2092,11 @@ export interface ChoroplethDataItem {
 }
 
 export interface ChoroplethMapChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. Values tween between periods unless `interpolate: false`. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** The world/region geography to draw. A full GeoJSON FeatureCollection (its
    * per-feature `id`/`properties.name` are read automatically) or a pre-normalized
    * flat array. Core bundles NO topology data - import your own (e.g. a
@@ -2109,6 +2223,9 @@ export interface ChoroplethMapChartContext extends BaseChartContext {
  * ForceNode's `radiusSecond` ring - typically a sub-metric of `value`, e.g. "of
  * which"). */
 export interface SymbolMapDataItem {
+  /** Optional period tag (e.g. "2021" or 2021). Rows sharing a period form one
+   * snapshot of the opt-in `timeline` playback; ignored when `timeline` is unset. */
+  date?: number | string;
   /** Stable identifier; also the de-overlap force simulation's node key. */
   id: string;
   /** Display label - drives the colour (via colorsMapping/colors), the tooltip heading, and the in-circle text. */
@@ -2128,6 +2245,11 @@ export interface SymbolMapDataItem {
 }
 
 export interface SymbolMapChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. Values tween between periods unless `interpolate: false`. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Array of symbols; each supplies its own lng/lat (core bundles no coordinate table). */
   dataSet: SymbolMapDataItem[];
   /** OPTIONAL muted backdrop landmass (new capability - the legacy chart never drew
@@ -2259,6 +2381,10 @@ export interface SymbolMapChartContext extends BaseChartContext {
 // ---- RadarChart (polar) ----
 
 export interface RadarDataItem {
+  /** Optional period tag (e.g. "2021") for the opt-in `timeline` playback. Named
+   * `period` (not `date`) because this chart already uses `date` for another
+   * meaning. Ignored when `timeline` is unset. */
+  period?: number | string;
   /** Series name; drives the colour mapping, legend, data-label, and tooltip heading */
   label: string;
   /** Optional explicit colour for this series; otherwise resolved from colorsMapping or the palette */
@@ -2274,6 +2400,18 @@ export interface RadarDataItem {
 }
 
 export interface RadarChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the
+   * period tags in the data, with a headless controller (`chart.timeline()`)
+   * plus the built-in play button + scrubber. Values tween between periods
+   * unless `interpolate: false`. Off by default; wins over `progressiveDraw`
+   * when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of polygon series to plot, one closed shape per item drawn over the shared polar grid */
   series: RadarDataItem[];
   /** spoke labels (the radial axes). Optional when `poles.labels` is supplied (legacy compat). */
@@ -2388,6 +2526,18 @@ export interface FanDataItem {
 }
 
 export interface FanChartProps {
+  /** Opt-in "play through years" (cumulative): the marks draw UP TO the active
+   * period and extend as the timeline steps; `interpolate` sweeps smoothly
+   * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
+   * plus the built-in play button + scrubber. Off by default; wins over
+   * `progressiveDraw` when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of forecast series, each a median line plus its nested confidence bands */
   dataSet: FanDataItem[];
   /** Optional chart title rendered above the plot */
@@ -2493,6 +2643,10 @@ export interface TreemapTileValueLabelsConfig {
 }
 
 export interface TreemapNode {
+  /** Optional period tag on ROOT-LEVEL nodes (e.g. "2021"): a year's snapshot of
+   * the opt-in `timeline` playback is the root nodes sharing that date. Children
+   * need no dates. Ignored when `timeline` is unset. */
+  date?: number | string;
   /** Node name (drives data-label, the colour group, legend, and the leaf label). */
   label: string;
   /** Optional identifier carried through to the leaf context and tooltip */
@@ -2508,6 +2662,18 @@ export interface TreemapNode {
 }
 
 export interface TreemapChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the
+   * period tags in the data, with a headless controller (`chart.timeline()`)
+   * plus the built-in play button + scrubber. Values tween between periods
+   * unless `interpolate: false`. Off by default; wins over `progressiveDraw`
+   * when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Forest of nodes (each a leaf or a parent with children) sized by value and tiled to fill the area */
   dataSet: TreemapNode[];
   /** Optional chart title rendered above the plot */
@@ -2642,6 +2808,9 @@ export interface TreemapChartContext extends BaseChartContext {
 // fraction of the outer radius. Slices are sized by value (a part-of-a-whole share).
 
 export interface PieDataItem {
+  /** Optional period tag (e.g. "2021" or 2021). Rows sharing a period form one
+   * snapshot of the opt-in `timeline` playback; ignored when `timeline` is unset. */
+  date?: number | string;
   /** Slice name (drives data-label, the colour, the legend, and the label). */
   label: string;
   /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
@@ -2653,6 +2822,11 @@ export interface PieDataItem {
 }
 
 export interface PieChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. Values tween between periods unless `interpolate: false`. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Array of slices; each value becomes a wedge sized by its share of the total */
   dataSet: PieDataItem[];
   /** Optional chart title rendered above the plot */
@@ -2740,6 +2914,9 @@ export interface PieChartContext extends BaseChartContext {
 // carry an optional realized/untapped split drawn as a lighter outer veil.
 
 export interface BubbleDataItem {
+  /** Optional period tag (e.g. "2021" or 2021). Rows sharing a period form one
+   * snapshot of the opt-in `timeline` playback; ignored when `timeline` is unset. */
+  date?: number | string;
   /** Bubble name (drives data-label, the colour, the legend, and the label). */
   label: string;
   /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
@@ -2754,6 +2931,11 @@ export interface BubbleDataItem {
 }
 
 export interface BubbleChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the distinct
+   * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
+   * optional built-in play button + scrubber. Off by default; requires rows with
+   * `date`. Values tween between periods unless `interpolate: false`. */
+  timeline?: boolean | TimelinePeriodConfig;
   /** Array of bubbles; each value sets the circle area (bubbles are gravity-packed into a cluster) */
   dataSet: BubbleDataItem[];
   /** Optional chart title rendered above the plot */
@@ -2866,6 +3048,10 @@ export interface SankeyNodeItem {
 }
 
 export interface SankeyLinkItem {
+  /** Optional period tag (e.g. "2021"): a year's snapshot of the opt-in
+   * `timeline` playback is the links sharing that date (nodes are shared across
+   * years). Ignored when `timeline` is unset. */
+  date?: number | string;
   /** Source node id. */
   source: string;
   /** Target node id. */
@@ -2875,6 +3061,18 @@ export interface SankeyLinkItem {
 }
 
 export interface SankeyChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the
+   * period tags in the data, with a headless controller (`chart.timeline()`)
+   * plus the built-in play button + scrubber. Values tween between periods
+   * unless `interpolate: false`. Off by default; wins over `progressiveDraw`
+   * when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Flow nodes; each needs a unique id that links reference */
   nodes: SankeyNodeItem[];
   /** Directed flows between nodes (source -> target); band thickness is proportional to value */
@@ -2988,6 +3186,10 @@ export interface SankeyChartContext extends BaseChartContext {
 // ancestor's label, exactly like TreemapChart.
 
 export interface RadialTreeNode {
+  /** Optional period tag on ROOT-LEVEL nodes (e.g. "2021"): a year's snapshot of
+   * the opt-in `timeline` playback is the root nodes sharing that date. Children
+   * need no dates. Ignored when `timeline` is unset. */
+  date?: number | string;
   /** Node name (drives data-label, the tooltip heading, and the rendered label). */
   label: string;
   /** Optional identifier carried through to the node context. */
@@ -3003,6 +3205,18 @@ export interface RadialTreeNode {
 }
 
 export interface RadialTreeChartProps {
+  /** Opt-in "play through years": snapshots one period at a time over the
+   * period tags in the data, with a headless controller (`chart.timeline()`)
+   * plus the built-in play button + scrubber. Values tween between periods
+   * unless `interpolate: false`. Off by default; wins over `progressiveDraw`
+   * when both are set. */
+  timeline?: boolean | TimelinePeriodConfig;
+  /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
+   * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
+   * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
+   * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
+   * (renders fully drawn instantly) and `replay()` re-runs it. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Forest of nodes (each a leaf or a group with children), laid out as a radial dendrogram. */
   dataSet: RadialTreeNode[];
   /** Optional word-wrapped title drawn inside the small centre circle (legacy `titleCenter`). */

@@ -18,6 +18,12 @@ import { renderTreemapSvg } from "../treemapChart/renderSvg";
 import { drawTreemapCanvas } from "../treemapChart/renderCanvas";
 import { drawTreemapWebgpu } from "../treemapChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import { buildTreemapContext } from "../context/buildTreemapContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkTreemapData } from "../validate/treemapWarnings";
@@ -61,6 +67,8 @@ interface Resolved {
   /** Resolved from props.tileValueLabels; null when the prop is omitted/false
    * (provable no-op - no second line computed, no extra DOM painted). */
   tileValueLabels: TreemapTileValueLabelsConfig | null;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 // Same boolean|config resolution shape as LineChart's resolveMouseLine /
@@ -94,6 +102,8 @@ function resolve(p: TreemapChartProps): Resolved {
     showLegend: p.showLegend ?? false,
     enableTransitions: p.enableTransitions ?? true,
     tileValueLabels: resolveTileValueLabels(p.tileValueLabels),
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -133,6 +143,14 @@ export function mountTreemapChart(
   const chrome = createChromeRefs();
   let lastColorMappingSent: Record<string, string> = {};
   let model: TreemapRenderModel | null = null;
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
 
   const leafToContext = (leaf: TreemapLeafMark): TreemapLeafContext => ({
     label: leaf.label,
@@ -276,7 +294,11 @@ export function mountTreemapChart(
     // doesn't show the overlay alongside a fully-drawn chart underneath.
     const dataState = applyChartChrome(host, props, props.dataSet, chrome);
 
-    const processed = processTreemapData(props.dataSet ?? [], {
+    // Timeline (opt-in): swap in the active period's root nodes (ROOT-level
+    // `date` tags; children need no dates - interpolateRows recurses into them).
+    // This chart's own `filter` shape has no `date` field, so nothing to neutralize.
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet ?? [], undefined);
+    const processed = processTreemapData(tlData.dataSet, {
       disabledItems: props.disabledItems,
       filter: props.filter,
       minTileShare: props.minTileShare,
@@ -425,6 +447,22 @@ export function mountTreemapChart(
           webgpuCanvas = null;
         }
       }
+
+      // Opt-in reveal animation: wipes the tiles left to right (the legend, appended
+      // directly to `svg` above, sits outside the clipped marks group and stays put).
+      // Suppressed when timeline is active (it wins over progressiveDraw).
+      engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.treemap-chart-content"),
+        height: r.height,
+        startPx: 0,
+        endPx: r.width,
+        canvasRedraw:
+          r.renderer === "canvas"
+            ? (x) => drawTreemapCanvas(canvas, svg, model!, { width: r.width, height: r.height, revealX: x })
+            : undefined,
+      });
     } else {
       if (canvas) {
         canvas.remove();
@@ -461,12 +499,14 @@ export function mountTreemapChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<TreemapChartProps> = {
     update(next: TreemapChartProps) {
       baseProps = next;
       render();
@@ -484,6 +524,8 @@ export function mountTreemapChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
+      engineRv.stop();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -494,6 +536,16 @@ export function mountTreemapChart(
       host.classList.remove("michi-vz", "michi-vz-treemap-chart");
     },
   };
+  // replay() only exists when the chart opted into the reveal animation, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "treemap-chart", () => baseProps);
 }

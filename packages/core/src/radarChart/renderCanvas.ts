@@ -11,6 +11,11 @@ export interface RadarCanvasOptions {
   fillOpacity: number;
   /** Fill dimmed polygons as a soft background (default true). */
   dimmedFill?: boolean;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). Note the
+   *  grid is drawn UNCLIPPED (it is the axes equivalent), so only this option
+   *  affects the grid+polygon draw calls made after the clip is installed below. */
+  revealX?: number;
 }
 
 function polyPath(points: string): Path2D {
@@ -69,6 +74,15 @@ export function drawRadarCanvas(
     ["stroke", "fill"]
   );
 
+  // Progressive-draw reveal cutoff: only clips the series polygons below, never
+  // the grid drawn above (the grid is the axes equivalent here).
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
+
   for (const s of model.series) {
     const color = fillColors.get(s.label) || s.color;
     const path = polyPath(s.points);
@@ -95,6 +109,8 @@ export function drawRadarCanvas(
     }
     ctx.restore();
   }
+
+  if (o.revealX !== undefined) ctx.restore();
 }
 
 // ─── Canvas hover: forgiving hit-test (ported from legacy useRadarChartCanvasRendering) ───

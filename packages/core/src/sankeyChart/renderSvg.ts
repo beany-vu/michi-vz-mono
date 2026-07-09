@@ -26,6 +26,9 @@ export function renderSankeySvg(
   o: SankeySvgOptions,
   ia: SankeyInteractions
 ): void {
+  // Single wrapping group so the engine's opt-in progressive-draw reveal has one
+  // <g> to clip (links + nodes together, never the title which lives outside it).
+  const root = svgEl("g", { class: "sankey-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
   const anyHighlight = model.highlightSet.size > 0;
 
@@ -53,7 +56,7 @@ export function renderSankeySvg(
     path.addEventListener("click", (e) => ia.onClick({ kind: "link", link: l }, e));
     linksG.appendChild(path);
   }
-  parent.appendChild(linksG);
+  root.appendChild(linksG);
 
   // ---- Nodes ----
   const nodesG = svgEl("g", { class: "sankey-nodes" });
@@ -94,5 +97,7 @@ export function renderSankeySvg(
     g.addEventListener("click", (e) => ia.onClick({ kind: "node", node: n }, e));
     nodesG.appendChild(g);
   }
-  parent.appendChild(nodesG);
+  root.appendChild(nodesG);
+
+  parent.appendChild(root);
 }

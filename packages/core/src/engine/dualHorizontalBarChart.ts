@@ -25,12 +25,18 @@ import {
   setupPlugins,
 } from "../plugins/runner";
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import type {
   ChartContext,
   ChartInstance,
   DataWarning,
   DualBarChartProps,
   DualBarDataPoint,
+  Filter,
   Margin,
   MountOptions,
   Renderer,
@@ -53,6 +59,7 @@ interface Resolved {
   value1Opacity: number;
   value2Opacity: number;
   enableTransitions: boolean;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: DualBarChartProps): Resolved {
@@ -70,6 +77,7 @@ function resolve(p: DualBarChartProps): Resolved {
     value1Opacity: p.value1Opacity ?? 0.9,
     value2Opacity: p.value2Opacity ?? 0.55,
     enableTransitions: p.enableTransitions ?? true,
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -124,6 +132,14 @@ export function mountDualHorizontalBarChart(
       render();
     },
   };
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
+
   let sticky = false;
   // While the pointer is on the row-label scrub gutter, the host-level canvas
   // hit-test must stand down (it would miss and hide the scrub tooltip).
@@ -225,14 +241,24 @@ export function mountDualHorizontalBarChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
-    const { points, labels, xAxisDomain } = processDualBarData(props.dataSet, {
+    // Timeline (opt-in): swap in the active period's rows; the user's own filter
+    // still applies within the period (its `date` is neutralized while playing).
+    // This chart's own `filter` shape has no `date` field (unlike the shared
+    // `Filter` type engineTl speaks) - cast across the boundary; the neutralize
+    // check is simply a no-op here.
+    const tlData = engineTl.beforeRender(
+      r.timeline,
+      props.dataSet,
+      props.filter as unknown as Filter | undefined
+    );
+    const { points, labels, xAxisDomain } = processDualBarData(tlData.dataSet, {
       disabledItems: props.disabledItems,
-      filter: props.filter,
+      filter: tlData.filter as unknown as DualBarChartProps["filter"],
       xAxisDomain: props.xAxisDomain,
     });
 
     const colors = buildDualBarColors(
-      props.dataSet,
+      tlData.dataSet,
       props.colors,
       props.colorsMapping,
       props.skipColorMappingDispatch ?? false
@@ -388,12 +414,14 @@ export function mountDualHorizontalBarChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<DualBarChartProps> = {
     update(next: DualBarChartProps) {
       baseProps = next;
       render();
@@ -411,6 +439,7 @@ export function mountDualHorizontalBarChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -421,6 +450,11 @@ export function mountDualHorizontalBarChart(
       host.classList.remove("michi-vz", "michi-vz-dual-bar-chart");
     },
   };
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "dual-horizontal-bar-chart", () => baseProps);
 }

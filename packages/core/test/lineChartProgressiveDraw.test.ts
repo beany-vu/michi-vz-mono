@@ -122,6 +122,34 @@ describe("progressiveDraw SVG reveal", () => {
     host.remove();
   });
 
+  it("an update() DURING the reveal resumes from the current position (wrapper double-render)", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear" } },
+      ticker
+    );
+    ticker.tick(400);
+    const before = rectWidth(host);
+    expect(before).toBeGreaterThan(PLOT_LEFT);
+    expect(before).toBeLessThan(WIDTH);
+    // Wrappers (Lit updated(), React effects) call update() right after mount.
+    chart.update({
+      dataSet: sample,
+      width: WIDTH,
+      height: 300,
+      xAxisDataType: "date_annual",
+      progressiveDraw: { durationMs: 1000, easing: "linear" },
+    });
+    const resumed = rectWidth(host);
+    expect(resumed).toBeCloseTo(before, 3); // not full, not reset
+    ticker.tick(300);
+    expect(rectWidth(host)).toBeGreaterThan(resumed);
+    ticker.tick(1000);
+    expect(rectWidth(host)).toBe(WIDTH);
+    chart.destroy();
+    host.remove();
+  });
+
   it("autoplay: false renders fully revealed until replay() is called", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(

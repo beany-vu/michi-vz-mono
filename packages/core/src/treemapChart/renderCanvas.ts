@@ -9,6 +9,9 @@ import type { TreemapRenderModel } from "./renderModel";
 export interface TreemapCanvasOptions {
   width: number;
   height: number;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 function fitText(text: string, w: number, charPx = 6.2): string {
@@ -28,6 +31,13 @@ export function drawTreemapCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const fallback = new Map<string, string>();
   for (const leaf of model.leaves) if (!fallback.has(leaf.colorKey)) fallback.set(leaf.colorKey, leaf.fill);
@@ -110,4 +120,6 @@ export function drawTreemapCanvas(
     }
   }
   ctx.globalAlpha = 1;
+
+  if (o.revealX !== undefined) ctx.restore();
 }

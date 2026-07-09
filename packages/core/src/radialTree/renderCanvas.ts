@@ -14,6 +14,10 @@ export interface RadialTreeCanvasOptions {
   /** Plot-local translation to the polar origin (margin.left + innerWidth/2, etc.). */
   centerX: number;
   centerY: number;
+  /** Progressive-draw reveal cutoff (canvas-local x, i.e. already shifted by the
+   *  margin the caller applied via `canvas.style.left`): only pixels at
+   *  x <= revealX are painted (a ctx.clip rect, before the polar translate). */
+  revealX?: number;
 }
 
 export function drawRadialTreeCanvas(
@@ -25,6 +29,14 @@ export function drawRadialTreeCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
+
   ctx.translate(o.centerX, o.centerY);
 
   const fallback = new Map<string, string>();
@@ -94,4 +106,6 @@ export function drawRadialTreeCanvas(
       ctx.fillText(line.text, 0, line.dy);
     }
   }
+
+  if (o.revealX !== undefined) ctx.restore();
 }

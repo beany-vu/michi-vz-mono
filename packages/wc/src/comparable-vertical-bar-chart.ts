@@ -11,6 +11,8 @@ import type {
   DeltaIndicatorConfig,
   Margin,
   MichiVzPlugin,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class ComparableVerticalBarChartElement extends LitElement {
@@ -50,6 +52,7 @@ export class ComparableVerticalBarChartElement extends LitElement {
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
     filter: { attribute: false },
+    timeline: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
@@ -88,6 +91,7 @@ export class ComparableVerticalBarChartElement extends LitElement {
   isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
   noDataLabel?: string;
   filter?: { limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc" };
+  timeline?: boolean | TimelinePeriodConfig;
   enableTransitions?: boolean;
 
   private chart?: ChartInstance<ComparableVerticalBarChartProps>;
@@ -140,6 +144,7 @@ export class ComparableVerticalBarChartElement extends LitElement {
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
       filter: this.filter,
+      timeline: this.timeline,
       enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
@@ -172,6 +177,11 @@ export class ComparableVerticalBarChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

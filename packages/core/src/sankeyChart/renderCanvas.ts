@@ -9,6 +9,9 @@ import type { SankeyRenderModel } from "./renderModel";
 export interface SankeyCanvasOptions {
   width: number;
   height: number;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 // Rounded-rect fill via a manual arcTo path (jsdom's 2D context has no
@@ -49,6 +52,13 @@ export function drawSankeyCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const nodeFallback = new Map<string, string>();
   for (const n of model.nodes) if (!nodeFallback.has(n.colorKey)) nodeFallback.set(n.colorKey, n.fill);
@@ -103,4 +113,6 @@ export function drawSankeyCanvas(
     }
   }
   ctx.globalAlpha = 1;
+
+  if (o.revealX !== undefined) ctx.restore();
 }

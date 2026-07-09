@@ -21,6 +21,10 @@ export function renderRadarSvg(
   o: RadarSvgOptions,
   ia: RadarInteractions
 ): void {
+  // The grid (rings/spokes/axis labels) is the polar equivalent of cartesian axes,
+  // so it is appended directly to `parent` - a SIBLING of `root`, not nested inside
+  // it - so the engine's opt-in progressive-draw reveal can clip `root` (the series
+  // polygons only) without ever clipping the grid.
   const root = svgEl("g", { class: "radar-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
   const g = model.grid;
@@ -56,7 +60,7 @@ export function renderRadarSvg(
     t.textContent = rl.text;
     grid.appendChild(t);
   }
-  root.appendChild(grid);
+  parent.appendChild(grid);
 
   // Series polygons + pole points.
   for (const s of model.series) {

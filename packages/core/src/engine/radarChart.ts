@@ -16,6 +16,12 @@ import { renderRadarSvg } from "../radarChart/renderSvg";
 import { drawRadarCanvas, setupRadarCanvasHover } from "../radarChart/renderCanvas";
 import { drawRadarWebgpu } from "../radarChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import { buildRadarContext } from "../context/buildRadarContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { contextSignature } from "../context/signature";
@@ -42,6 +48,8 @@ interface Resolved {
   dimmedFill: boolean;
   renderer: RadarRenderer;
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
@@ -62,6 +70,8 @@ function resolve(p: RadarChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -143,6 +153,16 @@ export function mountRadarChart(
   let canvasHoverTeardown: (() => void) | null = null;
   let normalizedSeries: RadarDataItem[] = [];
   let resolvedAxes: string[] = [];
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Opt-in "play through years": the controller + built-in control lifecycle is shared
+  // engine glue; render() consumes the period-filtered series it returns. Rows carry
+  // their period tag as `period` (radar's own `date` is a per-axis tooltip label).
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    periodKey: "period",
+    requestRender: () => render(),
+  });
 
   const showTooltip = (label: string, ev: MouseEvent, axisIndex?: number): void => {
     const item = normalizedSeries.find((it) => it.label === label);
@@ -194,7 +214,9 @@ export function mountRadarChart(
     // (derive `values` from a legacy data:[{date,value}] array). Stored on module vars
     // so the hover tooltip can read them outside render().
     resolvedAxes = resolveAxes(props);
-    normalizedSeries = normalizeSeries(props.series, resolvedAxes);
+    // Timeline (opt-in): swap in the active period's snapshot before deriving values[].
+    const tlData = engineTl.beforeRender(r.timeline, props.series, undefined);
+    normalizedSeries = normalizeSeries(tlData.dataSet, resolvedAxes);
 
     if (props.tooltipContainerStyle) Object.assign(tooltip.style, props.tooltipContainerStyle);
 
@@ -364,6 +386,32 @@ export function mountRadarChart(
           canvasHoverTeardown = null;
         }
       }
+
+      // Opt-in reveal animation: wipes the series polygons left to right (the
+      // polar grid, appended as a SIBLING of `.radar-chart-content` in
+      // renderRadarSvg, is never clipped - it is the axes equivalent here).
+      // Skipped when `timeline` is set - timeline wins over progressiveDraw.
+      if (!r.timeline) {
+        engineRv.afterRender(r.progressiveDraw, {
+          renderer: r.renderer,
+          svg,
+          marksRoot: svg.querySelector("g.radar-chart-content"),
+          height: r.height,
+          startPx: 0,
+          endPx: r.width,
+          canvasRedraw:
+            r.renderer === "canvas"
+              ? (x) =>
+                  drawRadarCanvas(canvas, svg, model!, {
+                    width: r.width,
+                    height: r.height,
+                    fillOpacity: r.fillOpacity,
+                    dimmedFill: r.dimmedFill,
+                    revealX: x,
+                  })
+              : undefined,
+        });
+      }
     } else {
       if (canvas) {
         canvas.remove();
@@ -398,20 +446,23 @@ export function mountRadarChart(
     }
 
     // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
-    // USER's data (baseProps), not the plugin-synthesised series.
+    // USER's data (baseProps), not the plugin-synthesised series, and the FULL series
+    // (not the timeline's period-filtered snapshot) so warnings stay stable as periods step.
     if (baseProps.onDataWarning) {
       const warnings = [
-        ...checkData(normalizedSeries, resolvedAxes),
+        ...checkData(normalizeSeries(props.series, resolvedAxes), resolvedAxes),
         ...collectValidate(pluginList, baseProps, pc),
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<RadarChartProps> = {
     update(next: RadarChartProps) {
       baseProps = next;
       render();
@@ -429,6 +480,8 @@ export function mountRadarChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
+      engineRv.stop();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       if (canvasHoverTeardown) {
@@ -441,6 +494,14 @@ export function mountRadarChart(
       host.classList.remove("michi-vz", "michi-vz-radar-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // feature at mount, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "radar-chart", () => baseProps);
 }

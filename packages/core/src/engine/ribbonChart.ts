@@ -16,6 +16,9 @@ import { renderRibbonSvg } from "../ribbonChart/renderSvg";
 import { drawRibbonCanvas } from "../ribbonChart/renderCanvas";
 import { drawRibbonWebgpu } from "../ribbonChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
+import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { buildRibbonContext } from "../context/buildRibbonContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -51,6 +54,8 @@ interface Resolved {
   columnWidth: number;
   renderer: Renderer;
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: RibbonChartProps): Resolved {
@@ -65,6 +70,8 @@ function resolve(p: RibbonChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -94,6 +101,12 @@ export function mountRibbonChart(
   host.appendChild(svg);
   host.appendChild(tooltip);
   host.appendChild(a11y);
+
+  // Opt-in progressive-draw reveal (generic engine helper: SVG clip / canvas redraw).
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Cumulative timeline (opt-in play-through-years): wins over progressiveDraw
+  // when both are configured.
+  const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
   let baseProps: RibbonChartProps = initial;
   let context: ChartContext | null = null;
@@ -300,6 +313,57 @@ export function mountRibbonChart(
       }
     }
 
+    // ----- Progressive draw (opt-in reveal animation) -----
+    // SVG mode: clip g.ribbon-chart-content; canvas mode: redraw under an equivalent
+    // ctx.clip. WebGPU always paints the full frame instantly (no reveal there).
+    // Timeline wins over progressiveDraw when both are configured.
+    const canvasLayer = r.renderer === "canvas" ? canvas : null;
+    engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+      renderer: r.renderer,
+      svg,
+      marksRoot: svg.querySelector("g.ribbon-chart-content"),
+      height: r.height,
+      startPx: r.margin.left,
+      endPx: r.width,
+      canvasRedraw: canvasLayer
+        ? (x) => drawRibbonCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+        : undefined,
+    });
+
+    // ----- Cumulative timeline (opt-in play-through-years) -----
+    // The columns/ribbons draw UP TO the active period (band edge); play/scrub
+    // sweeps the same reveal clip progressiveDraw uses. Data + getContext() stay full.
+    if (r.timeline && r.renderer !== "webgpu") {
+      const periods: CumulativePeriod[] = dates
+        .map((d) => ({ period: d, px: (scales.xScale(d) ?? r.margin.left) + scales.xScale.bandwidth() }))
+        .sort((a, b) => a.px - b.px);
+      cumTl.afterRender(r.timeline, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.ribbon-chart-content"),
+        height: r.height,
+        periods,
+        startPx: r.margin.left,
+        endPx: r.width,
+        canvasRedraw: canvasLayer
+          ? (x) =>
+              drawRibbonCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+          : undefined,
+      });
+    } else {
+      cumTl.afterRender(null, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: null,
+        height: r.height,
+        periods: [],
+        startPx: 0,
+        endPx: 0,
+      });
+    }
+
     context = buildRibbonContext({
       title: props.title,
       renderer: r.renderer,
@@ -329,7 +393,7 @@ export function mountRibbonChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<RibbonChartProps> = {
     update(next: RibbonChartProps) {
       baseProps = next;
       render();
@@ -347,6 +411,8 @@ export function mountRibbonChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineRv.stop();
+      cumTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -357,6 +423,14 @@ export function mountRibbonChart(
       host.classList.remove("michi-vz", "michi-vz-ribbon-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // animation, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => cumTl.controller();
+  }
 
   return attachDevtools(instance, host, "ribbon-chart", () => baseProps);
 }

@@ -23,6 +23,12 @@ import { renderRadialTreeSvg } from "../radialTree/renderSvg";
 import { drawRadialTreeCanvas } from "../radialTree/renderCanvas";
 import { drawRadialTreeWebgpu } from "../radialTree/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import { buildRadialTreeContext } from "../context/buildRadialTreeContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { contextSignature } from "../context/signature";
@@ -67,6 +73,8 @@ interface Resolved {
   rotateAbove: number;
   hideAbove: number;
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: RadialTreeChartProps): Resolved {
@@ -82,6 +90,8 @@ function resolve(p: RadialTreeChartProps): Resolved {
     rotateAbove: p.labelDensityThresholds?.rotateAbove ?? DEFAULT_ROTATE_ABOVE,
     hideAbove: p.labelDensityThresholds?.hideAbove ?? DEFAULT_HIDE_ABOVE,
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -124,6 +134,14 @@ export function mountRadialTreeChart(
   let model: RadialTreeRenderModel | null = null;
   let centerX = 0;
   let centerY = 0;
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
 
   const makeLayerCanvas = (className: string): HTMLCanvasElement => {
     const c = htmlEl("canvas", { class: className });
@@ -245,7 +263,11 @@ export function mountRadialTreeChart(
     centerX = innerWidth / 2;
     centerY = innerHeight / 2;
 
-    const processed = processRadialTreeData(props.dataSet ?? [], { disabledItems: props.disabledItems });
+    // Timeline (opt-in): swap in the active period's root nodes (ROOT-level
+    // `date` tags; children need no dates - interpolateRows recurses into them).
+    // This chart has no own `filter` prop, so nothing to neutralize.
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet ?? [], undefined);
+    const processed = processRadialTreeData(tlData.dataSet, { disabledItems: props.disabledItems });
 
     const seededMapping = { ...processed.groupColors, ...(props.colorsMapping ?? {}) };
     const colors = buildRadialTreeColors(
@@ -279,10 +301,18 @@ export function mountRadialTreeChart(
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
     if (dataState !== "nodata") {
+      // Outer wrapper carries NO transform of its own (unlike `plot`, which
+      // translates to the polar centre) so its local user space equals the SVG's
+      // absolute pixel space - the frame the progressive-draw reveal clips in
+      // below. Clipping `plot` itself would clip in ITS post-translate frame,
+      // permanently hiding every node with a negative local x (the left half of
+      // the dendrogram, centred on the origin).
+      const marksWrap = svgEl("g", { class: "radial-tree-marks" });
+      svg.appendChild(marksWrap);
       const plot = svgEl("g", {
         transform: `translate(${r.margin.left + centerX}, ${r.margin.top + centerY})`,
       });
-      svg.appendChild(plot);
+      marksWrap.appendChild(plot);
 
       if (r.renderer === "svg") {
         renderRadialTreeSvg(
@@ -333,6 +363,31 @@ export function mountRadialTreeChart(
           centerY,
         });
       }
+
+      // Opt-in reveal animation: wipes the dendrogram left to right. Suppressed
+      // when timeline is active (it wins over progressiveDraw).
+      engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.radial-tree-marks"),
+        height: r.height,
+        startPx: 0,
+        endPx: r.width,
+        // The canvas layer is offset by the margin (`canvas.style.left`) and sized
+        // to the inner plot only, so its local frame starts at margin.left - shift
+        // the absolute revealX into that local frame to keep the sweep in sync.
+        canvasRedraw:
+          r.renderer === "canvas"
+            ? (x) =>
+                drawRadialTreeCanvas(canvas, svg, model!, {
+                  width: innerWidth,
+                  height: innerHeight,
+                  centerX,
+                  centerY,
+                  revealX: Math.max(0, x - r.margin.left),
+                })
+            : undefined,
+      });
     } else {
       removeCanvas();
       removeWebgpuCanvas();
@@ -367,12 +422,14 @@ export function mountRadialTreeChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<RadialTreeChartProps> = {
     update(next: RadialTreeChartProps) {
       baseProps = next;
       render();
@@ -390,6 +447,8 @@ export function mountRadialTreeChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
+      engineRv.stop();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -401,6 +460,16 @@ export function mountRadialTreeChart(
       host.classList.remove("michi-vz", "michi-vz-radial-tree-chart");
     },
   };
+  // replay() only exists when the chart opted into the reveal animation, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "radial-tree-chart", () => baseProps);
 }

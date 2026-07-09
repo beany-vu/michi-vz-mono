@@ -13,6 +13,9 @@ export interface StackCanvasOptions {
   /** Override the dim set for same-frame hover (bypasses the throttled Redux path).
    * Defaults to model.highlightSet. */
   highlightSet?: Set<string>;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
@@ -34,6 +37,13 @@ export function drawStackCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const labels = model.keys;
   const fallback = new Map(model.keys.map((k) => [k, model.stackedRectData[k]?.[0]?.fill ?? "transparent"]));
@@ -75,4 +85,6 @@ export function drawStackCanvas(
   ctx.font = `${Math.round(fs)}px ${fam}`;
   ctx.textAlign = "center";
   for (const lbl of model.abbrevLabels) ctx.fillText(lbl.text, lbl.x, lbl.y);
+
+  if (o.revealX !== undefined) ctx.restore();
 }

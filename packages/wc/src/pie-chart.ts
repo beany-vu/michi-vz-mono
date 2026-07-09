@@ -12,6 +12,8 @@ import type {
   ChartInstance,
   MichiVzPlugin,
   Margin,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class PieChartElement extends LitElement {
@@ -33,6 +35,7 @@ export class PieChartElement extends LitElement {
     margin: { attribute: false },
     colors: { attribute: false },
     filter: { attribute: false },
+    timeline: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
@@ -55,6 +58,7 @@ export class PieChartElement extends LitElement {
   margin?: Margin;
   colors?: string[];
   filter?: { limit: number; sortingDir: "asc" | "desc" };
+  timeline?: boolean | TimelinePeriodConfig;
   enableTransitions?: boolean;
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];
@@ -95,6 +99,7 @@ export class PieChartElement extends LitElement {
       margin: this.margin,
       colors: this.colors,
       filter: this.filter,
+      timeline: this.timeline,
       enableTransitions: this.enableTransitions,
       colorsMapping: this.colorsMapping,
       highlightItems: this.highlightItems,
@@ -131,6 +136,11 @@ export class PieChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

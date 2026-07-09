@@ -24,6 +24,9 @@ import { placeTooltip } from "../render/placeTooltip";
 import { drawAreaCanvas } from "../areaChart/renderCanvas";
 import { drawAreaWebgpu } from "../areaChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
+import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { buildAreaContext } from "../context/buildAreaContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { contextSignature } from "../context/signature";
@@ -63,6 +66,8 @@ interface Resolved {
   enableTransitions: boolean;
   forcePercentageScale: boolean;
   stackOffset: "none" | "expand";
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: AreaChartProps): Resolved {
@@ -78,6 +83,8 @@ function resolve(p: AreaChartProps): Resolved {
     enableTransitions: p.enableTransitions ?? true,
     forcePercentageScale: p.forcePercentageScale ?? false,
     stackOffset: p.stackOffset ?? "none",
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -108,6 +115,12 @@ export function mountAreaChart(
   host.appendChild(svg);
   host.appendChild(tooltip);
   host.appendChild(a11y);
+
+  // Opt-in progressive-draw reveal (generic engine helper: SVG clip / canvas redraw).
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Cumulative timeline (opt-in play-through-years): wins over progressiveDraw
+  // when both are configured.
+  const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
   let baseProps: AreaChartProps = initial;
   let context: ChartContext | null = null;
@@ -438,6 +451,61 @@ export function mountAreaChart(
       removeWebgpuCanvas();
     }
 
+    // ----- Progressive draw (opt-in reveal animation) -----
+    // SVG mode: clip g.area-chart-content; canvas mode: redraw under an equivalent
+    // ctx.clip. WebGPU always paints the full frame instantly (no reveal there).
+    // Timeline wins over progressiveDraw when both are configured.
+    const canvasLayer = r.renderer === "canvas" ? canvas : null;
+    engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+      renderer: r.renderer,
+      svg,
+      marksRoot: svg.querySelector("g.area-chart-content"),
+      height: r.height,
+      startPx: r.margin.left,
+      endPx: r.width,
+      canvasRedraw: canvasLayer
+        ? (x) => drawAreaCanvas(canvasLayer, svg, model, { width: r.width, height: r.height, revealX: x })
+        : undefined,
+    });
+
+    // ----- Cumulative timeline (opt-in play-through-years) -----
+    // The areas draw UP TO the active year; play/scrub sweeps the same reveal
+    // clip progressiveDraw uses. Data + getContext() stay full (visual only).
+    if (r.timeline && r.renderer !== "webgpu") {
+      // Distinct periods across every row (hitRows is already one entry per row).
+      const periodMap = new Map<string, CumulativePeriod>();
+      for (const hr of hitRows) {
+        const key = String(hr.row.date);
+        const existing = periodMap.get(key);
+        if (!existing || hr.x > existing.px) periodMap.set(key, { period: hr.row.date, px: hr.x });
+      }
+      const periods = Array.from(periodMap.values()).sort((a, b) => a.px - b.px);
+      cumTl.afterRender(r.timeline, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.area-chart-content"),
+        height: r.height,
+        periods,
+        startPx: r.margin.left,
+        endPx: r.width,
+        canvasRedraw: canvasLayer
+          ? (x) => drawAreaCanvas(canvasLayer, svg, model, { width: r.width, height: r.height, revealX: x })
+          : undefined,
+      });
+    } else {
+      cumTl.afterRender(null, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: null,
+        height: r.height,
+        periods: [],
+        startPx: 0,
+        endPx: 0,
+      });
+    }
+
     // ----- Context + a11y + warnings -----
     context = buildAreaContext({
       title: props.title,
@@ -474,7 +542,7 @@ export function mountAreaChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<AreaChartProps> = {
     update(next: AreaChartProps) {
       baseProps = next;
       render();
@@ -492,6 +560,8 @@ export function mountAreaChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineRv.stop();
+      cumTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       canvas = null;
@@ -500,6 +570,14 @@ export function mountAreaChart(
       host.classList.remove("michi-vz", "michi-vz-area-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // animation, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => cumTl.controller();
+  }
 
   return attachDevtools(instance, host, "area-chart", () => baseProps);
 }

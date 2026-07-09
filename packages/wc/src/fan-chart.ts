@@ -14,6 +14,9 @@ import type {
   FanDataItem,
   Margin,
   MichiVzPlugin,
+  ProgressiveDrawConfig,
+  TimelinePeriodConfig,
+  TimelineController,
   XaxisDataType,
 } from "@michi-vz/core";
 
@@ -44,6 +47,8 @@ export class FanChartElement extends LitElement {
     tickValues: { attribute: false },
     forecastZone: { type: Boolean, attribute: "forecast-zone" },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    progressiveDraw: { attribute: false },
+    timeline: { attribute: false },
   };
 
   dataSet: FanDataItem[] = [];
@@ -71,6 +76,8 @@ export class FanChartElement extends LitElement {
   tickValues?: Array<number | Date>;
   forecastZone?: boolean;
   enableTransitions?: boolean;
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
+  timeline?: boolean | TimelinePeriodConfig;
 
   private chart?: ChartInstance<FanChartProps>;
 
@@ -112,6 +119,8 @@ export class FanChartElement extends LitElement {
       tickValues: this.tickValues,
       forecastZone: this.forecastZone,
       enableTransitions: this.enableTransitions,
+      progressiveDraw: this.progressiveDraw,
+      timeline: this.timeline,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
@@ -140,6 +149,16 @@ export class FanChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void {
+    this.chart?.replay?.();
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

@@ -12,6 +12,8 @@ import type {
   ChartInstance,
   Margin,
   MichiVzPlugin,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class BubbleChartElement extends LitElement {
@@ -39,6 +41,7 @@ export class BubbleChartElement extends LitElement {
     margin: { attribute: false },
     colors: { attribute: false },
     filter: { attribute: false },
+    timeline: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     tooltipFormatter: { attribute: false },
     valueFormatter: { attribute: false },
@@ -69,6 +72,7 @@ export class BubbleChartElement extends LitElement {
   margin?: Margin;
   colors?: string[];
   filter?: { limit: number; sortingDir: "asc" | "desc" };
+  timeline?: boolean | TimelinePeriodConfig;
   enableTransitions?: boolean;
   tooltipFormatter?: (bubble: BubbleContext) => string;
   valueFormatter?: (n: number) => string;
@@ -114,6 +118,7 @@ export class BubbleChartElement extends LitElement {
       margin: this.margin,
       colors: this.colors,
       filter: this.filter,
+      timeline: this.timeline,
       enableTransitions: this.enableTransitions,
       tooltipFormatter: this.tooltipFormatter,
       valueFormatter: this.valueFormatter,
@@ -146,6 +151,11 @@ export class BubbleChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

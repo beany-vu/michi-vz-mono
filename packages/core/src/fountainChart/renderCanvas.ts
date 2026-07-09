@@ -11,6 +11,9 @@ export interface FountainCanvasOptions {
   height: number;
   /** resolved ink colour for the trend line (matches the SVG var(--michi-vz-ink,currentColor)) */
   inkColor: string;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 export function drawFountainCanvas(
@@ -22,6 +25,13 @@ export function drawFountainCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const labels = [...new Set(model.jets.map((j) => j.label))];
   const fallback = new Map(model.jets.map((j) => [j.label, j.color]));
@@ -73,4 +83,6 @@ export function drawFountainCanvas(
   }
 
   ctx.globalAlpha = 1;
+
+  if (o.revealX !== undefined) ctx.restore();
 }

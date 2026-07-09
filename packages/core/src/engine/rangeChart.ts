@@ -8,6 +8,7 @@ import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisLinear } from "../render/svg";
 import { createLineScales } from "../lineChart/scales";
+import { parseXValue } from "../lineChart/lineUtils";
 import { processRangeData } from "../rangeChart/data";
 import { buildRangeColors } from "../rangeChart/colors";
 import { buildRangeRenderModel } from "../rangeChart/renderModel";
@@ -15,6 +16,9 @@ import { renderRangeSvg } from "../rangeChart/renderSvg";
 import { drawRangeCanvas } from "../rangeChart/renderCanvas";
 import { drawRangeWebgpu } from "../rangeChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
+import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { buildRangeContext } from "../context/buildRangeContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -45,6 +49,8 @@ interface Resolved {
   renderer: "svg" | "canvas" | "webgpu";
   fillOpacity: number;
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: RangeChartProps): Resolved {
@@ -59,6 +65,8 @@ function resolve(p: RangeChartProps): Resolved {
     renderer: resolveRenderer(p.renderer),
     fillOpacity: p.fillOpacity ?? 0.8,
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -103,6 +111,12 @@ export function mountRangeChart(
   host.appendChild(svg);
   host.appendChild(tooltip);
   host.appendChild(a11y);
+
+  // Opt-in progressive-draw reveal (generic engine helper: SVG clip / canvas redraw).
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Cumulative timeline (opt-in play-through-years): wins over progressiveDraw
+  // when both are configured.
+  const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
   let baseProps: RangeChartProps = initial;
   let context: ChartContext | null = null;
@@ -279,6 +293,77 @@ export function mountRangeChart(
       removeWebgpuCanvas();
     }
 
+    // ----- Progressive draw (opt-in reveal animation) -----
+    // SVG mode: clip g.range-chart-content; canvas mode: redraw under an equivalent
+    // ctx.clip. WebGPU always paints the full frame instantly (no reveal there).
+    // Timeline wins over progressiveDraw when both are configured.
+    const canvasLayer = r.renderer === "canvas" ? canvas : null;
+    engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+      renderer: r.renderer,
+      svg,
+      marksRoot: svg.querySelector("g.range-chart-content"),
+      height: r.height,
+      startPx: r.margin.left,
+      endPx: r.width,
+      canvasRedraw: canvasLayer
+        ? (x) =>
+            drawRangeCanvas(canvasLayer, svg, model, {
+              width: r.width,
+              height: r.height,
+              fillOpacity: r.fillOpacity,
+              revealX: x,
+            })
+        : undefined,
+    });
+
+    // ----- Cumulative timeline (opt-in play-through-years) -----
+    // The bands draw UP TO the active year; play/scrub sweeps the same reveal
+    // clip progressiveDraw uses. Data + getContext() stay full (visual only).
+    if (r.timeline && r.renderer !== "webgpu") {
+      const periodMap = new Map<string, CumulativePeriod>();
+      for (const it of items) {
+        for (const p of it.series) {
+          const key = String(p.date);
+          const px = (scales.xScale as (x: number | Date) => number)(
+            parseXValue(p.date, xAxisDataType)
+          );
+          const existing = periodMap.get(key);
+          if (!existing || px > existing.px) periodMap.set(key, { period: p.date, px });
+        }
+      }
+      const periods = Array.from(periodMap.values()).sort((a, b) => a.px - b.px);
+      cumTl.afterRender(r.timeline, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.range-chart-content"),
+        height: r.height,
+        periods,
+        startPx: r.margin.left,
+        endPx: r.width,
+        canvasRedraw: canvasLayer
+          ? (x) =>
+              drawRangeCanvas(canvasLayer, svg, model, {
+                width: r.width,
+                height: r.height,
+                fillOpacity: r.fillOpacity,
+                revealX: x,
+              })
+          : undefined,
+      });
+    } else {
+      cumTl.afterRender(null, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: null,
+        height: r.height,
+        periods: [],
+        startPx: 0,
+        endPx: 0,
+      });
+    }
+
     context = buildRangeContext({
       title: props.title,
       renderer: r.renderer,
@@ -308,7 +393,7 @@ export function mountRangeChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<RangeChartProps> = {
     update(next: RangeChartProps) {
       baseProps = next;
       render();
@@ -326,6 +411,8 @@ export function mountRangeChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineRv.stop();
+      cumTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       canvas = null;
@@ -334,6 +421,14 @@ export function mountRangeChart(
       host.classList.remove("michi-vz", "michi-vz-range-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // animation, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => cumTl.controller();
+  }
 
   return attachDevtools(instance, host, "range-chart", () => baseProps);
 }

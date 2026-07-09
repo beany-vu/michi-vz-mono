@@ -11,6 +11,9 @@ import type {
   ChartInstance,
   Margin,
   MichiVzPlugin,
+  ProgressiveDrawConfig,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class RadialTreeChartElement extends LitElement {
@@ -36,6 +39,8 @@ export class RadialTreeChartElement extends LitElement {
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    progressiveDraw: { attribute: false },
+    timeline: { attribute: false },
   };
 
   dataSet: RadialTreeNode[] = [];
@@ -59,6 +64,8 @@ export class RadialTreeChartElement extends LitElement {
   isNodata?: boolean | ((dataSet: RadialTreeNode[] | null | undefined) => boolean);
   noDataLabel?: string;
   enableTransitions?: boolean;
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
+  timeline?: boolean | TimelinePeriodConfig;
 
   private chart?: ChartInstance<RadialTreeChartProps>;
 
@@ -96,6 +103,8 @@ export class RadialTreeChartElement extends LitElement {
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
       enableTransitions: this.enableTransitions,
+      progressiveDraw: this.progressiveDraw,
+      timeline: this.timeline,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
@@ -127,6 +136,16 @@ export class RadialTreeChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void {
+    this.chart?.replay?.();
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

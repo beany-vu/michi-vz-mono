@@ -42,6 +42,38 @@ describe("interpolateRows", () => {
     const rows = interpolateRows(from, to, 0.25);
     expect(rows.find(r => r.label === "Gone")).toBeUndefined();
   });
+
+  it("recurses into children arrays, matching nested nodes by label (treemap hierarchies)", () => {
+    const fromTree = [
+      {
+        label: "Group",
+        value: 100,
+        date: "2021",
+        children: [
+          { label: "Leaf A", value: 60 },
+          { label: "Leaf B", value: 40 },
+        ],
+      },
+    ];
+    const toTree = [
+      {
+        label: "Group",
+        value: 200,
+        date: "2022",
+        children: [
+          { label: "Leaf A", value: 120 },
+          { label: "Leaf C", value: 80 },
+        ],
+      },
+    ];
+    const rows = interpolateRows(fromTree, toTree, 0.5) as typeof toTree;
+    const group = rows[0];
+    expect(group.value).toBeCloseTo(150, 6);
+    const leafA = group.children.find(c => c.label === "Leaf A")!;
+    expect(leafA.value).toBeCloseTo(90, 6); // 60 -> 120 midway
+    expect(group.children.find(c => c.label === "Leaf C")!.value).toBe(80); // entering: target values
+    expect(group.children.find(c => c.label === "Leaf B")).toBeUndefined(); // exiting: dropped
+  });
 });
 
 describe("scatter timeline interpolation (engine level)", () => {

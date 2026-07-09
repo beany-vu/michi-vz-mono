@@ -11,6 +11,9 @@ import type {
   ChartInstance,
   MichiVzPlugin,
   Margin,
+  ProgressiveDrawConfig,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class VerticalStackBarChartElement extends LitElement {
@@ -50,6 +53,8 @@ export class VerticalStackBarChartElement extends LitElement {
     yTicks: { type: Number, attribute: "y-ticks" },
     showGridLines: { type: Boolean, attribute: "show-grid-lines" },
     highlightZeroLine: { type: Boolean, attribute: "highlight-zero-line" },
+    progressiveDraw: { attribute: false },
+    timeline: { attribute: false },
   };
 
   dataSet: VerticalStackBarDataSet[] = [];
@@ -87,6 +92,8 @@ export class VerticalStackBarChartElement extends LitElement {
   yTicks?: number;
   showGridLines?: boolean;
   highlightZeroLine?: boolean;
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
+  timeline?: boolean | TimelinePeriodConfig;
 
   private chart?: ChartInstance<VerticalStackBarChartProps>;
 
@@ -138,6 +145,8 @@ export class VerticalStackBarChartElement extends LitElement {
       yTicks: this.yTicks,
       showGridLines: this.showGridLines,
       highlightZeroLine: this.highlightZeroLine,
+      progressiveDraw: this.progressiveDraw,
+      timeline: this.timeline,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onLegendDataChange: (l) => this.emit("michi-vz:legend", l),
@@ -168,6 +177,16 @@ export class VerticalStackBarChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void {
+    this.chart?.replay?.();
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

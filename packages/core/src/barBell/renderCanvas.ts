@@ -7,6 +7,9 @@ import type { BarBellRenderModel } from "./renderModel";
 export interface BarBellCanvasOptions {
   width: number;
   height: number;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 export function drawBarBellCanvas(
@@ -18,6 +21,13 @@ export function drawBarBellCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const keys = [...new Set(model.segments.map((s) => s.key))];
   const fallback = new Map(model.segments.map((s) => [s.key, s.color]));
@@ -50,4 +60,6 @@ export function drawBarBellCanvas(
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
+
+  if (o.revealX !== undefined) ctx.restore();
 }

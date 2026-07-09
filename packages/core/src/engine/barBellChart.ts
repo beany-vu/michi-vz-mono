@@ -17,6 +17,12 @@ import { placeTooltip } from "../render/placeTooltip";
 import { drawBarBellCanvas } from "../barBell/renderCanvas";
 import { drawBarBellWebgpu } from "../barBell/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import { buildBarBellContext } from "../context/buildBarBellContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { contextSignature } from "../context/signature";
@@ -49,6 +55,8 @@ interface Resolved {
   xAxisPosition: "top" | "bottom";
   renderer: "svg" | "canvas" | "webgpu";
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
@@ -68,6 +76,8 @@ function resolve(p: BarBellChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -147,9 +157,23 @@ export function mountBarBellChart(
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
   let model: ReturnType<typeof buildBarBellRenderModel> | null = null;
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Opt-in "play through years": the controller + built-in control lifecycle is shared
+  // engine glue; render() consumes the period-filtered rows it returns. Rows carry their
+  // period tag as `period` (BarBell's own `date` is the row's real y-band category).
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    periodKey: "period",
+    requestRender: () => render(),
+  });
+  // The active period's rows (or the full dataSet when timeline is unset), kept outside
+  // render() so the tooltip resolves the row FROM THE ACTIVE PERIOD, not the first match
+  // across every period (rows can repeat the same `date` band across periods).
+  let timelineRows: BarBellDataRow[] = [];
 
   const showTooltip = (seg: BarBellSegment, ev: MouseEvent): void => {
-    const row = baseProps.dataSet.find((d) => String(d.date) === seg.date) ?? baseProps.dataSet[0];
+    const row = timelineRows.find((d) => String(d.date) === seg.date) ?? timelineRows[0];
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(row, seg.key, seg.value)
       : `<strong>${seg.key}</strong><br/>${seg.date}: ${seg.value}`;
@@ -221,8 +245,12 @@ export function mountBarBellChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
+    // Timeline (opt-in): swap in the active period's rows before layout.
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet, undefined);
+    timelineRows = tlData.dataSet;
+
     const { activeKeys, dates, xAxisDomain } = processBarBellData(
-      props.dataSet,
+      timelineRows,
       props.keys,
       props.disabledItems,
       props.yAxisDomain
@@ -244,7 +272,7 @@ export function mountBarBellChart(
     }
 
     const scales = createBarBellScales(dates, xAxisDomain, r.width, r.height, r.margin);
-    model = buildBarBellRenderModel(props.dataSet, scales, colors, {
+    model = buildBarBellRenderModel(timelineRows, scales, colors, {
       activeKeys,
       highlightItems: props.highlightItems ?? [],
       // Default ON (legacy parity): end-caps that pile at the same x spread
@@ -331,11 +359,29 @@ export function mountBarBellChart(
       removeWebgpuCanvas();
     }
 
+    // Opt-in reveal animation: wipes the bars/caps left to right (no data-state
+    // gate - BarBell always draws, even for an empty dataSet). Skipped when
+    // `timeline` is set - timeline wins over progressiveDraw.
+    if (!r.timeline) {
+      engineRv.afterRender(r.progressiveDraw, {
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.bar-bell-content"),
+        height: r.height,
+        startPx: 0,
+        endPx: r.width,
+        canvasRedraw:
+          r.renderer === "canvas"
+            ? (x) => drawBarBellCanvas(canvas, svg, model!, { width: r.width, height: r.height, revealX: x })
+            : undefined,
+      });
+    }
+
     context = buildBarBellContext({
       title: props.title,
       renderer: r.renderer,
       xAxisDomain,
-      dataSet: props.dataSet,
+      dataSet: timelineRows,
       activeKeys,
       dates,
       colorsMapping: colors.generatedColorsMapping,
@@ -352,7 +398,8 @@ export function mountBarBellChart(
     }
 
     // Plugin hook #2 - validate: merge core checks with plugin warnings. Validate the
-    // USER's data (baseProps), not the plugin-synthesised rows.
+    // USER's data (baseProps), not the plugin-synthesised rows (the FULL dataSet, not
+    // the timeline's period-filtered snapshot, so warnings stay stable as periods step).
     if (baseProps.onDataWarning) {
       const warnings = [
         ...checkData(baseProps.dataSet, baseProps.keys),
@@ -360,12 +407,14 @@ export function mountBarBellChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<BarBellChartProps> = {
     update(next: BarBellChartProps) {
       baseProps = next;
       render();
@@ -383,6 +432,8 @@ export function mountBarBellChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
+      engineRv.stop();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -393,6 +444,14 @@ export function mountBarBellChart(
       host.classList.remove("michi-vz", "michi-vz-bar-bell-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // feature at mount, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "bar-bell-chart", () => baseProps);
 }

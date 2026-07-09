@@ -25,6 +25,8 @@ export interface ResolvedTimeline {
   easing: EasingFn;
   onStep: ((period: number | string, index: number) => void) | null;
   formatPeriod: ((period: number | string) => string) | null;
+  /** LineChart only: tip label riding the growing line (ignored elsewhere). */
+  tipLabel: import("../types").ProgressiveDrawTipLabelConfig | null;
 }
 
 export function resolveTimeline(
@@ -42,20 +44,25 @@ export function resolveTimeline(
     easing: resolveEasing(cfg.easing, easeInOutCubic),
     onStep: cfg.onStep ?? null,
     formatPeriod: cfg.formatPeriod ?? null,
+    tipLabel: cfg.tipLabel ? (cfg.tipLabel === true ? {} : cfg.tipLabel) : null,
   };
 }
 
-/** Distinct raw `date` values across the rows, ascending. Raw values are kept
- *  as-is (never normalized) so an engine's own `date` comparison semantics
- *  keep working; sorting is numeric when every value coerces to a number. */
+/** Distinct raw period values across the rows, ascending. `key` names the row
+ *  field carrying the period tag ("date" by default; radar/bar-bell use
+ *  "period" because their `date` already means something else). Raw values are
+ *  kept as-is (never normalized) so an engine's own comparison semantics keep
+ *  working; sorting is numeric when every value coerces to a number. */
 export function enumerateDatePeriods(
-  rows: Array<{ date?: number | string }>
+  rows: readonly object[],
+  key = "date"
 ): Array<number | string> {
   const seen = new Map<string, number | string>();
   for (const row of rows) {
-    if (row.date === undefined || row.date === null || row.date === "") continue;
-    const key = String(row.date);
-    if (!seen.has(key)) seen.set(key, row.date);
+    const v = (row as Record<string, unknown>)[key] as number | string | undefined | null;
+    if (v === undefined || v === null || v === "") continue;
+    const k = String(v);
+    if (!seen.has(k)) seen.set(k, v);
   }
   const values = Array.from(seen.values());
   const allNumeric = values.every(v => Number.isFinite(Number(v)));
@@ -64,14 +71,16 @@ export function enumerateDatePeriods(
   );
 }
 
-/** Rows belonging to the active period (rows without a date always stay). */
-export function filterRowsToPeriod<T extends { date?: number | string }>(
+/** Rows belonging to the active period (rows without a period tag always stay). */
+export function filterRowsToPeriod<T extends object>(
   rows: T[],
-  period: number | string
+  period: number | string,
+  key = "date"
 ): T[] {
-  return rows.filter(
-    row => row.date === undefined || row.date === null || String(row.date) === String(period)
-  );
+  return rows.filter(row => {
+    const v = (row as Record<string, unknown>)[key] as number | string | undefined | null;
+    return v === undefined || v === null || String(v) === String(period);
+  });
 }
 
 /** Between-period value interpolation: for each target row, lerp every finite
@@ -90,7 +99,9 @@ export function interpolateRows<T extends { label?: string; date?: number | stri
     if (!prev) return row;
     const out: Record<string, unknown> = { ...row };
     for (const key of Object.keys(row)) {
-      if (key === "date" || key === "label") continue;
+      // Identity/tag fields are never interpolated ("period" is the radar/
+      // bar-bell period tag; a numeric year must not tween to 2021.5).
+      if (key === "date" || key === "label" || key === "period") continue;
       const a = (prev as Record<string, unknown>)[key];
       const b = (row as Record<string, unknown>)[key];
       if (
@@ -100,6 +111,35 @@ export function interpolateRows<T extends { label?: string; date?: number | stri
         Number.isFinite(b)
       ) {
         out[key] = a + (b - a) * t;
+      } else if (
+        Array.isArray(a) &&
+        Array.isArray(b) &&
+        b.every(v => typeof v === "object" && v !== null && "label" in (v as object))
+      ) {
+        // Hierarchies (treemap/radial-tree children, sankey links): recurse,
+        // matching nested nodes by label - the whole tree tweens.
+        out[key] = interpolateRows(
+          a as Array<{ label?: string }>,
+          b as Array<{ label?: string }>,
+          t
+        );
+      } else if (
+        Array.isArray(a) &&
+        Array.isArray(b) &&
+        a.length === b.length &&
+        b.every(v => typeof v === "number" || v === null)
+      ) {
+        // Radar-style per-axis value arrays: lerp elementwise where both sides
+        // are finite numbers, otherwise keep the target element (null poles).
+        out[key] = b.map((bv, i) => {
+          const av = a[i];
+          return typeof av === "number" &&
+            typeof bv === "number" &&
+            Number.isFinite(av) &&
+            Number.isFinite(bv)
+            ? av + (bv - av) * t
+            : bv;
+        });
       }
     }
     return out as T;
@@ -113,7 +153,7 @@ export interface EngineTimeline {
    *  effective filter (the user's filter with its own `date` neutralized while
    *  the timeline owns period selection). (Re)creates the controller when the
    *  period list changes; preserves the active index across data updates. */
-  beforeRender<T extends { date?: number | string }>(
+  beforeRender<T extends object>(
     cfg: ResolvedTimeline | null,
     dataSet: T[],
     filter: Filter | undefined
@@ -128,9 +168,12 @@ export function createEngineTimeline(deps: {
   ticker?: Ticker;
   motion?: MotionPreference;
   requestRender: () => void;
+  /** Row field carrying the period tag (default "date"; radar/bar-bell pass "period"). */
+  periodKey?: string;
 }): EngineTimeline {
   const ticker = deps.ticker ?? defaultTicker();
   const motion = deps.motion ?? defaultMotionPreference();
+  const periodKey = deps.periodKey ?? "date";
   const refs = createTimelineControlRefs();
   let tl: TimelineController | null = null;
   let index = 0;
@@ -139,8 +182,8 @@ export function createEngineTimeline(deps: {
   let autoplayed = false;
   // Between-period tween: `from` is whatever was last rendered (so a step that
   // interrupts a running tween continues from the on-screen state, not a jump).
-  let lastRenderedRows: Array<{ label?: string; date?: number | string }> | null = null;
-  let tween: { from: Array<{ label?: string; date?: number | string }>; t: number; driver: TweenDriver } | null = null;
+  let lastRenderedRows: object[] | null = null;
+  let tween: { from: object[]; t: number; driver: TweenDriver } | null = null;
 
   const stopTween = (): void => {
     tween?.driver.stop();
@@ -184,7 +227,7 @@ export function createEngineTimeline(deps: {
   return {
     beforeRender(cfg, dataSet, filter) {
       activeCfg = cfg;
-      const periods = cfg ? enumerateDatePeriods(dataSet) : [];
+      const periods = cfg ? enumerateDatePeriods(dataSet, periodKey) : [];
       if (!cfg || periods.length === 0) {
         teardown();
         return { dataSet, filter };
@@ -225,7 +268,7 @@ export function createEngineTimeline(deps: {
         filter && filter.date !== undefined && filter.date !== ""
           ? { ...filter, date: "" }
           : filter;
-      let rows = filterRowsToPeriod(dataSet, periods[index]);
+      let rows = filterRowsToPeriod(dataSet, periods[index], periodKey);
       if (tween && tween.t < 1) {
         rows = interpolateRows(tween.from as typeof rows, rows, tween.t);
       }

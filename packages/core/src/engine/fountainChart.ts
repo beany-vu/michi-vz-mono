@@ -10,6 +10,7 @@ import { defaultNumberFormatter, defaultXAxisFormatter } from "../i18n/formatter
 import { renderTitle, renderXAxisBand, renderXAxisLinear, renderYAxisLinear } from "../render/svg";
 import { chooseAxisMode } from "../render/svg/chooseAxisMode";
 import { measureLabelWidth } from "../render/svg/measureLabelWidth";
+import { parseXValue } from "../lineChart/lineUtils";
 import { processFountainData } from "../fountainChart/data";
 import { buildFountainColors } from "../fountainChart/colors";
 import { createFountainScales } from "../fountainChart/scales";
@@ -19,6 +20,9 @@ import { renderFountainSvg } from "../fountainChart/renderSvg";
 import { drawFountainCanvas } from "../fountainChart/renderCanvas";
 import { drawFountainWebgpu } from "../fountainChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
+import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { buildFountainContext } from "../context/buildFountainContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -59,6 +63,8 @@ interface Resolved {
   showTrendLine: boolean;
   renderer: "svg" | "canvas" | "webgpu";
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: FountainChartProps): Resolved {
@@ -79,6 +85,8 @@ function resolve(p: FountainChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -135,6 +143,12 @@ export function mountFountainChart(
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: ReturnType<typeof buildFountainRenderModel> | null = null;
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Cumulative timeline (opt-in play-through-years): only applies in TREND mode
+  // (a temporal x-axis); snapshot mode is categorical, so its afterRender call
+  // always passes empty periods and the control naturally tears down. Wins over
+  // progressiveDraw when both are configured.
+  const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
   // Lazily create an absolutely-positioned <canvas> layered behind the SVG,
   // matching the host padding (shared by canvas mode + the webgpu fallback).
@@ -368,12 +382,13 @@ export function mountFountainChart(
       );
     }
 
-    if (isPainted(r.renderer)) {
-      // Resolve the consumer ink colour so the canvas trend line matches the SVG
-      // var(--michi-vz-ink, currentColor) instead of a hardcoded grey.
-      const cs = getComputedStyle(host);
-      const inkColor = (cs.getPropertyValue("--michi-vz-ink") || "").trim() || cs.color || "rgba(130,130,130,1)";
+    // Resolve the consumer ink colour so the canvas trend line matches the SVG
+    // var(--michi-vz-ink, currentColor) instead of a hardcoded grey (also read by
+    // the progressive-draw canvas redraw below, painted or not).
+    const cs = getComputedStyle(host);
+    const inkColor = (cs.getPropertyValue("--michi-vz-ink") || "").trim() || cs.color || "rgba(130,130,130,1)";
 
+    if (isPainted(r.renderer)) {
       if (r.renderer === "webgpu") {
         if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("fountainChart-webgpu-canvas");
         const ready = drawFountainWebgpu(webgpuCanvas, svg, model, {
@@ -401,6 +416,66 @@ export function mountFountainChart(
     } else {
       removeCanvas();
       removeWebgpuCanvas();
+    }
+
+    // Opt-in reveal animation: wipes the jets left to right (no data-state gate -
+    // FountainChart always draws, even for an empty dataSet). Timeline wins over
+    // progressiveDraw when both are configured.
+    engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+      renderer: r.renderer,
+      svg,
+      marksRoot: svg.querySelector("g.fountain-chart-content"),
+      height: r.height,
+      startPx: 0,
+      endPx: r.width,
+      canvasRedraw:
+        r.renderer === "canvas"
+          ? (x) => drawFountainCanvas(canvas, svg, model!, { width: r.width, height: r.height, inkColor, revealX: x })
+          : undefined,
+    });
+
+    // ----- Cumulative timeline (opt-in play-through-years) -----
+    // Only TREND mode (temporal x) has periods to play through; snapshot mode
+    // (categorical band x) always passes empty periods so the control tears down.
+    if (r.timeline && r.renderer !== "webgpu" && processed.mode === "trend" && scales.xLinear) {
+      const xLinear = scales.xLinear;
+      const temporalType = processed.temporalType!;
+      const periodMap = new Map<string, CumulativePeriod>();
+      for (const it of processed.items) {
+        if (it.date === undefined || it.date === null || it.date === "") continue;
+        const parsed = parseXValue(it.date, temporalType);
+        const px = (xLinear as (x: number | Date) => number)(parsed);
+        const key = String(it.date);
+        const existing = periodMap.get(key);
+        if (!existing || px > existing.px) periodMap.set(key, { period: it.date, px });
+      }
+      const periods = Array.from(periodMap.values()).sort((a, b) => a.px - b.px);
+      cumTl.afterRender(r.timeline, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.fountain-chart-content"),
+        height: r.height,
+        periods,
+        startPx: margin.left,
+        endPx: r.width,
+        canvasRedraw:
+          r.renderer === "canvas"
+            ? (x) =>
+                drawFountainCanvas(canvas, svg, model!, { width: r.width, height: r.height, inkColor, revealX: x })
+            : undefined,
+      });
+    } else {
+      cumTl.afterRender(null, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: null,
+        height: r.height,
+        periods: [],
+        startPx: 0,
+        endPx: 0,
+      });
     }
 
     context = buildFountainContext({
@@ -465,7 +540,7 @@ export function mountFountainChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<FountainChartProps> = {
     update(next: FountainChartProps) {
       baseProps = next;
       render();
@@ -483,6 +558,8 @@ export function mountFountainChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineRv.stop();
+      cumTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -493,6 +570,14 @@ export function mountFountainChart(
       host.classList.remove("michi-vz", "michi-vz-fountain-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // animation, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => cumTl.controller();
+  }
 
   return attachDevtools(instance, host, "fountain-chart", () => baseProps);
 }

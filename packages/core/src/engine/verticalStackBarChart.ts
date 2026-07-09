@@ -26,6 +26,9 @@ import { renderStackSvg } from "../verticalStackBarChart/renderSvg";
 import { drawStackCanvas } from "../verticalStackBarChart/renderCanvas";
 import { drawVerticalStackBarWebgpu } from "../verticalStackBarChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
+import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { buildStackContext } from "../context/buildStackContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { contextSignature } from "../context/signature";
@@ -65,6 +68,8 @@ interface Resolved {
   minBarHeight: number;
   minBarHeightZero: number;
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: VerticalStackBarChartProps): Resolved {
@@ -81,6 +86,8 @@ function resolve(p: VerticalStackBarChartProps): Resolved {
     minBarHeight: p.minBarHeight ?? 15,
     minBarHeightZero: p.minBarHeightZero ?? 0,
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -108,6 +115,12 @@ export function mountVerticalStackBarChart(
   host.appendChild(svg);
   host.appendChild(tooltip);
   host.appendChild(a11y);
+
+  // Opt-in progressive-draw reveal (generic engine helper: SVG clip / canvas redraw).
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Cumulative timeline (opt-in play-through-years): wins over progressiveDraw
+  // when both are configured.
+  const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
   let baseProps: VerticalStackBarChartProps = initial;
   let context: ChartContext | null = null;
@@ -498,6 +511,60 @@ export function mountVerticalStackBarChart(
       webgpuPainted = false;
     }
 
+    // ----- Progressive draw (opt-in reveal animation) -----
+    // SVG mode: clip g.stack-chart-content; canvas mode: redraw under an equivalent
+    // ctx.clip. WebGPU always paints the full frame instantly (no reveal there).
+    // No-data: the marks group/canvas above never exist, so the helper naturally
+    // no-ops (null marksRoot / null canvasRedraw). Timeline wins over
+    // progressiveDraw when both are configured.
+    const canvasLayer = r.renderer === "canvas" ? canvas : null;
+    engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+      renderer: r.renderer,
+      svg,
+      marksRoot: svg.querySelector("g.stack-chart-content"),
+      height: r.height,
+      startPx: margin.left,
+      endPx: r.width,
+      canvasRedraw: canvasLayer
+        ? (x) =>
+            drawStackCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+        : undefined,
+    });
+
+    // ----- Cumulative timeline (opt-in play-through-years) -----
+    // The bars draw UP TO the active period (band edge); play/scrub sweeps the
+    // same reveal clip progressiveDraw uses. Data + getContext() stay full.
+    if (r.timeline && dataState !== "nodata" && r.renderer !== "webgpu") {
+      const periods: CumulativePeriod[] = dates
+        .map((d) => ({ period: d, px: (scales.xScale(d) ?? margin.left) + scales.xScale.bandwidth() }))
+        .sort((a, b) => a.px - b.px);
+      cumTl.afterRender(r.timeline, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.stack-chart-content"),
+        height: r.height,
+        periods,
+        startPx: margin.left,
+        endPx: r.width,
+        canvasRedraw: canvasLayer
+          ? (x) =>
+              drawStackCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+          : undefined,
+      });
+    } else {
+      cumTl.afterRender(null, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: null,
+        height: r.height,
+        periods: [],
+        startPx: 0,
+        endPx: 0,
+      });
+    }
+
     context = buildStackContext({
       title: props.title,
       renderer: r.renderer,
@@ -533,7 +600,7 @@ export function mountVerticalStackBarChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<VerticalStackBarChartProps> = {
     update(next: VerticalStackBarChartProps) {
       baseProps = next;
       render();
@@ -551,6 +618,8 @@ export function mountVerticalStackBarChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineRv.stop();
+      cumTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -562,6 +631,14 @@ export function mountVerticalStackBarChart(
       host.classList.remove("michi-vz", "michi-vz-vertical-stack-bar-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // animation, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => cumTl.controller();
+  }
 
   return attachDevtools(instance, host, "vertical-stack-bar-chart", () => baseProps);
 }

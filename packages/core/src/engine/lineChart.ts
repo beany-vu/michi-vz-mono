@@ -37,6 +37,11 @@ import {
 } from "../lineChart/progressiveDraw";
 import { defaultTicker } from "../animation/ticker";
 import { defaultMotionPreference } from "../animation/reducedMotion";
+import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
+import {
+  createCumulativeTimeline,
+  type CumulativePeriod,
+} from "../animation/cumulativeTimeline";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
 import { drawLineWebgpu } from "../lineChart/renderWebgpu";
@@ -86,6 +91,7 @@ interface Resolved {
   singlePointLine: SinglePointLineConfig | null;
   yAxisScale: "linear" | "log";
   progressiveDraw: ResolvedProgressiveDraw | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolveSinglePointLine(v: LineChartProps["singlePointLine"]): SinglePointLineConfig | null {
@@ -114,6 +120,7 @@ function resolve(p: LineChartProps): Resolved {
     singlePointLine: resolveSinglePointLine(p.singlePointLine),
     yAxisScale: p.yAxisScale ?? "linear",
     progressiveDraw: resolveProgressiveDraw(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -157,6 +164,9 @@ export function mountLineChart(
   const motion = opts?.motion ?? defaultMotionPreference();
   let pdDriver: ProgressiveDrawDriver | null = null;
   let pdHasPlayed = false;
+  // Cumulative timeline (opt-in play-through-years): the line draws up to the
+  // active year; wins over progressiveDraw when both are configured.
+  const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
   let sticky = false;
   // True while the cursor is over a faded no-data tick label; makes onHostMove's canvas
@@ -263,9 +273,11 @@ export function mountLineChart(
 
   const onHostMove = (ev: MouseEvent): void => {
     const r = resolve(baseProps);
-    // While a progressive draw is running, everything right of the reveal edge is
-    // not drawn yet: the crosshair, snapping, and tooltips all stop at that edge.
-    const revealCap = pdDriver?.isRunning() ? pdDriver.getRevealX() : Infinity;
+    // Everything right of the reveal edge is not drawn: the crosshair, snapping,
+    // and tooltips all stop there. The timeline caps even while PAUSED (undrawn
+    // years are not inspectable); a progressive draw caps only while running.
+    const revealCap =
+      cumTl.getRevealX() ?? (pdDriver?.isRunning() ? pdDriver.getRevealX() : Infinity);
     if (r.mouseLine && mouseLine) {
       const svgRect = svg.getBoundingClientRect();
       const x = ev.clientX - svgRect.left;
@@ -374,6 +386,10 @@ export function mountLineChart(
   function render(): void {
     // A re-render rebuilds every node the reveal animation mutates, so any
     // in-flight progressive draw is cancelled first (never re-attached stale).
+    // Its current position is captured so the reveal RESUMES after the rebuild:
+    // wrappers (Lit updated(), React effects) call update() right after mount,
+    // and without the resume that double-render would kill every mount autoplay.
+    const pdResume = pdDriver?.isRunning() ? pdDriver.getRevealX() : null;
     pdDriver?.stop();
     pdDriver = null;
     // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
@@ -684,7 +700,7 @@ export function mountLineChart(
     // Canvas mode: redraw the same model per frame under an equivalent ctx.clip.
     // WebGPU degrades to instant-draw (no dash/text support there either).
     const pd = r.progressiveDraw;
-    if (pd && dataState !== "nodata" && r.renderer !== "webgpu") {
+    if (pd && !r.timeline && dataState !== "nodata" && r.renderer !== "webgpu") {
       const startPx = r.margin.left;
       const endPx = r.width;
       // Tip labels are computed from the undecimated hitData (same nearest-point
@@ -720,16 +736,27 @@ export function mountLineChart(
           });
       }
       if (applyReveal) {
+        // Resuming a reveal interrupted by this re-render: start from where it
+        // was, with the remaining share of the duration. (Benign corner: a
+        // replay() issued right after a resumed render restarts from the
+        // resume point rather than the plot edge.)
+        const resuming = pdResume !== null;
+        const span = Math.max(1, endPx - startPx);
+        const remaining = resuming
+          ? Math.max(1, pd.durationMs * (1 - (pdResume - startPx) / span))
+          : pd.durationMs;
         pdDriver = createProgressiveDrawDriver({
           ticker,
           motion,
-          durationMs: pd.durationMs,
+          durationMs: remaining,
           easing: pd.easing,
-          startPx,
+          startPx: resuming ? pdResume : startPx,
           endPx,
           onFrame: applyReveal,
         });
-        if (pd.autoplay && (!pdHasPlayed || pd.replayOnUpdate)) {
+        if (resuming) {
+          pdDriver.start();
+        } else if (pd.autoplay && (!pdHasPlayed || pd.replayOnUpdate)) {
           pdHasPlayed = true;
           pdDriver.start();
         } else {
@@ -738,6 +765,71 @@ export function mountLineChart(
           applyReveal(endPx);
         }
       }
+    }
+
+    // ----- Cumulative timeline (opt-in play-through-years) -----
+    // The line draws UP TO the active year; play/scrub sweeps the same reveal
+    // clip progressiveDraw uses. Data + getContext() stay full (visual only).
+    if (r.timeline && dataState !== "nodata" && r.renderer !== "webgpu") {
+      // Distinct periods across every series, ordered by pixel position.
+      const periodMap = new Map<string, CumulativePeriod>();
+      for (const entry of hitData) {
+        for (const pt of entry.points) {
+          const key = String(pt.d.date);
+          const existing = periodMap.get(key);
+          if (!existing || pt.x > existing.px) periodMap.set(key, { period: pt.d.date, px: pt.x });
+        }
+      }
+      const periods = Array.from(periodMap.values()).sort((a, b) => a.px - b.px);
+      const tlTip = r.timeline.tipLabel;
+      const colorOfTl = (label: string): string => currentColors[label] ?? "";
+      let onReveal: ((x: number) => void) | undefined;
+      let tlCanvasRedraw: ((x: number) => void) | undefined;
+      if (r.renderer === "svg") {
+        const tipGroup = tlTip ? installTipLabels(svg) : null;
+        if (tipGroup && tlTip) {
+          onReveal = x => setTipLabels(tipGroup, computeTipLabels(hitData, colorOfTl, x, tlTip));
+        }
+      } else if (canvas) {
+        const layer = canvas;
+        const fontFamily = props.fontFamily ?? "sans-serif";
+        tlCanvasRedraw = x =>
+          drawLineCanvas(layer, svg, model, {
+            width: r.width,
+            height: r.height,
+            margin: r.margin,
+            showDataPoints: r.showDataPoints,
+            singlePointLine: r.singlePointLine,
+            revealX: x,
+            tipLabels: tlTip ? computeTipLabels(hitData, colorOfTl, x, tlTip) : undefined,
+            fontFamily,
+          });
+      }
+      cumTl.afterRender(r.timeline, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.line-chart-content"),
+        height: r.height,
+        periods,
+        startPx: r.margin.left,
+        endPx: r.width,
+        canvasRedraw: tlCanvasRedraw,
+        onReveal,
+        startPeriod:
+          props.filter && props.filter.date !== "" ? props.filter.date : undefined,
+      });
+    } else {
+      cumTl.afterRender(null, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: null,
+        height: r.height,
+        periods: [],
+        startPx: 0,
+        endPx: 0,
+      });
     }
 
     // ----- Legend rows (flat colour-contract payload) -----
@@ -829,6 +921,7 @@ export function mountLineChart(
     destroy() {
       pdDriver?.stop();
       pdDriver = null;
+      cumTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -840,12 +933,15 @@ export function mountLineChart(
       host.classList.remove("michi-vz", "michi-vz-line-chart");
     },
   };
-  // replay() only exists when the chart opted into the reveal animation, so
-  // feature-off charts keep an unchanged instance surface.
+  // replay()/timeline() only exist when the chart opted into the respective
+  // animation, so feature-off charts keep an unchanged instance surface.
   if (resolve(initial).progressiveDraw) {
     instance.replay = () => {
       pdDriver?.replay();
     };
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => cumTl.controller();
   }
 
   return attachDevtools(instance, host, "line-chart", () => baseProps);

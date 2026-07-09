@@ -10,6 +10,8 @@ import type {
   ChartInstance,
   Margin,
   MichiVzPlugin,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class DualHorizontalBarChartElement extends LitElement {
@@ -38,6 +40,7 @@ export class DualHorizontalBarChartElement extends LitElement {
     yAxisPosition: { type: String, attribute: "y-axis-position" },
     interactiveRowLabels: { type: Boolean, attribute: "interactive-row-labels" },
     filter: { attribute: false },
+    timeline: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
@@ -65,6 +68,7 @@ export class DualHorizontalBarChartElement extends LitElement {
   yAxisPosition?: "center" | "left";
   interactiveRowLabels?: boolean;
   filter?: { limit: number; criteria: "value1" | "value2"; sortingDir: "asc" | "desc" };
+  timeline?: boolean | TimelinePeriodConfig;
   enableTransitions?: boolean;
 
   private chart?: ChartInstance<DualBarChartProps>;
@@ -106,6 +110,7 @@ export class DualHorizontalBarChartElement extends LitElement {
       yAxisPosition: this.yAxisPosition,
       interactiveRowLabels: this.interactiveRowLabels,
       filter: this.filter,
+      timeline: this.timeline,
       enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
@@ -136,6 +141,11 @@ export class DualHorizontalBarChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

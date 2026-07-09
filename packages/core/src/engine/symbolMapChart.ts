@@ -37,6 +37,11 @@ import {
   setupPlugins,
 } from "../plugins/runner";
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import type {
   ChartContext,
   ChartInstance,
@@ -69,6 +74,7 @@ interface Resolved {
   strokeWidth: number;
   showLabels: boolean;
   enableTransitions: boolean;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: SymbolMapChartProps): Resolved {
@@ -87,6 +93,7 @@ function resolve(p: SymbolMapChartProps): Resolved {
     strokeWidth: p.strokeWidth ?? 1,
     showLabels: p.showLabels ?? true,
     enableTransitions: p.enableTransitions ?? true,
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -125,6 +132,14 @@ export function mountSymbolMapChart(
       render();
     },
   };
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
+
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let lastContextSig = "";
@@ -256,7 +271,11 @@ export function mountSymbolMapChart(
     const innerWidth = r.width - r.margin.left - r.margin.right;
     const innerHeight = r.height - r.margin.top - r.margin.bottom;
 
-    const processed = processSymbolMapData(props.dataSet ?? [], {
+    // Timeline (opt-in): swap in the active period's rows. SymbolMapChart has no
+    // `filter` prop, so only the dataSet arg matters here; the de-overlap force
+    // layout below consumes tlData.dataSet so symbols re-place per period.
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet ?? [], undefined);
+    const processed = processSymbolMapData(tlData.dataSet, {
       disabledItems: props.disabledItems,
       radiusVisibleMin: props.radiusVisibleMin,
     });
@@ -436,12 +455,14 @@ export function mountSymbolMapChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<SymbolMapChartProps> = {
     update(next: SymbolMapChartProps) {
       baseProps = next;
       render();
@@ -459,6 +480,7 @@ export function mountSymbolMapChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -470,6 +492,11 @@ export function mountSymbolMapChart(
       host.classList.remove("michi-vz", "michi-vz-symbol-map-chart");
     },
   };
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "symbol-map-chart", () => baseProps);
 }

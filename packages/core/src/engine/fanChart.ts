@@ -23,6 +23,9 @@ import { makeRangeAreaGenerator } from "../rangeChart/geometry";
 import { drawFanCanvas, type FanBandPath } from "../fanChart/renderCanvas";
 import { drawFanWebgpu } from "../fanChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
+import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { buildFanContext } from "../context/buildFanContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import {
@@ -57,6 +60,8 @@ interface Resolved {
   fillOpacity: number;
   showDataPoints: boolean;
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 // canvas + webgpu both paint into a <canvas> layer (no per-mark DOM), so they share
@@ -76,6 +81,8 @@ function resolve(p: FanChartProps): Resolved {
     fillOpacity: p.fillOpacity ?? 0.18,
     showDataPoints: p.showDataPoints ?? false,
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -118,6 +125,12 @@ export function mountFanChart(
   host.appendChild(svg);
   host.appendChild(tooltip);
   host.appendChild(a11y);
+
+  // Opt-in progressive-draw reveal (generic engine helper: SVG clip / canvas redraw).
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Cumulative timeline (opt-in play-through-years): wins over progressiveDraw
+  // when both are configured.
+  const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
   let baseProps: FanChartProps = initial;
   let context: ChartContext | null = null;
@@ -332,7 +345,9 @@ export function mountFanChart(
     });
 
     if (r.renderer === "svg") {
-      // Bands underneath, then the line on top - both on the SVG layer.
+      // Single wrapping group for progressiveDraw's clip (bands + line together,
+      // never the axes/title). Bands underneath, then the line on top.
+      const marksRoot = svgEl("g", { class: "fan-chart-content" });
       const bandsLayer = svgEl("g", { class: "mv-fan-bands" });
       for (const b of bandPaths) {
         bandsLayer.appendChild(
@@ -347,9 +362,9 @@ export function mountFanChart(
           })
         );
       }
-      svg.appendChild(bandsLayer);
+      marksRoot.appendChild(bandsLayer);
       renderLineSvg(
-        svg,
+        marksRoot,
         lineModel,
         {
           margin: r.margin,
@@ -375,6 +390,7 @@ export function mountFanChart(
           },
         }
       );
+      svg.appendChild(marksRoot);
       if (canvas) {
         canvas.remove();
         canvas = null;
@@ -440,6 +456,74 @@ export function mountFanChart(
       }
     }
 
+    // ----- Progressive draw (opt-in reveal animation) -----
+    // SVG mode: clip g.fan-chart-content (bands + line together); canvas mode:
+    // redraw under an equivalent ctx.clip. WebGPU paints the full frame instantly.
+    // Timeline wins over progressiveDraw when both are configured.
+    const canvasLayer = r.renderer === "canvas" ? canvas : null;
+    engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+      renderer: r.renderer,
+      svg,
+      marksRoot: svg.querySelector("g.fan-chart-content"),
+      height: r.height,
+      startPx: r.margin.left,
+      endPx: r.width,
+      canvasRedraw: canvasLayer
+        ? (x) =>
+            drawFanCanvas(
+              canvasLayer,
+              svg,
+              { bands: bandPaths, lineModel },
+              { width: r.width, height: r.height, revealX: x }
+            )
+        : undefined,
+    });
+
+    // ----- Cumulative timeline (opt-in play-through-years) -----
+    // The bands + line draw UP TO the active year; play/scrub sweeps the same
+    // reveal clip progressiveDraw uses. Data + getContext() stay full (visual only).
+    if (r.timeline && r.renderer !== "webgpu") {
+      const periodMap = new Map<string, CumulativePeriod>();
+      for (const entry of hitData) {
+        for (const pt of entry.points) {
+          const key = String(pt.d.date);
+          const existing = periodMap.get(key);
+          if (!existing || pt.x > existing.px) periodMap.set(key, { period: pt.d.date, px: pt.x });
+        }
+      }
+      const periods = Array.from(periodMap.values()).sort((a, b) => a.px - b.px);
+      cumTl.afterRender(r.timeline, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.fan-chart-content"),
+        height: r.height,
+        periods,
+        startPx: r.margin.left,
+        endPx: r.width,
+        canvasRedraw: canvasLayer
+          ? (x) =>
+              drawFanCanvas(
+                canvasLayer,
+                svg,
+                { bands: bandPaths, lineModel },
+                { width: r.width, height: r.height, revealX: x }
+              )
+          : undefined,
+      });
+    } else {
+      cumTl.afterRender(null, {
+        host,
+        renderer: r.renderer,
+        svg,
+        marksRoot: null,
+        height: r.height,
+        periods: [],
+        startPx: 0,
+        endPx: 0,
+      });
+    }
+
     // ----- Context + plugin hooks + a11y + warnings -----
     context = buildFanContext({
       title: props.title,
@@ -499,7 +583,7 @@ export function mountFanChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<FanChartProps> = {
     update(next: FanChartProps) {
       baseProps = next;
       render();
@@ -517,6 +601,8 @@ export function mountFanChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineRv.stop();
+      cumTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -527,6 +613,14 @@ export function mountFanChart(
       host.classList.remove("michi-vz", "michi-vz-fan-chart");
     },
   };
+  // replay()/timeline() only exist when the chart opted into the respective
+  // animation, so feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  if (resolve(initial).timeline) {
+    instance.timeline = () => cumTl.controller();
+  }
 
   return attachDevtools(instance, host, "fan-chart", () => baseProps);
 }

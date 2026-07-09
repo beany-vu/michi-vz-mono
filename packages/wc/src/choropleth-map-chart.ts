@@ -13,6 +13,8 @@ import type {
   GeoFeatureItem,
   Margin,
   MichiVzPlugin,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class ChoroplethMapChartElement extends LitElement {
@@ -42,6 +44,7 @@ export class ChoroplethMapChartElement extends LitElement {
     isLoading: { type: Boolean, attribute: "is-loading" },
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
+    timeline: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
   };
 
@@ -70,6 +73,7 @@ export class ChoroplethMapChartElement extends LitElement {
   isLoading?: boolean;
   isNodata?: boolean | ((dataSet: ChoroplethDataItem[] | null | undefined) => boolean);
   noDataLabel?: string;
+  timeline?: boolean | TimelinePeriodConfig;
   enableTransitions?: boolean;
 
   private chart?: ChartInstance<ChoroplethMapChartProps>;
@@ -112,6 +116,7 @@ export class ChoroplethMapChartElement extends LitElement {
       isLoading: this.isLoading,
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
+      timeline: this.timeline,
       enableTransitions: this.enableTransitions,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
@@ -144,6 +149,11 @@ export class ChoroplethMapChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

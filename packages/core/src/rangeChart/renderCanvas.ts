@@ -9,6 +9,9 @@ export interface RangeCanvasOptions {
   width: number;
   height: number;
   fillOpacity: number;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 export function drawRangeCanvas(
@@ -20,6 +23,13 @@ export function drawRangeCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const labels = model.series.map((s) => s.label);
   const fallback = new Map(model.series.map((s) => [s.label, s.color]));
@@ -46,4 +56,6 @@ export function drawRangeCanvas(
     }
     ctx.restore();
   }
+
+  if (o.revealX !== undefined) ctx.restore();
 }

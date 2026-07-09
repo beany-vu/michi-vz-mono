@@ -9,6 +9,9 @@ import type {
   ChartInstance,
   Margin,
   MichiVzPlugin,
+  ProgressiveDrawConfig,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class BarBellChartElement extends LitElement {
@@ -39,6 +42,8 @@ export class BarBellChartElement extends LitElement {
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
     dodgeOverlappingCaps: { type: Boolean, attribute: "dodge-overlapping-caps" },
+    progressiveDraw: { attribute: false },
+    timeline: { attribute: false },
   };
 
   dataSet: BarBellDataRow[] = [];
@@ -67,6 +72,8 @@ export class BarBellChartElement extends LitElement {
   isNodata?: boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
   noDataLabel?: string;
   dodgeOverlappingCaps?: boolean;
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
+  timeline?: boolean | TimelinePeriodConfig;
 
   private chart?: ChartInstance<BarBellChartProps>;
 
@@ -109,6 +116,8 @@ export class BarBellChartElement extends LitElement {
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
       dodgeOverlappingCaps: this.dodgeOverlappingCaps,
+      progressiveDraw: this.progressiveDraw,
+      timeline: this.timeline,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
@@ -137,6 +146,16 @@ export class BarBellChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void {
+    this.chart?.replay?.();
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

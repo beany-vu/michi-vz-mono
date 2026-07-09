@@ -32,6 +32,11 @@ import {
   setupPlugins,
 } from "../plugins/runner";
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import type {
   ChartContext,
   ChartInstance,
@@ -68,6 +73,7 @@ interface Resolved {
   /** Resolved from props.deltaIndicator; undefined when the prop is omitted or
    * `show: false` (provable no-op - no geometry computed, no DOM painted). */
   deltaIndicator?: ComparableDeltaGeometryOptions;
+  timeline: ResolvedTimeline | null;
 }
 
 function defaultDeltaFormatter(
@@ -114,6 +120,7 @@ function resolve(p: ComparableBarChartProps): Resolved {
           formatter: p.deltaIndicator.formatter ?? defaultDeltaFormatter(p),
         }
       : undefined,
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -169,6 +176,14 @@ export function mountComparableHorizontalBarChart(
       render();
     },
   };
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
+
   let sticky = false;
   // While the pointer is on the row-label scrub gutter, the host-level canvas
   // hit-test must stand down (it would miss and hide the scrub tooltip).
@@ -306,7 +321,13 @@ export function mountComparableHorizontalBarChart(
     svg.style.position = "relative";
 
     // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    // Uses the FULL (un-timelined) dataSet, so a period with rows drops into the
+    // no-data overlay only when the whole dataSet is actually empty.
     applyChartChrome(host, props, props.dataSet, chrome);
+
+    // Timeline (opt-in): swap in the active period's rows. ComparableBar's own
+    // `filter` has no `date` field to neutralize, so it is left untouched.
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet, undefined);
 
     // xAxisPredefinedDomain is the legacy alias the consumers pass; it wins over
     // xAxisDomain when it's a [min,max] pair.
@@ -314,7 +335,7 @@ export function mountComparableHorizontalBarChart(
       props.xAxisPredefinedDomain && props.xAxisPredefinedDomain.length === 2
         ? ([props.xAxisPredefinedDomain[0], props.xAxisPredefinedDomain[1]] as [number, number])
         : undefined;
-    const { points, labels, xAxisDomain } = processComparableBarData(props.dataSet, {
+    const { points, labels, xAxisDomain } = processComparableBarData(tlData.dataSet, {
       disabledItems: props.disabledItems,
       filter: props.filter,
       xAxisDomain: predefined ?? props.xAxisDomain,
@@ -322,7 +343,7 @@ export function mountComparableHorizontalBarChart(
     });
 
     const colors = buildComparableBarColors(
-      props.dataSet,
+      tlData.dataSet,
       props.colors,
       props.colorsMapping,
       props.skipColorMappingDispatch ?? false
@@ -574,12 +595,14 @@ export function mountComparableHorizontalBarChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<ComparableBarChartProps> = {
     update(next: ComparableBarChartProps) {
       baseProps = next;
       render();
@@ -597,6 +620,7 @@ export function mountComparableHorizontalBarChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -608,6 +632,11 @@ export function mountComparableHorizontalBarChart(
       host.classList.remove("michi-vz", "michi-vz-comparable-bar-chart");
     },
   };
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "comparable-horizontal-bar-chart", () => baseProps);
 }

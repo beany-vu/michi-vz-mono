@@ -218,6 +218,7 @@ export function applyLineChartProps(el: LineChartElement, props: LineChartProps)
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
   if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
   if (props.svgChildren !== undefined) el.svgChildren = props.svgChildren;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-fan-chart> element (property binding). */
@@ -247,6 +248,8 @@ export function applyFanChartProps(el: FanChartElement, props: FanChartProps): v
   if (props.tickValues !== undefined) el.tickValues = props.tickValues;
   if (props.forecastZone !== undefined) el.forecastZone = props.forecastZone;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-area-chart> element (property binding). */
@@ -282,6 +285,8 @@ export function applyAreaChartProps(el: AreaChartElement, props: AreaChartProps)
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-scatter-chart> element (property binding). */
@@ -369,6 +374,8 @@ export function applyVerticalStackBarChartProps(
   if (props.yTicks !== undefined) el.yTicks = props.yTicks;
   if (props.showGridLines !== undefined) el.showGridLines = props.showGridLines;
   if (props.highlightZeroLine !== undefined) el.highlightZeroLine = props.highlightZeroLine;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-comparable-horizontal-bar-chart> element. */
@@ -419,6 +426,7 @@ export function applyComparableHorizontalBarChartProps(
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-comparable-vertical-bar-chart> element. */
@@ -462,6 +470,7 @@ export function applyComparableVerticalBarChartProps(
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-dual-horizontal-bar-chart> element. */
@@ -494,6 +503,7 @@ export function applyDualHorizontalBarChartProps(
   if (props.interactiveRowLabels !== undefined) el.interactiveRowLabels = props.interactiveRowLabels;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-range-chart> element. */
@@ -521,6 +531,8 @@ export function applyRangeChartProps(el: RangeChartElement, props: RangeChartPro
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickValues !== undefined) el.tickValues = props.tickValues;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-ribbon-chart> element. */
@@ -546,6 +558,8 @@ export function applyRibbonChartProps(el: RibbonChartElement, props: RibbonChart
   if (props.yAxisDomain !== undefined) el.yAxisDomain = props.yAxisDomain;
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-radar-chart> element. */
@@ -582,6 +596,8 @@ export function applyRadarChartProps(el: RadarChartElement, props: RadarChartPro
   if (props.margin !== undefined) el.margin = props.margin;
   if (props.colors !== undefined) el.colors = props.colors;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-bar-bell-chart> element. */
@@ -613,6 +629,8 @@ export function applyBarBellChartProps(el: BarBellChartElement, props: BarBellCh
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.dodgeOverlappingCaps !== undefined)
     el.dodgeOverlappingCaps = props.dodgeOverlappingCaps;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-treemap-chart> element. */
@@ -647,6 +665,8 @@ export function applyTreemapChartProps(el: TreemapChartElement, props: TreemapCh
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.tileValueLabels !== undefined) el.tileValueLabels = props.tileValueLabels;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-pie-chart> element (property binding). */
@@ -674,6 +694,7 @@ export function applyPieChartProps(el: PieChartElement, props: PieChartProps): v
   if (props.colors !== undefined) el.colors = props.colors;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-bubble-chart> element (property binding). */
@@ -706,6 +727,7 @@ export function applyBubbleChartProps(el: BubbleChartElement, props: BubbleChart
   if (props.colors !== undefined) el.colors = props.colors;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-sankey-chart> element (property binding). */
@@ -737,6 +759,8 @@ export function applySankeyChartProps(el: SankeyChartElement, props: SankeyChart
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-fountain-chart> element (property binding). */
@@ -769,6 +793,8 @@ export function applyFountainChartProps(el: FountainChartElement, props: Fountai
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickValues !== undefined) el.tickValues = props.tickValues;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-choropleth-map-chart> element (property binding). */
@@ -802,6 +828,7 @@ export function applyChoroplethMapChartProps(
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-symbol-map-chart> element (property binding). */
@@ -834,6 +861,7 @@ export function applySymbolMapChartProps(el: SymbolMapChartElement, props: Symbo
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }
 
 /** Apply engine props onto a <michi-vz-radial-tree-chart> element (property binding). */
@@ -859,4 +887,6 @@ export function applyRadialTreeChartProps(el: RadialTreeChartElement, props: Rad
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
+  if (props.timeline !== undefined) el.timeline = props.timeline;
 }

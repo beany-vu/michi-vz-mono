@@ -217,6 +217,8 @@ export interface LineChartHandle {
   getElement(): HTMLElement | null;
   /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
   replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface FanChartHandle {
@@ -224,6 +226,10 @@ export interface FanChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface AreaChartHandle {
@@ -231,6 +237,10 @@ export interface AreaChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface ScatterChartHandle {
@@ -247,6 +257,10 @@ export interface VerticalStackBarChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface ComparableHorizontalBarChartHandle {
@@ -254,6 +268,8 @@ export interface ComparableHorizontalBarChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface ComparableVerticalBarChartHandle {
@@ -261,6 +277,8 @@ export interface ComparableVerticalBarChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface DualHorizontalBarChartHandle {
@@ -268,6 +286,8 @@ export interface DualHorizontalBarChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface BarBellChartHandle {
@@ -275,6 +295,10 @@ export interface BarBellChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface RangeChartHandle {
@@ -282,6 +306,10 @@ export interface RangeChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface RibbonChartHandle {
@@ -289,6 +317,10 @@ export interface RibbonChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface RadarChartHandle {
@@ -296,6 +328,10 @@ export interface RadarChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface TreemapChartHandle {
@@ -303,6 +339,10 @@ export interface TreemapChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface PieChartHandle {
@@ -310,6 +350,8 @@ export interface PieChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface BubbleChartHandle {
@@ -317,6 +359,8 @@ export interface BubbleChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface SankeyChartHandle {
@@ -324,6 +368,10 @@ export interface SankeyChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface FountainChartHandle {
@@ -331,6 +379,10 @@ export interface FountainChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface ChoroplethMapChartHandle {
@@ -338,6 +390,8 @@ export interface ChoroplethMapChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface SymbolMapChartHandle {
@@ -345,6 +399,8 @@ export interface SymbolMapChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export interface RadialTreeChartHandle {
@@ -352,6 +408,10 @@ export interface RadialTreeChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  timeline(): TimelineController | null;
 }
 
 export type GapChartReactProps = GapChartProps & {
@@ -457,6 +517,7 @@ export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(functi
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
       replay: () => chartRef.current?.replay?.(),
     }),
     []
@@ -510,6 +571,8 @@ export const FanChart = forwardRef<FanChartHandle, FanChartProps>(function FanCh
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -548,6 +611,8 @@ export const AreaChart = forwardRef<AreaChartHandle, AreaChartReactProps>(functi
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -677,6 +742,8 @@ export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, Ver
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -758,6 +825,7 @@ export const ComparableHorizontalBarChart = forwardRef<
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -838,6 +906,7 @@ export const ComparableVerticalBarChart = forwardRef<
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -888,6 +957,7 @@ export const DualHorizontalBarChart = forwardRef<DualHorizontalBarChartHandle, D
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -934,6 +1004,8 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProp
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -984,6 +1056,8 @@ export const RangeChart = forwardRef<RangeChartHandle, RangeChartProps>(function
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -1014,6 +1088,8 @@ export const RibbonChart = forwardRef<RibbonChartHandle, RibbonChartProps>(funct
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -1053,6 +1129,8 @@ export const RadarChart = forwardRef<RadarChartHandle, RadarChartReactProps>(fun
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -1226,6 +1304,8 @@ export const TreemapChart = forwardRef<TreemapChartHandle, TreemapChartReactProp
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -1275,6 +1355,7 @@ export const PieChart = forwardRef<PieChartHandle, PieChartProps>(function PieCh
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -1305,6 +1386,7 @@ export const BubbleChart = forwardRef<BubbleChartHandle, BubbleChartProps>(funct
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -1343,6 +1425,8 @@ export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartReactProps>(
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -1393,6 +1477,8 @@ export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );
@@ -1448,6 +1534,7 @@ export const ChoroplethMapChart = forwardRef<ChoroplethMapChartHandle, Choroplet
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -1523,6 +1610,7 @@ export const SymbolMapChart = forwardRef<SymbolMapChartHandle, SymbolMapChartRea
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
     []
   );
@@ -1598,6 +1686,8 @@ export const RadialTreeChart = forwardRef<RadialTreeChartHandle, RadialTreeChart
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );

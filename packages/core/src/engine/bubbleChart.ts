@@ -38,6 +38,11 @@ import {
   setupPlugins,
 } from "../plugins/runner";
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import type {
   BubbleChartProps,
   BubbleContext,
@@ -70,6 +75,7 @@ interface Resolved {
   enableTransitions: boolean;
   layoutMode: "sync" | "async";
   settleTicks: number;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: BubbleChartProps): Resolved {
@@ -92,6 +98,7 @@ function resolve(p: BubbleChartProps): Resolved {
     enableTransitions: p.enableTransitions ?? true,
     layoutMode: p.layoutMode ?? "sync",
     settleTicks: p.settleTicks ?? 400,
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -155,6 +162,14 @@ export function mountBubbleChart(
       render();
     },
   };
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered dataSet it returns.
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
+
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
   let model: BubbleRenderModel | null = null;
@@ -305,7 +320,10 @@ export function mountBubbleChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
-    const processed = processBubbleData(props.dataSet ?? [], {
+    // Timeline (opt-in): swap in the active period's rows. Bubble's own `filter`
+    // has no `date` field to neutralize, so it is left untouched.
+    const tlData = engineTl.beforeRender(r.timeline, props.dataSet ?? [], undefined);
+    const processed = processBubbleData(tlData.dataSet, {
       disabledItems: props.disabledItems,
       filter: props.filter,
     });
@@ -348,7 +366,7 @@ export function mountBubbleChart(
     // The settle is the expensive part (seconds at thousands of bubbles), so it is
     // memoised on its actual inputs; everything after this point is cheap.
     const layoutKey = JSON.stringify([
-      props.dataSet,
+      tlData.dataSet,
       props.disabledItems ?? [],
       props.filter ?? null,
       plotW,
@@ -490,13 +508,15 @@ export function mountBubbleChart(
         ];
         if (warnings.length > 0) baseProps.onDataWarning(warnings);
       }
+
+      engineTl.afterRender(host, r.timeline);
     }
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<BubbleChartProps> = {
     update(next: BubbleChartProps) {
       baseProps = next;
       render();
@@ -514,6 +534,7 @@ export function mountBubbleChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
       // Invalidate any in-flight async settle so its completion is a no-op.
       layoutToken++;
       cancelAsyncLayout?.();
@@ -529,6 +550,11 @@ export function mountBubbleChart(
       host.classList.remove("michi-vz", "michi-vz-bubble-chart");
     },
   };
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "bubble-chart", () => baseProps);
 }

@@ -17,6 +17,8 @@ import type {
   SinglePointLineConfig,
   MouseLineConfig,
   ProgressiveDrawConfig,
+  TimelinePeriodConfig,
+  TimelineController,
   Margin,
   Filter,
 } from "@michi-vz/core";
@@ -66,6 +68,7 @@ export class LineChartElement extends LitElement {
     filter: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     progressiveDraw: { attribute: false },
+    timeline: { attribute: false },
     svgChildren: { type: String, attribute: "svg-children" },
   };
 
@@ -118,6 +121,7 @@ export class LineChartElement extends LitElement {
   filter?: Filter;
   enableTransitions?: boolean;
   progressiveDraw?: boolean | ProgressiveDrawConfig;
+  timeline?: boolean | TimelinePeriodConfig;
   svgChildren?: string;
 
   private chart?: ChartInstance<LineChartProps>;
@@ -178,6 +182,7 @@ export class LineChartElement extends LitElement {
       filter: this.filter,
       enableTransitions: this.enableTransitions,
       progressiveDraw: this.progressiveDraw,
+      timeline: this.timeline,
       svgChildren: this.svgChildren,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
@@ -212,6 +217,11 @@ export class LineChartElement extends LitElement {
   /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
   replay(): void {
     this.chart?.replay?.();
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

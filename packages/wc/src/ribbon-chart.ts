@@ -9,6 +9,9 @@ import type {
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
+  ProgressiveDrawConfig,
+  TimelinePeriodConfig,
+  TimelineController,
 } from "@michi-vz/core";
 
 export class RibbonChartElement extends LitElement {
@@ -34,6 +37,8 @@ export class RibbonChartElement extends LitElement {
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
     locale: { type: String },
+    progressiveDraw: { attribute: false },
+    timeline: { attribute: false },
   };
 
   series: RibbonDataRow[] = [];
@@ -57,6 +62,8 @@ export class RibbonChartElement extends LitElement {
   tooltipFormatter?: (row: RibbonDataRow, key: string, value: number) => string;
   plugins?: MichiVzPlugin<RibbonChartProps>[];
   locale?: string;
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
+  timeline?: boolean | TimelinePeriodConfig;
 
   private chart?: ChartInstance<RibbonChartProps>;
 
@@ -94,6 +101,8 @@ export class RibbonChartElement extends LitElement {
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,
+      progressiveDraw: this.progressiveDraw,
+      timeline: this.timeline,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
@@ -122,6 +131,16 @@ export class RibbonChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void {
+    this.chart?.replay?.();
+  }
+
+  /** Headless playback controller (null unless the `timeline` prop is set). */
+  getTimeline(): TimelineController | null {
+    return this.chart?.timeline?.() ?? null;
   }
 }
 

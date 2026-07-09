@@ -7,6 +7,9 @@ import type { RibbonRenderModel } from "./renderModel";
 export interface RibbonCanvasOptions {
   width: number;
   height: number;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 export function drawRibbonCanvas(
@@ -18,6 +21,13 @@ export function drawRibbonCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const keys = [...new Set(model.columns.map((c) => c.key))];
   const fallback = new Map(model.columns.map((c) => [c.key, c.color]));
@@ -43,4 +53,6 @@ export function drawRibbonCanvas(
     ctx.fill();
   }
   ctx.globalAlpha = 1;
+
+  if (o.revealX !== undefined) ctx.restore();
 }

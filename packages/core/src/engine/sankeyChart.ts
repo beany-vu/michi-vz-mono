@@ -18,6 +18,12 @@ import { renderSankeySvg, type SankeyHoverTarget } from "../sankeyChart/renderSv
 import { drawSankeyCanvas } from "../sankeyChart/renderCanvas";
 import { drawSankeyWebgpu } from "../sankeyChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
+import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import {
+  resolveTimeline,
+  createEngineTimeline,
+  type ResolvedTimeline,
+} from "../animation/chartTimeline";
 import { buildSankeyContext } from "../context/buildSankeyContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { checkSankeyData } from "../validate/sankeyWarnings";
@@ -59,6 +65,8 @@ interface Resolved {
   linkOpacity: number;
   showLabels: boolean;
   enableTransitions: boolean;
+  progressiveDraw: ResolvedReveal | null;
+  timeline: ResolvedTimeline | null;
 }
 
 function resolve(p: SankeyChartProps): Resolved {
@@ -78,6 +86,8 @@ function resolve(p: SankeyChartProps): Resolved {
     linkOpacity: p.linkOpacity ?? 0.45,
     showLabels: p.showLabels ?? true,
     enableTransitions: p.enableTransitions ?? true,
+    progressiveDraw: resolveReveal(p.progressiveDraw),
+    timeline: resolveTimeline(p.timeline),
   };
 }
 
@@ -119,6 +129,15 @@ export function mountSankeyChart(
   const chrome = createChromeRefs();
   let lastColorMappingSent: Record<string, string> = {};
   let model: SankeyRenderModel | null = null;
+  const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
+  // Opt-in "play through years": the controller + built-in control lifecycle is
+  // shared engine glue; render() consumes the period-filtered links it returns.
+  // Snapshots key off the LINKS array (`date`-tagged); nodes are shared across years.
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
 
   // Lazily create an absolutely-positioned <canvas> layered behind the SVG, matching
   // the host padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
@@ -259,7 +278,11 @@ export function mountSankeyChart(
     // the overlay alongside a fully-drawn chart underneath.
     const dataState = applyChartChrome(host, props, props.nodes, chrome);
 
-    const processed = processSankeyData(props.nodes ?? [], props.links ?? [], {
+    // Timeline (opt-in): swap in the active period's links (`date`-tagged);
+    // nodes are shared across years and pass through untouched. This chart has
+    // no own `filter` prop, so nothing to neutralize.
+    const tlData = engineTl.beforeRender(r.timeline, props.links ?? [], undefined);
+    const processed = processSankeyData(props.nodes ?? [], tlData.dataSet, {
       disabledItems: props.disabledItems,
     });
 
@@ -356,6 +379,21 @@ export function mountSankeyChart(
         removeCanvas();
         removeWebgpuCanvas();
       }
+
+      // Opt-in reveal animation: wipes the links + nodes left to right. Suppressed
+      // when timeline is active (it wins over progressiveDraw).
+      engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
+        renderer: r.renderer,
+        svg,
+        marksRoot: svg.querySelector("g.sankey-content"),
+        height: r.height,
+        startPx: 0,
+        endPx: r.width,
+        canvasRedraw:
+          r.renderer === "canvas"
+            ? (x) => drawSankeyCanvas(canvas, svg, model!, { width: r.width, height: r.height, revealX: x })
+            : undefined,
+      });
     } else {
       removeCanvas();
       removeWebgpuCanvas();
@@ -382,12 +420,14 @@ export function mountSankeyChart(
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
+
+    engineTl.afterRender(host, r.timeline);
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<SankeyChartProps> = {
     update(next: SankeyChartProps) {
       baseProps = next;
       render();
@@ -405,6 +445,8 @@ export function mountSankeyChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      engineTl.destroy();
+      engineRv.stop();
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -415,6 +457,16 @@ export function mountSankeyChart(
       host.classList.remove("michi-vz", "michi-vz-sankey-chart");
     },
   };
+  // replay() only exists when the chart opted into the reveal animation, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => engineRv.replay();
+  }
+  // timeline() only exists when the chart opted into playback at mount, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).timeline) {
+    instance.timeline = () => engineTl.controller();
+  }
 
   return attachDevtools(instance, host, "sankey-chart", () => baseProps);
 }
