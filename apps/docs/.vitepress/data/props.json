@@ -374,6 +374,14 @@
           "common": true
         },
         {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Animate each line drawing itself left to right on mount (progressive reveal). `true` uses defaults; pass a config to tune duration, easing, tip labels, and autoplay. Off by default, so existing charts are unchanged. Respects prefers-reduced-motion: the chart then renders fully drawn instantly. Ignored by the webgpu renderer.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "isLoading",
           "type": "boolean",
           "optional": true,

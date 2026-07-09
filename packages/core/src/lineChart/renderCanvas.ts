@@ -15,6 +15,9 @@ export interface LineCanvasOptions {
   margin: { top: number; right: number; bottom: number; left: number };
   showDataPoints: boolean;
   singlePointLine: SinglePointLineConfig | null;
+  /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
+   *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
+  revealX?: number;
 }
 
 function drawPoint(ctx: CanvasRenderingContext2D, shape: Shape, x: number, y: number, color: string): void {
@@ -46,6 +49,13 @@ export function drawLineCanvas(
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return; // jsdom / no 2D context
   const { ctx } = setup;
+
+  if (o.revealX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, Math.max(0, o.revealX), o.height);
+    ctx.clip();
+  }
 
   const labels = model.series.map((s) => s.label);
   const fallback = new Map(model.series.map((s) => [s.label, s.color]));
@@ -91,4 +101,6 @@ export function drawLineCanvas(
     }
     ctx.restore();
   }
+
+  if (o.revealX !== undefined) ctx.restore();
 }

@@ -24,6 +24,16 @@ import { lttb } from "../lineChart/lttb";
 import { projectX } from "../lineChart/geometry";
 import { parseXValue, enumeratePeriods, periodValue } from "../lineChart/lineUtils";
 import { renderLineSvg } from "../lineChart/renderSvg";
+import {
+  resolveProgressiveDraw,
+  createProgressiveDrawDriver,
+  installProgressiveClip,
+  setProgressiveReveal,
+  type ResolvedProgressiveDraw,
+  type ProgressiveDrawDriver,
+} from "../lineChart/progressiveDraw";
+import { defaultTicker } from "../animation/ticker";
+import { defaultMotionPreference } from "../animation/reducedMotion";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
 import { drawLineWebgpu } from "../lineChart/renderWebgpu";
@@ -72,6 +82,7 @@ interface Resolved {
   enableTransitions: boolean;
   singlePointLine: SinglePointLineConfig | null;
   yAxisScale: "linear" | "log";
+  progressiveDraw: ResolvedProgressiveDraw | null;
 }
 
 function resolveSinglePointLine(v: LineChartProps["singlePointLine"]): SinglePointLineConfig | null {
@@ -99,6 +110,7 @@ function resolve(p: LineChartProps): Resolved {
     enableTransitions: p.enableTransitions ?? true,
     singlePointLine: resolveSinglePointLine(p.singlePointLine),
     yAxisScale: p.yAxisScale ?? "linear",
+    progressiveDraw: resolveProgressiveDraw(p.progressiveDraw),
   };
 }
 
@@ -136,6 +148,13 @@ export function mountLineChart(
       render();
     },
   };
+  // Progressive draw (opt-in reveal animation): the driver owns the rAF loop,
+  // the ticker/motion pair is injectable for deterministic tests.
+  const ticker = opts?.ticker ?? defaultTicker();
+  const motion = opts?.motion ?? defaultMotionPreference();
+  let pdDriver: ProgressiveDrawDriver | null = null;
+  let pdHasPlayed = false;
+
   let sticky = false;
   // True while the cursor is over a faded no-data tick label; makes onHostMove's canvas
   // hit-test stand down so it doesn't hide the no-data tooltip (see wireNoDataTickTooltips).
@@ -333,6 +352,10 @@ export function mountLineChart(
   });
 
   function render(): void {
+    // A re-render rebuilds every node the reveal animation mutates, so any
+    // in-flight progressive draw is cancelled first (never re-attached stale).
+    pdDriver?.stop();
+    pdDriver = null;
     // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
@@ -636,6 +659,54 @@ export function mountLineChart(
       removeWebgpuCanvas();
     }
 
+    // ----- Progressive draw (opt-in reveal animation) -----
+    // SVG mode: install one <clipPath> and mutate only its rect width per frame.
+    // Canvas mode: redraw the same model per frame under an equivalent ctx.clip.
+    // WebGPU degrades to instant-draw (no dash/text support there either).
+    const pd = r.progressiveDraw;
+    if (pd && dataState !== "nodata" && r.renderer !== "webgpu") {
+      const startPx = r.margin.left;
+      const endPx = r.width;
+      let applyReveal: ((x: number) => void) | null = null;
+      if (r.renderer === "svg") {
+        const contentRoot = svg.querySelector<SVGGElement>("g.line-chart-content");
+        if (contentRoot) {
+          const rect = installProgressiveClip(svg, contentRoot, r.height);
+          applyReveal = (x) => setProgressiveReveal(rect, x);
+        }
+      } else if (canvas) {
+        const layer = canvas;
+        applyReveal = (x) =>
+          drawLineCanvas(layer, svg, model, {
+            width: r.width,
+            height: r.height,
+            margin: r.margin,
+            showDataPoints: r.showDataPoints,
+            singlePointLine: r.singlePointLine,
+            revealX: x,
+          });
+      }
+      if (applyReveal) {
+        pdDriver = createProgressiveDrawDriver({
+          ticker,
+          motion,
+          durationMs: pd.durationMs,
+          easing: pd.easing,
+          startPx,
+          endPx,
+          onFrame: applyReveal,
+        });
+        if (pd.autoplay && (!pdHasPlayed || pd.replayOnUpdate)) {
+          pdHasPlayed = true;
+          pdDriver.start();
+        } else {
+          // Already played (or autoplay off): render fully revealed; replay()
+          // re-runs the animation on demand.
+          applyReveal(endPx);
+        }
+      }
+    }
+
     // ----- Legend rows (flat colour-contract payload) -----
     // Mirrors legacy useLineChartMetadataExpose: with a filter, the legend is the
     // visible/filtered set (= processedDataSet); without one, every series with
@@ -705,7 +776,7 @@ export function mountLineChart(
   render();
   const teardowns = setupPlugins(pluginList, pc);
 
-  const instance = {
+  const instance: ChartInstance<LineChartProps> = {
     update(next: LineChartProps) {
       baseProps = next;
       render();
@@ -723,6 +794,8 @@ export function mountLineChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      pdDriver?.stop();
+      pdDriver = null;
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
@@ -734,6 +807,13 @@ export function mountLineChart(
       host.classList.remove("michi-vz", "michi-vz-line-chart");
     },
   };
+  // replay() only exists when the chart opted into the reveal animation, so
+  // feature-off charts keep an unchanged instance surface.
+  if (resolve(initial).progressiveDraw) {
+    instance.replay = () => {
+      pdDriver?.replay();
+    };
+  }
 
   return attachDevtools(instance, host, "line-chart", () => baseProps);
 }

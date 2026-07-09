@@ -300,6 +300,28 @@ export interface MouseLineConfig {
   snap?: boolean;
 }
 
+/** Tip label following each line's end while progressiveDraw reveals the chart. */
+export interface ProgressiveDrawTipLabelConfig {
+  /** What the tip label shows: the series name, the current value, or "both" (default) */
+  content?: "name" | "value" | "both";
+  /** Custom tip label text; receives the value and series label at the reveal position */
+  format?: (value: number, label: string) => string;
+}
+
+/** Reveal animation drawing each line left to right (LineChart `progressiveDraw`). */
+export interface ProgressiveDrawConfig {
+  /** Total draw duration across the full x-range, in ms (default 1200) */
+  durationMs?: number;
+  /** Easing name ("linear", "easeOutQuad", "easeInOutCubic" - the default) or a custom (t) => t function */
+  easing?: import("./animation/easing").EasingName | import("./animation/easing").EasingFn;
+  /** Show a label following each line's tip while drawing: true or a config object (default off) */
+  tipLabel?: boolean | ProgressiveDrawTipLabelConfig;
+  /** Start the reveal automatically on mount (default true); false renders fully drawn until replay() */
+  autoplay?: boolean;
+  /** Re-run the reveal on every data/prop update, not just on mount (default false) */
+  replayOnUpdate?: boolean;
+}
+
 export interface LineChartProps {
   /** Array of line series, each with its own points */
   dataSet: LineDataItem[];
@@ -378,6 +400,11 @@ export interface LineChartProps {
   skipColorMappingDispatch?: boolean;
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
+  /** Animate each line drawing itself left to right on mount (progressive reveal).
+   * `true` uses defaults; pass a config to tune duration, easing, tip labels, and autoplay.
+   * Off by default, so existing charts are unchanged. Respects prefers-reduced-motion:
+   * the chart then renders fully drawn instantly. Ignored by the webgpu renderer. */
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series. */
@@ -3089,9 +3116,19 @@ export interface ChartInstance<P> {
   use?(plugin: import("./plugins/types").MichiVzPlugin<P>): void;
   /** Collected agent/MCP tools from registered plugins. */
   getTools?(): import("./plugins/types").AgentTool[];
+  /** Present when the chart was mounted with a reveal animation (LineChart
+   * `progressiveDraw`): re-runs the reveal from the start. */
+  replay?(): void;
+  /** Present when the chart was mounted with a `timeline` config: the headless
+   * playback controller (play/pause/seek/step through periods). */
+  timeline?(): import("./animation/timeline").TimelineController | null;
 }
 
 /** Optional 3rd arg to every `mountXxxChart` for opt-in plugins. */
 export interface MountOptions<P> {
   plugins?: Array<import("./plugins/types").MichiVzPlugin<P>>;
+  /** Animation frame clock override; tests inject a manual ticker for determinism. */
+  ticker?: import("./animation/ticker").Ticker;
+  /** prefers-reduced-motion override; tests inject a stub. */
+  motion?: import("./animation/reducedMotion").MotionPreference;
 }

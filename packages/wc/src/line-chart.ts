@@ -16,6 +16,7 @@ import type {
   XaxisDataType,
   SinglePointLineConfig,
   MouseLineConfig,
+  ProgressiveDrawConfig,
   Margin,
   Filter,
 } from "@michi-vz/core";
@@ -64,6 +65,7 @@ export class LineChartElement extends LitElement {
     noDataTickColor: { type: String, attribute: "no-data-tick-color" },
     filter: { attribute: false },
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
+    progressiveDraw: { attribute: false },
     svgChildren: { type: String, attribute: "svg-children" },
   };
 
@@ -115,6 +117,7 @@ export class LineChartElement extends LitElement {
   noDataTickColor?: string;
   filter?: Filter;
   enableTransitions?: boolean;
+  progressiveDraw?: boolean | ProgressiveDrawConfig;
   svgChildren?: string;
 
   private chart?: ChartInstance<LineChartProps>;
@@ -174,6 +177,7 @@ export class LineChartElement extends LitElement {
       noDataTickColor: this.noDataTickColor,
       filter: this.filter,
       enableTransitions: this.enableTransitions,
+      progressiveDraw: this.progressiveDraw,
       svgChildren: this.svgChildren,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
@@ -203,6 +207,11 @@ export class LineChartElement extends LitElement {
 
   getTools(): AgentTool[] {
     return this.chart?.getTools?.() ?? [];
+  }
+
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void {
+    this.chart?.replay?.();
   }
 }
 

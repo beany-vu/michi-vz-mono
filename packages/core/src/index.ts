@@ -63,6 +63,16 @@ export {
 } from "./export";
 export type { CsvOptions, StyledSvgOptions, PngOptions } from "./export";
 
+// ---- Animation (tickers, easing, reduced-motion, timeline playback) ----
+export { defaultTicker, createManualTicker } from "./animation/ticker";
+export type { Ticker, ManualTicker } from "./animation/ticker";
+export { linear, easeOutQuad, easeInOutCubic, resolveEasing } from "./animation/easing";
+export type { EasingFn, EasingName } from "./animation/easing";
+export { defaultMotionPreference } from "./animation/reducedMotion";
+export type { MotionPreference } from "./animation/reducedMotion";
+export { TimelineController } from "./animation/timeline";
+export type { TimelineState, TimelineEvents, TimelineOptions } from "./animation/timeline";
+
 // ---- i18n ----
 export { defaultNumberFormatter, defaultXAxisFormatter } from "./i18n/formatters";
 
@@ -260,6 +270,8 @@ export type {
   LineDataItem,
   SinglePointLineConfig,
   MouseLineConfig,
+  ProgressiveDrawConfig,
+  ProgressiveDrawTipLabelConfig,
   LineChartProps,
   LineSeriesContext,
   LineChartContext,

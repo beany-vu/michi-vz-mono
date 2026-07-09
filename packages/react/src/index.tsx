@@ -212,6 +212,8 @@ export interface LineChartHandle {
   /** The chart host element (contains the svg/canvas). Feed it to the core
    *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
   getElement(): HTMLElement | null;
+  /** Re-run the progressiveDraw reveal animation (no-op unless the prop is set). */
+  replay(): void;
 }
 
 export interface FanChartHandle {
@@ -449,6 +451,7 @@ export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(functi
     () => ({
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
+      replay: () => chartRef.current?.replay?.(),
     }),
     []
   );

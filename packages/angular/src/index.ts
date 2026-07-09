@@ -215,6 +215,7 @@ export function applyLineChartProps(el: LineChartElement, props: LineChartProps)
   if (props.noDataTickColor !== undefined) el.noDataTickColor = props.noDataTickColor;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
+  if (props.progressiveDraw !== undefined) el.progressiveDraw = props.progressiveDraw;
   if (props.svgChildren !== undefined) el.svgChildren = props.svgChildren;
 }
 
