@@ -49,6 +49,49 @@ import { SymbolMapChart } from "@michi-vz/react";
 
 Because the extent used to fit the dot-only layout to the plot is derived from your own dataset's coordinates (not a bundled, always-full-world table), the "world" the chart draws only spans as far as the points you pass in - see [Behaviour notes](#dot-only-vs-backdrop-projection) below.
 
+## Play through the years
+
+Give every marker a `date` and flip on `timeline`: the map becomes a year-by-year story with its own play button and scrubber, placing one period's symbols at a time. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="symbol-map-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<SymbolMapChartHandle>(null);
+
+<SymbolMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<SymbolMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:symbolMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applySymbolMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-symbol-map-chart id="c"></michi-vz-symbol-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- Symbols without a `date` stay visible in every period.
+
 ## Usage
 
 ::: code-group

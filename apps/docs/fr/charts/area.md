@@ -120,6 +120,100 @@ applyAreaChartProps(this.c.nativeElement, {
 
 :::
 
+## Animation de révélation
+
+Le graphique se dessine de gauche à droite au montage, révélant ses éléments dans l'ordre avant de se stabiliser. Désactivé par défaut - un graphique l'active avec la prop `progressiveDraw`.
+
+<RevealDemo chart="area-chart" replay-label="Rejouer l'animation" hint="Chaque ligne grandit de la première à la dernière année ; l'étiquette suit la pointe puis se pose à l'extrémité de la ligne. Avec reduced motion activé, le graphique s'affiche entièrement tracé, instantanément." />
+
+`progressiveDraw: true` applique les réglages par défaut (1200 ms, easeInOutCubic). Un objet de configuration affine le comportement :
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<AreaChartHandle>(null);
+
+<AreaChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000 }}
+/>;
+// ref.current?.replay() rejoue l'animation à la demande
+```
+
+```vue [Vue]
+<AreaChart :options="{ ...props, progressiveDraw: { durationMs: 2000 } }" />
+```
+
+```svelte [Svelte]
+<div use:areaChart={{ ...props, progressiveDraw: { durationMs: 2000 } }}></div>
+```
+
+```ts [Angular]
+applyAreaChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000 },
+});
+```
+
+```html [Web component]
+<michi-vz-area-chart id="c"></michi-vz-area-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000 };
+  // el.replay() rejoue l'animation
+</script>
+```
+
+:::
+
+- `durationMs` et `easing` ("linear", "easeOutQuad", "easeInOutCubic", ou une fonction `(t) => t` personnalisée) façonnent le rythme du tracé.
+- `autoplay: false` rend le graphique entièrement tracé ; appelez `replay()` (handle de ref React, méthode du web component ou instance core) pour lancer l'animation à la demande. `replayOnUpdate: true` la rejoue à chaque changement de données.
+- Respecte `prefers-reduced-motion` : le graphique s'affiche alors entièrement tracé, instantanément.
+
+## Faire defiler les annees
+
+Les données couvrent déjà plusieurs années, il n'y a donc rien à taguer. Activez `timeline` : le bouton lecture et le curseur propres au graphique parcourent ces années - à chaque étape, les bandes empilées ne se dessinent que jusqu'à l'année active, et la lecture les prolonge en douceur au fil de l'avancée. Reculez le curseur et les bandes se rétractent en conséquence. Le survol n'inspecte jamais que ce qui est réellement tracé. Désactivé par défaut - sans opt-in, rien ne change.
+
+<TimelinePlayDemo chart="area-chart" hint="Appuyez sur le bouton lecture sous le graphique : le graphique se dessine plus loin jusqu'à chaque année au fil de la lecture. Faites glisser le curseur pour sauter à une année." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<AreaChartHandle>(null);
+
+<AreaChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<AreaChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:areaChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyAreaChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-area-chart id="c"></michi-vz-area-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Les valeurs glissent entre les années par défaut (`interpolate`) ; passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
+- `timeline` l'emporte sur `progressiveDraw` quand les deux sont définis sur le même graphique.
+
 ## Usage
 
 ::: code-group

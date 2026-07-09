@@ -49,6 +49,49 @@ import { SymbolMapChart } from "@michi-vz/react";
 
 Omdat de extent die wordt gebruikt om de dot-only lay-out op het plotgebied te passen, wordt afgeleid van de coördinaten van je eigen dataset (niet van een gebundelde, altijd-volledige wereldtabel), strekt de "wereld" die de grafiek tekent zich alleen zo ver uit als de punten die je aanlevert - zie [Gedragsnotities](#dot-only-vs-achtergrondprojectie) hieronder.
 
+## Speel door de jaren heen
+
+Geef elk symbool een `date` en zet `timeline` aan: de kaart wordt een verhaal per jaar, met een eigen afspeelknop en scrubber die telkens de symbolen van één periode plaatst. Standaard uit - zonder opt-in verandert er niets.
+
+<TimelinePlayDemo chart="symbol-map-chart" hint="Druk op de afspeelknop onder de grafiek: de data stapt door de jaren, één momentopname per keer. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<SymbolMapChartHandle>(null);
+
+<SymbolMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<SymbolMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:symbolMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applySymbolMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-symbol-map-chart id="c"></michi-vz-symbol-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Symbolen zonder `date` blijven in elke periode zichtbaar.
+
 ## Gebruik
 
 ::: code-group

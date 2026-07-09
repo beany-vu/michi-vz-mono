@@ -12,6 +12,38 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## Non publié
+
+<!-- TODO avant publication : remplacer ce titre par les vrais numéros de version
+     une fois que `changeset version` aura consommé tous les fichiers .changeset/*.md. -->
+
+- **Faire défiler les années, sur chaque graphique.** La nouvelle prop opt-in
+  `timeline` ajoute un bouton lecture + un curseur d'années intégrés (et un
+  contrôleur headless `chart.timeline()`) aux 21 graphiques. Les graphiques à
+  axe temporel comme [Courbes](/fr/charts/line) et [Aires](/fr/charts/area)
+  tracent leurs marques jusqu'à l'année active et balaient en douceur pendant la
+  lecture ; les graphiques instantanés comme [Secteurs](/fr/charts/pie),
+  [Gap](/fr/charts/gap) et [Nuage de points](/fr/charts/scatter) affichent une
+  période à la fois avec des valeurs qui glissent entre les années ;
+  [Treemap](/fr/charts/treemap) et [Arbre radial](/fr/charts/radial-tree)
+  animent des hiérarchies entières depuis des noeuds racines tagués `date` ;
+  [Sankey](/fr/charts/sankey) joue sur des liens tagués `date` ; et
+  [Radar](/fr/charts/radar) et [Bar-Bell](/fr/charts/bar-bell) utilisent un
+  nouveau champ de ligne `period`. Désactivé par défaut partout, et chaque page
+  de graphique a une démo interactive.
+- **Animation de révélation sur chaque graphique.** La prop opt-in
+  `progressiveDraw` fait apparaître les marques de gauche à droite au montage -
+  et sur [Courbes](/fr/charts/line), des étiquettes suivent la pointe de chaque
+  ligne qui grandit. `replay()` rejoue la révélation à la demande.
+- Les deux fonctionnalités marchent avec les rendus `svg` et `canvas`,
+  respectent `prefers-reduced-motion` (le graphique s'affiche entièrement tracé,
+  instantanément) et restent volontairement inertes sur le rendu expérimental
+  `webgpu`.
+- **Corrigé :** un re-rendu pendant une animation en cours la reprend désormais à
+  sa position actuelle au lieu de sauter à la fin - les wrappers de framework
+  mettent à jour le graphique juste après le montage, ce qui annulait auparavant
+  chaque autoplay de montage.
+
 ## v1.8.1
 
 Versions des paquets : react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·

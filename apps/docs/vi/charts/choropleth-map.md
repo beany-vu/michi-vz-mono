@@ -41,6 +41,49 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 `id` của mỗi feature trong một `FeatureCollection` được đọc từ `Feature.id` GeoJSON cấp cao nhất (dự phòng bằng `properties.id`); `name` từ `properties.name`. Các nguồn phổ biến: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - chuyển đổi bằng `feature()` của `topojson-client`), [Natural Earth](https://www.naturalearthdata.com/), hoặc một tệp khu vực do chính đội của bạn duy trì. Docs/ví dụ của gói này chỉ đóng gói một mẫu minh họa nhỏ gồm 12 hình dạng - không phải đường bờ biển thật - để giữ cho thư viện không phụ thuộc vào bất kỳ dữ liệu topology nào.
 
+## Xem dữ liệu chạy theo năm
+
+Gắn `date` cho từng khu vực rồi bật `timeline`: bản đồ thành câu chuyện theo từng năm với nút play và thanh tua riêng, mỗi lần tô màu một giai đoạn. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
+
+<TimelinePlayDemo chart="choropleth-map-chart" hint="Bấm nút play dưới biểu đồ: dữ liệu chạy qua từng năm, mỗi lần một snapshot. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ChoroplethMapChartHandle>(null);
+
+<ChoroplethMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ChoroplethMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:choroplethMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyChoroplethMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-choropleth-map-chart id="c"></michi-vz-choropleth-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Giá trị trượt mượt giữa các giai đoạn theo mặc định (`interpolate`); chỉnh chuyển động bằng `tweenMs` và `easing`, hoặc đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Khu vực không có `date` hiển thị ở mọi giai đoạn.
+
 ## Cách dùng
 
 ::: code-group

@@ -41,6 +41,49 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 A `FeatureCollection`'s per-feature `id` is read from the GeoJSON `Feature.id` (falling back to `properties.id`); `name` from `properties.name`. Popular sources: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - convert with `topojson-client`'s `feature()`), [Natural Earth](https://www.naturalearthdata.com/), or a region-specific file your own team maintains. The demo above, and this package's own examples, use a real 176-country world atlas (ISO-A3 ids) so the shapes on screen are actual coastlines - `@michi-vz/core` itself still bundles no topology data; the GeoJSON lives only in `@michi-vz/examples`, one directory up from your own app's copy.
 
+## Play through the years
+
+Give every region a `date` and flip on `timeline`: the map becomes a year-by-year story with its own play button and scrubber, shading one period at a time. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="choropleth-map-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ChoroplethMapChartHandle>(null);
+
+<ChoroplethMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ChoroplethMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:choroplethMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyChoroplethMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-choropleth-map-chart id="c"></michi-vz-choropleth-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- Regions without a `date` stay visible in every period.
+
 ## Usage
 
 ::: code-group

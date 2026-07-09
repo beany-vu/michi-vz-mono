@@ -10,6 +10,36 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## Nog niet uitgebracht
+
+<!-- TODO voor publicatie: vervang deze kop door de echte versienummers
+     zodra `changeset version` alle .changeset/*.md-bestanden heeft verwerkt. -->
+
+- **Speel door de jaren heen, op elke grafiek.** De nieuwe opt-in prop `timeline`
+  voegt een ingebouwde afspeelknop + jaarscrubber toe (plus een headless
+  `chart.timeline()`-controller) aan alle 21 grafieken. Tijdas-grafieken zoals
+  [Lijn](/nl/charts/line) en [Vlak](/nl/charts/area) tekenen hun markeringen tot
+  het actieve jaar en vegen soepel verder tijdens het afspelen;
+  momentopname-grafieken zoals [Taart](/nl/charts/pie), [Gap](/nl/charts/gap) en
+  [Spreiding](/nl/charts/scatter) tonen één periode tegelijk met waarden die
+  tussen jaren glijden; [Treemap](/nl/charts/treemap) en
+  [Radiale boom](/nl/charts/radial-tree) tweenen hele hiërarchieën vanuit met
+  `date` getagde wortelknopen; [Sankey](/nl/charts/sankey) speelt over met
+  `date` getagde links; en [Radar](/nl/charts/radar) en
+  [Bar-Bell](/nl/charts/bar-bell) gebruiken een nieuw rijveld `period`. Overal
+  standaard uit, en elke grafiekpagina heeft een live demo.
+- **Onthulanimatie op elke grafiek.** De opt-in prop `progressiveDraw` veegt de
+  markeringen van links naar rechts binnen bij het mounten - en op
+  [Lijn](/nl/charts/line) rijden labels mee op het uiteinde van elke groeiende
+  lijn. `replay()` speelt de onthulling opnieuw af.
+- Beide features werken in de rendermodi `svg` en `canvas`, respecteren
+  `prefers-reduced-motion` (de grafiek verschijnt meteen volledig getekend) en
+  zijn bewust inert op de experimentele `webgpu`-renderer.
+- **Opgelost:** een re-render tijdens een lopende animatie hervat die nu vanaf de
+  huidige positie in plaats van naar het einde te springen - framework-wrappers
+  updaten de grafiek direct na het mounten, wat voorheen elke mount-autoplay
+  annuleerde.
+
 ## v1.8.1
 
 Pakketversies: react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·

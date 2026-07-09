@@ -10,6 +10,34 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## Chưa phát hành
+
+<!-- TODO trước khi publish: thay heading này bằng số version thật
+     sau khi `changeset version` xử lý hết các file .changeset/*.md. -->
+
+- **Xem dữ liệu chạy theo năm, trên mọi biểu đồ.** Prop opt-in `timeline` mới thêm
+  nút play + thanh tua năm có sẵn (kèm controller headless `chart.timeline()`)
+  cho cả 21 biểu đồ. Nhóm trục thời gian như [Đường](/vi/charts/line) và
+  [Vùng](/vi/charts/area) vẽ dần đến năm đang active rồi trượt mượt khi chạy;
+  nhóm snapshot như [Tròn](/vi/charts/pie), [Gap](/vi/charts/gap) và
+  [Phân tán](/vi/charts/scatter) hiển thị từng giai đoạn một với giá trị trượt
+  giữa các năm; [Treemap](/vi/charts/treemap) và
+  [Cây tỏa tròn](/vi/charts/radial-tree) tween cả cây từ các node gốc gắn `date`;
+  [Sankey](/vi/charts/sankey) chạy theo các link gắn `date`; còn
+  [Radar](/vi/charts/radar) và [Bar-Bell](/vi/charts/bar-bell) dùng field
+  `period` mới trên từng dòng. Mặc định tắt ở mọi nơi, và mỗi trang biểu đồ đều
+  có demo trực tiếp.
+- **Hiệu ứng vẽ dần trên mọi biểu đồ.** Prop opt-in `progressiveDraw` quét các
+  mark hiện dần từ trái sang phải khi mount - riêng [Đường](/vi/charts/line) có
+  nhãn bám theo ngọn từng đường rồi dừng cạnh điểm cuối. Gọi `replay()` để chạy
+  lại khi cần.
+- Cả hai tính năng chạy trên renderer `svg` và `canvas`, tôn trọng
+  `prefers-reduced-motion` (biểu đồ hiển thị đầy đủ ngay lập tức), và chủ ý
+  không hoạt động trên renderer `webgpu` thử nghiệm.
+- **Đã sửa:** re-render giữa lúc animation đang chạy giờ sẽ tiếp tục từ vị trí
+  hiện tại thay vì nhảy thẳng về cuối - các wrapper framework gọi update ngay
+  sau khi mount, trước đây khiến mọi autoplay lúc mount bị hủy.
+
 ## v1.8.1
 
 Phiên bản các package: react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·

@@ -141,9 +141,53 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Xem dữ liệu chạy theo năm
+
+Dữ liệu vốn đã trải dài qua nhiều năm nên không cần gắn thêm gì cả. Bật `timeline`: nút play và thanh tua riêng của biểu đồ chạy qua các năm đó, mỗi bước chỉ vẽ đường đến năm đang active rồi khi chạy tiếp sẽ nối dài mượt mà thêm ra. Kéo lùi thanh tua thì phần đường đã vẽ cũng co lại tương ứng. Hover chỉ soi được phần đã thực sự vẽ ra. Đây là bản tương tác, chạy theo từng năm: kéo hoặc bước qua từng năm thật trong dữ liệu. Muốn xem kiểu vẽ một lần mang tính điện ảnh, xem phần Vẽ dần và nhãn theo ngọn đường bên dưới. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
+
+<TimelinePlayDemo chart="line-chart" hint="Bấm nút play dưới biểu đồ: biểu đồ vẽ dần đến từng năm khi chạy qua. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Giá trị trượt mượt giữa các năm theo mặc định (`interpolate`); đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
+- `timeline` được ưu tiên hơn `progressiveDraw` khi cả hai cùng được bật trên một biểu đồ.
+- `tipLabel: true` trong cấu hình `timeline` giữ nhãn bám theo ngọn đường đang dài ra khi biểu đồ chạy - cùng kiểu nhãn với `progressiveDraw`, chỉ khác là do thanh tua điều khiển thay vì hiệu ứng vẽ một lần.
+
 ## Vẽ dần và nhãn theo ngọn đường
 
-Để biểu đồ kể chuyện theo trình tự: bật `progressiveDraw` là mỗi đường tự vẽ từ năm đầu đến năm cuối, kèm nhãn tùy chọn chạy theo ngọn đường, hiển thị tên chuỗi và giá trị hiện tại rồi dừng lại cạnh điểm cuối. Mặc định tắt - không bật thì biểu đồ giữ nguyên như cũ.
+Để biểu đồ kể chuyện theo trình tự: bật `progressiveDraw` là mỗi đường tự vẽ từ năm đầu đến năm cuối, kèm nhãn tùy chọn chạy theo ngọn đường, hiển thị tên chuỗi và giá trị hiện tại rồi dừng lại cạnh điểm cuối. Đây là hiệu ứng vẽ một lần mang tính điện ảnh khi mount; muốn chạy tương tác theo từng năm với thanh tua, xem phần Xem dữ liệu chạy theo năm bên trên. Mặc định tắt - không bật thì biểu đồ giữ nguyên như cũ.
 
 <ProgressiveDrawDemo replay-label="Chạy lại hiệu ứng" hint="Mỗi đường lớn dần từ năm đầu đến năm cuối; nhãn bám theo ngọn đường rồi dừng ở điểm cuối. Khi hệ điều hành bật reduced motion, biểu đồ hiển thị đầy đủ ngay lập tức." />
 

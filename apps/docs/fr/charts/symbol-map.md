@@ -49,6 +49,49 @@ import { SymbolMapChart } from "@michi-vz/react";
 
 Comme l'étendue utilisée pour ajuster la disposition dot-only au tracé est dérivée des coordonnées de votre propre jeu de données (et non d'une table monde toujours complète embarquée), le « monde » que le graphique dessine ne s'étend qu'aussi loin que les points que vous fournissez - voir les [notes de comportement](#projection-dot-only-vs-fond-de-carte) ci-dessous.
 
+## Faire defiler les annees
+
+Donnez un `date` à chaque symbole et activez `timeline` : la carte devient un récit année par année, avec son propre bouton lecture et son curseur, plaçant les symboles d'une période à la fois. Désactivé par défaut - sans opt-in, rien ne change.
+
+<TimelinePlayDemo chart="symbol-map-chart" hint="Appuyez sur le bouton lecture sous le graphique : les données défilent année après année, un instantané à la fois. Faites glisser le curseur pour sauter à une année." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<SymbolMapChartHandle>(null);
+
+<SymbolMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<SymbolMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:symbolMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applySymbolMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-symbol-map-chart id="c"></michi-vz-symbol-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Les symboles sans `date` restent visibles à chaque période.
+
 ## Usage
 
 ::: code-group

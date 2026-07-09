@@ -42,6 +42,50 @@ ComparableVerticalBarChart heeft een optionele `renderer="webgpu"` die de twee s
 
 <WebgpuHeavyDemo element="michi-vz-comparable-vertical-bar-chart" :make="makeComparableVertical" caption="~60 columns" />
 
+## Speel door de jaren heen
+
+Geef elke categorie een `date` en zet `timeline` aan: het kolomdiagram wordt een verhaal per jaar, met een eigen afspeelknop en scrubber die telkens het basis/vergeleken-paar van één periode toont. Standaard uit - zonder opt-in verandert er niets.
+
+<TimelinePlayDemo chart="comparable-vertical-bar-chart" hint="Druk op de afspeelknop onder de grafiek: de data stapt door de jaren, één momentopname per keer. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ComparableVerticalBarChartHandle>(null);
+
+<ComparableVerticalBarChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ComparableVerticalBarChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:comparableVerticalBarChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyComparableVerticalBarChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-comparable-vertical-bar-chart id="c"></michi-vz-comparable-vertical-bar-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Een `filter` (top-N, sortering) blijft binnen elke periode gelden, dus een "top 5 per jaar" werkt meteen.
+- Kolommen zonder `date` blijven in elke periode zichtbaar.
+
 ## Gebruik
 
 ::: code-group

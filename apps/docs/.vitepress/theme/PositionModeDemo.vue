@@ -35,7 +35,11 @@ onMounted(async () => {
   node.positionMode = mode.value;
   node.height = props.height ?? 380;
   node.style.display = "block";
-  node.width = Math.max(280, host.value.clientWidth);
+  // clientWidth INCLUDES the stage's own horizontal padding; sizing the chart
+  // from it overflows the padded stage and the excess clips off the right edge.
+  const stageStyle = getComputedStyle(host.value);
+  const stagePadX = parseFloat(stageStyle.paddingLeft) + parseFloat(stageStyle.paddingRight);
+  node.width = Math.max(280, host.value.clientWidth - stagePadX);
   host.value.appendChild(node);
   el.value = node;
   ro = new ResizeObserver((entries) => {

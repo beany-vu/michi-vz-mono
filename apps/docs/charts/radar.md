@@ -42,6 +42,106 @@ RadarChart has an opt-in `renderer="webgpu"` that paints the polygon fills and p
 
 <WebgpuHeavyDemo legend element="michi-vz-radar-chart" :make="makeRadar" caption="12 axes × 4 series" />
 
+## Play through the years
+
+RadarChart already uses `date` for the legacy per-axis `{ date, value }` shape, so the timeline tag is named `period` instead. Tag every series row with a `period` and flip on `timeline`: a year's snapshot is the rows sharing that period, and each polygon tweens between years. Off by default - nothing changes until a chart opts in. This is interactive year-by-year stepping, not the one-shot entrance further down.
+
+```ts
+{ label: "Vienna", period: "2021", values: [72, 65, 40, 88 /* … */] }
+```
+
+<TimelinePlayDemo chart="radar-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RadarChartHandle>(null);
+
+<RadarChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<RadarChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:radarChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyRadarChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-radar-chart id="c"></michi-vz-radar-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- Series without a `period` stay visible in every period.
+- `timeline` wins over `progressiveDraw` when both are set - the reveal animation further down stays off while the timeline is in control.
+
+## Reveal animation
+
+The chart wipes in from left to right on mount, revealing its marks in sequence before settling into place. Off by default - a chart opts in with the `progressiveDraw` prop.
+
+<RevealDemo chart="radar-chart" />
+
+`progressiveDraw: true` enables the defaults (1200 ms, easeInOutCubic). A config object tunes it:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RadarChartHandle>(null);
+
+<RadarChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000 }}
+/>;
+// ref.current?.replay() re-runs the reveal on demand
+```
+
+```vue [Vue]
+<RadarChart :options="{ ...props, progressiveDraw: { durationMs: 2000 } }" />
+```
+
+```svelte [Svelte]
+<div use:radarChart={{ ...props, progressiveDraw: { durationMs: 2000 } }}></div>
+```
+
+```ts [Angular]
+applyRadarChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000 },
+});
+```
+
+```html [Web component]
+<michi-vz-radar-chart id="c"></michi-vz-radar-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000 };
+  // el.replay() re-runs the reveal
+</script>
+```
+
+:::
+
+- `durationMs` and `easing` ("linear", "easeOutQuad", "easeInOutCubic", or a custom `(t) => t` function) shape the sweep.
+- `autoplay: false` renders the chart fully drawn; call `replay()` (React ref handle, web-component method, or the core instance) to run the reveal on demand. `replayOnUpdate: true` re-runs it on every data change.
+- Respects `prefers-reduced-motion`: the chart renders fully drawn instantly.
+- Reveal animation is a one-shot entrance; play through the years above steps through data year by year instead.
+
 ## Usage
 
 ::: code-group

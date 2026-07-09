@@ -94,6 +94,14 @@
       "mount": "mountLineChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "dataSet",
           "type": "LineDataItem[]",
           "optional": false,
@@ -486,6 +494,22 @@
       "mount": "mountFanChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "dataSet",
           "type": "FanDataItem[]",
           "optional": false,
@@ -717,6 +741,22 @@
       "context": "AreaChartContext",
       "mount": "mountAreaChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "series",
           "type": "AreaDataRow[]",
@@ -1366,6 +1406,22 @@
       "mount": "mountRangeChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "dataSet",
           "type": "RangeDataItem[]",
           "optional": false,
@@ -1582,6 +1638,22 @@
       "mount": "mountRibbonChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "series",
           "type": "RibbonDataRow[]",
           "optional": false,
@@ -1781,6 +1853,22 @@
       "context": "RadarChartContext",
       "mount": "mountRadarChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber. Values tween between periods unless `interpolate: false`. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "series",
           "type": "RadarDataItem[]",
@@ -2045,6 +2133,22 @@
       "context": "VerticalStackBarChartContext",
       "mount": "mountVerticalStackBarChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "dataSet",
           "type": "VerticalStackBarDataSet[]",
@@ -2373,6 +2477,14 @@
       "context": "ComparableBarChartContext",
       "mount": "mountComparableHorizontalBarChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. Values tween between periods unless `interpolate: false`.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "dataSet",
           "type": "ComparableBarDataPoint[]",
@@ -2734,6 +2846,14 @@
       "mount": "mountComparableVerticalBarChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. Values tween between periods unless `interpolate: false`.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "dataSet",
           "type": "ComparableBarDataPoint[]",
           "optional": false,
@@ -3062,6 +3182,14 @@
       "mount": "mountDualHorizontalBarChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. Values tween between periods unless `interpolate: false`.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "dataSet",
           "type": "DualBarDataPoint[]",
           "optional": false,
@@ -3293,6 +3421,22 @@
       "context": "BarBellChartContext",
       "mount": "mountBarBellChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber. Values tween between periods unless `interpolate: false`. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "dataSet",
           "type": "BarBellDataRow[]",
@@ -3894,6 +4038,22 @@
       "mount": "mountTreemapChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber. Values tween between periods unless `interpolate: false`. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "dataSet",
           "type": "TreemapNode[]",
           "optional": false,
@@ -4174,6 +4334,14 @@
       "mount": "mountPieChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. Values tween between periods unless `interpolate: false`.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "dataSet",
           "type": "PieDataItem[]",
           "optional": false,
@@ -4389,6 +4557,14 @@
       "context": "BubbleChartContext",
       "mount": "mountBubbleChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. Values tween between periods unless `interpolate: false`.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "dataSet",
           "type": "BubbleDataItem[]",
@@ -4646,6 +4822,22 @@
       "mount": "mountSankeyChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber. Values tween between periods unless `interpolate: false`. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "nodes",
           "type": "SankeyNodeItem[]",
           "optional": false,
@@ -4901,6 +5093,22 @@
       "context": "FountainChartContext",
       "mount": "mountFountainChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "dataSet",
           "type": "FountainDataItem[]",
@@ -5158,6 +5366,14 @@
       "mount": "mountChoroplethMapChart",
       "props": [
         {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. Values tween between periods unless `interpolate: false`.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "geography",
           "type": "GeoJSON.FeatureCollection | GeoFeatureItem[]",
           "optional": false,
@@ -5405,6 +5621,14 @@
       "context": "SymbolMapChartContext",
       "mount": "mountSymbolMapChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber. Off by default; requires rows with `date`. Values tween between periods unless `interpolate: false`.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "dataSet",
           "type": "SymbolMapDataItem[]",
@@ -5669,6 +5893,22 @@
       "context": "RadialTreeChartContext",
       "mount": "mountRadialTreeChart",
       "props": [
+        {
+          "name": "timeline",
+          "type": "boolean | TimelinePeriodConfig",
+          "optional": true,
+          "description": "Opt-in \"play through years\": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber. Values tween between periods unless `interpolate: false`. Off by default; wins over `progressiveDraw` when both are set.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "progressiveDraw",
+          "type": "boolean | ProgressiveDrawConfig",
+          "optional": true,
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "default": "",
+          "common": false
+        },
         {
           "name": "dataSet",
           "type": "RadialTreeNode[]",

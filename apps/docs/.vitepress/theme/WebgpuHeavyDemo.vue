@@ -38,6 +38,15 @@ let raf = 0;
 let started = false;
 let cancelScheduled: (() => void) | null = null;
 
+// clientWidth INCLUDES padding; sizing the chart from it overflows the padded
+// stage and the excess gets clipped at the right edge (worse on canvas, which
+// hard-clips at its backing store). Subtract the horizontal padding.
+function innerWidth(el: HTMLElement): number {
+  const cs = getComputedStyle(el);
+  const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  return Math.max(280, el.clientWidth - pad);
+}
+
 function buildNode() {
   if (!host.value) return;
   const node: any = document.createElement(props.element);
@@ -55,7 +64,7 @@ function buildNode() {
   node.renderer = "webgpu";
   node.height = props.height ?? 380;
   node.style.display = "block";
-  node.width = Math.max(280, host.value.clientWidth);
+  node.width = innerWidth(host.value);
   node.addEventListener("michi-vz:dataprocessed", (e: Event) => {
     const detail = (e as CustomEvent).detail;
     summary.value = detail?.summary ?? "";

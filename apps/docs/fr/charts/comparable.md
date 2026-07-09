@@ -42,6 +42,50 @@ ComparableHorizontalBarChart dispose d'un `renderer="webgpu"` optionnel qui pein
 
 <WebgpuHeavyDemo element="michi-vz-comparable-horizontal-bar-chart" :make="makeComparable" caption="~120 lignes" />
 
+## Faire defiler les annees
+
+Donnez un `date` à chaque ligne et activez `timeline` : le graphique en barres devient un récit année par année, avec son propre bouton lecture et son curseur, un instantané de l'écart avant/après à la fois. Désactivé par défaut - sans opt-in, rien ne change.
+
+<TimelinePlayDemo chart="comparable-horizontal-bar-chart" hint="Appuyez sur le bouton lecture sous le graphique : les données défilent année après année, un instantané à la fois. Faites glisser le curseur pour sauter à une année." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ComparableHorizontalBarChartHandle>(null);
+
+<ComparableHorizontalBarChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ComparableHorizontalBarChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:comparableHorizontalBarChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyComparableHorizontalBarChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-comparable-horizontal-bar-chart id="c"></michi-vz-comparable-horizontal-bar-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Un `filter` (top-N, tri) s'applique toujours à l'intérieur de chaque période : un « top 5 par an » fonctionne d'emblée.
+- Les lignes sans `date` restent visibles à chaque période.
+
 ## Usage
 
 ::: code-group

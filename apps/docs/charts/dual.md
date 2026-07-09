@@ -54,6 +54,50 @@ DualHorizontalBarChart has an opt-in `renderer="webgpu"` that paints value1/valu
 
 <WebgpuHeavyDemo element="michi-vz-dual-horizontal-bar-chart" :make="makeDual" caption="~120 rows" />
 
+## Play through the years
+
+Give every row a `date` and flip on `timeline`: the tornado chart becomes a year-by-year story with its own play button and scrubber, snapshotting one period's left/right balance at a time. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="dual-horizontal-bar-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<DualHorizontalBarChartHandle>(null);
+
+<DualHorizontalBarChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<DualHorizontalBarChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:dualHorizontalBarChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyDualHorizontalBarChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-dual-horizontal-bar-chart id="c"></michi-vz-dual-horizontal-bar-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- A `filter` (top-N, sorting) still applies inside each period, so a top 5 per year race works out of the box.
+- Rows without a `date` stay visible in every period.
+
 ## Usage
 
 ::: code-group

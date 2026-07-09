@@ -42,6 +42,50 @@ ComparableHorizontalBarChart có tùy chọn `renderer="webgpu"` để vẽ hai 
 
 <WebgpuHeavyDemo element="michi-vz-comparable-horizontal-bar-chart" :make="makeComparable" caption="~120 rows" />
 
+## Xem dữ liệu chạy theo năm
+
+Gắn `date` cho từng dòng rồi bật `timeline`: biểu đồ cột thành câu chuyện theo từng năm với nút play và thanh tua riêng, mỗi lần hiển thị khoảng cách trước/sau của một giai đoạn. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
+
+<TimelinePlayDemo chart="comparable-horizontal-bar-chart" hint="Bấm nút play dưới biểu đồ: dữ liệu chạy qua từng năm, mỗi lần một snapshot. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ComparableHorizontalBarChartHandle>(null);
+
+<ComparableHorizontalBarChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ComparableHorizontalBarChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:comparableHorizontalBarChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyComparableHorizontalBarChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-comparable-horizontal-bar-chart id="c"></michi-vz-comparable-horizontal-bar-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Giá trị trượt mượt giữa các giai đoạn theo mặc định (`interpolate`); chỉnh chuyển động bằng `tweenMs` và `easing`, hoặc đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- `filter` (top-N, sắp xếp) vẫn áp dụng bên trong từng giai đoạn, nên "top 5 mỗi năm" chạy được ngay.
+- Dòng không có `date` hiển thị ở mọi giai đoạn.
+
 ## Cách dùng
 
 ::: code-group

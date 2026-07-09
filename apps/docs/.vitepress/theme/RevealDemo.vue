@@ -1,14 +1,18 @@
 <script setup lang="ts">
-// Live progressiveDraw demo: one line chart that draws itself left to right with
-// tip labels trailing each line's end, plus a replay button (the WC element's
-// replay() method). Locale pages pass translated button/hint text via props; the
-// dataset is built here so every locale shows the same chart.
+// Live progressiveDraw (reveal) demo for any chart: mounts the chart's first
+// @michi-vz/examples dataset with the reveal turned on, plus a replay button
+// (the WC element's replay() method). Locale pages pass translated text.
 import { ref, watch, onMounted, onBeforeUnmount, shallowRef } from "vue";
+import { examples } from "@michi-vz/examples";
 
 const props = defineProps<{
+  /** Example key = element suffix, e.g. "area-chart", "treemap-chart". */
+  chart: string;
   replayLabel?: string;
   hint?: string;
   height?: number;
+  /** Example index in the chart's examples list (default 0). */
+  index?: number;
 }>();
 
 const host = ref<HTMLDivElement>();
@@ -19,30 +23,17 @@ const renderer = ref<"svg" | "canvas" | "webgpu">("svg");
 let ro: ResizeObserver | null = null;
 let raf = 0;
 
-function makeProps(): Record<string, unknown> {
-  const mk = (base: number, amp: number, drift: number) =>
-    Array.from({ length: 14 }, (_, i) => ({
-      date: 2010 + i,
-      value: Math.round((base + Math.sin(i / 1.8) * amp + i * drift) * 10) / 10,
-      certainty: true,
-    }));
-  return {
-    dataSet: [
-      { label: "Exports", color: "#2c6fbb", series: mk(38, 6, 2.1) },
-      { label: "Imports", color: "#e07b39", series: mk(52, 4, 1.2) },
-      { label: "Services", color: "#1f9e57", series: mk(20, 3, 1.7) },
-    ],
-    xAxisDataType: "date_annual",
-    progressiveDraw: { durationMs: 2400, tipLabel: true },
-  };
-}
-
 function buildNode() {
   if (!host.value) return;
-  const node: any = document.createElement("michi-vz-line-chart");
-  Object.assign(node, makeProps());
+  const ex = (examples as any)[props.chart]?.[props.index ?? 0];
+  if (!ex) return;
+  const node: any = document.createElement(`michi-vz-${props.chart}`);
+  const { title, width: _w, height: _h, ...rest } = ex.props as any;
+  if (title) node.chartTitle = title;
+  Object.assign(node, rest);
+  node.progressiveDraw = { durationMs: 2000 };
   node.renderer = renderer.value;
-  node.height = props.height ?? 360;
+  node.height = props.height ?? 380;
   node.style.display = "block";
   // clientWidth INCLUDES the stage's own horizontal padding; sizing the chart
   // from it overflows the padded stage and the excess gets clipped at the
@@ -90,17 +81,17 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="pdw-demo">
-    <div class="pdw-bar">
-      <button class="pdw-replay" type="button" @click="replay">
+  <div class="rvd-demo">
+    <div class="rvd-bar">
+      <button class="rvd-replay" type="button" @click="replay">
         {{ replayLabel ?? "Replay the reveal" }}
       </button>
-      <div class="pdw-renderers" role="group" aria-label="Renderer">
+      <div class="rvd-renderers" role="group" aria-label="Renderer">
         <button
           v-for="r in ['svg', 'canvas', 'webgpu']"
           :key="r"
           type="button"
-          class="pdw-renderer"
+          class="rvd-renderer"
           :class="{ active: renderer === r }"
           :aria-pressed="renderer === r"
           @click="renderer = r as any"
@@ -108,27 +99,27 @@ onBeforeUnmount(() => {
           {{ r }}
         </button>
       </div>
-      <span v-if="renderer === 'webgpu'" class="pdw-note">webgpu paints the full frame instantly</span>
+      <span v-if="renderer === 'webgpu'" class="rvd-note">webgpu paints the full frame instantly</span>
     </div>
-    <div class="pdw-stage michi-vz-calm" ref="host"></div>
-    <p class="pdw-hint">
+    <div class="rvd-stage michi-vz-calm" ref="host"></div>
+    <p class="rvd-hint">
       {{
         hint ??
-        "Each line grows from the first year to the last; the label rides the tip and settles at the line's end. With reduced motion enabled, the chart renders fully drawn instantly."
+        "The marks wipe in from left to right; axes and titles stay put. With reduced motion enabled, the chart renders fully drawn instantly."
       }}
     </p>
   </div>
 </template>
 
 <style scoped>
-.pdw-demo {
+.rvd-demo {
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
   margin: 18px 0;
   background: var(--vp-c-bg-soft);
   overflow: hidden;
 }
-.pdw-bar {
+.rvd-bar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -136,7 +127,7 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg);
 }
-.pdw-replay {
+.rvd-replay {
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -147,17 +138,17 @@ onBeforeUnmount(() => {
   color: var(--vp-c-text-1);
   cursor: pointer;
 }
-.pdw-replay:hover {
+.rvd-replay:hover {
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
 }
-.pdw-renderers {
+.rvd-renderers {
   display: inline-flex;
   border: 1px solid var(--vp-c-divider);
   border-radius: 6px;
   overflow: hidden;
 }
-.pdw-renderer {
+.rvd-renderer {
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -167,21 +158,21 @@ onBeforeUnmount(() => {
   color: var(--vp-c-text-2);
   cursor: pointer;
 }
-.pdw-renderer + .pdw-renderer {
+.rvd-renderer + .rvd-renderer {
   border-left: 1px solid var(--vp-c-divider);
 }
-.pdw-renderer.active {
+.rvd-renderer.active {
   background: var(--vp-c-brand-soft);
   color: var(--vp-c-brand-1);
 }
-.pdw-note {
+.rvd-note {
   font-size: 12px;
   color: var(--vp-c-text-3);
 }
-.pdw-stage {
+.rvd-stage {
   padding: 12px 16px;
 }
-.pdw-hint {
+.rvd-hint {
   margin: 0;
   padding: 0 16px 14px;
   font-size: 12.5px;

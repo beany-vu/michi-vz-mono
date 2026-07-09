@@ -10,6 +10,32 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## Unreleased
+
+<!-- TODO before publishing: replace this header with the real version numbers
+     once `changeset version` has consumed every pending .changeset/*.md file. -->
+
+- **Play through the years, on every chart.** The new opt-in `timeline` prop adds
+  a built-in play button + year scrubber (and a headless `chart.timeline()`
+  controller) to all 21 charts. Time-axis charts like [Line](/charts/line) and
+  [Area](/charts/area) draw their marks up to the active year and sweep smoothly
+  as the years play; snapshot charts like [Pie](/charts/pie), [Gap](/charts/gap),
+  and [Scatter](/charts/scatter) step through one period's data at a time with
+  values gliding between years; [Treemap](/charts/treemap) and
+  [Radial Tree](/charts/radial-tree) tween whole hierarchies from `date`-tagged
+  root nodes; [Sankey](/charts/sankey) plays over `date`-tagged links; and
+  [Radar](/charts/radar) and [Bar-Bell](/charts/bar-bell) use a new `period` row
+  field. Off by default everywhere, and every chart page now has a live demo.
+- **Reveal animation on every chart.** The opt-in `progressiveDraw` prop wipes
+  the marks in from left to right on mount - and on [Line](/charts/line), labels
+  ride each growing line's end and settle beside it. `replay()` re-runs the
+  reveal on demand.
+- Both features work in `svg` and `canvas` render modes, respect
+  `prefers-reduced-motion` (the chart renders fully drawn instantly), and are
+  intentionally inert on the experimental `webgpu` renderer.
+- **Fixed:** a re-render during a running animation now resumes it from its
+  current position instead of jumping to the end - framework wrappers update the
+  chart right after mounting, which previously cancelled every mount autoplay.
 ## v1.8.1
 
 Package versions: react **1.8.1** · core, wc, angular **1.9.0** · vue, svelte **1.6.0** ·

@@ -49,6 +49,49 @@ import { SymbolMapChart } from "@michi-vz/react";
 
 Vì phạm vi (extent) dùng để khớp bố cục chỉ-có-chấm với vùng vẽ được suy ra từ tọa độ của chính tập dữ liệu của bạn (không phải từ một bảng thế giới luôn đầy đủ được đóng gói sẵn), "thế giới" mà biểu đồ vẽ ra chỉ trải rộng đến mức các điểm bạn truyền vào - xem [Ghi chú hành vi](#chiếu-chỉ-có-chấm-so-với-nền) bên dưới.
 
+## Xem dữ liệu chạy theo năm
+
+Gắn `date` cho từng ký hiệu rồi bật `timeline`: bản đồ thành câu chuyện theo từng năm với nút play và thanh tua riêng, mỗi lần đặt các ký hiệu của một giai đoạn. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
+
+<TimelinePlayDemo chart="symbol-map-chart" hint="Bấm nút play dưới biểu đồ: dữ liệu chạy qua từng năm, mỗi lần một snapshot. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<SymbolMapChartHandle>(null);
+
+<SymbolMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<SymbolMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:symbolMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applySymbolMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-symbol-map-chart id="c"></michi-vz-symbol-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Giá trị trượt mượt giữa các giai đoạn theo mặc định (`interpolate`); chỉnh chuyển động bằng `tweenMs` và `easing`, hoặc đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Ký hiệu không có `date` hiển thị ở mọi giai đoạn.
+
 ## Cách dùng
 
 ::: code-group

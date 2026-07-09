@@ -49,6 +49,100 @@ RibbonChart has an opt-in `renderer="webgpu"` that paints its ribbons on the GPU
 
 <WebgpuHeavyDemo element="michi-vz-ribbon-chart" :make="makeRibbon" caption="dense ribbons" />
 
+## Reveal animation
+
+The chart wipes in from left to right on mount, revealing its marks in sequence before settling into place. Off by default - a chart opts in with the `progressiveDraw` prop.
+
+<RevealDemo chart="ribbon-chart" />
+
+`progressiveDraw: true` enables the defaults (1200 ms, easeInOutCubic). A config object tunes it:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RibbonChartHandle>(null);
+
+<RibbonChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000 }}
+/>;
+// ref.current?.replay() re-runs the reveal on demand
+```
+
+```vue [Vue]
+<RibbonChart :options="{ ...props, progressiveDraw: { durationMs: 2000 } }" />
+```
+
+```svelte [Svelte]
+<div use:ribbonChart={{ ...props, progressiveDraw: { durationMs: 2000 } }}></div>
+```
+
+```ts [Angular]
+applyRibbonChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000 },
+});
+```
+
+```html [Web component]
+<michi-vz-ribbon-chart id="c"></michi-vz-ribbon-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000 };
+  // el.replay() re-runs the reveal
+</script>
+```
+
+:::
+
+- `durationMs` and `easing` ("linear", "easeOutQuad", "easeInOutCubic", or a custom `(t) => t` function) shape the sweep.
+- `autoplay: false` renders the chart fully drawn; call `replay()` (React ref handle, web-component method, or the core instance) to run the reveal on demand. `replayOnUpdate: true` re-runs it on every data change.
+- Respects `prefers-reduced-motion`: the chart renders fully drawn instantly.
+
+## Play through the years
+
+The data already spans years, so there is nothing to tag. Flip on `timeline` and the chart's own play button and scrubber step through those years: at each step the ribbons draw only up to the active year, and playing forward smoothly extends them further as the sweep advances. Scrub backward and the ribbons retract to match. Hover only ever inspects what has actually been drawn. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="ribbon-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RibbonChartHandle>(null);
+
+<RibbonChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<RibbonChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:ribbonChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyRibbonChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-ribbon-chart id="c"></michi-vz-ribbon-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- Values glide between years by default (`interpolate`); set `interpolate: false` for hard jump-cuts. Reduced motion always jump-cuts.
+- `timeline` wins over `progressiveDraw` when both are set on the same chart.
+
 ## Usage
 
 ::: code-group

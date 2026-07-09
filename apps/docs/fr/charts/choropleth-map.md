@@ -41,6 +41,49 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 L'`id` de chaque feature d'une `FeatureCollection` est lu depuis le `Feature.id` GeoJSON (repli sur `properties.id`) ; `name` depuis `properties.name`. Sources courantes : [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - convertissez avec `feature()` de `topojson-client`), [Natural Earth](https://www.naturalearthdata.com/), ou un fichier régional maintenu par votre équipe. Les docs/exemples de ce package n'embarquent qu'un petit échantillon illustratif de 12 formes - pas de vraies côtes - pour que la bibliothèque reste libre de toute dépendance à des données topologiques.
 
+## Faire defiler les annees
+
+Donnez un `date` à chaque région et activez `timeline` : la carte devient un récit année par année, avec son propre bouton lecture et son curseur, une période colorée à la fois. Désactivé par défaut - sans opt-in, rien ne change.
+
+<TimelinePlayDemo chart="choropleth-map-chart" hint="Appuyez sur le bouton lecture sous le graphique : les données défilent année après année, un instantané à la fois. Faites glisser le curseur pour sauter à une année." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ChoroplethMapChartHandle>(null);
+
+<ChoroplethMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ChoroplethMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:choroplethMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyChoroplethMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-choropleth-map-chart id="c"></michi-vz-choropleth-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Les régions sans `date` restent visibles à chaque période.
+
 ## Usage
 
 ::: code-group

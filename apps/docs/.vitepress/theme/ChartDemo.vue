@@ -118,7 +118,14 @@ function buildNode() {
   node.height = props.height ?? 340;
   if (margin) node.margin = margin;
   node.style.display = "block";
-  node.width = Math.max(280, host.value.clientWidth);
+  // host.value.clientWidth INCLUDES .chart-demo-stage's own horizontal padding
+  // (12px 16px); sizing the chart from the raw clientWidth renders it 32px wider
+  // than the space actually available, and the outer .chart-demo's
+  // `overflow: hidden` silently clips the excess off the right edge (worse on
+  // canvas, which has no overflow:visible escape hatch the way SVG marks do).
+  const stageStyle = getComputedStyle(host.value);
+  const stagePadX = parseFloat(stageStyle.paddingLeft) + parseFloat(stageStyle.paddingRight);
+  node.width = Math.max(280, host.value.clientWidth - stagePadX);
   // The wc elements re-emit onChartDataProcessed as a CustomEvent; the context's
   // legendData feeds the auto legend. Attach BEFORE appendChild so the mount-time
   // emission is caught.

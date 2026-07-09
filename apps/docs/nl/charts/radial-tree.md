@@ -41,6 +41,102 @@ import { RadialTreeChart } from "@michi-vz/react";
 
 De eigen waarde van een groep is ALTIJD de som van zijn kinderen (een expliciete `value` op een knoop met `children` wordt genegeerd) - je geeft dus alleen bladwaarden op.
 
+## Speel door de jaren heen
+
+Geef elke knoop op het hoogste niveau een `date` en zet `timeline` aan: de momentopname van een jaar bestaat uit de rootknopen die die datum delen - kinderen hebben geen eigen datum nodig - en de cirkels glijden tussen jaren terwijl ze van formaat veranderen. Standaard uit - zonder opt-in verandert er niets. Dit is interactief jaar-voor-jaar stappen, niet de eenmalige intro verderop.
+
+<TimelinePlayDemo chart="radial-tree-chart" hint="Druk op de afspeelknop onder de grafiek: de data stapt door de jaren, één momentopname per keer. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RadialTreeChartHandle>(null);
+
+<RadialTreeChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<RadialTreeChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:radialTreeChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyRadialTreeChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-radial-tree-chart id="c"></michi-vz-radial-tree-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Rootknopen zonder `date` blijven in elke periode zichtbaar.
+- `timeline` wint het van `progressiveDraw` als beide zijn ingesteld - de onthulanimatie verderop blijft uit zolang de timeline de regie heeft.
+
+## Onthulanimatie
+
+De grafiek tekent zichzelf van links naar rechts bij het mounten, waarbij de elementen na elkaar verschijnen voordat ze op hun plek vallen. Standaard uit - een grafiek kiest ervoor met de `progressiveDraw`-prop.
+
+<RevealDemo chart="radial-tree-chart" replay-label="Animatie opnieuw afspelen" hint="Elke lijn groeit van het eerste naar het laatste jaar; het label volgt de punt en komt tot stilstand bij het lijneinde. Met reduced motion ingeschakeld verschijnt de grafiek meteen volledig getekend." />
+
+`progressiveDraw: true` gebruikt de standaardinstellingen (1200 ms, easeInOutCubic). Een configuratieobject verfijnt het gedrag:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RadialTreeChartHandle>(null);
+
+<RadialTreeChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000 }}
+/>;
+// ref.current?.replay() speelt de animatie opnieuw af
+```
+
+```vue [Vue]
+<RadialTreeChart :options="{ ...props, progressiveDraw: { durationMs: 2000 } }" />
+```
+
+```svelte [Svelte]
+<div use:radialTreeChart={{ ...props, progressiveDraw: { durationMs: 2000 } }}></div>
+```
+
+```ts [Angular]
+applyRadialTreeChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000 },
+});
+```
+
+```html [Web component]
+<michi-vz-radial-tree-chart id="c"></michi-vz-radial-tree-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000 };
+  // el.replay() speelt de animatie opnieuw af
+</script>
+```
+
+:::
+
+- `durationMs` en `easing` ("linear", "easeOutQuad", "easeInOutCubic", of een eigen `(t) => t`-functie) bepalen het tempo.
+- `autoplay: false` rendert de grafiek volledig getekend; roep `replay()` aan (React-ref-handle, webcomponent-methode of de core-instantie) om de animatie op aanvraag te starten. `replayOnUpdate: true` herhaalt de animatie bij elke datawijziging.
+- Respecteert `prefers-reduced-motion`: de grafiek verschijnt dan meteen volledig getekend.
+- Onthulanimatie is een eenmalige animatie bij mounten; speel door de jaren hierboven stapt in plaats daarvan jaar voor jaar door de data.
+
 ## Gebruik
 
 ::: code-group

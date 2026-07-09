@@ -70,6 +70,50 @@ Like the scatter page, the demo below borrows from particle physics: ~1,500 reco
     { label: 'Muon chambers', color: '#9b5de5' },
   ]" caption="~1,500 simulated energy clusters" />
 
+## Play through the years
+
+Give every bubble a `date` and flip on `timeline`: the cloud becomes a year-by-year story with its own play button and scrubber, snapshotting one period's sizes at a time. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="bubble-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<BubbleChartHandle>(null);
+
+<BubbleChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<BubbleChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:bubbleChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyBubbleChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-bubble-chart id="c"></michi-vz-bubble-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- A `filter` (top-N, sorting) still applies inside each period, so only the top 5 bubbles per year make the cut.
+- Bubbles without a `date` stay visible in every period.
+
 ## Usage
 
 ::: code-group

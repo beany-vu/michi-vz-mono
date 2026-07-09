@@ -187,6 +187,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
 - `title`: `string` - Optional chart title rendered above the plot
 - `yAxisDomain`: `[number, number]` - Fix the y-axis range as [min, max] instead of deriving it from the data
 - `yAxisScale`: `"linear" | "log"` (default: `"linear"`) - Y-axis scale: "linear" (default) or a base-10 "log" scale.
@@ -236,6 +237,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `yAxisDomain`: `[number, number]` - Fixed [min, max] for the y-axis; when omitted the domain auto-fits the line plus the widest band extents
 - `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
@@ -266,6 +269,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
@@ -346,6 +351,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
@@ -374,6 +381,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
 - `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
@@ -398,6 +407,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `axes`: `string[]` - spoke labels (the radial axes).
 - `poles`: `{ labels: string[]; domain?: number[]; range?: number[] }` - Legacy pole config; `poles.labels` are used as the axes when `axes` is omitted.
 - `showFilled`: `boolean` - Stroke-only when false (no polygon fill); default true (fill at fillOpacity).
@@ -431,6 +442,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `keys`: `string[]` - Explicit stack order; present keys first (in this order), natural keys appended.
 - `keysOrder`: `"topToBottom" | "bottomToTop"` (default: `"topToBottom"`) - Where keys[0] sits in the stack: "topToBottom" (default) puts keys[0] at the top, "bottomToTop" anchors keys[0] at the bottom
 - `title`: `string` - Optional chart title rendered above the plot
@@ -472,6 +485,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `title`: `string` - Optional chart title rendered above the plot
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
 - `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
@@ -517,6 +531,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `title`: `string` - Optional chart title rendered above the plot
 - `colorsBasedMapping`: `Record<string, string>` - Optional label -> colour map for the value-based sub-bar ONLY (falls back to the row colour).
 - `xAxisFormat`: `(d: string) => string` - Formats a category (x tick) label
@@ -558,6 +573,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `title`: `string` - Optional chart title rendered above the plot
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
 - `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
@@ -588,6 +604,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
 - `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
@@ -662,6 +680,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `paddingInner`: `number` (default: `1`) - Gap between sibling tiles in px (default 1).
 - `paddingTop`: `number` (default: `18`) - Header strip height (px) reserved on parent tiles for their label in nested mode (default 18).
@@ -697,6 +717,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `title`: `string` - Optional chart title rendered above the plot
 - `innerRadiusRatio`: `number` (default: `0`) - 0 = full pie (default); (0,1) = donut hole as a fraction of the outer radius.
 - `padAngle`: `number` (default: `0`) - Gap between slices in radians (default 0).
@@ -724,6 +745,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `title`: `string` - Optional chart title rendered above the plot
 - `gravity`: `number` (default: `0.09`) - Strength of the pull toward the centre in [0,1] (default 0.09) - higher = tighter cluster ("suck together").
 - `chargeStrength`: `number` (default: `0`) - Many-body charge: negative repels, positive attracts (default 0).
@@ -757,6 +779,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `nodeWidth`: `number` (default: `18`) - Node rect width in px (default 18).
 - `nodePadding`: `number` (default: `12`) - Vertical gap between nodes in a column in px (default 12).
@@ -788,6 +812,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
 - `style`: `"jet" | "plume"` (default: `"jet"`) - Silhouette style: "jet" (default) is the faithful asymmetric Jet d'Eau (vertical column + wind-blown diagonal + a triangular droplet spray curtain); "plume" is the symmetric blooming column.
 - `xAxisDataType`: `FountainXAxisType` - How the x-axis is parsed: a temporal/numeric type renders TREND mode; "band" (or omitted) renders SNAPSHOT mode
@@ -821,6 +847,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `title`: `string` - Optional chart title rendered above the map
 - `projection`: `GeoProjectionName` - d3-geo / d3-geo-projection projection to use (default "geoRobinson", the legacy sdg-trade MapChoropleth default).
 - `projectionConfig`: `GeoProjectionConfig` - Fine-tunes the chosen projection.
@@ -851,6 +878,7 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `geography`: `GeoJSON.FeatureCollection | GeoFeatureItem[]` - OPTIONAL muted backdrop landmass (new capability - the legacy chart never drew one).
 - `title`: `string` - Optional chart title rendered above the plot
 - `projection`: `GeoProjectionName` - d3-geo / d3-geo-projection projection (default "geoMercator", matching the legacy chart).
@@ -884,6 +912,8 @@ Required props:
 
 Chart-specific props (the shared props above also apply):
 
+- `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the period tags in the data, with a headless controller (`chart.timeline()`) plus the built-in play button + scrubber.
+- `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `centerLabel`: `string` - Optional word-wrapped title drawn inside the small centre circle (legacy `titleCenter`).
 - `title`: `string` - Optional chart title rendered above the plot
 - `radiusRange`: `[number, number]` (default: `DEFAULT_RADIUS_RANGE`) - [min, max] circle radius in px (default [2, 32], the legacy `circleRange`).

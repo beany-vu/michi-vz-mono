@@ -41,6 +41,49 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 De `id` van elke feature in een `FeatureCollection` wordt gelezen uit de GeoJSON `Feature.id` (met terugval op `properties.id`); `name` uit `properties.name`. Populaire bronnen: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - converteer met `feature()` van `topojson-client`), [Natural Earth](https://www.naturalearthdata.com/), of een regiobestand dat je eigen team onderhoudt. De docs/voorbeelden van dit package bevatten slechts een klein illustratief voorbeeld van 12 vormen - geen echte kustlijnen - zodat de bibliotheek vrij blijft van elke afhankelijkheid van topologiegegevens.
 
+## Speel door de jaren heen
+
+Geef elke regio een `date` en zet `timeline` aan: de kaart wordt een verhaal per jaar, met een eigen afspeelknop en scrubber die telkens één periode inkleurt. Standaard uit - zonder opt-in verandert er niets.
+
+<TimelinePlayDemo chart="choropleth-map-chart" hint="Druk op de afspeelknop onder de grafiek: de data stapt door de jaren, één momentopname per keer. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<ChoroplethMapChartHandle>(null);
+
+<ChoroplethMapChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<ChoroplethMapChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:choroplethMapChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyChoroplethMapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-choropleth-map-chart id="c"></michi-vz-choropleth-map-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Regio's zonder `date` blijven in elke periode zichtbaar.
+
 ## Gebruik
 
 ::: code-group

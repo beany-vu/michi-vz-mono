@@ -141,9 +141,53 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Faire defiler les annees
+
+Les données couvrent déjà plusieurs années, il n'y a donc rien à taguer. Activez `timeline` : le bouton lecture et le curseur propres au graphique parcourent ces années - à chaque étape, la ligne ne se dessine que jusqu'à l'année active, et la lecture la prolonge en douceur au fil de l'avancée. Reculez le curseur et la ligne se rétracte en conséquence. Le survol n'inspecte jamais que ce qui est réellement tracé. C'est la version interactive, année par année : faites glisser ou avancez pas à pas dans les vraies années des données. Pour un balayage cinématique en une seule fois, voir Tracé progressif et étiquettes de pointe ci-dessous. Désactivé par défaut - sans opt-in, rien ne change.
+
+<TimelinePlayDemo chart="line-chart" hint="Appuyez sur le bouton lecture sous le graphique : le graphique se dessine plus loin jusqu'à chaque année au fil de la lecture. Faites glisser le curseur pour sauter à une année." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Les valeurs glissent entre les années par défaut (`interpolate`) ; passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
+- `timeline` l'emporte sur `progressiveDraw` quand les deux sont définis sur le même graphique.
+- `tipLabel: true` dans la config `timeline` garde une étiquette qui suit la pointe de la ligne pendant qu'elle grandit au fil de la lecture - la même étiquette que celle de `progressiveDraw`, pilotée par le curseur au lieu du balayage unique.
+
 ## Tracé progressif et étiquettes de pointe
 
-Laissez le graphique raconter son histoire dans l'ordre : avec `progressiveDraw`, chaque ligne se dessine de la première à la dernière année, accompagnée d'une étiquette optionnelle qui suit la pointe de la ligne en affichant le nom de la série et sa valeur courante, avant de se poser à côté de l'extrémité. Désactivé par défaut - sans opt-in, rien ne change.
+Laissez le graphique raconter son histoire dans l'ordre : avec `progressiveDraw`, chaque ligne se dessine de la première à la dernière année, accompagnée d'une étiquette optionnelle qui suit la pointe de la ligne en affichant le nom de la série et sa valeur courante, avant de se poser à côté de l'extrémité. Ceci est un balayage cinématique unique au montage ; pour un défilement interactif année par année avec un curseur, voir Faire defiler les annees ci-dessus. Désactivé par défaut - sans opt-in, rien ne change.
 
 <ProgressiveDrawDemo replay-label="Rejouer l'animation" hint="Chaque ligne grandit de la première à la dernière année ; l'étiquette suit la pointe puis se pose à l'extrémité de la ligne. Avec reduced motion activé, le graphique s'affiche entièrement tracé, instantanément." />
 

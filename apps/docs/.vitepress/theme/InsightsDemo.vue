@@ -121,7 +121,15 @@ const ranked = ref<Array<{ item: string; score: number }>>([]);
 const scatterHost = ref<HTMLDivElement>();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let scatter: any = null;
-const sw = () => Math.max(280, scatterHost.value?.clientWidth ?? 600);
+// Same .insights-demo-stage padding as `width()` above - clientWidth includes
+// it, so subtract it here too, else this second host overflows/clips on the right.
+const sw = () => {
+  const el = scatterHost.value;
+  if (!el) return 600;
+  const cs = getComputedStyle(el);
+  const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  return Math.max(280, el.clientWidth - pad);
+};
 
 function scatterProps() {
   const byLabel: Record<string, number> = {};

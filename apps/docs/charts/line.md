@@ -141,9 +141,53 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Play through the years
+
+The data already spans years, so there is nothing to tag. Flip on `timeline` and the chart's own play button and scrubber step through those years: at each step the line draws only up to the active year, and playing forward smoothly extends it further as the sweep advances. Scrub backward and the line retracts to match. Hover only ever inspects what has actually been drawn. This is the interactive, year-by-year version: scrub or step through the real years in the data. For a one-shot cinematic sweep instead, see Progressive draw and tip labels below. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="line-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- Values glide between years by default (`interpolate`); set `interpolate: false` for hard jump-cuts. Reduced motion always jump-cuts.
+- `timeline` wins over `progressiveDraw` when both are set on the same chart.
+- `tipLabel: true` in the `timeline` config keeps a label riding the line's growing tip while it plays - the same tip label as `progressiveDraw`, just driven by the sweep instead of the one-shot reveal.
+
 ## Progressive draw and tip labels
 
-Let the chart tell its story in order: with `progressiveDraw`, every line draws itself from the first year to the last, and an optional tip label rides each line's end showing the series name and its current value, settling next to the finished line. Off by default - nothing changes until a chart opts in.
+Let the chart tell its story in order: with `progressiveDraw`, every line draws itself from the first year to the last, and an optional tip label rides each line's end showing the series name and its current value, settling next to the finished line. This is a one-shot cinematic sweep on mount; for interactive year-by-year stepping with a scrubber, see Play through the years above. Off by default - nothing changes until a chart opts in.
 
 <ProgressiveDrawDemo />
 

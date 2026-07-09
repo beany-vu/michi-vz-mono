@@ -70,6 +70,50 @@ Net als de spreidingsdiagram-pagina leent de demo hieronder van de deeltjesfysic
     { label: 'Muon chambers', color: '#9b5de5' },
   ]" caption="~1.500 gesimuleerde energieclusters" />
 
+## Speel door de jaren heen
+
+Geef elke bel een `date` en zet `timeline` aan: de bellenwolk wordt een verhaal per jaar, met een eigen afspeelknop en scrubber die telkens de groottes van één periode toont. Standaard uit - zonder opt-in verandert er niets.
+
+<TimelinePlayDemo chart="bubble-chart" hint="Druk op de afspeelknop onder de grafiek: de data stapt door de jaren, één momentopname per keer. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<BubbleChartHandle>(null);
+
+<BubbleChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<BubbleChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:bubbleChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyBubbleChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-bubble-chart id="c"></michi-vz-bubble-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Een `filter` (top-N, sortering) blijft binnen elke periode gelden, dus blijven per jaar alleen de top 5 bellen over.
+- Bellen zonder `date` blijven in elke periode zichtbaar.
+
 ## Gebruik
 
 ::: code-group

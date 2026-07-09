@@ -141,9 +141,53 @@ applyLineChartProps(this.c.nativeElement, {
 
 :::
 
+## Speel door de jaren heen
+
+De data beslaat al meerdere jaren, dus er is niets te taggen. Zet `timeline` aan: de eigen afspeelknop en scrubber van de grafiek stappen door die jaren - bij elke stap tekent de lijn zich alleen tot het actieve jaar, en tijdens het afspelen loopt die lijn vloeiend verder door. Scrub je terug, dan trekt de lijn zich weer terug. Hoveren toont alleen wat al echt getekend is. Dit is de interactieve versie, jaar voor jaar: scrub of stap door de echte jaren in de data. Voor een eenmalige cinematische sweep, zie Progressief tekenen en tiplabels hieronder. Standaard uit - zonder opt-in verandert er niets.
+
+<TimelinePlayDemo chart="line-chart" hint="Druk op de afspeelknop onder de grafiek: de grafiek tekent zich verder door tot elk jaar terwijl hij speelt. Sleep de scrubber om naar een jaar te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<LineChartHandle>(null);
+
+<LineChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyLineChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-line-chart id="c"></michi-vz-line-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- Waarden glijden standaard tussen jaren (`interpolate`); zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
+- `timeline` wint het van `progressiveDraw` wanneer beide op dezelfde grafiek staan.
+- `tipLabel: true` in de `timeline`-config laat een label meebewegen met de groeiende lijnpunt tijdens het afspelen - hetzelfde tiplabel als bij `progressiveDraw`, nu alleen aangestuurd door de scrubber in plaats van de eenmalige sweep.
+
 ## Progressief tekenen en tiplabels
 
-Laat de grafiek het verhaal in volgorde vertellen: met `progressiveDraw` tekent elke lijn zichzelf van het eerste tot het laatste jaar, met optioneel een tiplabel dat op het uiteinde van de lijn meebeweegt en de reeksnaam plus de actuele waarde toont, om uiteindelijk naast het lijneinde te blijven staan. Standaard uit - zonder opt-in verandert er niets.
+Laat de grafiek het verhaal in volgorde vertellen: met `progressiveDraw` tekent elke lijn zichzelf van het eerste tot het laatste jaar, met optioneel een tiplabel dat op het uiteinde van de lijn meebeweegt en de reeksnaam plus de actuele waarde toont, om uiteindelijk naast het lijneinde te blijven staan. Dit is een eenmalige cinematische sweep bij het mounten; voor interactief jaar-voor-jaar stappen met een scrubber, zie Speel door de jaren heen hierboven. Standaard uit - zonder opt-in verandert er niets.
 
 <ProgressiveDrawDemo replay-label="Animatie opnieuw afspelen" hint="Elke lijn groeit van het eerste naar het laatste jaar; het label volgt de punt en komt tot stilstand bij het lijneinde. Met reduced motion ingeschakeld verschijnt de grafiek meteen volledig getekend." />
 

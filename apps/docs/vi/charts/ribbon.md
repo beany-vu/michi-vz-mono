@@ -49,6 +49,100 @@ RibbonChart có `renderer="webgpu"` tùy chọn, vẽ các dải của nó trên
 
 <WebgpuHeavyDemo element="michi-vz-ribbon-chart" :make="makeRibbon" caption="dải dày đặc" />
 
+## Hiệu ứng vẽ dần
+
+Biểu đồ tự vẽ dần từ trái sang phải ngay khi mount, hiện lần lượt các nét vẽ trước khi ổn định vào vị trí. Mặc định tắt - không bật thì biểu đồ giữ nguyên như cũ.
+
+<RevealDemo chart="ribbon-chart" replay-label="Chạy lại hiệu ứng" hint="Mỗi đường lớn dần từ năm đầu đến năm cuối; nhãn bám theo ngọn đường rồi dừng ở điểm cuối. Khi hệ điều hành bật reduced motion, biểu đồ hiển thị đầy đủ ngay lập tức." />
+
+`progressiveDraw: true` dùng cấu hình mặc định (1200 ms, easeInOutCubic). Truyền object để tinh chỉnh:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RibbonChartHandle>(null);
+
+<RibbonChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000 }}
+/>;
+// ref.current?.replay() chạy lại hiệu ứng khi cần
+```
+
+```vue [Vue]
+<RibbonChart :options="{ ...props, progressiveDraw: { durationMs: 2000 } }" />
+```
+
+```svelte [Svelte]
+<div use:ribbonChart={{ ...props, progressiveDraw: { durationMs: 2000 } }}></div>
+```
+
+```ts [Angular]
+applyRibbonChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000 },
+});
+```
+
+```html [Web component]
+<michi-vz-ribbon-chart id="c"></michi-vz-ribbon-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000 };
+  // el.replay() chạy lại hiệu ứng
+</script>
+```
+
+:::
+
+- `durationMs` và `easing` ("linear", "easeOutQuad", "easeInOutCubic", hoặc hàm `(t) => t` tự viết) quyết định nhịp vẽ.
+- `autoplay: false` hiển thị biểu đồ vẽ sẵn đầy đủ; gọi `replay()` (ref handle bên React, method của web component, hoặc instance của core) để chạy hiệu ứng khi cần. `replayOnUpdate: true` chạy lại mỗi lần dữ liệu thay đổi.
+- Tôn trọng `prefers-reduced-motion`: biểu đồ hiển thị đầy đủ ngay, không animation.
+
+## Xem dữ liệu chạy theo năm
+
+Dữ liệu vốn đã trải dài qua nhiều năm nên không cần gắn thêm gì cả. Bật `timeline`: nút play và thanh tua riêng của biểu đồ chạy qua các năm đó, mỗi bước các dải ruy băng chỉ vẽ đến năm đang active rồi khi chạy tiếp sẽ nối dài mượt mà thêm ra. Kéo lùi thanh tua thì các dải cũng co lại tương ứng. Hover chỉ soi được phần đã thực sự vẽ ra. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
+
+<TimelinePlayDemo chart="ribbon-chart" hint="Bấm nút play dưới biểu đồ: biểu đồ vẽ dần đến từng năm khi chạy qua. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RibbonChartHandle>(null);
+
+<RibbonChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<RibbonChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:ribbonChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyRibbonChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-ribbon-chart id="c"></michi-vz-ribbon-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Giá trị trượt mượt giữa các năm theo mặc định (`interpolate`); đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
+- `timeline` được ưu tiên hơn `progressiveDraw` khi cả hai cùng được bật trên một biểu đồ.
+
 ## Cách dùng
 
 ::: code-group

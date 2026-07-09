@@ -20,6 +20,15 @@ const on = ref(false);
 let ro: ResizeObserver | null = null;
 let raf = 0;
 
+// clientWidth INCLUDES padding; sizing the chart from it overflows the padded
+// stage and the excess gets clipped at the right edge (worse on canvas, which
+// hard-clips at its backing store). Subtract the horizontal padding.
+function innerWidth(el: HTMLElement): number {
+  const cs = getComputedStyle(el);
+  const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  return Math.max(280, el.clientWidth - pad);
+}
+
 function buildNode() {
   if (!host.value) return;
   const node: any = document.createElement(props.element ?? "michi-vz-line-chart");
@@ -31,7 +40,7 @@ function buildNode() {
   node.fillPeriodTicks = on.value;
   node.height = props.height ?? 360;
   node.style.display = "block";
-  node.width = Math.max(280, host.value.clientWidth);
+  node.width = innerWidth(host.value);
   host.value.appendChild(node);
   el.value = node;
 }

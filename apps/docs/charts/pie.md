@@ -43,6 +43,50 @@ PieChart has an opt-in `renderer="webgpu"` that paints the slices as GPU-drawn a
 
 <WebgpuHeavyDemo element="michi-vz-pie-chart" :make="makePie" caption="40 slices" />
 
+## Play through the years
+
+Give every slice a `date` and flip on `timeline`: the pie chart becomes a year-by-year story with its own play button and scrubber, snapshotting one period's shares at a time. Off by default - nothing changes until a chart opts in.
+
+<TimelinePlayDemo chart="pie-chart" />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<PieChartHandle>(null);
+
+<PieChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<PieChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:pieChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyPieChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-pie-chart id="c"></michi-vz-pie-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- A `filter` (top-N, sorting) still applies inside each period, so only the top 5 slices per year make the cut.
+- Slices without a `date` stay visible in every period.
+
 ## Usage
 
 ::: code-group

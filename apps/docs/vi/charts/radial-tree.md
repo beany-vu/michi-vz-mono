@@ -41,6 +41,102 @@ import { RadialTreeChart } from "@michi-vz/react";
 
 Giá trị riêng của một nhóm LUÔN LUÔN là tổng các con của nó (một `value` được khai báo rõ ràng trên một nút có `children` sẽ bị bỏ qua) - vì vậy bạn chỉ cần cung cấp giá trị cho các lá.
 
+## Xem dữ liệu chạy theo năm
+
+Gắn `date` cho từng nút cấp gốc rồi bật `timeline`: snapshot của một năm là các nút gốc chia sẻ `date` đó - các nút con không cần gắn ngày riêng - và các vòng tròn tự biến hình mượt giữa các năm khi đổi kích thước. Mặc định tắt - không bật thì biểu đồ giữ nguyên. Đây là kiểu chạy từng năm có tương tác, không phải hiệu ứng vào cảnh một lần bên dưới.
+
+<TimelinePlayDemo chart="radial-tree-chart" hint="Bấm nút play dưới biểu đồ: dữ liệu chạy qua từng năm, mỗi lần một snapshot. Kéo thanh tua để nhảy đến năm bất kỳ." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RadialTreeChartHandle>(null);
+
+<RadialTreeChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<RadialTreeChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:radialTreeChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyRadialTreeChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-radial-tree-chart id="c"></michi-vz-radial-tree-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Giá trị trượt mượt giữa các giai đoạn theo mặc định (`interpolate`); chỉnh chuyển động bằng `tweenMs` và `easing`, hoặc đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Nút gốc không có `date` vẫn hiển thị ở mọi giai đoạn.
+- `timeline` thắng `progressiveDraw` khi cả hai cùng đặt - hiệu ứng vẽ dần bên dưới đứng yên khi timeline đang điều khiển.
+
+## Hiệu ứng vẽ dần
+
+Biểu đồ tự vẽ dần từ trái sang phải ngay khi mount, hiện lần lượt các nét vẽ trước khi ổn định vào vị trí. Mặc định tắt - không bật thì biểu đồ giữ nguyên như cũ.
+
+<RevealDemo chart="radial-tree-chart" replay-label="Chạy lại hiệu ứng" hint="Mỗi đường lớn dần từ năm đầu đến năm cuối; nhãn bám theo ngọn đường rồi dừng ở điểm cuối. Khi hệ điều hành bật reduced motion, biểu đồ hiển thị đầy đủ ngay lập tức." />
+
+`progressiveDraw: true` dùng cấu hình mặc định (1200 ms, easeInOutCubic). Truyền object để tinh chỉnh:
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<RadialTreeChartHandle>(null);
+
+<RadialTreeChart
+  ref={ref}
+  {...props}
+  progressiveDraw={{ durationMs: 2000 }}
+/>;
+// ref.current?.replay() chạy lại hiệu ứng khi cần
+```
+
+```vue [Vue]
+<RadialTreeChart :options="{ ...props, progressiveDraw: { durationMs: 2000 } }" />
+```
+
+```svelte [Svelte]
+<div use:radialTreeChart={{ ...props, progressiveDraw: { durationMs: 2000 } }}></div>
+```
+
+```ts [Angular]
+applyRadialTreeChartProps(this.c.nativeElement, {
+  ...props,
+  progressiveDraw: { durationMs: 2000 },
+});
+```
+
+```html [Web component]
+<michi-vz-radial-tree-chart id="c"></michi-vz-radial-tree-chart>
+<script>
+  const el = document.getElementById("c");
+  el.progressiveDraw = { durationMs: 2000 };
+  // el.replay() chạy lại hiệu ứng
+</script>
+```
+
+:::
+
+- `durationMs` và `easing` ("linear", "easeOutQuad", "easeInOutCubic", hoặc hàm `(t) => t` tự viết) quyết định nhịp vẽ.
+- `autoplay: false` hiển thị biểu đồ vẽ sẵn đầy đủ; gọi `replay()` (ref handle bên React, method của web component, hoặc instance của core) để chạy hiệu ứng khi cần. `replayOnUpdate: true` chạy lại mỗi lần dữ liệu thay đổi.
+- Tôn trọng `prefers-reduced-motion`: biểu đồ hiển thị đầy đủ ngay, không animation.
+- Hiệu ứng vẽ dần chỉ chạy một lần khi mount; mục xem dữ liệu chạy theo năm ở trên chạy từng năm một theo yêu cầu.
+
 ## Cách dùng
 
 ::: code-group

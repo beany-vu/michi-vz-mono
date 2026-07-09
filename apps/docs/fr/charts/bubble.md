@@ -70,6 +70,50 @@ Comme la page du nuage de points, la démo ci-dessous emprunte à la physique de
     { label: 'Muon chambers', color: '#9b5de5' },
   ]" caption="~1 500 amas d'énergie simulés" />
 
+## Faire defiler les annees
+
+Donnez un `date` à chaque bulle et activez `timeline` : le nuage de bulles devient un récit année par année, avec son propre bouton lecture et son curseur, un instantané des tailles à la fois. Désactivé par défaut - sans opt-in, rien ne change.
+
+<TimelinePlayDemo chart="bubble-chart" hint="Appuyez sur le bouton lecture sous le graphique : les données défilent année après année, un instantané à la fois. Faites glisser le curseur pour sauter à une année." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<BubbleChartHandle>(null);
+
+<BubbleChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<BubbleChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:bubbleChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyBubbleChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-bubble-chart id="c"></michi-vz-bubble-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Un `filter` (top-N, tri) s'applique toujours à l'intérieur de chaque période : seules les 5 meilleures bulles de l'année passent le filtre.
+- Les bulles sans `date` restent visibles à chaque période.
+
 ## Usage
 
 ::: code-group

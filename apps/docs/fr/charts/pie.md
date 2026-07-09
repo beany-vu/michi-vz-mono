@@ -43,6 +43,50 @@ PieChart possède un `renderer="webgpu"` optionnel qui dessine les parts comme d
 
 <WebgpuHeavyDemo element="michi-vz-pie-chart" :make="makePie" caption="40 slices" />
 
+## Faire defiler les annees
+
+Donnez un `date` à chaque part et activez `timeline` : le camembert devient un récit année par année, avec son propre bouton lecture et son curseur, un instantané des parts à la fois. Désactivé par défaut - sans opt-in, rien ne change.
+
+<TimelinePlayDemo chart="pie-chart" hint="Appuyez sur le bouton lecture sous le graphique : les données défilent année par année, un instantané à la fois. Faites glisser le curseur pour sauter à une année." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<PieChartHandle>(null);
+
+<PieChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+```
+
+```vue [Vue]
+<PieChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:pieChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyPieChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-pie-chart id="c"></michi-vz-pie-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(year)
+</script>
+```
+
+:::
+
+- `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Un `filter` (top-N, tri) s'applique toujours à l'intérieur de chaque période : seules les 5 meilleures parts de l'année passent le filtre.
+- Les parts sans `date` restent visibles à chaque période.
+
 ## Utilisation
 
 ::: code-group
