@@ -5,6 +5,8 @@
 import { resolveEasing, easeInOutCubic, type EasingFn } from "./easing";
 import { TimelineController } from "./timeline";
 import { defaultTicker, type Ticker } from "./ticker";
+import { defaultMotionPreference, type MotionPreference } from "./reducedMotion";
+import { createTweenDriver, type TweenDriver } from "./tween";
 import {
   createTimelineControlRefs,
   applyTimelineControl,
@@ -72,6 +74,38 @@ export function filterRowsToPeriod<T extends { date?: number | string }>(
   );
 }
 
+/** Between-period value interpolation: for each target row, lerp every finite
+ *  numeric field shared with the matching (same-label) row of the previous
+ *  frame. `date` and `label` are never lerped; rows entering the period appear
+ *  at their target values; rows leaving it drop at the step boundary. */
+export function interpolateRows<T extends { label?: string; date?: number | string }>(
+  from: T[],
+  to: T[],
+  t: number
+): T[] {
+  if (t >= 1) return to;
+  const byLabel = new Map(from.map(r => [r.label, r]));
+  return to.map(row => {
+    const prev = row.label !== undefined ? byLabel.get(row.label) : undefined;
+    if (!prev) return row;
+    const out: Record<string, unknown> = { ...row };
+    for (const key of Object.keys(row)) {
+      if (key === "date" || key === "label") continue;
+      const a = (prev as Record<string, unknown>)[key];
+      const b = (row as Record<string, unknown>)[key];
+      if (
+        typeof a === "number" &&
+        typeof b === "number" &&
+        Number.isFinite(a) &&
+        Number.isFinite(b)
+      ) {
+        out[key] = a + (b - a) * t;
+      }
+    }
+    return out as T;
+  });
+}
+
 // ---- Per-engine timeline lifecycle (controller + built-in control) ----
 
 export interface EngineTimeline {
@@ -92,17 +126,56 @@ export interface EngineTimeline {
 
 export function createEngineTimeline(deps: {
   ticker?: Ticker;
+  motion?: MotionPreference;
   requestRender: () => void;
 }): EngineTimeline {
   const ticker = deps.ticker ?? defaultTicker();
+  const motion = deps.motion ?? defaultMotionPreference();
   const refs = createTimelineControlRefs();
   let tl: TimelineController | null = null;
   let index = 0;
   let periodsSig = "";
   let activeCfg: ResolvedTimeline | null = null;
   let autoplayed = false;
+  // Between-period tween: `from` is whatever was last rendered (so a step that
+  // interrupts a running tween continues from the on-screen state, not a jump).
+  let lastRenderedRows: Array<{ label?: string; date?: number | string }> | null = null;
+  let tween: { from: Array<{ label?: string; date?: number | string }>; t: number; driver: TweenDriver } | null = null;
+
+  const stopTween = (): void => {
+    tween?.driver.stop();
+    tween = null;
+  };
+
+  const startTween = (): void => {
+    stopTween();
+    const cfg = activeCfg;
+    if (!cfg || !cfg.interpolate || motion.prefersReduced()) return;
+    const from = lastRenderedRows;
+    if (!from || from.length === 0) return;
+    const driver = createTweenDriver({
+      ticker,
+      motion,
+      durationMs: cfg.tweenMs ?? cfg.speedMs,
+      easing: cfg.easing,
+      from: 0,
+      to: 1,
+      onFrame: v => {
+        if (!tween) return;
+        tween.t = v;
+        deps.requestRender();
+      },
+      onDone: () => {
+        tween = null;
+        deps.requestRender();
+      },
+    });
+    tween = { from: from.slice(), t: 0, driver };
+    driver.start();
+  };
 
   const teardown = (): void => {
+    stopTween();
     tl?.destroy();
     tl = null;
     periodsSig = "";
@@ -138,6 +211,7 @@ export function createEngineTimeline(deps: {
           events: {
             onStep: (period, i) => {
               index = i;
+              startTween();
               deps.requestRender();
               activeCfg?.onStep?.(period, i);
             },
@@ -151,7 +225,12 @@ export function createEngineTimeline(deps: {
         filter && filter.date !== undefined && filter.date !== ""
           ? { ...filter, date: "" }
           : filter;
-      return { dataSet: filterRowsToPeriod(dataSet, periods[index]), filter: effFilter };
+      let rows = filterRowsToPeriod(dataSet, periods[index]);
+      if (tween && tween.t < 1) {
+        rows = interpolateRows(tween.from as typeof rows, rows, tween.t);
+      }
+      lastRenderedRows = rows;
+      return { dataSet: rows, filter: effFilter };
     },
     afterRender(host, cfg) {
       applyTimelineControl(host, refs, () => tl, Boolean(cfg && tl && cfg.showControl));

@@ -111,6 +111,7 @@ applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 10
 :::
 
 - `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
+- Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
 - De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
 - Combineer met `pointLabels` zodat elke bubbel een naam houdt terwijl hij beweegt; een `filter` blijft binnen elke periode gelden.
 - Punten zonder `date` blijven in elke periode zichtbaar.

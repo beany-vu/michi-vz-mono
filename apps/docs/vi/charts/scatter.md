@@ -111,6 +111,7 @@ applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 10
 :::
 
 - `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
+- Giá trị trượt mượt giữa các giai đoạn theo mặc định (`interpolate`); chỉnh chuyển động bằng `tweenMs` và `easing`, hoặc đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
 - Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
 - Kết hợp với `pointLabels` để mỗi bong bóng luôn có tên khi di chuyển; `filter` vẫn áp dụng bên trong từng giai đoạn.
 - Điểm không có `date` hiển thị ở mọi giai đoạn.

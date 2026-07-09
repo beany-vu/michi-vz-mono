@@ -119,6 +119,7 @@ applyGapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, 
 :::
 
 - `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
 - Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
 - Un `filter` (top-N, tri) s'applique toujours à l'intérieur de chaque période : un « top 5 par an » fonctionne d'emblée.
 - Les lignes sans `date` restent visibles à chaque période.

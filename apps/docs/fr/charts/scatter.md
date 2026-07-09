@@ -111,6 +111,7 @@ applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 10
 :::
 
 - `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
+- Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
 - Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
 - Associez-le à `pointLabels` pour que chaque bulle garde son nom en mouvement ; un `filter` s'applique toujours à l'intérieur de chaque période.
 - Les points sans `date` restent visibles à chaque période.

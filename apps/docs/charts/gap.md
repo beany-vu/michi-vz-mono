@@ -119,6 +119,7 @@ applyGapChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, 
 :::
 
 - `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
+- Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
 - The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
 - A `filter` (top-N, sorting) still applies inside each period, so a "top 5 per year" race works out of the box.
 - Rows without a `date` stay visible in every period.

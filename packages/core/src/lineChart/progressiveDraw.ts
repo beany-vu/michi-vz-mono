@@ -7,6 +7,7 @@
 import { svgEl } from "../dom";
 import { sanitizeForClassName } from "../math/sanitize";
 import { resolveEasing, easeInOutCubic, type EasingFn } from "../animation/easing";
+import { createTweenDriver } from "../animation/tween";
 import type { Ticker } from "../animation/ticker";
 import type { MotionPreference } from "../animation/reducedMotion";
 import type { LineChartProps, ProgressiveDrawTipLabelConfig } from "../types";
@@ -56,53 +57,23 @@ export function createProgressiveDrawDriver(deps: {
   onFrame(revealPx: number): void;
   onDone?(): void;
 }): ProgressiveDrawDriver {
-  let frameId: number | null = null;
-  let running = false;
-  let revealX = deps.startPx;
-
-  const emit = (x: number): void => {
-    revealX = x;
-    deps.onFrame(x);
-  };
-
-  const cancel = (): void => {
-    if (frameId !== null) {
-      deps.ticker.cancel(frameId);
-      frameId = null;
-    }
-    running = false;
-  };
-
-  const begin = (): void => {
-    cancel();
-    if (deps.motion.prefersReduced() || deps.durationMs <= 0) {
-      emit(deps.endPx);
-      deps.onDone?.();
-      return;
-    }
-    running = true;
-    const t0 = deps.ticker.now();
-    const loop = (now: number): void => {
-      const p = Math.min(1, (now - t0) / deps.durationMs);
-      emit(deps.startPx + deps.easing(p) * (deps.endPx - deps.startPx));
-      if (p >= 1) {
-        running = false;
-        frameId = null;
-        deps.onDone?.();
-        return;
-      }
-      frameId = deps.ticker.request(loop);
-    };
-    emit(deps.startPx);
-    frameId = deps.ticker.request(loop);
-  };
-
+  // Thin adapter over the generic scalar tween (animation/tween.ts).
+  const driver = createTweenDriver({
+    ticker: deps.ticker,
+    motion: deps.motion,
+    durationMs: deps.durationMs,
+    easing: deps.easing,
+    from: deps.startPx,
+    to: deps.endPx,
+    onFrame: deps.onFrame,
+    onDone: deps.onDone,
+  });
   return {
-    start: begin,
-    replay: begin,
-    stop: cancel,
-    isRunning: () => running,
-    getRevealX: () => revealX,
+    start: driver.start,
+    replay: driver.replay,
+    stop: driver.stop,
+    isRunning: driver.isRunning,
+    getRevealX: driver.getValue,
   };
 }
 

@@ -155,7 +155,11 @@ export function mountScatterChart(
   };
   // Opt-in "play through years": the controller + built-in control lifecycle is
   // shared engine glue; render() consumes the period-filtered dataSet it returns.
-  const engineTl = createEngineTimeline({ ticker: opts?.ticker, requestRender: () => render() });
+  const engineTl = createEngineTimeline({
+    ticker: opts?.ticker,
+    motion: opts?.motion,
+    requestRender: () => render(),
+  });
 
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
