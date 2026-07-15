@@ -1,0 +1,15 @@
+# Line endings. This repo is developed on macOS/Linux and formatted by Prettier, whose
+# endOfLine default is "lf". Force LF everywhere (repo AND working tree, on every
+# platform) so a Windows checkout cannot introduce CRLF that would fail `format:check`
+# or break the sh-based Git hooks. The tree is already LF, so this adds no diffs now.
+* text=auto eol=lf
+
+# Git hooks and shell scripts MUST stay LF: a CRLF shebang means "bad interpreter".
+.husky/** text eol=lf
+*.sh text eol=lf
+
+# Never touch binary bytes.
+*.png binary
+*.jpg binary
+*.woff2 binary
+*.ico binary
