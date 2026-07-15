@@ -1,0 +1,14 @@
+# Build output and deps
+**/dist
+**/node_modules
+
+# Generated / vendored
+pnpm-lock.yaml
+**/CHANGELOG.md
+**/.vitepress/cache
+**/.vitepress/dist
+**/storybook-static
+apps/docs/public/llms*.txt
+
+# Markdown left out of the first rollout to avoid churning the docs (246 files)
+**/*.md

@@ -125,7 +125,8 @@
   },
   "scripts": {
     "build": "tsup && tsup --config tsup.bundle.config.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
   },
   "publishConfig": {
     "access": "public"

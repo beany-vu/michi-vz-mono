@@ -83,6 +83,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
     "test": "vitest run"
   },
   "publishConfig": {

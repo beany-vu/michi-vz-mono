@@ -3,18 +3,31 @@ name: GitHub Releases
 # Creates a GitHub Release for each @michi-vz/<pkg>@<version> tag, with the notes
 # taken from that package's CHANGELOG.md section (written by Changesets).
 #
-# - Runs automatically when release tags are pushed (git push --follow-tags after
-#   a local `pnpm release`).
-# - Run manually from the Actions tab to BACKFILL releases for every tag that
-#   doesn't have one yet.
+# The job ALWAYS reconciles every tag idempotently (it skips tags that already
+# have a release), so a single run backfills every missing release. That matters
+# because:
+#   - GitHub does not reliably fire a per-tag "push" event when `changeset
+#     publish` pushes many package tags at once, and
+#   - tags created before this workflow existed never triggered it at all.
+#
+# Triggers:
+#   - push of any @michi-vz/*@* tag  -> reconcile all tags (backfills the batch)
+#   - schedule (daily)               -> self-heal any release that slipped through
+#   - workflow_dispatch              -> run the backfill by hand from the Actions tab
 on:
   push:
     tags:
       - "@michi-vz/*@*"
+  schedule:
+    - cron: "17 6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
+
+# Never let two reconcile runs (e.g. a tag push racing the daily schedule) run at
+# once; the second waits so they cannot both try to create the same release.
+concurrency: github-releases
 
 jobs:
   release-notes:
@@ -24,7 +37,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Create releases from tags
+      - name: Create a GitHub Release for every tag that lacks one
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -41,25 +54,34 @@ jobs:
             ' "$file"
           }
 
+          # Reconcile ALL tags, regardless of what triggered the run. make_release
+          # is called directly (not in a pipe/subshell) so it can bump the counters.
+          created=0
+          failed=0
           make_release() { # <tag>
             local tag="$1"
             local pkg ver notes
             pkg="${tag#@michi-vz/}"; pkg="${pkg%@*}"
             ver="${tag##*@}"
             if gh release view "$tag" >/dev/null 2>&1; then
-              echo "skip $tag (release exists)"
-              return
+              return   # release already exists; idempotent, nothing to do
             fi
             notes="$(notes_for "$pkg" "$ver")"
             [ -n "$notes" ] || notes="See packages/$pkg/CHANGELOG.md."
-            gh release create "$tag" --title "$tag" --notes "$notes" --verify-tag
-            echo "created $tag"
+            # Keep going on a single failure so one bad tag cannot block the batch;
+            # the job still fails at the end if anything could not be created.
+            if gh release create "$tag" --title "$tag" --notes "$notes" --verify-tag; then
+              echo "created $tag"
+              created=$((created + 1))
+            else
+              echo "WARN: could not create release for $tag" >&2
+              failed=$((failed + 1))
+            fi
           }
 
-          if [ "${{ github.event_name }}" = "push" ]; then
-            make_release "${GITHUB_REF#refs/tags/}"
-          else
-            for tag in $(git tag --list '@michi-vz/*@*'); do
-              make_release "$tag"
-            done
-          fi
+          for tag in $(git tag --list '@michi-vz/*@*'); do
+            make_release "$tag"
+          done
+
+          echo "Reconcile complete. Newly created: $created, failed: $failed"
+          [ "$failed" -eq 0 ]

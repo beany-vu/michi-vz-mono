@@ -12,6 +12,8 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "dev": "turbo run dev",
     "storybook": "pnpm --filter @michi-vz/storybook storybook",
     "build-storybook": "pnpm --filter @michi-vz/storybook build-storybook",
@@ -21,13 +23,26 @@
     "deploy:docs:preview": "netlify deploy --dir=apps/docs/.vitepress/dist",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish"
+    "release": "turbo run build && changeset publish",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
+    "@eslint/js": "^9",
+    "eslint": "^9",
+    "eslint-config-prettier": "^9",
+    "eslint-plugin-react-hooks": "^5",
+    "globals": "^15",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "playwright": "^1.61.1",
+    "prettier": "^3",
     "tsup": "^8.3.5",
     "turbo": "^2.3.3",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,yml,yaml,html,css,vue}": "prettier --write --ignore-unknown"
   }
 }
