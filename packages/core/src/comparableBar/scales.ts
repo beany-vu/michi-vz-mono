@@ -24,7 +24,7 @@ export function createComparableBarScales(
   height: number,
   margin: Margin,
   padding: ComparablePadding = { top: 0, right: 0, bottom: 0, left: 0 },
-  maxBarHeight?: number
+  maxBarHeight?: number,
 ): ComparableScales {
   // padding.left/right inset the PLOT (bars + value axis) without moving the y-axis
   // labels (anchored to margin.left) - opens a left column for the label chips.

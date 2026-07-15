@@ -18,7 +18,7 @@ export function renderBarBellSvg(
   parent: SVGElement,
   model: BarBellRenderModel,
   o: BarBellSvgOptions,
-  ia: BarBellInteractions
+  ia: BarBellInteractions,
 ): void {
   const root = svgEl("g", { class: "bar-bell-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";

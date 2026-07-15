@@ -16,10 +16,12 @@ export function createDualBarScales(
   labels: string[],
   width: number,
   height: number,
-  margin: Margin
+  margin: Margin,
 ): DualScales {
   const center = width / 2;
-  const xScale1 = scaleLinear().domain(xDomain).range([center, width - margin.right]);
+  const xScale1 = scaleLinear()
+    .domain(xDomain)
+    .range([center, width - margin.right]);
   const xScale2 = scaleLinear().domain(xDomain).range([center, margin.left]);
   const yScale = scaleBand<string>()
     .domain(labels)

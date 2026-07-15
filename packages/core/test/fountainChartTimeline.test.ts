@@ -27,13 +27,18 @@ const T0 = 68;
 const T1 = 318;
 const T2 = WIDTH;
 
-function mount(data: FountainDataItem[], extra: Partial<FountainChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  data: FountainDataItem[],
+  extra: Partial<FountainChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountFountainChart(
     host,
     { dataSet: data, title: "Demo", width: WIDTH, height: HEIGHT, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -73,7 +78,7 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
     const { host, chart } = mount(
       trend,
       { xAxisDataType: "number", timeline: { easing: "linear", tweenMs: 400 } },
-      ticker
+      ticker,
     );
     chart.timeline!()!.stepForward();
     ticker.tick(200);
@@ -92,7 +97,7 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
     const { host, chart } = mount(
       trend,
       { xAxisDataType: "number", timeline: { easing: "linear", tweenMs: 400 } },
-      ticker
+      ticker,
     );
     chart.timeline!()!.seek(2);
     ticker.tick(400);
@@ -106,7 +111,7 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
     const { host, chart } = mount(
       trend,
       { xAxisDataType: "number", timeline: { interpolate: false } },
-      ticker
+      ticker,
     );
     chart.timeline!()!.stepForward();
     expect(clipWidth(host)).toBeCloseTo(T1, 0);
@@ -123,7 +128,7 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
         timeline: true,
         progressiveDraw: { durationMs: 1000, easing: "linear" },
       },
-      ticker
+      ticker,
     );
     expect(clipWidth(host)).toBeCloseTo(T0, 3);
     ticker.tick(500);
@@ -137,7 +142,7 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
     const { host, chart } = mount(
       trend,
       { xAxisDataType: "number", timeline: { easing: "linear", tweenMs: 400 } },
-      ticker
+      ticker,
     );
     chart.timeline!()!.stepForward();
     ticker.tick(100);
@@ -166,7 +171,7 @@ describe("FountainChart timeline canvas mode (trend)", () => {
     const { host, chart } = mount(
       trend,
       { xAxisDataType: "number", timeline: { easing: "linear", tweenMs: 400 }, renderer: "canvas" },
-      ticker
+      ticker,
     );
     expect(host.querySelector(".mv-timeline")).not.toBeNull();
     expect(() => {
@@ -198,7 +203,7 @@ describe("FountainChart timeline webgpu mode (trend)", () => {
     const { host, chart } = mount(
       trend,
       { xAxisDataType: "number", timeline: true, renderer: "webgpu" },
-      ticker
+      ticker,
     );
     expect(chart.getContext()!.renderer).toBe("webgpu");
     expect(host.querySelector(".mv-timeline")).toBeNull();

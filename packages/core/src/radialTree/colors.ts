@@ -14,7 +14,7 @@ export function buildRadialTreeColors(
   groupKeys: string[],
   colors: string[] = [],
   colorsMapping?: Record<string, string>,
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): RadialTreeColorResolver {
   const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
   const generated: Record<string, string> = { ...colorsMapping };

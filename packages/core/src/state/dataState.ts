@@ -18,7 +18,7 @@ export type DataState = "loading" | "nodata" | "ready";
  */
 export function resolveIsNodata<T>(
   isNodata: boolean | ((dataSet: T[] | null | undefined) => boolean) | undefined,
-  dataSet: T[] | null | undefined
+  dataSet: T[] | null | undefined,
 ): boolean {
   if (typeof isNodata === "function") return isNodata(dataSet);
   if (typeof isNodata === "boolean") return isNodata;

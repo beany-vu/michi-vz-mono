@@ -52,7 +52,7 @@ export function buildScatterContext(input: BuildScatterContextInput): ScatterCha
   const xPart = isBand
     ? `x categories ${(input.xAxisDomain as string[]).join(", ")}`
     : `x ranges ${round((input.xAxisDomain as [number, number])[0])}-${round(
-        (input.xAxisDomain as [number, number])[1]
+        (input.xAxisDomain as [number, number])[1],
       )}`;
   summary += ` ${xPart}, y ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
   if (correlation !== null) {

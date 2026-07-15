@@ -5,7 +5,15 @@
 // markers → pushCircle/pushRect/pushFan depending on shape. Colours are resolved
 // through the SAME light-DOM probe canvas mode uses, so consumer CSS still
 // reaches GPU pixels. Text/axes/title/legend stay on the SVG layer.
-import { emptyBatch, pushRect, pushStroke, pushCircle, pushFan, markColor, drawMarksWebgpu } from "../webgpu/marks";
+import {
+  emptyBatch,
+  pushRect,
+  pushStroke,
+  pushCircle,
+  pushFan,
+  markColor,
+  drawMarksWebgpu,
+} from "../webgpu/marks";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import type { GapRenderModel, GapElement } from "./renderModel";
 import type { Shape } from "../types";
@@ -24,7 +32,7 @@ function addMarker(
   shape: Shape,
   x: number,
   cy: number,
-  c: ReturnType<typeof markColor>
+  c: ReturnType<typeof markColor>,
 ): void {
   if (shape === "square") {
     pushRect(batch.triangles, x - 7, cy - 7, 14, 14, c);
@@ -39,7 +47,7 @@ function addMarker(
         [x + R * 0.866, cy + R / 2],
         [x - R * 0.866, cy + R / 2],
       ],
-      c
+      c,
     );
   } else {
     pushCircle(batch.circles, x, cy, 6.3, c);
@@ -50,7 +58,7 @@ export function drawGapWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: GapRenderModel,
-  o: GapWebgpuOptions
+  o: GapWebgpuOptions,
 ): boolean {
   const labels = model.elements.map((e) => e.d.label);
   const byLabel = (pick: (e: GapElement) => string) => {
@@ -67,21 +75,29 @@ export function drawGapWebgpu(
     labels,
     (l) => gapFallback.get(l) || "transparent",
     makeSimpleProbe("rect", "gap-bar", "fill"),
-    "fill"
+    "fill",
   );
   const v1Colors = resolveMarkColors(
     svg,
     labels,
     (l) => v1Fallback.get(l) || "transparent",
-    makeSimpleProbe(o.shapeValue1 === "square" ? "rect" : "path", "gap-marker value1-marker", "fill"),
-    "fill"
+    makeSimpleProbe(
+      o.shapeValue1 === "square" ? "rect" : "path",
+      "gap-marker value1-marker",
+      "fill",
+    ),
+    "fill",
   );
   const v2Colors = resolveMarkColors(
     svg,
     labels,
     (l) => v2Fallback.get(l) || "transparent",
-    makeSimpleProbe(o.shapeValue2 === "square" ? "rect" : "path", "gap-marker value2-marker", "fill"),
-    "fill"
+    makeSimpleProbe(
+      o.shapeValue2 === "square" ? "rect" : "path",
+      "gap-marker value2-marker",
+      "fill",
+    ),
+    "fill",
   );
 
   const batch = emptyBatch();
@@ -98,7 +114,15 @@ export function drawGapWebgpu(
     // connecting line (dashed diff not expressible in the shared stroke helper -
     // draw solid; SVG/canvas keep the exact dash pattern).
     const lineC = markColor("white", markerOpacity);
-    pushStroke(batch.triangles, [[x1, center], [x2, center]], 2, lineC);
+    pushStroke(
+      batch.triangles,
+      [
+        [x1, center],
+        [x2, center],
+      ],
+      2,
+      lineC,
+    );
 
     // markers
     const v1C = markColor(v1Colors.get(label) || el.value1Color, markerOpacity);

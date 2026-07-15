@@ -25,7 +25,7 @@ export function renderRadialTreeSvg(
   parent: SVGElement,
   model: RadialTreeRenderModel,
   o: RadialTreeSvgOptions,
-  ia: RadialTreeInteractions
+  ia: RadialTreeInteractions,
 ): void {
   const root = svgEl("g", { class: "radial-tree-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
@@ -37,7 +37,7 @@ export function renderRadialTreeSvg(
         class: "radial-tree-link",
         d: linkPath(m),
         opacity: m.dimmed ? 0.15 : 0.4,
-      })
+      }),
     );
   }
   root.appendChild(linksG);
@@ -79,7 +79,7 @@ export function renderRadialTreeSvg(
         r: m.markRadius,
         fill: m.fill,
         opacity: 0.5,
-      })
+      }),
     );
 
     g.addEventListener("mouseenter", (e) => ia.onEnter(m, e));
@@ -97,7 +97,7 @@ export function renderRadialTreeSvg(
         cy: 0,
         r: model.centerRadius,
         fill: "var(--michi-vz-surface, #ffffff)",
-      })
+      }),
     );
   }
   if (model.centerLines.length > 0) {

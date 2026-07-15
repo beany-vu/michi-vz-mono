@@ -32,7 +32,7 @@ export function processBubbleData(
   opts: {
     disabledItems?: string[];
     filter?: { limit: number; sortingDir: "asc" | "desc" };
-  } = {}
+  } = {},
 ): ProcessedBubble {
   const disabled = new Set(opts.disabledItems ?? []);
   let nodes: BubbleNode[] = (dataSet ?? [])
@@ -45,9 +45,7 @@ export function processBubbleData(
 
   if (opts.filter && opts.filter.limit > 0) {
     const dir = opts.filter.sortingDir === "asc" ? 1 : -1;
-    nodes = [...nodes]
-      .sort((a, b) => dir * (a.value - b.value))
-      .slice(0, opts.filter.limit);
+    nodes = [...nodes].sort((a, b) => dir * (a.value - b.value)).slice(0, opts.filter.limit);
   }
 
   const groupKeys: string[] = [];

@@ -48,7 +48,12 @@ export type { MichiVzPlugin, PluginContext, AgentTool, Annotation } from "./plug
 export type { MountOptions } from "./types";
 
 // ---- Devtools hook (opt-in page-level registry consumed by @michi-vz/devtools) ----
-export { enableDevtools, getDevtoolsHook, attachDevtools, reportDevtoolsHit } from "./devtools/hook";
+export {
+  enableDevtools,
+  getDevtoolsHook,
+  attachDevtools,
+  reportDevtoolsHit,
+} from "./devtools/hook";
 export type { MichiVzDevtoolsHook, DevtoolsChartEntry, DevtoolsHitEvent } from "./devtools/hook";
 
 // ---- Styling ----
@@ -109,7 +114,12 @@ export { buildScatterColors } from "./scatterChart/colors";
 export { buildScatterContext } from "./context/buildScatterContext";
 export { checkScatterData } from "./validate/scatterWarnings";
 // VerticalStackBar pure layer (incl. the hasOwnProperty marker guard in prepareStackedData)
-export { extractDataKeys, resolveEffectiveKeys, collectDates, computeYDomain } from "./verticalStackBarChart/data";
+export {
+  extractDataKeys,
+  resolveEffectiveKeys,
+  collectDates,
+  computeYDomain,
+} from "./verticalStackBarChart/data";
 export { prepareStackedData } from "./verticalStackBarChart/stack";
 export { buildStackColors } from "./verticalStackBarChart/colors";
 export { buildStackRenderModel } from "./verticalStackBarChart/renderModel";
@@ -173,7 +183,12 @@ export { checkSankeyData } from "./validate/sankeyWarnings";
 export { processFountainData } from "./fountainChart/data";
 export { buildFountainColors } from "./fountainChart/colors";
 export { createFountainScales } from "./fountainChart/scales";
-export { buildJetPath, buildFrothSlices, buildDropletPaths, buildMistPath } from "./fountainChart/geometry";
+export {
+  buildJetPath,
+  buildFrothSlices,
+  buildDropletPaths,
+  buildMistPath,
+} from "./fountainChart/geometry";
 export { buildFountainRenderModel } from "./fountainChart/renderModel";
 export { buildFountainContext } from "./context/buildFountainContext";
 // ChoroplethMap pure layer (geo - the house's first geo chart; d3-geo/d3-geo-projection)
@@ -189,7 +204,11 @@ export { pointInGeometry } from "./choroplethMap/hitTest";
 export { buildChoroplethMapContext } from "./context/buildChoroplethMapContext";
 export { checkChoroplethMapData } from "./validate/choroplethMapWarnings";
 // Shared geo dispatch (ChoroplethMap + SymbolMap)
-export { PROJECTIONS as GEO_PROJECTIONS, createTunedProjection, createGeoPathGenerator } from "./geo/projections";
+export {
+  PROJECTIONS as GEO_PROJECTIONS,
+  createTunedProjection,
+  createGeoPathGenerator,
+} from "./geo/projections";
 // SymbolMap pure layer (geo - force-de-overlapped bubble map; d3-force + d3-geo)
 export { processSymbolMapData, isValidCoordinate } from "./symbolMap/data";
 export { buildSymbolMapColors } from "./symbolMap/colors";

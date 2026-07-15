@@ -108,7 +108,9 @@ describe("mountRangeChart - webgpu renderer (capability gate + fallback)", () =>
   it("update()/destroy() work in webgpu mode without throwing", () => {
     setGpu(true);
     const { host, chart } = mount({ renderer: "webgpu" });
-    expect(() => chart.update({ dataSet: dataSet.slice(0, 1), width: 600, height: 300, renderer: "webgpu" })).not.toThrow();
+    expect(() =>
+      chart.update({ dataSet: dataSet.slice(0, 1), width: 600, height: 300, renderer: "webgpu" }),
+    ).not.toThrow();
     expect(() => chart.destroy()).not.toThrow();
     expect(host.querySelectorAll("svg").length).toBe(0);
     host.remove();

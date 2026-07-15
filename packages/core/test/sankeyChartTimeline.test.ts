@@ -5,12 +5,7 @@ import type { SankeyChartProps, SankeyNodeItem, SankeyLinkItem } from "../src/ty
 
 // Nodes are shared across years (no `date`); a year's snapshot is the LINKS
 // sharing that date. Germany->Asia only exists in 2019.
-const nodes: SankeyNodeItem[] = [
-  { id: "France" },
-  { id: "Germany" },
-  { id: "EU" },
-  { id: "Asia" },
-];
+const nodes: SankeyNodeItem[] = [{ id: "France" }, { id: "Germany" }, { id: "EU" }, { id: "Asia" }];
 const linksByYear: SankeyLinkItem[] = [
   { source: "France", target: "EU", value: 40, date: "2018" },
   { source: "Germany", target: "EU", value: 30, date: "2018" },
@@ -25,7 +20,7 @@ function mount(extra: Partial<SankeyChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountSankeyChart(
     host,
     { nodes, links: linksByYear, width: 600, height: 400, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
@@ -33,8 +28,8 @@ function mount(extra: Partial<SankeyChartProps> = {}, ticker?: ManualTicker) {
 const visibleLinkPairs = (host: HTMLElement): Set<string> =>
   new Set(
     Array.from(host.querySelectorAll("path.link")).map(
-      (e) => `${e.getAttribute("data-source")}->${e.getAttribute("data-target")}`
-    )
+      (e) => `${e.getAttribute("data-source")}->${e.getAttribute("data-target")}`,
+    ),
   );
 
 describe("sankey chart timeline (off by default)", () => {
@@ -109,14 +104,13 @@ describe("sankey chart timeline precedence", () => {
 
   it("no `label` field on links: interpolateRows can't match by label, so a shared link's value hard-cuts to the target instead of tweening", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: { easing: "linear", tweenMs: 400 } },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: { easing: "linear", tweenMs: 400 } }, ticker);
     const tl = chart.timeline!()!;
     tl.stepForward(); // 2018 -> 2019, starts a tween attempt
     ticker.tick(200); // halfway through the 400ms tween window
-    const ctx = chart.getContext() as { links: { source: string; target: string; value: number }[] };
+    const ctx = chart.getContext() as {
+      links: { source: string; target: string; value: number }[];
+    };
     const franceToEu = ctx.links.find((l) => l.source === "France" && l.target === "EU")!;
     expect(franceToEu.value).toBe(60); // target value immediately, not 50 (the midpoint)
     chart.destroy();

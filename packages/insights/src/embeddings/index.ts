@@ -37,7 +37,10 @@ function fnv1a(s: string): number {
  * (`backend:"transformers"`). Crude but useful; the always-available fallback. */
 export function hashEmbed(text: string, dim = 128): number[] {
   const v = new Array(dim).fill(0);
-  const tokens = text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  const tokens = text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
   for (const t of tokens) {
     v[fnv1a(t) % dim] += 1; // whole word - keeps exact matches strong
     const w = `#${t}#`;
@@ -71,15 +74,21 @@ export interface Embedder {
  * back to the hashing embedder if the dep/model is unavailable. */
 export async function createEmbedder(options: EmbedOptions = {}): Promise<Embedder> {
   if ((options.backend ?? "hash") === "transformers") {
-    const mod = await optionalImport<{ pipeline?: (task: string, model?: string) => Promise<(t: string, o?: unknown) => Promise<{ data: ArrayLike<number> }>> }>(
-      "@huggingface/transformers"
-    );
+    const mod = await optionalImport<{
+      pipeline?: (
+        task: string,
+        model?: string,
+      ) => Promise<(t: string, o?: unknown) => Promise<{ data: ArrayLike<number> }>>;
+    }>("@huggingface/transformers");
     const pipeline = mod?.pipeline;
     if (pipeline) {
       try {
         // Redirect model downloads (mirror / self-hosted / offline) BEFORE loading.
         applyModelSource(mod, options.modelSource);
-        const extractor = await pipeline("feature-extraction", options.model ?? "Xenova/all-MiniLM-L6-v2");
+        const extractor = await pipeline(
+          "feature-extraction",
+          options.model ?? "Xenova/all-MiniLM-L6-v2",
+        );
         return {
           backend: "transformers",
           async embed(texts) {
@@ -115,7 +124,7 @@ export async function findSimilar<T>(
   query: string,
   items: T[],
   text: (item: T) => string,
-  options: EmbedOptions = {}
+  options: EmbedOptions = {},
 ): Promise<SimilarItem<T>[]> {
   const embedder = await createEmbedder(options);
   const [q] = await embedder.embed([query]);
@@ -171,7 +180,7 @@ function medoid(members: string[], vecs: number[][]): string {
  * United States), pair this with an alias list or an LLM (see the docs "Certify" recipe). */
 export async function reconcileLabels(
   labels: string[],
-  options: ReconcileOptions = {}
+  options: ReconcileOptions = {},
 ): Promise<ReconcileGroup[]> {
   const embedder = options.embedder ?? (await createEmbedder(options));
   const threshold = options.threshold ?? (embedder.backend === "transformers" ? 0.7 : 0.6);
@@ -196,7 +205,8 @@ export async function reconcileLabels(
         secondSim = s;
       }
     }
-    const confident = best && bestSim >= threshold && (secondSim < 0 || bestSim - secondSim >= margin);
+    const confident =
+      best && bestSim >= threshold && (secondSim < 0 || bestSim - secondSim >= margin);
     if (confident && best) {
       best.members.push(label);
       best.vecs.push(vecs[i]);
@@ -250,7 +260,10 @@ export interface MatchResult {
 }
 
 /** Best and second-best cosine of `vec` against every vector in `others`. */
-function bestAndSecond(vec: number[], others: number[][]): { index: number; sim: number; secondSim: number } {
+function bestAndSecond(
+  vec: number[],
+  others: number[][],
+): { index: number; sim: number; secondSim: number } {
   let index = -1;
   let sim = -Infinity;
   let secondSim = -Infinity;
@@ -281,7 +294,7 @@ function bestAndSecond(vec: number[], others: number[][]): { index: number; sim:
 export async function matchLabels(
   source: string[],
   target: string[],
-  options: MatchOptions = {}
+  options: MatchOptions = {},
 ): Promise<MatchResult> {
   const embedder = options.embedder ?? (await createEmbedder(options));
   const threshold = options.threshold ?? (embedder.backend === "transformers" ? 0.7 : 0.6);
@@ -329,13 +342,21 @@ export async function matchLabels(
   source.forEach((label, i) => {
     if (srcClaimed[i]) return;
     const b = srcBest[i];
-    unmatchedSource.push({ label, closest: b.index >= 0 ? target[b.index] : null, similarity: Math.max(0, b.sim) });
+    unmatchedSource.push({
+      label,
+      closest: b.index >= 0 ? target[b.index] : null,
+      similarity: Math.max(0, b.sim),
+    });
   });
   const unmatchedTarget: UnmatchedLabel[] = [];
   target.forEach((label, j) => {
     if (tgtClaimed[j]) return;
     const b = tgtBest[j];
-    unmatchedTarget.push({ label, closest: b.index >= 0 ? source[b.index] : null, similarity: Math.max(0, b.sim) });
+    unmatchedTarget.push({
+      label,
+      closest: b.index >= 0 ? source[b.index] : null,
+      similarity: Math.max(0, b.sim),
+    });
   });
 
   return { matches, unmatchedSource, unmatchedTarget };

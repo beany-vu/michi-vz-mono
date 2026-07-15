@@ -12,11 +12,7 @@ import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle } from "../render/svg";
 import { processBubbleData } from "../bubbleChart/data";
 import { buildBubbleColors } from "../bubbleChart/colors";
-import {
-  layoutBubbles,
-  layoutBubblesAsync,
-  type PackedBubble,
-} from "../bubbleChart/layout";
+import { layoutBubbles, layoutBubblesAsync, type PackedBubble } from "../bubbleChart/layout";
 import { toggleLoadingIndicator } from "../render/svg/loadingIndicator";
 import {
   buildBubbleRenderModel,
@@ -105,7 +101,7 @@ function resolve(p: BubbleChartProps): Resolved {
 export function mountBubbleChart(
   host: HTMLElement,
   initial: BubbleChartProps,
-  opts?: MountOptions<BubbleChartProps>
+  opts?: MountOptions<BubbleChartProps>,
 ): ChartInstance<BubbleChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-bubble-chart");
@@ -150,9 +146,7 @@ export function mountBubbleChart(
 
   let baseProps: BubbleChartProps = initial;
   let context: ChartContext | null = null;
-  const pluginList: MichiVzPlugin<BubbleChartProps>[] = [
-    ...(opts?.plugins ?? []),
-  ];
+  const pluginList: MichiVzPlugin<BubbleChartProps>[] = [...(opts?.plugins ?? [])];
   const pc: PluginContext<BubbleChartProps> = {
     chartType: "bubble-chart",
     getProps: () => baseProps,
@@ -200,8 +194,7 @@ export function mountBubbleChart(
     if (baseProps.tooltipFormatter) {
       htmlStr = baseProps.tooltipFormatter(bubbleToContext(b));
     } else {
-      const fmt =
-        baseProps.valueFormatter ?? defaultNumberFormatter(baseProps.locale);
+      const fmt = baseProps.valueFormatter ?? defaultNumberFormatter(baseProps.locale);
       const labels = baseProps.splitLabels ?? ["Realized", "Untapped"];
       htmlStr = `<strong>${b.label}</strong><br/>${fmt(b.value)}`;
       if (b.partial != null) {
@@ -265,12 +258,7 @@ export function mountBubbleChart(
     },
   });
 
-  function renderLegend(
-    parent: SVGElement,
-    m: BubbleRenderModel,
-    x: number,
-    y: number
-  ): void {
+  function renderLegend(parent: SVGElement, m: BubbleRenderModel, x: number, y: number): void {
     const g = svgEl("g", { class: "bubble-legend" });
     let cx = x;
     for (const item of m.legend) {
@@ -283,7 +271,7 @@ export function mountBubbleChart(
           height: 12,
           rx: 2,
           fill: m.legendColor,
-        })
+        }),
       );
       if (item.opacity < 1) {
         g.appendChild(
@@ -296,7 +284,7 @@ export function mountBubbleChart(
             rx: 2,
             fill: "#ffffff",
             opacity: Math.max(0, Math.min(0.95, 1 - item.opacity)),
-          })
+          }),
         );
       }
       const text = svgEl("text", {
@@ -337,7 +325,7 @@ export function mountBubbleChart(
       processed.groupKeys,
       props.colors,
       seededMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -349,10 +337,7 @@ export function mountBubbleChart(
 
     const legendH = r.showLegend && showSplit ? 26 : 0;
     const plotW = Math.max(0, r.width - r.margin.left - r.margin.right);
-    const plotH = Math.max(
-      0,
-      r.height - r.margin.top - r.margin.bottom - legendH
-    );
+    const plotH = Math.max(0, r.height - r.margin.top - r.margin.bottom - legendH);
 
     const layoutOptions = {
       width: plotW,
@@ -446,16 +431,14 @@ export function mountBubbleChart(
               tooltip.classList.add("sticky");
               showTooltip(bubble, ev);
             },
-          }
+          },
         );
       }
 
-      if (legendH > 0)
-        renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
+      if (legendH > 0) renderLegend(svg, model, r.margin.left, r.height - r.margin.bottom - 6);
 
       if (r.renderer === "webgpu") {
-        if (!webgpuCanvas)
-          webgpuCanvas = makeLayerCanvas("bubbleChart-webgpu-canvas");
+        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("bubbleChart-webgpu-canvas");
         const ready = drawBubbleWebgpu(webgpuCanvas, svg, model, {
           width: r.width,
           height: r.height,

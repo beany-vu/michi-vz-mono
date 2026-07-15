@@ -21,7 +21,7 @@ export function createLineScales(
   height: number,
   margin: Margin,
   xAxisDataType: XaxisDataType,
-  yAxisScale?: "linear" | "log"
+  yAxisScale?: "linear" | "log",
 ): LineScales {
   const [xlo, xhi] = xDomain;
   let xScale: LineXScale;

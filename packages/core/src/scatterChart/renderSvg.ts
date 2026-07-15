@@ -28,7 +28,13 @@ function mark(p: ScatterPointModel): SVGElement {
     opacity: p.dimmed ? 0.1 : 0.9,
   };
   if (p.shape === "square") {
-    return svgEl("rect", { ...common, x: p.cx - p.r, y: p.cy - p.r, width: p.r * 2, height: p.r * 2 });
+    return svgEl("rect", {
+      ...common,
+      x: p.cx - p.r,
+      y: p.cy - p.r,
+      width: p.r * 2,
+      height: p.r * 2,
+    });
   }
   if (p.shape === "triangle") {
     const d = `M${p.cx},${p.cy - p.r} L${p.cx + p.r},${p.cy + p.r} L${p.cx - p.r},${p.cy + p.r} Z`;
@@ -41,7 +47,7 @@ export function renderScatterSvg(
   parent: SVGElement,
   model: ScatterRenderModel,
   o: ScatterSvgOptions,
-  ia: ScatterInteractions
+  ia: ScatterInteractions,
 ): void {
   const root = svgEl("g", { class: "scatter-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";

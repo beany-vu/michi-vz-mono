@@ -84,7 +84,7 @@ interface Resolved {
 }
 
 function defaultDeltaFormatter(
-  p: ComparableVerticalBarChartProps
+  p: ComparableVerticalBarChartProps,
 ): (diff: number, d: ComparableBarDataPoint) => string {
   const fmt = p.yAxisFormat ?? defaultNumberFormatter(p.locale);
   return (diff) => {
@@ -127,7 +127,7 @@ function resolve(p: ComparableVerticalBarChartProps): Resolved {
 export function mountComparableVerticalBarChart(
   host: HTMLElement,
   initial: ComparableVerticalBarChartProps,
-  opts?: MountOptions<ComparableVerticalBarChartProps>
+  opts?: MountOptions<ComparableVerticalBarChartProps>,
 ): ChartInstance<ComparableVerticalBarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-comparable-vertical-bar-chart");
@@ -202,7 +202,7 @@ export function mountComparableVerticalBarChart(
   const showTooltip = (
     d: ComparableBarDataPoint,
     ev: MouseEvent,
-    type?: "based" | "compared"
+    type?: "based" | "compared",
   ): void => {
     // Legacy 3-arg contract: (datum, dataSet, hovered sub-bar type).
     const htmlStr = baseProps.tooltipFormatter
@@ -219,7 +219,11 @@ export function mountComparableVerticalBarChart(
     tooltip.style.left = `${x + tw + 10 > r.width ? Math.max(0, x - tw - 10) : x + 10}px`;
     tooltip.style.top = `${y - th - 10 < 0 ? y + 10 : y - th - 10}px`;
   };
-  const subBarTypeAt = (bar: ComparableVerticalBarModel, x: number, y: number): "based" | "compared" | undefined => {
+  const subBarTypeAt = (
+    bar: ComparableVerticalBarModel,
+    x: number,
+    y: number,
+  ): "based" | "compared" | undefined => {
     // compared is drawn in front; prefer it when the two overlap (full-bandwidth overlay).
     const inSeg = (s: { x: number; width: number; y: number; height: number }): boolean =>
       x >= s.x && x <= s.x + s.width && y >= s.y && y <= s.y + s.height;
@@ -241,7 +245,10 @@ export function mountComparableVerticalBarChart(
     for (const bar of model.bars) {
       if (x >= bar.x && x <= bar.x + bar.width) {
         const top = Math.min(bar.based.y, bar.compared.y);
-        const bottom = Math.max(bar.based.y + bar.based.height, bar.compared.y + bar.compared.height);
+        const bottom = Math.max(
+          bar.based.y + bar.based.height,
+          bar.compared.y + bar.compared.height,
+        );
         if (y >= top && y <= bottom) {
           hit = bar;
           break;
@@ -306,7 +313,7 @@ export function mountComparableVerticalBarChart(
     const tlData = engineTl.beforeRender(
       r.timeline,
       props.dataSet,
-      props.filter as unknown as Filter | undefined
+      props.filter as unknown as Filter | undefined,
     );
     const { points, labels, yAxisDomain } = processComparableVerticalBarData(tlData.dataSet, {
       disabledItems: props.disabledItems,
@@ -319,7 +326,7 @@ export function mountComparableVerticalBarChart(
       tlData.dataSet,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -339,7 +346,14 @@ export function mountComparableVerticalBarChart(
     // clip. bandWidth = xScale.step() is independent of margin.bottom, so
     // deciding the mode before the final scales is safe (no feedback loop).
     let margin = r.margin;
-    let scales = createComparableVerticalBarScales(labels, yAxisDomain, r.width, r.height, margin, r.maxBarWidth);
+    let scales = createComparableVerticalBarScales(
+      labels,
+      yAxisDomain,
+      r.width,
+      r.height,
+      margin,
+      r.maxBarWidth,
+    );
     const axis = r.hideTickLabels
       ? { mode: "horizontal" as const, tickValues: [] as string[] }
       : chooseAxisMode({
@@ -351,12 +365,22 @@ export function mountComparableVerticalBarChart(
           forceMode: r.xAxisMode,
         });
     if (axis.mode === "rotated") {
-      const maxLabelWidth = axis.tickValues.reduce((m, v) => Math.max(m, measureLabelWidth(xFormat(v))), 0);
+      const maxLabelWidth = axis.tickValues.reduce(
+        (m, v) => Math.max(m, measureLabelWidth(xFormat(v))),
+        0,
+      );
       // 25 (axis offset) + 14 (label translate) + label·sin45 + 12 (descender pad)
       const required = Math.ceil(25 + 14 + maxLabelWidth * Math.SQRT1_2 + 12);
       if (required > margin.bottom) {
         margin = { ...margin, bottom: required };
-        scales = createComparableVerticalBarScales(labels, yAxisDomain, r.width, r.height, margin, r.maxBarWidth);
+        scales = createComparableVerticalBarScales(
+          labels,
+          yAxisDomain,
+          r.width,
+          r.height,
+          margin,
+          r.maxBarWidth,
+        );
       }
     }
 
@@ -393,7 +417,9 @@ export function mountComparableVerticalBarChart(
       // Real <defs><pattern> SVG hatch fill for patternsMapping (svg mode only -
       // canvas/webgpu tile the same data-URI via ctx.createPattern instead).
       const patternIds =
-        r.renderer === "svg" ? ensurePatternDefs(svg, props.patternsMapping) : new Map<string, string>();
+        r.renderer === "svg"
+          ? ensurePatternDefs(svg, props.patternsMapping)
+          : new Map<string, string>();
 
       if (r.renderer === "svg") {
         renderComparableVerticalSvg(
@@ -420,7 +446,7 @@ export function mountComparableVerticalBarChart(
               tooltip.classList.add("sticky");
               showTooltip(bar.raw, ev, type);
             },
-          }
+          },
         );
       }
 
@@ -454,7 +480,7 @@ export function mountComparableVerticalBarChart(
               patternsMapping: props.patternsMapping,
             },
             // Re-render once a hatch pattern image finishes loading so it paints.
-            () => render()
+            () => render(),
           );
         }
       } else if (r.renderer === "canvas") {
@@ -471,7 +497,7 @@ export function mountComparableVerticalBarChart(
             valueComparedOpacity: r.valueComparedOpacity,
             patternsMapping: props.patternsMapping,
           },
-          () => render()
+          () => render(),
         );
       } else {
         removeCanvas();

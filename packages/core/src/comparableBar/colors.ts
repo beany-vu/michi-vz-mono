@@ -12,7 +12,7 @@ export function buildComparableBarColors(
   points: ComparableBarDataPoint[],
   colors: string[] = [],
   colorsMapping?: Record<string, string>,
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): ComparableColorResolver {
   const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
   const generated: Record<string, string> = { ...colorsMapping };
@@ -22,7 +22,7 @@ export function buildComparableBarColors(
     if (generated[d.label]) continue;
     generated[d.label] = skipColorMappingDispatch
       ? "transparent"
-      : d.color ?? palette[i % palette.length];
+      : (d.color ?? palette[i % palette.length]);
     i++;
   }
 

@@ -13,13 +13,7 @@
 // The sim runs to a settled state SYNCHRONOUSLY (no animation) so SVG and canvas
 // render identical positions; d3-force's default PRNG makes the result
 // reproducible (deterministic, no Math.random).
-import {
-  forceSimulation,
-  forceManyBody,
-  forceX,
-  forceY,
-  forceCollide,
-} from "d3-force";
+import { forceSimulation, forceManyBody, forceX, forceY, forceCollide } from "d3-force";
 import type { SimulationNodeDatum } from "d3-force";
 import type { BubbleNode } from "./data";
 
@@ -60,10 +54,7 @@ function buildSim(nodes: BubbleNode[], o: BubbleLayoutOptions) {
 
   // Pick k so Σ(π·r²) = fillRatio·area, with r = k·√value (area ∝ value).
   const area = o.width * o.height;
-  const k =
-    totalValue > 0
-      ? Math.sqrt((o.fillRatio * area) / (Math.PI * totalValue))
-      : 0;
+  const k = totalValue > 0 ? Math.sqrt((o.fillRatio * area) / (Math.PI * totalValue)) : 0;
   const maxR = Math.min(o.width, o.height) / 2;
   const pad = Math.max(0, o.padding);
 
@@ -90,24 +81,18 @@ function buildSim(nodes: BubbleNode[], o: BubbleLayoutOptions) {
       forceCollide<SimNode>()
         .radius((d) => d.r + pad / 2)
         .strength(1)
-        .iterations(COLLIDE_ITERATIONS)
+        .iterations(COLLIDE_ITERATIONS),
     )
     .stop();
   // A zero-strength many-body still pays the Barnes-Hut quadtree every tick;
   // only add the force when it actually does something.
   if (o.chargeStrength !== 0) {
-    simulation.force(
-      "charge",
-      forceManyBody<SimNode>().strength(o.chargeStrength)
-    );
+    simulation.force("charge", forceManyBody<SimNode>().strength(o.chargeStrength));
   }
   return { sim, simulation, cx, cy };
 }
 
-export function layoutBubbles(
-  nodes: BubbleNode[],
-  o: BubbleLayoutOptions
-): PackedBubble[] {
+export function layoutBubbles(nodes: BubbleNode[], o: BubbleLayoutOptions): PackedBubble[] {
   if (nodes.length === 0 || o.width <= 0 || o.height <= 0) return [];
   const { sim, simulation, cx, cy } = buildSim(nodes, o);
   simulation.tick(o.settleTicks ?? SETTLE_TICKS);
@@ -123,7 +108,7 @@ export function layoutBubbles(
 export function layoutBubblesAsync(
   nodes: BubbleNode[],
   o: BubbleLayoutOptions,
-  opts: { budgetMs?: number } = {}
+  opts: { budgetMs?: number } = {},
 ): { promise: Promise<PackedBubble[] | null>; cancel: () => void } {
   if (nodes.length === 0 || o.width <= 0 || o.height <= 0) {
     return { promise: Promise.resolve([]), cancel: () => {} };
@@ -135,8 +120,7 @@ export function layoutBubblesAsync(
 
   const nextFrame = (): Promise<void> =>
     new Promise((resolve) => {
-      if (typeof requestAnimationFrame === "function")
-        requestAnimationFrame(() => resolve());
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => resolve());
       else setTimeout(resolve, 0);
     });
 
@@ -160,7 +144,7 @@ function fitAndCentre(
   sim: SimNode[],
   o: BubbleLayoutOptions,
   cx: number,
-  cy: number
+  cy: number,
 ): PackedBubble[] {
   // Tight bounding box of the settled cluster, padded by each bubble's radius so
   // the box encloses the circle outlines, not just the centres.
@@ -184,7 +168,7 @@ function fitAndCentre(
   const s = Math.min(
     clusterW > 0 ? o.width / clusterW : 1,
     clusterH > 0 ? o.height / clusterH : 1,
-    1
+    1,
   );
 
   // Re-centre the scaled cluster in the plot box.

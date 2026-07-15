@@ -36,23 +36,23 @@ function mount(extra: Partial<RadialTreeChartProps> = {}, ticker?: ManualTicker)
   const chart = mountRadialTreeChart(
     host,
     { dataSet: years, width: 600, height: 400, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
 
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("circle.radial-tree-node-circle[data-node-safe]")).map(
-      (e) => e.getAttribute("data-label")!
-    )
+    Array.from(host.querySelectorAll("circle.radial-tree-node-circle[data-node-safe]")).map((e) =>
+      e.getAttribute("data-label")!,
+    ),
   );
 
 const visibleNodeSafes = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("circle.radial-tree-node-circle")).map(
-      (e) => e.getAttribute("data-node-safe")!
-    )
+    Array.from(host.querySelectorAll("circle.radial-tree-node-circle")).map((e) =>
+      e.getAttribute("data-node-safe")!,
+    ),
   );
 
 describe("radial tree chart timeline (off by default)", () => {
@@ -117,10 +117,7 @@ describe("radial tree chart timeline control UI", () => {
 describe("radial tree chart timeline value tweening (hierarchy recursion)", () => {
   it("mid-tween, the shared 'Coffee' leaf's value sits strictly between its two periods' values", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: { easing: "linear", tweenMs: 400 } },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: { easing: "linear", tweenMs: 400 } }, ticker);
     const tl = chart.timeline!()!;
     tl.stepForward(); // 2018 -> 2019, starts the tween from the on-screen 2018 frame
     ticker.tick(200); // halfway through the 400ms tween
@@ -134,10 +131,7 @@ describe("radial tree chart timeline value tweening (hierarchy recursion)", () =
 
   it("precedence: timeline wins over progressiveDraw when both are set (no reveal clip)", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: true, progressiveDraw: true },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: true, progressiveDraw: true }, ticker);
     expect(host.querySelector("clipPath rect")).toBeNull();
     chart.destroy();
     host.remove();

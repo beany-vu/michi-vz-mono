@@ -17,14 +17,14 @@ function mount(extra: Partial<BubbleChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountBubbleChart(
     host,
     { dataSet: years, width: 400, height: 300, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
 
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("[data-label]")).map((e) => e.getAttribute("data-label")!)
+    Array.from(host.querySelectorAll("[data-label]")).map((e) => e.getAttribute("data-label")!),
   );
 
 describe("bubble chart timeline (off by default)", () => {

@@ -35,14 +35,15 @@ function seriesContext(it: RangeDataItem, color: string): RangeSeriesContext {
 }
 
 export function buildRangeContext(input: BuildRangeContextInput): RangeChartContext {
-  const series = input.items.map((it) => seriesContext(it, input.colorsMapping[it.label] ?? it.color ?? ""));
+  const series = input.items.map((it) =>
+    seriesContext(it, input.colorsMapping[it.label] ?? it.color ?? ""),
+  );
   const pointCount = series.reduce((n, s) => n + s.pointCount, 0);
 
   const titlePart = input.title ? `"${input.title}" ` : "";
-  const summary =
-    `Range chart ${titlePart}with ${series.length} band${series.length === 1 ? "" : "s"} over ${pointCount} point${
-      pointCount === 1 ? "" : "s"
-    }. Value range ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
+  const summary = `Range chart ${titlePart}with ${series.length} band${series.length === 1 ? "" : "s"} over ${pointCount} point${
+    pointCount === 1 ? "" : "s"
+  }. Value range ${round(input.yAxisDomain[0])}-${round(input.yAxisDomain[1])}.`;
 
   // Flat legend rows keyed to the SAME resolved colours as the series contexts,
   // so consumer colour authorities and the docs demo legend match the marks.

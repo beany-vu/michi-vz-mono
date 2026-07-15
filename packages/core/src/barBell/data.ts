@@ -11,7 +11,7 @@ export function processBarBellData(
   dataSet: BarBellDataRow[],
   keys: string[],
   disabledItems?: string[],
-  xAxisDomain?: [number, number]
+  xAxisDomain?: [number, number],
 ): ProcessedBarBell {
   const disabled = new Set(disabledItems ?? []);
   const activeKeys = keys.filter((k) => !disabled.has(k));

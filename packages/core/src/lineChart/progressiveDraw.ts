@@ -21,7 +21,7 @@ export interface ResolvedProgressiveDraw {
 }
 
 export function resolveProgressiveDraw(
-  v: LineChartProps["progressiveDraw"]
+  v: LineChartProps["progressiveDraw"],
 ): ResolvedProgressiveDraw | null {
   if (!v) return null;
   const cfg = v === true ? {} : v;
@@ -84,7 +84,7 @@ let clipSeq = 0;
 export function installProgressiveClip(
   svg: SVGElement,
   contentRoot: SVGElement,
-  height: number
+  height: number,
 ): SVGRectElement {
   const id = `mv-progressive-clip-${++clipSeq}`;
   const clip = svgEl("clipPath", { id });
@@ -126,7 +126,7 @@ export function computeTipLabels(
   entries: TipEntry[],
   colorOf: (label: string) => string,
   revealX: number,
-  cfg: ProgressiveDrawTipLabelConfig
+  cfg: ProgressiveDrawTipLabelConfig,
 ): TipLabelTarget[] {
   const targets: TipLabelTarget[] = [];
   for (const entry of entries) {
@@ -182,7 +182,7 @@ export function setTipLabels(group: SVGGElement, targets: TipLabelTarget[]): voi
   for (const t of targets) {
     seen.add(t.label);
     let node = group.querySelector<SVGTextElement>(
-      `text.mv-progressive-tip[data-label-safe="${t.safe}"]`
+      `text.mv-progressive-tip[data-label-safe="${t.safe}"]`,
     );
     if (!node) {
       node = svgEl("text", {
@@ -209,7 +209,7 @@ export function setTipLabels(group: SVGGElement, targets: TipLabelTarget[]): voi
 export function drawTipLabelsCanvas(
   ctx: CanvasRenderingContext2D,
   targets: TipLabelTarget[],
-  fontFamily: string
+  fontFamily: string,
 ): void {
   ctx.save();
   ctx.font = `12px ${fontFamily}`;

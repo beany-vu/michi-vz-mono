@@ -19,7 +19,7 @@ type SharedProps = {
 
 export function resolveEffectiveProps<P extends SharedProps>(
   props: P,
-  state: Partial<MichiVzState> | null | undefined
+  state: Partial<MichiVzState> | null | undefined,
 ): P {
   if (!state) return props;
   const merged: P = { ...props };

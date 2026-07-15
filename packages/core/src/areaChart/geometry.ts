@@ -11,7 +11,7 @@ import type { ScaleLinear } from "d3-scale";
 export function areaProjectX(
   row: { date: number | string },
   xScale: AreaXScale,
-  t: XaxisDataType
+  t: XaxisDataType,
 ): number {
   const v = parseXValue(row.date, t);
   return (xScale as (x: number | Date) => number)(v);
@@ -21,7 +21,7 @@ export function makeAreaGenerator(
   xScale: AreaXScale,
   yScale: ScaleLinear<number, number>,
   xAxisDataType: XaxisDataType,
-  curve?: CurveType
+  curve?: CurveType,
 ): (values: AreaStackedPoint[]) => string | null {
   const gen = d3area<AreaStackedPoint>()
     .defined(() => true)

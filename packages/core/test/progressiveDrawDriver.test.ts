@@ -18,7 +18,7 @@ function make(over: Partial<Parameters<typeof createProgressiveDrawDriver>[0]> =
     easing: linear,
     startPx: 100,
     endPx: 600,
-    onFrame: x => frames.push(x),
+    onFrame: (x) => frames.push(x),
     onDone,
     ...over,
   });

@@ -22,7 +22,7 @@ export function drawRadialTreeWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RadialTreeRenderModel,
-  o: RadialTreeWebgpuOptions
+  o: RadialTreeWebgpuOptions,
 ): boolean {
   drawRadialTreeCanvas(canvas, svg, model, {
     width: o.width,

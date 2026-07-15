@@ -21,13 +21,18 @@ function prep(
     missingDataMarker?: { height: number };
     minBarHeight?: number;
     disabledItems?: string[];
-  } = {}
+  } = {},
 ) {
   const dataKeys = extractDataKeys(dataSet);
   const effectiveKeys = resolveEffectiveKeys(dataKeys, opts.keys, opts.disabledItems);
   const dates = collectDates(dataSet);
   const yDomain = computeYDomain(dataSet, effectiveKeys);
-  const scales = createStackScales(dates, yDomain, 600, 400, { top: 20, right: 20, bottom: 40, left: 40 });
+  const scales = createStackScales(dates, yDomain, 600, 400, {
+    top: 20,
+    right: 20,
+    bottom: 40,
+    left: 40,
+  });
   const colors = buildStackColors(effectiveKeys);
   const prepared = prepareStackedData(dataSet, effectiveKeys, scales, colors, {
     keysOrder: "topToBottom",
@@ -44,9 +49,13 @@ describe("VerticalStackBar key extraction + ordering", () => {
   it("extracts the union of keys excluding date/code", () => {
     expect(
       extractDataKeys([
-        { seriesKey: "X", seriesKeyAbbreviation: "X", series: [{ date: "2001", A: "1", code: "x" }] },
+        {
+          seriesKey: "X",
+          seriesKeyAbbreviation: "X",
+          series: [{ date: "2001", A: "1", code: "x" }],
+        },
         { seriesKey: "Y", seriesKeyAbbreviation: "Y", series: [{ date: "2001", B: "2" }] },
-      ])
+      ]),
     ).toEqual(["A", "B"]);
   });
   it("honors explicit keys, appends natural, drops unknown + disabled", () => {
@@ -64,7 +73,11 @@ describe("hasOwnProperty marker guard (HARD RULE)", () => {
   // DataSet's (absent) key.
   it("emits NO stub for keys absent from the data point (no strip-of-stubs)", () => {
     const dataSet: VerticalStackBarDataSet[] = [
-      { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: [{ date: "2001", Africa: "10" }] },
+      {
+        seriesKey: "Africa",
+        seriesKeyAbbreviation: "AF",
+        series: [{ date: "2001", Africa: "10" }],
+      },
       { seriesKey: "Asia", seriesKeyAbbreviation: "AS", series: [{ date: "2001", Asia: "20" }] },
     ];
     const { prepared } = prep(dataSet, { missingDataMarker: { height: 2 } });
@@ -76,7 +89,11 @@ describe("hasOwnProperty marker guard (HARD RULE)", () => {
 
   it("emits a stub for an EXPLICITLY-present null key (when marker configured)", () => {
     const dataSet: VerticalStackBarDataSet[] = [
-      { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: [{ date: "2001", Africa: null }] },
+      {
+        seriesKey: "Africa",
+        seriesKeyAbbreviation: "AF",
+        series: [{ date: "2001", Africa: null }],
+      },
     ];
     const { prepared } = prep(dataSet, { missingDataMarker: { height: 3 } });
     expect(prepared.stackedData.Africa.length).toBe(1);
@@ -87,7 +104,11 @@ describe("hasOwnProperty marker guard (HARD RULE)", () => {
 
   it("emits NO stub when missingDataMarker is omitted (backward compat)", () => {
     const dataSet: VerticalStackBarDataSet[] = [
-      { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: [{ date: "2001", Africa: null }] },
+      {
+        seriesKey: "Africa",
+        seriesKeyAbbreviation: "AF",
+        series: [{ date: "2001", Africa: null }],
+      },
     ];
     const { prepared } = prep(dataSet);
     expect(prepared.stackedData.Africa.length).toBe(0);
@@ -97,7 +118,11 @@ describe("hasOwnProperty marker guard (HARD RULE)", () => {
 describe("VerticalStackBar flooring", () => {
   it("floors a sub-pixel non-zero segment to minBarHeight but leaves zero unfloored", () => {
     const dataSet: VerticalStackBarDataSet[] = [
-      { seriesKey: "X", seriesKeyAbbreviation: "X", series: [{ date: "2001", a: "0.01", b: "0", c: "100" }] },
+      {
+        seriesKey: "X",
+        seriesKeyAbbreviation: "X",
+        series: [{ date: "2001", a: "0.01", b: "0", c: "100" }],
+      },
     ];
     const { prepared } = prep(dataSet);
     expect(prepared.stackedData.a[0].height).toBe(15); // tiny non-zero -> floored
@@ -123,10 +148,9 @@ describe("VerticalStackBar filter = DataSet ranking (legacy parity)", () => {
     { seriesKey: "C", seriesKeyAbbreviation: "C", series: [{ date: "2001", v: 20 }] },
   ];
   it("keeps the top-N DataSets by grand total (desc)", () => {
-    expect(applySeriesFilter(ds, { limit: 2, sortingDir: "desc" }).map((d) => d.seriesKey)).toEqual([
-      "B",
-      "C",
-    ]); // 30, 20
+    expect(applySeriesFilter(ds, { limit: 2, sortingDir: "desc" }).map((d) => d.seriesKey)).toEqual(
+      ["B", "C"],
+    ); // 30, 20
   });
   it("keeps the bottom-N DataSets (asc)", () => {
     expect(applySeriesFilter(ds, { limit: 2, sortingDir: "asc" }).map((d) => d.seriesKey)).toEqual([
@@ -147,7 +171,7 @@ describe("VerticalStackBar disabled DataSet widens remaining bars (legacy parity
     const disabled = prep(ds, { keys: ["seg"], disabledItems: ["grpB"] });
     expect(disabled.prepared.groupWidth).toBeGreaterThan(full.prepared.groupWidth);
     expect(disabled.prepared.stackedData.seg[0].width).toBeGreaterThan(
-      full.prepared.stackedData.seg[0].width
+      full.prepared.stackedData.seg[0].width,
     );
   });
 });
@@ -202,7 +226,10 @@ describe("VerticalStackBar legend keeps disabled keys flagged (pill dims, not di
 
   // Mirror the engine wiring: orderedKeys (no disabled drop) feeds the legend
   // order + colour slots; effectiveKeys (disabled dropped) feeds the stack.
-  function modelWith(disabledItems: string[] = [], keysOrder: "topToBottom" | "bottomToTop" = "topToBottom") {
+  function modelWith(
+    disabledItems: string[] = [],
+    keysOrder: "topToBottom" | "bottomToTop" = "topToBottom",
+  ) {
     const dataKeys = extractDataKeys(dataSet);
     const orderedKeys = resolveEffectiveKeys(dataKeys, undefined, []);
     const effectiveKeys = resolveEffectiveKeys(dataKeys, undefined, disabledItems);

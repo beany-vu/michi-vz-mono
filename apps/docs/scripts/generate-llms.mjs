@@ -27,14 +27,42 @@ export const slugOf = (key) => SLUG_EXCEPTIONS[key] ?? key.replace(/-chart$/, ""
 // Roster for the generated Packages block. A renamed/removed package fails
 // loudly here (missing package.json) instead of silently dropping a line.
 const PACKAGES = [
-  { dir: "core", role: "the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export.", peers: "none; d3 and DOMPurify install automatically as regular dependencies" },
-  { dir: "wc", role: "Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one.", peers: "none" },
-  { dir: "react", role: "React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`.", peers: "react and react-dom >= 18" },
-  { dir: "vue", role: "Vue 3 components taking the engine props as a single `:options` prop.", peers: "vue >= 3" },
+  {
+    dir: "core",
+    role: "the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export.",
+    peers: "none; d3 and DOMPurify install automatically as regular dependencies",
+  },
+  {
+    dir: "wc",
+    role: "Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one.",
+    peers: "none",
+  },
+  {
+    dir: "react",
+    role: "React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`.",
+    peers: "react and react-dom >= 18",
+  },
+  {
+    dir: "vue",
+    role: "Vue 3 components taking the engine props as a single `:options` prop.",
+    peers: "vue >= 3",
+  },
   { dir: "svelte", role: "Svelte actions (`use:lineChart={props}`).", peers: "svelte >= 4" },
-  { dir: "angular", role: "typed helpers over the web components (`applyLineChartProps`, `bindChart`).", peers: "@angular/core >= 16" },
-  { dir: "insights", role: "the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section).", peers: "none" },
-  { dir: "devtools", role: "in-page chart inspector, with an inert `/production` entry for production builds.", peers: "none" },
+  {
+    dir: "angular",
+    role: "typed helpers over the web components (`applyLineChartProps`, `bindChart`).",
+    peers: "@angular/core >= 16",
+  },
+  {
+    dir: "insights",
+    role: "the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section).",
+    peers: "none",
+  },
+  {
+    dir: "devtools",
+    role: "in-page chart inspector, with an inert `/production` entry for production builds.",
+    peers: "none",
+  },
 ];
 
 const pkgVersion = (dir) =>
@@ -48,7 +76,8 @@ function frontmatter(slug) {
   if (!fm) throw new Error(`generate-llms: charts/${slug}.md has no frontmatter block`);
   const pick = (key) => {
     const m = fm[1].match(new RegExp(`^${key}:\\s*(.*)$`, "m"));
-    if (!m || !m[1].trim()) throw new Error(`generate-llms: charts/${slug}.md frontmatter is missing "${key}"`);
+    if (!m || !m[1].trim())
+      throw new Error(`generate-llms: charts/${slug}.md frontmatter is missing "${key}"`);
     return m[1].trim().replace(/^"(.*)"$/, "$1");
   };
   return { title: pick("title"), description: pick("description") };
@@ -76,7 +105,9 @@ function sharedPropsBlock(data) {
   return data.shared
     .map((sp) => {
       const defaults = new Set(
-        Object.values(data.charts).map((c) => c.props.find((p) => p.name === sp.name)?.default ?? "")
+        Object.values(data.charts).map(
+          (c) => c.props.find((p) => p.name === sp.name)?.default ?? "",
+        ),
       );
       return propLine({ ...sp, default: defaults.size === 1 ? [...defaults][0] : "" });
     })
@@ -89,7 +120,9 @@ function chartEntries(data) {
     const slug = slugOf(key);
     for (const rel of [`charts/${slug}.md`, `api/${slug}.md`]) {
       if (!existsSync(resolve(DOCS, rel)))
-        throw new Error(`generate-llms: expected ${rel} for chart "${key}" - add the page or a SLUG_EXCEPTIONS entry`);
+        throw new Error(
+          `generate-llms: expected ${rel} for chart "${key}" - add the page or a SLUG_EXCEPTIONS entry`,
+        );
     }
     const { title, description } = frontmatter(slug);
     const specific = c.props.filter((p) => !p.common);
@@ -104,10 +137,16 @@ function chartEntries(data) {
       `- Engine: \`${c.mount}(host, props)\` from \`@michi-vz/core\`; props \`${c.propsType}\`, context \`${c.context}\``,
       `- Docs: ${SITE}/charts/${slug}`,
       `- API: ${SITE}/api/${slug}`,
-      ""
+      "",
     );
     if (required.length) out.push("Required props:", "", ...required.map(propLine), "");
-    if (optional.length) out.push("Chart-specific props (the shared props above also apply):", "", ...optional.map(propLine), "");
+    if (optional.length)
+      out.push(
+        "Chart-specific props (the shared props above also apply):",
+        "",
+        ...optional.map(propLine),
+        "",
+      );
   }
   return out.join("\n").trimEnd();
 }
@@ -124,19 +163,21 @@ function chartLinks(data) {
 
 function packagesBlock(versions) {
   return PACKAGES.map(
-    (p) => `- \`@michi-vz/${p.dir}\` ${versions[p.dir]} - ${p.role} Peer dependencies: ${p.peers}.`
+    (p) => `- \`@michi-vz/${p.dir}\` ${versions[p.dir]} - ${p.role} Peer dependencies: ${p.peers}.`,
   ).join("\n");
 }
 
 function renderTemplate(name, tokens, blocks) {
   let text = readFileSync(resolve(HERE, "llms", name), "utf8");
   text = text.replace(/^<!-- llms:([a-z-]+) -->$/gm, (_, key) => {
-    if (!(key in blocks)) throw new Error(`generate-llms: ${name} references unknown block "${key}"`);
+    if (!(key in blocks))
+      throw new Error(`generate-llms: ${name} references unknown block "${key}"`);
     return blocks[key];
   });
   text = text.replace(/\{\{([^}]+)\}\}/g, (_, raw) => {
     const key = raw.trim();
-    if (!(key in tokens)) throw new Error(`generate-llms: ${name} references unknown token "${key}"`);
+    if (!(key in tokens))
+      throw new Error(`generate-llms: ${name} references unknown token "${key}"`);
     return tokens[key];
   });
   if (text.includes("{{") || text.includes("<!-- llms:"))
@@ -144,7 +185,9 @@ function renderTemplate(name, tokens, blocks) {
   const dash = text.match(/[–—]/);
   if (dash) {
     const i = text.indexOf(dash[0]);
-    throw new Error(`generate-llms: en/em dash in ${name} output near "${text.slice(Math.max(0, i - 40), i + 40)}"`);
+    throw new Error(
+      `generate-llms: en/em dash in ${name} output near "${text.slice(Math.max(0, i - 40), i + 40)}"`,
+    );
   }
   return text;
 }

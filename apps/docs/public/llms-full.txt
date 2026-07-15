@@ -4,7 +4,7 @@
 
 > michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at https://michi-vz.netlify.app/llms.txt.
 
-Package versions this file was generated against: @michi-vz/core 1.10.0, wc 1.9.1, react 1.9.0, vue 1.6.1, svelte 1.6.1, angular 1.9.1, insights 0.2.9, devtools 0.2.9.
+Package versions this file was generated against: @michi-vz/core 1.11.0, wc 1.10.0, react 1.10.0, vue 1.6.2, svelte 1.6.2, angular 1.10.0, insights 0.2.10, devtools 0.2.10.
 
 ## What michi-vz is
 
@@ -19,14 +19,14 @@ AI features live in a separate opt-in package, `@michi-vz/insights`, and are loc
 
 ## Packages
 
-- `@michi-vz/core` 1.10.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
-- `@michi-vz/wc` 1.9.1 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
-- `@michi-vz/react` 1.9.0 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
-- `@michi-vz/vue` 1.6.1 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
-- `@michi-vz/svelte` 1.6.1 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
-- `@michi-vz/angular` 1.9.1 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
-- `@michi-vz/insights` 0.2.9 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
-- `@michi-vz/devtools` 0.2.9 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
+- `@michi-vz/core` 1.11.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
+- `@michi-vz/wc` 1.10.0 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
+- `@michi-vz/react` 1.10.0 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
+- `@michi-vz/vue` 1.6.2 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
+- `@michi-vz/svelte` 1.6.2 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
+- `@michi-vz/angular` 1.10.0 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
+- `@michi-vz/insights` 0.2.10 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
+- `@michi-vz/devtools` 0.2.10 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
 
 The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
 
@@ -213,10 +213,10 @@ Chart-specific props (the shared props above also apply):
 - `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
 - `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Animate each line drawing itself left to right on mount (progressive reveal).
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
-- `isNodata`: `| boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series.
+- `isNodata`: `boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series.
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
 - `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
-- `tooltipFormatter`: `( d: DataPoint, series: DataPoint[], dataSet: LineDataItem[], ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `tooltipFormatter`: `(d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
 - `sharedTooltip`: `boolean` (default: `false`) - When true, hovering anywhere in the plot shows ONE tooltip listing every series' value at the nearest x (year) - the "shared"/crosshair tooltip - instead of the single nearest series.
 - `sharedTooltipFormatter`: `(input: { x: number | string; xLabel: string; entries: Array<{ label: string; value: number; color: string; d: DataPoint }>; }) => string` - Custom HTML for the shared tooltip.
 - `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
@@ -284,7 +284,7 @@ Chart-specific props (the shared props above also apply):
 - `noDataTickTooltip`: `(date: number) => string` - Tooltip content (plain text or sanitized HTML) for a faded no-data tick; receives the tick's epoch-ms value.
 - `noDataTickColor`: `string` - Colour for faded no-data tick labels; sets the `--michi-vz-tick-nodata` CSS var on the host.
 - `curve`: `"curveBumpX" | "curveLinear" | "curveMonotoneX"` - Line interpolation: curveLinear, curveMonotoneX, or curveBumpX
-- `tooltipFormatter`: `( row: AreaDataRow, series: AreaDataRow[], key: string, ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `tooltipFormatter`: `(row: AreaDataRow, series: AreaDataRow[], key: string) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
 - `isNodata`: `boolean | ((dataSet: AreaDataRow[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
@@ -319,7 +319,7 @@ Chart-specific props (the shared props above also apply):
 - `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years": snapshots one period at a time over the distinct per-row `date` values, with a headless controller (`chart.timeline()`) plus an optional built-in play button + scrubber.
 - `tooltipFormatter`: `(d: ScatterDataPoint) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
-- `isNodata`: `| boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
+- `isNodata`: `boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
 - `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
 - `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
@@ -459,7 +459,7 @@ Chart-specific props (the shared props above also apply):
 - `missingDataMarker`: `{ height: number }` - Opt-in thin stub on the zero line for explicitly-missing (null/NaN) owned keys.
 - `filter`: `{ limit: number; sortingDir: "asc" | "desc"; date?: string }` - Keep only the top-N dates ranked by grand total across all series and keys: limit caps the count, sortingDir picks highest (desc) or lowest (asc), optional date is the reference date; chronological order is preserved in output
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check.
-- `isNodata`: `| boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean)` - No-data override: boolean or predicate; default = empty / all-empty-series.
+- `isNodata`: `boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean)` - No-data override: boolean or predicate; default = empty / all-empty-series.
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay.
 - `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node.
 - `fontFamily`: `string` - Font family for axis/label text (SVG + canvas) via --michi-vz-font-family.
@@ -509,7 +509,7 @@ Chart-specific props (the shared props above also apply):
 - `layout`: `"overlay" | "grouped"` (default: `"overlay"`) - How the two sub-bars (valueBased, valueCompared) share a row's band.
 - `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased.
 - `isLoading`: `boolean` - Loading overlay (stale bars hidden while true)
-- `isNodata`: `| boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
+- `isNodata`: `boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
 - `noDataLabel`: `string` - Text for the built-in no-data overlay
 - `suppressDefaultOverlay`: `boolean` - Set by a framework wrapper passing its own overlay node - suppresses the default overlay
 - `filter`: `{ limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc"; }` - Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc)
@@ -551,7 +551,7 @@ Chart-specific props (the shared props above also apply):
 - `maxBarWidth`: `number` - Cap each column's thickness (px).
 - `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased, drawn above each column pair.
 - `isLoading`: `boolean` - Loading overlay (stale bars hidden while true)
-- `isNodata`: `| boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
+- `isNodata`: `boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
 - `noDataLabel`: `string` - Text for the built-in no-data overlay
 - `suppressDefaultOverlay`: `boolean` - Set by a framework wrapper passing its own overlay node - suppresses the default overlay
 - `filter`: `{ limit: number; criteria: "valueBased" | "valueCompared"; sortingDir: "asc" | "desc"; }` - Keep only the top-N labels ranked by the chosen field: limit caps the count, criteria selects "valueBased" or "valueCompared", sortingDir picks highest (desc) or lowest (asc)
@@ -613,9 +613,9 @@ Chart-specific props (the shared props above also apply):
 - `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
 - `tickHtmlWidth`: `number` (default: `80`) - Width in px reserved for each y-axis (date) tick's HTML (default 80)
 - `xAxisPosition`: `"top" | "bottom"` (default: `"top"`) - Where the cumulative value axis renders its tick labels: "top" (default, legacy header look) or "bottom" (clears room under the title)
-- `tooltipFormatter`: `( row: BarBellDataRow, key: string, value: number, ) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
+- `tooltipFormatter`: `(row: BarBellDataRow, key: string, value: number) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
-- `isNodata`: `| boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
+- `isNodata`: `boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = empty data.
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
 - `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
 - `dodgeOverlappingCaps`: `boolean` - Spread overlapping end-caps vertically, centred on the row line (default ON, legacy parity); pass false to keep them stacked.

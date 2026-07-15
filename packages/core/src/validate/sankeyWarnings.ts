@@ -2,10 +2,7 @@
 // duplicate node ids, and links that reference an unknown node id.
 import type { DataWarning, SankeyNodeItem, SankeyLinkItem } from "../types";
 
-export function checkSankeyData(
-  nodes: SankeyNodeItem[],
-  links: SankeyLinkItem[]
-): DataWarning[] {
+export function checkSankeyData(nodes: SankeyNodeItem[], links: SankeyLinkItem[]): DataWarning[] {
   const warnings: DataWarning[] = [];
   if (!nodes || nodes.length === 0) {
     warnings.push({ type: "empty-dataset", message: "Sankey received no nodes." });

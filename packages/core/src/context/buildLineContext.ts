@@ -111,14 +111,16 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
     return fmt(parsed instanceof Date ? parsed.getTime() : parsed);
   };
   const periods = Array.from(
-    new Set(input.processedDataSet.flatMap((d) => d.series.map((p) => p.date)))
+    new Set(input.processedDataSet.flatMap((d) => d.series.map((p) => p.date))),
   ).sort((a, b) => Number(a) - Number(b));
   const a11yHeaders = ["Series", ...periods.map(labelFor)];
   const a11yRows = input.processedDataSet.map((d) => {
     const byDate = new Map(d.series.map((p) => [p.date, p.value]));
     return [
       d.label,
-      ...periods.map((p) => (byDate.has(p) && Number.isFinite(byDate.get(p)) ? round(byDate.get(p)!) : "-")),
+      ...periods.map((p) =>
+        byDate.has(p) && Number.isFinite(byDate.get(p)) ? round(byDate.get(p)!) : "-",
+      ),
     ];
   });
 

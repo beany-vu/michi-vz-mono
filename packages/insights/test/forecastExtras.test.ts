@@ -10,7 +10,12 @@ const series: DataPoint[] = [
 ];
 const props: LineChartProps = { xAxisDataType: "number", dataSet: [{ label: "A", series }] };
 // minimal PluginContext stub - the forecast hooks only read nothing off it here
-const pc = { chartType: "line-chart", getProps: () => props, getContext: () => null, setProps: () => {} } as never;
+const pc = {
+  chartType: "line-chart",
+  getProps: () => props,
+  getContext: () => null,
+  setProps: () => {},
+} as never;
 const lineCtx = (summary = "Base.") => ({ chartType: "line-chart", summary }) as never;
 
 describe("forecast extras", () => {
@@ -36,7 +41,10 @@ describe("forecast extras", () => {
   });
 
   it("trendline adds a 2-point solid overlay", () => {
-    const out = forecast({ method: "linear", horizon: 2, trendline: true }).transformData!(props, pc);
+    const out = forecast({ method: "linear", horizon: 2, trendline: true }).transformData!(
+      props,
+      pc,
+    );
     const trend = out.dataSet.find((d) => d.label === "A (trend)");
     expect(trend).toBeTruthy();
     expect(trend!.series).toHaveLength(2);
@@ -62,7 +70,12 @@ describe("forecast extras", () => {
       value: v,
       certainty: true,
     }));
-    const bands = forecastFanBands(noisy, { method: "holt-winters", horizon: 3, levels: [0.5, 0.8], level: 0.95 });
+    const bands = forecastFanBands(noisy, {
+      method: "holt-winters",
+      horizon: 3,
+      levels: [0.5, 0.8],
+      level: 0.95,
+    });
     expect(bands).toHaveLength(3);
     expect(bands[0].label).toContain("95%"); // widest first
     expect(bands[2].label).toContain("50%");
@@ -100,7 +113,11 @@ describe("forecast extras", () => {
       value: v,
       certainty: true,
     }));
-    const fan = forecastFan(history, { method: "linear", horizon: 3, levels: [0.5, 0.8], level: 0.95 }, "A");
+    const fan = forecastFan(
+      history,
+      { method: "linear", horizon: 3, levels: [0.5, 0.8], level: 0.95 },
+      "A",
+    );
     expect(fan.label).toBe("A");
     // 4 history + 3 median
     expect(fan.series).toHaveLength(7);

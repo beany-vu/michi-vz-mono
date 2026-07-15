@@ -20,7 +20,7 @@ export function drawFountainCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: FountainRenderModel,
-  o: FountainCanvasOptions
+  o: FountainCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -40,7 +40,7 @@ export function drawFountainCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("path", "mv-fountain-jet", "fill"),
-    "fill"
+    "fill",
   );
   const colorOf = (label: string, fb: string): string => fillColors.get(label) || fb;
 

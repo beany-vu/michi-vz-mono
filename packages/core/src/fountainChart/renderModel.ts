@@ -87,7 +87,7 @@ export function buildFountainRenderModel(
   temporalType: XaxisDataType | null,
   scales: FountainScales,
   colors: FountainColorResolver,
-  o: BuildFountainModelOptions
+  o: BuildFountainModelOptions,
 ): FountainRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
@@ -140,7 +140,11 @@ export function buildFountainRenderModel(
       item.lean === undefined || item.lean === null || !Number.isFinite(Number(item.lean))
         ? null
         : clamp(Number(item.lean), -1, 1);
-    const predicted = isPredicted({ date: item.date ?? 0, certainty: item.certainty, predicted: item.predicted });
+    const predicted = isPredicted({
+      date: item.date ?? 0,
+      certainty: item.certainty,
+      predicted: item.predicted,
+    });
     const dimmed = anyHighlight && !highlightSet.has(item.label);
 
     const densityNorm =
@@ -150,7 +154,14 @@ export function buildFountainRenderModel(
 
     const base: Omit<
       FountainJetModel,
-      "bloomHalf" | "frothLayers" | "slicePaths" | "sliceOpacities" | "outlinePath" | "dropletPaths" | "mistPath" | "hit"
+      | "bloomHalf"
+      | "frothLayers"
+      | "slicePaths"
+      | "sliceOpacities"
+      | "outlinePath"
+      | "dropletPaths"
+      | "mistPath"
+      | "hit"
     > = {
       item,
       label: item.label,
@@ -175,7 +186,8 @@ export function buildFountainRenderModel(
     let bloomHalf = clamp(Math.max(spreadPx, 4), stemHalf, slotHalf);
     if (isJet) bloomHalf = Math.min(bloomHalf, Math.max(stemHalf + 4, H * 0.28));
 
-    let frothLayers = densityNorm >= 0 ? Math.round(4 + densityNorm * (o.frothLayers - 4)) : o.frothLayers;
+    let frothLayers =
+      densityNorm >= 0 ? Math.round(4 + densityNorm * (o.frothLayers - 4)) : o.frothLayers;
     if (predicted) frothLayers = Math.max(3, Math.round(frothLayers * 0.7));
     frothLayers = clamp(frothLayers, 1, 20);
 
@@ -186,16 +198,27 @@ export function buildFountainRenderModel(
       ? (lean === null ? 0.2 : lean) * H * 0.16
       : (lean ?? 0) * bloomHalf * 0.3;
 
-    const geom: JetGeometryInput = { xCenter, yApex, yBase, stemHalf, bloomHalf, crownDrift, bloomExponent: o.bloomExponent };
+    const geom: JetGeometryInput = {
+      xCenter,
+      yApex,
+      yBase,
+      stemHalf,
+      bloomHalf,
+      crownDrift,
+      bloomExponent: o.bloomExponent,
+    };
     const baseOpacity = predicted ? PREDICTED_BASE_OPACITY : SOLID_BASE_OPACITY;
     const slices = buildFrothSlices(geom, frothLayers, baseOpacity);
     const dimFactor = dimmed ? 0.3 : 1;
     const apexX = jetApexCenter(geom);
 
     // Plume-only flourishes; the jet is just the fraying column.
-    const dropletCount = !isJet && o.showDroplets ? (densityNorm >= 0 ? Math.round(3 + densityNorm * 6) : 6) : 0;
+    const dropletCount =
+      !isJet && o.showDroplets ? (densityNorm >= 0 ? Math.round(3 + densityNorm * 6) : 6) : 0;
     const mistPath = !isJet && o.showMist ? buildMistPath(geom, slotHalf) : null;
-    const mistHalf = mistPath ? Math.min(Math.max(bloomHalf * 1.2, stemHalf * 2.5), slotHalf) : bloomHalf;
+    const mistHalf = mistPath
+      ? Math.min(Math.max(bloomHalf * 1.2, stemHalf * 2.5), slotHalf)
+      : bloomHalf;
     const hitHalf = Math.max(bloomHalf, mistHalf);
     const driftReach = Math.abs(apexX - xCenter);
 
@@ -227,7 +250,11 @@ export function buildFountainRenderModel(
     if (pts.length >= 2) {
       const r = (n: number): number => Math.round(n * 100) / 100;
       trendLinePath =
-        `M${r(pts[0].x)},${r(pts[0].y)}` + pts.slice(1).map((p) => ` L${r(p.x)},${r(p.y)}`).join("");
+        `M${r(pts[0].x)},${r(pts[0].y)}` +
+        pts
+          .slice(1)
+          .map((p) => ` L${r(p.x)},${r(p.y)}`)
+          .join("");
     }
   }
 

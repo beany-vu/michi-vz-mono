@@ -19,7 +19,7 @@ export const setupWebgpu = (
   canvas: HTMLCanvasElement | null,
   device: GPUDevice | null,
   width: number,
-  height: number
+  height: number,
 ): WebgpuSetup | null => {
   if (!canvas || !device) return null;
   const gpu = typeof navigator !== "undefined" ? navigator.gpu : undefined;

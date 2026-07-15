@@ -31,7 +31,7 @@ export function drawSymbolMapCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: SymbolMapRenderModel,
-  o: SymbolMapCanvasOptions
+  o: SymbolMapCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -58,10 +58,13 @@ export function drawSymbolMapCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("circle", "symbol", "fill"),
-    "fill"
+    "fill",
   );
 
-  const cs = svg && typeof window !== "undefined" && window.getComputedStyle ? window.getComputedStyle(svg) : null;
+  const cs =
+    svg && typeof window !== "undefined" && window.getComputedStyle
+      ? window.getComputedStyle(svg)
+      : null;
   const fam = (cs && cs.fontFamily) || "sans-serif";
   const fs = (cs && parseFloat(cs.getPropertyValue("--michi-vz-font-size"))) || 12;
   ctx.textAlign = "center";
@@ -85,7 +88,8 @@ export function drawSymbolMapCanvas(
     }
 
     if (o.showLabels) {
-      const radiusThreshold = m.radiusSecond != null ? Math.max(m.radius, m.radiusSecond) : m.radius;
+      const radiusThreshold =
+        m.radiusSecond != null ? Math.max(m.radius, m.radiusSecond) : m.radius;
       if (radiusThreshold >= 16) {
         ctx.globalAlpha = m.dimmed ? 0.3 : 1;
         ctx.fillStyle = readableTextColor(fill);

@@ -107,7 +107,14 @@ export {
 } from "./embeddings";
 
 // ---- SQL / data wrangling (pure aggregate; opt-in DuckDB-Wasm) ----
-export { aggregate, createSqlEngine, type Row, type MeasureFn, type AggregateSpec, type SqlEngine } from "./sql";
+export {
+  aggregate,
+  createSqlEngine,
+  type Row,
+  type MeasureFn,
+  type AggregateSpec,
+  type SqlEngine,
+} from "./sql";
 
 // ---- Sonification (accessibility: hear the trend) ----
 export { sonify, valuesToTones, type Tone, type SonifyOptions } from "./sonify";

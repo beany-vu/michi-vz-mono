@@ -126,9 +126,9 @@ export function createCumulativeTimeline(deps: {
         return;
       }
       targets = args.periods.map((p, i) =>
-        i === args.periods.length - 1 ? args.endPx : Math.min(args.endPx, p.px + TIP_PAD)
+        i === args.periods.length - 1 ? args.endPx : Math.min(args.endPx, p.px + TIP_PAD),
       );
-      const sig = args.periods.map(p => String(p.period)).join("|");
+      const sig = args.periods.map((p) => String(p.period)).join("|");
       if (!tl || sig !== periodsSig) {
         const firstCreation = !tl;
         tl?.destroy();
@@ -136,13 +136,13 @@ export function createCumulativeTimeline(deps: {
         let startIndex = Math.min(index, args.periods.length - 1);
         if (firstCreation && args.startPeriod !== undefined) {
           const fromStart = args.periods.findIndex(
-            p => String(p.period) === String(args.startPeriod)
+            (p) => String(p.period) === String(args.startPeriod),
           );
           if (fromStart >= 0) startIndex = fromStart;
         }
         index = startIndex;
         tl = new TimelineController({
-          periods: args.periods.map(p => p.period),
+          periods: args.periods.map((p) => p.period),
           speedMs: cfg.speedMs,
           loop: cfg.loop,
           startIndex,
@@ -166,14 +166,14 @@ export function createCumulativeTimeline(deps: {
       if (args.renderer === "svg") {
         if (args.marksRoot) {
           const rect = installRevealClip(args.svg, args.marksRoot, args.height);
-          localApply = x => setRevealWidth(rect, x);
+          localApply = (x) => setRevealWidth(rect, x);
         }
       } else if (args.canvasRedraw) {
         localApply = args.canvasRedraw;
       }
       const extra = args.onReveal;
       apply = localApply
-        ? x => {
+        ? (x) => {
             localApply!(x);
             extra?.(x);
           }

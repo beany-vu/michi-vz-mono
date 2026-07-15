@@ -29,7 +29,7 @@ export function drawSymbolMapWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: SymbolMapRenderModel,
-  o: SymbolMapWebgpuOptions
+  o: SymbolMapWebgpuOptions,
 ): boolean {
   drawSymbolMapCanvas(canvas, svg, model, {
     width: o.width,

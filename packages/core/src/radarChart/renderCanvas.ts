@@ -33,7 +33,7 @@ export function drawRadarCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RadarRenderModel,
-  o: RadarCanvasOptions
+  o: RadarCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -71,7 +71,7 @@ export function drawRadarCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeMultiPropProbe("polygon", "radar-area", ["stroke", "fill"]),
-    ["stroke", "fill"]
+    ["stroke", "fill"],
   );
 
   // Progressive-draw reveal cutoff: only clips the series polygons below, never
@@ -227,7 +227,7 @@ export interface RadarCanvasHoverCallbacks {
 export function setupRadarCanvasHover(
   svg: SVGSVGElement,
   model: RadarRenderModel,
-  cb: RadarCanvasHoverCallbacks
+  cb: RadarCanvasHoverCallbacks,
 ): () => void {
   const hits: SeriesHit[] = model.series.map((s) => ({
     label: s.label,

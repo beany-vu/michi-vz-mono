@@ -39,7 +39,7 @@ export function buildChoroplethRenderModel(
   matchFor: (feature: NormalizedGeoFeature) => ChoroplethDataItem | undefined,
   projection: GeoProjection,
   colors: ChoroplethColorResolver,
-  o: BuildChoroplethModelOptions
+  o: BuildChoroplethModelOptions,
 ): ChoroplethMapRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;

@@ -13,13 +13,17 @@ const snapshot: FountainDataItem[] = [
   { label: "Bern", value: 60, spread: 25 },
 ];
 
-function mount(extra: Partial<FountainChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<FountainChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountFountainChart(
     host,
     { dataSet: snapshot, title: "Demo", width: WIDTH, height: HEIGHT, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -55,7 +59,7 @@ describe("FountainChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(rectWidth(host)).toBe(0);
     let prev = rectWidth(host);
@@ -83,7 +87,7 @@ describe("FountainChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);

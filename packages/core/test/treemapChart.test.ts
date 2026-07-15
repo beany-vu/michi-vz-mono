@@ -48,7 +48,9 @@ describe("mountTreemapChart (jsdom)", () => {
     // The veil covers the untapped (right) fraction: it starts after realizedWidth
     // and is narrower than the full tile.
     for (const v of Array.from(veils)) {
-      const base = host.querySelector<SVGRectElement>(`rect.tile[data-leaf="${v.getAttribute("data-leaf")}"]`)!;
+      const base = host.querySelector<SVGRectElement>(
+        `rect.tile[data-leaf="${v.getAttribute("data-leaf")}"]`,
+      )!;
       expect(Number(v.getAttribute("x"))).toBeGreaterThanOrEqual(Number(base.getAttribute("x")));
       expect(Number(v.getAttribute("width"))).toBeLessThan(Number(base.getAttribute("width")));
       expect(v.getAttribute("fill")).toBe("#ffffff");
@@ -137,9 +139,15 @@ describe("mountTreemapChart (jsdom)", () => {
   });
 
   it("a11y table without split has just Label + Value", () => {
-    const { host, chart } = mount({ dataSet: [{ label: "A", value: 5 }, { label: "B", value: 3 }] });
+    const { host, chart } = mount({
+      dataSet: [
+        { label: "A", value: 5 },
+        { label: "B", value: 3 },
+      ],
+    });
     const ctx = chart.getContext()!;
-    if (ctx.chartType === "treemap-chart") expect(ctx.a11yTable.headers).toEqual(["Label", "Value"]);
+    if (ctx.chartType === "treemap-chart")
+      expect(ctx.a11yTable.headers).toEqual(["Label", "Value"]);
     chart.destroy();
     host.remove();
   });
@@ -148,7 +156,8 @@ describe("mountTreemapChart (jsdom)", () => {
     const disabled = mount({ dataSet: flat, disabledItems: ["Cocoa"] });
     expect(disabled.chart.getContext()!.chartType).toBe("treemap-chart");
     const dctx = disabled.chart.getContext()!;
-    if (dctx.chartType === "treemap-chart") expect(dctx.leaves.map((l) => l.label)).toEqual(["Coffee", "Tea"]);
+    if (dctx.chartType === "treemap-chart")
+      expect(dctx.leaves.map((l) => l.label)).toEqual(["Coffee", "Tea"]);
     disabled.chart.destroy();
     disabled.host.remove();
 
@@ -196,7 +205,9 @@ describe("mountTreemapChart (jsdom)", () => {
     // Coffee (value 100) is taller than Cocoa (value 40).
     const coffee = host.querySelector<SVGRectElement>(`rect.tile[data-leaf="Coffee"]`)!;
     const cocoa = host.querySelector<SVGRectElement>(`rect.tile[data-leaf="Cocoa"]`)!;
-    expect(Number(coffee.getAttribute("height"))).toBeGreaterThan(Number(cocoa.getAttribute("height")));
+    expect(Number(coffee.getAttribute("height"))).toBeGreaterThan(
+      Number(cocoa.getAttribute("height")),
+    );
     // Split still rendered (one veil per leaf).
     expect(host.querySelectorAll("rect.tile-veil").length).toBe(3);
     chart.destroy();
@@ -347,8 +358,17 @@ describe("tileValueLabels (default-off, second line reusing the existing tile-si
   it("no second line when the tile is too small for it, even though the name still fits", () => {
     // 20 same-sized leaves in a small canvas -> some tiles pass the name gate
     // (h>=24 && w>=30) but fail the larger second-line gate (w>=48 && h>=34).
-    const many: TreemapNode[] = Array.from({ length: 20 }, (_, i) => ({ label: `L${i}`, value: 10 + i }));
-    const { host, chart } = mount({ dataSet: many, width: 300, height: 150, showSplit: false, tileValueLabels: true });
+    const many: TreemapNode[] = Array.from({ length: 20 }, (_, i) => ({
+      label: `L${i}`,
+      value: 10 + i,
+    }));
+    const { host, chart } = mount({
+      dataSet: many,
+      width: 300,
+      height: 150,
+      showSplit: false,
+      tileValueLabels: true,
+    });
     const small = host.querySelector('rect.tile[data-leaf="L0"]')!; // 31x24 in this layout
     expect(Number(small.getAttribute("width"))).toBeLessThan(48);
     const smallCell = small.closest(".tile-cell")!;

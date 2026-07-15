@@ -63,7 +63,7 @@ describe("mountComparableVerticalBarChart (jsdom)", () => {
   it("draws the shorter sub-bar on top so both stay visible, per row (mirrors ComparableHorizontalBarChart's comparableDrawOrder)", () => {
     const order = (host: HTMLElement, label: string) => {
       const rects = Array.from(
-        host.querySelectorAll<SVGRectElement>(`g.data-group[data-label="${label}"] rect.bar`)
+        host.querySelectorAll<SVGRectElement>(`g.data-group[data-label="${label}"] rect.bar`),
       );
       return rects.map((r) => (r.classList.contains("value-based") ? "based" : "compared"));
     };
@@ -106,7 +106,9 @@ describe("mountComparableVerticalBarChart (jsdom)", () => {
   it("builds an a11y mirror with one row per category (4 columns, no deltaIndicator)", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(3);
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Label", "Based", "Compared", "Difference"]);
     chart.destroy();
     host.remove();
@@ -172,7 +174,13 @@ describe("mountComparableVerticalBarChart (jsdom)", () => {
     expect(calls).toBe(1); // initial
     chart.update({ dataSet, title: "Demo", width: 600, height: 300, onChartDataProcessed }); // same data
     expect(calls).toBe(1); // unchanged context -> NOT re-emitted
-    chart.update({ dataSet: dataSet.slice(0, 2), title: "Demo", width: 600, height: 300, onChartDataProcessed });
+    chart.update({
+      dataSet: dataSet.slice(0, 2),
+      title: "Demo",
+      width: 600,
+      height: 300,
+      onChartDataProcessed,
+    });
     expect(calls).toBe(2); // changed -> emitted
     chart.destroy();
     host.remove();
@@ -281,7 +289,7 @@ describe("deltaIndicator", () => {
       compared,
       10,
       40,
-      { positiveIsGood: true, positiveIsUp: true, formatter: (d) => String(d) }
+      { positiveIsGood: true, positiveIsUp: true, formatter: (d) => String(d) },
     );
     expect(model.labelY).toBeGreaterThan(model.y); // label below the glyph
     expect(model.y).toBeLessThan(80); // glyph above the taller (compared) bar's top
@@ -296,7 +304,9 @@ describe("deltaIndicator", () => {
   ])(
     "positiveIsGood=%s positiveIsUp=%s -> Alpha(+8)=%s/good:%s, Beta(-8)=%s/good:%s",
     (positiveIsGood, positiveIsUp, alphaDir, alphaGood, betaDir, betaGood) => {
-      const { host, chart } = mount({ deltaIndicator: { show: true, positiveIsGood, positiveIsUp } });
+      const { host, chart } = mount({
+        deltaIndicator: { show: true, positiveIsGood, positiveIsUp },
+      });
       const GOOD = "#009688";
       const BAD = "#e91e63";
       const alphaArrow = host.querySelector('.mv-delta[data-label="Alpha One"] .mv-delta-arrow')!;
@@ -313,7 +323,7 @@ describe("deltaIndicator", () => {
 
       chart.destroy();
       host.remove();
-    }
+    },
   );
 
   it("context reflects the delta (unlike ComparableHorizontalBarChart): per-series deltaDirection/deltaColor/deltaLabel + improved/worsened stats + a 5th a11y column", () => {
@@ -394,7 +404,9 @@ describe("chrome quad: isLoading / isNodata / noDataLabel / suppressDefaultOverl
 
 describe("SVG pattern fill (patternsMapping) - real <defs><pattern>", () => {
   it("emits a <pattern> in <defs> and the value-based rect fills with url(#id) for a mapped label", () => {
-    const { host, chart } = mount({ patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" } });
+    const { host, chart } = mount({
+      patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" },
+    });
     const pattern = host.querySelector("defs.mv-pattern-defs pattern");
     expect(pattern).toBeTruthy();
     expect(pattern!.querySelector("image")!.getAttribute("href")).toBe("data:image/svg+xml,<svg/>");

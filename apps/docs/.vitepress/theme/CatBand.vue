@@ -16,15 +16,34 @@ const CHART_H = 152;
 
 // --- LINE: cat-head OUTLINE - cheeks → sharp ear → V-notch → sharp ear → cheeks
 const LINE_SERIES = [
-  [0.5, 2.2], [1.8, 3.0], [2.9, 3.8], [3.35, 7.0], [5.0, 3.7],
-  [6.65, 7.0], [7.1, 3.8], [8.2, 3.0], [9.5, 2.2],
+  [0.5, 2.2],
+  [1.8, 3.0],
+  [2.9, 3.8],
+  [3.35, 7.0],
+  [5.0, 3.7],
+  [6.65, 7.0],
+  [7.1, 3.8],
+  [8.2, 3.0],
+  [9.5, 2.2],
 ].map(([date, value]) => ({ date, value, certainty: true }));
 
 // --- AREA: a filled "loaf" cat - rounded body, head + two ears on the right
 const AREA_SERIES = [
-  [0.0, 0.0], [0.5, 2.3], [1.6, 3.05], [3.2, 3.5], [4.8, 3.5], [6.0, 3.4],
-  [6.8, 3.6], [7.3, 4.4], [7.75, 5.5], [8.05, 4.6], [8.35, 5.5], [8.75, 4.3],
-  [9.1, 2.7], [9.5, 1.1], [10.0, 0.0],
+  [0.0, 0.0],
+  [0.5, 2.3],
+  [1.6, 3.05],
+  [3.2, 3.5],
+  [4.8, 3.5],
+  [6.0, 3.4],
+  [6.8, 3.6],
+  [7.3, 4.4],
+  [7.75, 5.5],
+  [8.05, 4.6],
+  [8.35, 5.5],
+  [8.75, 4.3],
+  [9.1, 2.7],
+  [9.5, 1.1],
+  [10.0, 0.0],
 ].map(([date, michi]) => ({ date, michi }));
 
 // --- RADAR: cat-head POLYGON - two ear spikes (axes near 11 & 1 o'clock)
@@ -38,20 +57,34 @@ function buildFace() {
   const push = (x: number, y: number, d: number, color: string) =>
     pts.push({ x, y, d, label: "p" + pts.length, color });
   // ears (triangle clusters)
-  push(2.7, 8.3, 26, RED); push(3.5, 8.3, 26, RED); push(3.1, 9.5, 26, RED);
-  push(6.5, 8.3, 26, RED); push(7.3, 8.3, 26, RED); push(6.9, 9.5, 26, RED);
+  push(2.7, 8.3, 26, RED);
+  push(3.5, 8.3, 26, RED);
+  push(3.1, 9.5, 26, RED);
+  push(6.5, 8.3, 26, RED);
+  push(7.3, 8.3, 26, RED);
+  push(6.9, 9.5, 26, RED);
   // head outline ring (top gap left for the ears)
-  const cx = 5, cy = 5, r = 2.7;
+  const cx = 5,
+    cy = 5,
+    r = 2.7;
   for (let a = 20; a <= 340; a += 32) {
     if (a > 62 && a < 118) continue;
     const rad = (a * Math.PI) / 180;
     push(cx + r * Math.cos(rad), cy + r * Math.sin(rad), 18, RED);
   }
   // eyes + nose - the gold highlight
-  push(4.0, 5.7, 60, GOLD); push(6.0, 5.7, 60, GOLD); push(5.0, 4.5, 42, GOLD);
+  push(4.0, 5.7, 60, GOLD);
+  push(6.0, 5.7, 60, GOLD);
+  push(5.0, 4.5, 42, GOLD);
   // whiskers - gold, quieter dots
-  push(3.2, 4.6, 11, GOLD); push(2.4, 4.7, 11, GOLD); push(3.2, 4.0, 11, GOLD); push(2.4, 3.9, 11, GOLD);
-  push(6.8, 4.6, 11, GOLD); push(7.6, 4.7, 11, GOLD); push(6.8, 4.0, 11, GOLD); push(7.6, 3.9, 11, GOLD);
+  push(3.2, 4.6, 11, GOLD);
+  push(2.4, 4.7, 11, GOLD);
+  push(3.2, 4.0, 11, GOLD);
+  push(2.4, 3.9, 11, GOLD);
+  push(6.8, 4.6, 11, GOLD);
+  push(7.6, 4.7, 11, GOLD);
+  push(6.8, 4.0, 11, GOLD);
+  push(7.6, 3.9, 11, GOLD);
   return pts;
 }
 const FACE = buildFace();
@@ -59,12 +92,19 @@ const FACE = buildFace();
 // Frame a point cloud so it sits centred and undistorted (equal px/unit on both
 // axes) inside whatever aspect ratio the card happens to be.
 function fitDomain(minX: number, maxX: number, minY: number, maxY: number, pw: number, ph: number) {
-  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  const bw = maxX - minX, bh = maxY - minY;
+  const cx = (minX + maxX) / 2,
+    cy = (minY + maxY) / 2;
+  const bw = maxX - minX,
+    bh = maxY - minY;
   const aspect = pw / ph;
   let domW: number, domH: number;
-  if (bw / bh > aspect) { domW = bw; domH = bw / aspect; }
-  else { domH = bh; domW = bh * aspect; }
+  if (bw / bh > aspect) {
+    domW = bw;
+    domH = bw / aspect;
+  } else {
+    domH = bh;
+    domW = bh * aspect;
+  }
   return {
     x: [cx - domW / 2, cx + domW / 2] as [number, number],
     y: [cy - domH / 2, cy + domH / 2] as [number, number],
@@ -94,7 +134,8 @@ const SPECS: Spec[] = [
       showVerticalGridLines: false,
       highlightZeroLine: false,
       margin: { top: 14, right: 14, bottom: 14, left: 14 },
-      width: w, height: h,
+      width: w,
+      height: h,
       dataSet: [{ label: "Michi", color: RED, curve: "curveLinear", series: LINE_SERIES }],
     }),
   },
@@ -113,7 +154,8 @@ const SPECS: Spec[] = [
         sizeRange: [2.5, 9.5],
         showGrid: false,
         margin: { top: m, right: m, bottom: m, left: m },
-        width: w, height: h,
+        width: w,
+        height: h,
         dataSet: FACE,
       };
     },
@@ -130,7 +172,8 @@ const SPECS: Spec[] = [
       showFilled: true,
       rings: 4,
       margin: { top: 2, right: 2, bottom: 2, left: 2 },
-      width: w, height: h,
+      width: w,
+      height: h,
       series: [{ label: "Michi", color: RED, values: RADAR_VALUES }],
     }),
   },
@@ -146,7 +189,8 @@ const SPECS: Spec[] = [
       keys: ["michi"],
       colorsMapping: { michi: RED },
       margin: { top: 12, right: 12, bottom: 12, left: 12 },
-      width: w, height: h,
+      width: w,
+      height: h,
       series: AREA_SERIES,
     }),
   },
@@ -213,9 +257,8 @@ onBeforeUnmount(() => {
         <h2>Same engine, secretly a cat</h2>
       </div>
       <p class="mv-lede">
-        Every block below is a real michi-vz chart (a line, a scatter, a radar, an area),
-        fed data until it turned into Michi, our cat in Geneva. The serious reasons start
-        right below.
+        Every block below is a real michi-vz chart (a line, a scatter, a radar, an area), fed data
+        until it turned into Michi, our cat in Geneva. The serious reasons start right below.
       </p>
 
       <div class="cat-grid">
@@ -284,10 +327,14 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 960px) {
-  .cat-grid { grid-template-columns: repeat(2, 1fr); }
+  .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 @media (max-width: 520px) {
-  .cat-grid { grid-template-columns: 1fr; }
+  .cat-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 

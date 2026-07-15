@@ -7,12 +7,7 @@ import type { SankeyChartProps, SankeyNodeItem, SankeyLinkItem } from "../src/ty
 const WIDTH = 600;
 const HEIGHT = 400;
 
-const nodes: SankeyNodeItem[] = [
-  { id: "France" },
-  { id: "Germany" },
-  { id: "EU" },
-  { id: "Asia" },
-];
+const nodes: SankeyNodeItem[] = [{ id: "France" }, { id: "Germany" }, { id: "EU" }, { id: "Asia" }];
 const links: SankeyLinkItem[] = [
   { source: "France", target: "EU", value: 40 },
   { source: "France", target: "Asia", value: 20 },
@@ -20,13 +15,17 @@ const links: SankeyLinkItem[] = [
   { source: "Germany", target: "Asia", value: 10 },
 ];
 
-function mount(extra: Partial<SankeyChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<SankeyChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountSankeyChart(
     host,
     { nodes, links, title: "Trade", width: WIDTH, height: HEIGHT, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -62,7 +61,7 @@ describe("SankeyChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(rectWidth(host)).toBe(0);
     let prev = rectWidth(host);
@@ -90,7 +89,7 @@ describe("SankeyChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);

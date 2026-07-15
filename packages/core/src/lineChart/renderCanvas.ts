@@ -26,7 +26,13 @@ export interface LineCanvasOptions {
   fontFamily?: string;
 }
 
-function drawPoint(ctx: CanvasRenderingContext2D, shape: Shape, x: number, y: number, color: string): void {
+function drawPoint(
+  ctx: CanvasRenderingContext2D,
+  shape: Shape,
+  x: number,
+  y: number,
+  color: string,
+): void {
   ctx.beginPath();
   if (shape === "square") {
     ctx.rect(x - 6, y - 6, 12, 12);
@@ -50,7 +56,7 @@ export function drawLineCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: LineRenderModel,
-  o: LineCanvasOptions
+  o: LineCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return; // jsdom / no 2D context
@@ -70,7 +76,7 @@ export function drawLineCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("path", "line", "stroke"),
-    "stroke"
+    "stroke",
   );
 
   for (const s of model.series) {

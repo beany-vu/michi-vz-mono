@@ -9,7 +9,7 @@ export interface ProcessedRadar {
 export function processRadarData(
   series: RadarDataItem[],
   disabledItems?: string[],
-  maxValue?: number
+  maxValue?: number,
 ): ProcessedRadar {
   const disabled = new Set(disabledItems ?? []);
   const items = series.filter((it) => !disabled.has(it.label));

@@ -15,7 +15,11 @@ import { renderTitle } from "../render/svg";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processSymbolMapData } from "../symbolMap/data";
 import { buildSymbolMapColors } from "../symbolMap/colors";
-import { projectSymbolMapPoints, buildSymbolMapRadiusScale, DEFAULT_PROJECTION } from "../symbolMap/scales";
+import {
+  projectSymbolMapPoints,
+  buildSymbolMapRadiusScale,
+  DEFAULT_PROJECTION,
+} from "../symbolMap/scales";
 import { layoutSymbolMap } from "../symbolMap/layout";
 import { buildSymbolMapRenderModel, buildSymbolMapBackdrop } from "../symbolMap/renderModel";
 import type { SymbolMapMark, SymbolMapRenderModel } from "../symbolMap/renderModel";
@@ -100,7 +104,7 @@ function resolve(p: SymbolMapChartProps): Resolved {
 export function mountSymbolMapChart(
   host: HTMLElement,
   initial: SymbolMapChartProps,
-  opts?: MountOptions<SymbolMapChartProps>
+  opts?: MountOptions<SymbolMapChartProps>,
 ): ChartInstance<SymbolMapChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-symbol-map-chart");
@@ -285,7 +289,7 @@ export function mountSymbolMapChart(
       processed.groupKeys,
       props.colors,
       seededMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -303,7 +307,7 @@ export function mountSymbolMapChart(
     const { radiusOf, opacityOf } = buildSymbolMapRadiusScale(
       processed.located,
       r.radiusRange,
-      props.radiusVisibleMin
+      props.radiusVisibleMin,
     );
     // Effective (rendered) radius per node - the larger of the primary and
     // (if present) `valueSecond` ring, since both circles share one centre and
@@ -322,7 +326,7 @@ export function mountSymbolMapChart(
       props.projectionConfig,
       innerWidth,
       innerHeight,
-      effectiveRadiusOf
+      effectiveRadiusOf,
     );
 
     // "precise" keeps every symbol at its exact projected lng/lat (overlaps
@@ -344,7 +348,9 @@ export function mountSymbolMapChart(
             radiusOf: (point) => effectiveRadiusOf(point.node),
           });
 
-    const backdrop = hasGeography ? buildSymbolMapBackdrop(normalizeGeography(props.geography!), projection) : [];
+    const backdrop = hasGeography
+      ? buildSymbolMapBackdrop(normalizeGeography(props.geography!), projection)
+      : [];
 
     model = buildSymbolMapRenderModel(
       laidOut,
@@ -353,7 +359,7 @@ export function mountSymbolMapChart(
       opacityOf,
       { highlightItems: props.highlightItems ?? [] },
       projection,
-      backdrop
+      backdrop,
     );
 
     clear(svg);
@@ -389,7 +395,7 @@ export function mountSymbolMapChart(
               tooltip.classList.add("sticky");
               showTooltip(mark, ev);
             },
-          }
+          },
         );
         removeCanvas();
         removeWebgpuCanvas();

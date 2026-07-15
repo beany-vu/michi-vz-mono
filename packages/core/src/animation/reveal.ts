@@ -18,7 +18,7 @@ export interface ResolvedReveal {
 }
 
 export function resolveReveal(
-  v: boolean | ProgressiveDrawConfig | undefined
+  v: boolean | ProgressiveDrawConfig | undefined,
 ): ResolvedReveal | null {
   if (!v) return null;
   const cfg = v === true ? {} : v;
@@ -37,7 +37,7 @@ let revealClipSeq = 0;
 export function installRevealClip(
   svg: SVGElement,
   marksRoot: Element,
-  height: number
+  height: number,
 ): SVGRectElement {
   const id = `mv-reveal-clip-${++revealClipSeq}`;
   const clip = svgEl("clipPath", { id });
@@ -68,7 +68,7 @@ export interface EngineReveal {
       endPx: number;
       /** Painted-renderer redraw at a reveal cutoff (canvas/webgpu fallback). */
       canvasRedraw?: (revealX: number) => void;
-    }
+    },
   ): void;
   replay(): void;
   stop(): void;
@@ -97,7 +97,7 @@ export function createEngineReveal(deps: {
       if (args.renderer === "svg") {
         if (!args.marksRoot) return;
         const rect = installRevealClip(args.svg, args.marksRoot, args.height);
-        apply = x => setRevealWidth(rect, x);
+        apply = (x) => setRevealWidth(rect, x);
       } else if (args.canvasRedraw) {
         apply = args.canvasRedraw;
       }

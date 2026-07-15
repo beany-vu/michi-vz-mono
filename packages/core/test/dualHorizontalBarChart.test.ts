@@ -12,7 +12,13 @@ const dataSet: DualBarDataPoint[] = [
 function mount(extra: Partial<DualBarChartProps> = {}) {
   const host = document.createElement("div");
   document.body.appendChild(host);
-  const chart = mountDualHorizontalBarChart(host, { dataSet, title: "Demo", width: 600, height: 300, ...extra });
+  const chart = mountDualHorizontalBarChart(host, {
+    dataSet,
+    title: "Demo",
+    width: 600,
+    height: 300,
+    ...extra,
+  });
   return { host, chart };
 }
 
@@ -98,7 +104,9 @@ describe("mountDualHorizontalBarChart (jsdom)", () => {
   it("builds an a11y mirror with one row per label", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(3);
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Label", "Value 1", "Value 2"]);
     chart.destroy();
     host.remove();

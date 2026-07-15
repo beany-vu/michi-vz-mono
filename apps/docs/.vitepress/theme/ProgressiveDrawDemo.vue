@@ -108,7 +108,9 @@ onBeforeUnmount(() => {
           {{ r }}
         </button>
       </div>
-      <span v-if="renderer === 'webgpu'" class="pdw-note">webgpu paints the full frame instantly</span>
+      <span v-if="renderer === 'webgpu'" class="pdw-note"
+        >webgpu paints the full frame instantly</span
+      >
     </div>
     <div class="pdw-stage michi-vz-calm" ref="host"></div>
     <p class="pdw-hint">

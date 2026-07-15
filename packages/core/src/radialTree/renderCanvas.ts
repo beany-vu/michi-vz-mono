@@ -24,7 +24,7 @@ export function drawRadialTreeCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RadialTreeRenderModel,
-  o: RadialTreeCanvasOptions
+  o: RadialTreeCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -46,10 +46,13 @@ export function drawRadialTreeCanvas(
     model.marks.map((m) => m.colorKey),
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("circle", "radial-tree-node-circle", "fill"),
-    "fill"
+    "fill",
   );
 
-  const cs = svg && typeof window !== "undefined" && window.getComputedStyle ? window.getComputedStyle(svg) : null;
+  const cs =
+    svg && typeof window !== "undefined" && window.getComputedStyle
+      ? window.getComputedStyle(svg)
+      : null;
   const ink = (cs && cs.color) || "#2a1c15";
   const fam = (cs && cs.fontFamily) || "sans-serif";
   const fs = (cs && parseFloat(cs.getPropertyValue("--michi-vz-font-size"))) || 12;

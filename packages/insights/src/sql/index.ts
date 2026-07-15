@@ -23,7 +23,8 @@ function num(v: unknown): number {
 
 /** Pure group-by aggregation over rows. The model-free data-wrangling default. */
 export function aggregate(rows: Row[], spec: AggregateSpec): Row[] {
-  const groupKeys = spec.groupBy == null ? [] : Array.isArray(spec.groupBy) ? spec.groupBy : [spec.groupBy];
+  const groupKeys =
+    spec.groupBy == null ? [] : Array.isArray(spec.groupBy) ? spec.groupBy : [spec.groupBy];
   const filtered = spec.where ? rows.filter(spec.where) : rows;
 
   const groups = new Map<string, Row[]>();

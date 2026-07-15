@@ -16,7 +16,7 @@ export function drawRibbonCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RibbonRenderModel,
-  o: RibbonCanvasOptions
+  o: RibbonCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -36,7 +36,7 @@ export function drawRibbonCanvas(
     keys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
   const colorOf = (key: string, fb: string): string => fillColors.get(key) || fb;
 

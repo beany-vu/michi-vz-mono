@@ -23,12 +23,12 @@ function seriesContext(it: RadarDataItem, axes: string[], color: string): RadarS
 
 export function buildRadarContext(input: BuildRadarContextInput): RadarChartContext {
   const series = input.items.map((it) =>
-    seriesContext(it, input.axes, input.colorsMapping[it.label] ?? it.color ?? "")
+    seriesContext(it, input.axes, input.colorsMapping[it.label] ?? it.color ?? ""),
   );
 
   const titlePart = input.title ? `"${input.title}" ` : "";
   let summary = `Radar chart ${titlePart}with ${series.length} series across ${input.axes.length} axes (${input.axes.join(
-    ", "
+    ", ",
   )}).`;
   if (series.length) {
     const top = series.reduce((a, b) => (b.total > a.total ? b : a));

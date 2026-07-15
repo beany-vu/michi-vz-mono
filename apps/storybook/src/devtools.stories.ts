@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/web-components";
-import { mountDevtools, type DevtoolsHandle, type DevtoolsTheme, type DevtoolsButtonPosition } from "@michi-vz/devtools";
+import {
+  mountDevtools,
+  type DevtoolsHandle,
+  type DevtoolsTheme,
+  type DevtoolsButtonPosition,
+} from "@michi-vz/devtools";
 import "@michi-vz/wc/line-chart";
 import { renderElement } from "./render";
 
@@ -37,7 +42,11 @@ const meta: Meta<DevtoolsArgs> = {
     handle?.destroy();
     // Mount the panel BEFORE the chart so the chart registers with the hook (the
     // DOM-sweep fallback would still find it, but this is the documented order).
-    handle = mountDevtools({ theme: args.theme, open: args.open, buttonPosition: args.buttonPosition });
+    handle = mountDevtools({
+      theme: args.theme,
+      open: args.open,
+      buttonPosition: args.buttonPosition,
+    });
     const chart = renderElement("michi-vz-line-chart", {
       dataSet: DATASET,
       title: "Revenue (actual + forecast)",

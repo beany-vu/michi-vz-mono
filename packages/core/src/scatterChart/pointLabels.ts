@@ -68,7 +68,7 @@ function overlaps(a: Box, b: Box): boolean {
 export function buildScatterPointLabels(
   points: ScatterPointModel[],
   formatter: (d: ScatterDataPoint) => string,
-  bounds?: ScatterPointLabelBounds
+  bounds?: ScatterPointLabelBounds,
 ): ScatterPointLabelMark[] {
   const placed: Box[] = [];
   const marks: ScatterPointLabelMark[] = [];
@@ -85,9 +85,7 @@ export function buildScatterPointLabels(
     // keep it right (a too-wide label has nowhere better to go).
     const leftAnchorX = p.cx - p.r - LABEL_GAP;
     const flipLeft =
-      bounds != null &&
-      rightX + width > bounds.plotRight &&
-      leftAnchorX - width >= bounds.plotLeft;
+      bounds != null && rightX + width > bounds.plotRight && leftAnchorX - width >= bounds.plotLeft;
 
     const anchorX = flipLeft ? leftAnchorX : rightX;
     const textAnchor: "start" | "end" = flipLeft ? "end" : "start";

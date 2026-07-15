@@ -189,5 +189,8 @@ if (
   typeof customElements !== "undefined" &&
   !customElements.get("michi-vz-comparable-vertical-bar-chart")
 ) {
-  customElements.define("michi-vz-comparable-vertical-bar-chart", ComparableVerticalBarChartElement);
+  customElements.define(
+    "michi-vz-comparable-vertical-bar-chart",
+    ComparableVerticalBarChartElement,
+  );
 }

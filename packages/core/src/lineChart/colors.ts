@@ -16,7 +16,7 @@ export function buildLineColors(
   dataSet: LineDataItem[],
   colors: string[] = [],
   colorsMapping?: Record<string, string>,
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): LineColorResolver {
   const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
   const generated: Record<string, string> = { ...colorsMapping };
@@ -26,7 +26,7 @@ export function buildLineColors(
     if (generated[item.label]) continue; // colorsMapping override wins
     generated[item.label] = skipColorMappingDispatch
       ? "transparent"
-      : item.color ?? palette[i % palette.length];
+      : (item.color ?? palette[i % palette.length]);
     i++;
   }
 

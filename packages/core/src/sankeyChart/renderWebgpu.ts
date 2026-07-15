@@ -6,13 +6,7 @@
 // fill colours are resolved through the SAME light-DOM probes canvas mode uses, so
 // consumer CSS still reaches GPU pixels. Device acquisition is async; while not
 // ready this returns false and the engine paints the canvas-2D fallback.
-import {
-  drawMarksWebgpu,
-  emptyBatch,
-  pushRect,
-  pushBandStrip,
-  markColor,
-} from "../webgpu/marks";
+import { drawMarksWebgpu, emptyBatch, pushRect, pushBandStrip, markColor } from "../webgpu/marks";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import type { SankeyRenderModel } from "./renderModel";
 
@@ -33,7 +27,7 @@ function sampleRibbon(
   sy: number,
   tx: number,
   ty: number,
-  width: number
+  width: number,
 ): { top: Array<[number, number]>; bottom: Array<[number, number]> } {
   const hw = width / 2;
   const mx = (sx + tx) / 2;
@@ -63,25 +57,26 @@ export function drawSankeyWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: SankeyRenderModel,
-  o: SankeyWebgpuOptions
+  o: SankeyWebgpuOptions,
 ): boolean {
   // Resolve colours through the SAME probes canvas mode uses (rect.node fill,
   // path.link fill), so consumer CSS reaches GPU pixels identically.
   const nodeFallback = new Map<string, string>();
-  for (const n of model.nodes) if (!nodeFallback.has(n.colorKey)) nodeFallback.set(n.colorKey, n.fill);
+  for (const n of model.nodes)
+    if (!nodeFallback.has(n.colorKey)) nodeFallback.set(n.colorKey, n.fill);
   const nodeColors = resolveMarkColors(
     svg,
     model.nodeKeys,
     (k) => nodeFallback.get(k) || "transparent",
     makeSimpleProbe("rect", "node", "fill"),
-    "fill"
+    "fill",
   );
   const linkColors = resolveMarkColors(
     svg,
     model.nodeKeys,
     (k) => nodeFallback.get(k) || "transparent",
     makeSimpleProbe("path", "link", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;
@@ -122,7 +117,9 @@ export function drawSankeyWebgpu(
  * `M{sx},{sTop+r}` (top-left corner start) and its horizontal extent matches
  * sx/tx; sy/ty are recovered as the vertical midpoint of the left/right edges.
  */
-function parseRibbonEndpoints(d: string): { sx: number; sy: number; tx: number; ty: number } | null {
+function parseRibbonEndpoints(
+  d: string,
+): { sx: number; sy: number; tx: number; ty: number } | null {
   // Pull every numeric token in order; the path is built from a fixed sequence of
   // M/Q/C/L commands over (sx,sTop..sBot) and (tx,tTop..tBot), so the min/max x are
   // sx/tx and the corresponding y extents average to sy/ty.

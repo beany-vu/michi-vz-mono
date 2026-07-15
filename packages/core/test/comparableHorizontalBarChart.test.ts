@@ -51,7 +51,7 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     const { host, chart } = mount();
     const order = (label: string) => {
       const rects = Array.from(
-        host.querySelectorAll<SVGRectElement>(`g.data-group[data-label="${label}"] rect.bar`)
+        host.querySelectorAll<SVGRectElement>(`g.data-group[data-label="${label}"] rect.bar`),
       );
       return rects.map((r) => (r.classList.contains("value-based") ? "based" : "compared"));
     };
@@ -74,7 +74,7 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     // Unmapped labels keep the row colour for both sub-bars.
     const beta = host.querySelector('g.data-group[data-label="Beta"]')!;
     expect(beta.querySelector("rect.value-based")!.getAttribute("fill")).toBe(
-      beta.querySelector("rect.value-compared")!.getAttribute("fill")
+      beta.querySelector("rect.value-compared")!.getAttribute("fill"),
     );
     chart.destroy();
     host.remove();
@@ -110,7 +110,9 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
   it("builds an a11y mirror with one row per label", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(3);
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Label", "Based", "Compared", "Difference"]);
     chart.destroy();
     host.remove();
@@ -179,7 +181,13 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
     expect(calls).toBe(1); // initial
     chart.update({ dataSet, title: "Demo", width: 600, height: 300, onChartDataProcessed }); // same data
     expect(calls).toBe(1); // unchanged context → NOT re-emitted
-    chart.update({ dataSet: dataSet.slice(0, 2), title: "Demo", width: 600, height: 300, onChartDataProcessed });
+    chart.update({
+      dataSet: dataSet.slice(0, 2),
+      title: "Demo",
+      width: 600,
+      height: 300,
+      onChartDataProcessed,
+    });
     expect(calls).toBe(2); // changed → emitted
     chart.destroy();
     host.remove();
@@ -199,7 +207,9 @@ describe("mountComparableHorizontalBarChart (jsdom)", () => {
 
 describe("SVG pattern fill (patternsMapping) - backported from ComparableVerticalBarChart", () => {
   it("emits a <pattern> in <defs> and the value-based rect fills with url(#id) for a mapped label", () => {
-    const { host, chart } = mount({ patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" } });
+    const { host, chart } = mount({
+      patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" },
+    });
     const pattern = host.querySelector("defs.mv-pattern-defs pattern");
     expect(pattern).toBeTruthy();
     expect(pattern!.querySelector("image")!.getAttribute("href")).toBe("data:image/svg+xml,<svg/>");
@@ -213,7 +223,10 @@ describe("SVG pattern fill (patternsMapping) - backported from ComparableVertica
   });
 
   it("canvas mode is unaffected (still tiles via ctx.createPattern, no <defs> needed)", () => {
-    const { host, chart } = mount({ patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" }, renderer: "canvas" });
+    const { host, chart } = mount({
+      patternsMapping: { "Alpha One": "data:image/svg+xml,<svg/>" },
+      renderer: "canvas",
+    });
     expect(host.querySelector("defs.mv-pattern-defs")).toBeNull();
     chart.destroy();
     host.remove();
@@ -268,7 +281,7 @@ describe("layout: overlay (default) vs grouped", () => {
     // The full row band (from the default/overlay mount) equals based+compared height combined.
     const overlayMount = mount();
     const overlayBased = overlayMount.host.querySelector(
-      'g.data-group[data-label="Alpha One"] rect.value-based'
+      'g.data-group[data-label="Alpha One"] rect.value-based',
     )!;
     const fullBandHeight = Number(overlayBased.getAttribute("height"));
     expect(basedH + comparedH).toBeCloseTo(fullBandHeight, 5);
@@ -470,7 +483,9 @@ describe("deltaIndicator", () => {
   ])(
     "positiveIsGood=%s positiveIsUp=%s -> Alpha(+8)=%s/good:%s, Beta(-8)=%s/good:%s",
     (positiveIsGood, positiveIsUp, alphaDir, alphaGood, betaDir, betaGood) => {
-      const { host, chart } = mount({ deltaIndicator: { show: true, positiveIsGood, positiveIsUp } });
+      const { host, chart } = mount({
+        deltaIndicator: { show: true, positiveIsGood, positiveIsUp },
+      });
       const GOOD = "#009688";
       const BAD = "#e91e63";
       const alphaArrow = host.querySelector('.mv-delta[data-label="Alpha One"] .mv-delta-arrow')!;
@@ -488,7 +503,7 @@ describe("deltaIndicator", () => {
 
       chart.destroy();
       host.remove();
-    }
+    },
   );
 
   it("formatter override takes full control of the label (no automatic +/- prefix)", () => {

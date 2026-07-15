@@ -49,7 +49,9 @@ export function radialProjection(angleDeg: number, radius: number): [number, num
 }
 
 export function layoutRadialTree(root: RtNode, o: RadialLayoutOptions): RadialLayoutNode[] {
-  const h = hierarchy<RtNode>(root, (d) => d.children).sort((a, b) => (b.data.value ?? 0) - (a.data.value ?? 0));
+  const h = hierarchy<RtNode>(root, (d) => d.children).sort(
+    (a, b) => (b.data.value ?? 0) - (a.data.value ?? 0),
+  );
 
   const layout = cluster<RtNode>().size([360, Math.max(0, o.outerRadius)]);
   const positioned = layout(h);

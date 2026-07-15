@@ -19,8 +19,11 @@ export interface BuildFanContextInput {
 function seriesContext(item: FanDataItem, colorsMapping: Record<string, string>): FanSeriesContext {
   const pts = item.series;
   // History vs forecast via shared provenance (explicit `predicted`, else certainty).
-  const { actualCount: historyCount, predictedCount: forecastCount, forecastStart } =
-    provenanceCounts(pts);
+  const {
+    actualCount: historyCount,
+    predictedCount: forecastCount,
+    forecastStart,
+  } = provenanceCounts(pts);
   const lastPt = pts.length ? pts[pts.length - 1] : null;
   const bandLevels = item.bands.map((b) => b.level).sort((a, b) => a - b);
 

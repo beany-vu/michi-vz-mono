@@ -12,7 +12,7 @@ export interface CanvasSetup {
 export const setupCanvas = (
   canvas: HTMLCanvasElement | null,
   width: number,
-  height: number
+  height: number,
 ): CanvasSetup | null => {
   if (!canvas) return null;
   const ctx = canvas.getContext("2d");

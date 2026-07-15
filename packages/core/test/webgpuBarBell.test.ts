@@ -102,7 +102,7 @@ describe("mountBarBellChart - webgpu renderer (capability gate + fallback)", () 
     // Read a cap's pixel coords from an SVG mount (same scales/model as webgpu).
     const svgMount = mount({ renderer: "svg" });
     const cap = Array.from(
-      svgMount.host.querySelectorAll<SVGCircleElement>("circle.bar-bell-cap")
+      svgMount.host.querySelectorAll<SVGCircleElement>("circle.bar-bell-cap"),
     ).find((c) => c.getAttribute("data-label") === "Fruit Sales")!;
     const cx = Number(cap.getAttribute("cx"));
     const cy = Number(cap.getAttribute("cy"));

@@ -18,7 +18,7 @@ export function createChoroplethProjection(
   name: ChoroplethProjectionName | undefined,
   config: ChoroplethProjectionConfig | undefined,
   width: number,
-  height: number
+  height: number,
 ): GeoProjection {
   return createTunedProjection(name, config, width, height, { rotate: [-18, 0], center: [0, 10] });
 }
@@ -26,6 +26,9 @@ export function createChoroplethProjection(
 /** geoPath(projection[, context]) - d3-geo renders natively to both SVG path
  * strings (context omitted) and Canvas 2D contexts (context supplied); see
  * renderSvg.ts / renderCanvas.ts. */
-export function createChoroplethPathGenerator(projection: GeoProjection, context?: CanvasRenderingContext2D): GeoPath {
+export function createChoroplethPathGenerator(
+  projection: GeoProjection,
+  context?: CanvasRenderingContext2D,
+): GeoPath {
   return createGeoPathGenerator(projection, context);
 }

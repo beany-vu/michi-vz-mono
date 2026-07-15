@@ -17,7 +17,7 @@ export interface NormalizedGeoFeature {
  * (NOT `properties.id`), falling back to `properties.id`; `name` reads
  * `properties.name`. Shared by data.ts and choroplethMapWarnings.ts. */
 export function normalizeGeography(
-  geography: GeoJSON.FeatureCollection | GeoFeatureItem[]
+  geography: GeoJSON.FeatureCollection | GeoFeatureItem[],
 ): NormalizedGeoFeature[] {
   if (Array.isArray(geography)) {
     return geography.map((f) => ({ id: f.id, name: f.name, geometry: f.geometry }));
@@ -48,7 +48,7 @@ export interface ProcessedChoropleth {
 export function processChoroplethMapData(
   geography: GeoJSON.FeatureCollection | GeoFeatureItem[],
   dataSet: ChoroplethDataItem[],
-  opts: ProcessChoroplethOptions = {}
+  opts: ProcessChoroplethOptions = {},
 ): ProcessedChoropleth {
   const joinBy = opts.joinBy ?? "id";
   const disabled = new Set(opts.disabledItems ?? []);

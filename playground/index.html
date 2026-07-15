@@ -1,1302 +1,2534 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>@michi-vz/wc - GapChart PoC playground</title>
-<style>
-  body { font-family: system-ui, sans-serif; margin: 24px; color: #2a1c15; background: #f6f1e7; }
-  h1 { font-size: 22px; } h2 { font-size: 16px; margin: 28px 0 8px; }
-  .row { display: flex; flex-wrap: wrap; gap: 32px; }
-  .card { background: #fffdf8; border: 1px solid #e1d6c3; border-radius: 6px; padding: 12px; }
-  /* CONSUMER colour contract: recolour marks purely via CSS (data-label-safe).
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@michi-vz/wc - GapChart PoC playground</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 24px;
+        color: #2a1c15;
+        background: #f6f1e7;
+      }
+      h1 {
+        font-size: 22px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 28px 0 8px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+      }
+      .card {
+        background: #fffdf8;
+        border: 1px solid #e1d6c3;
+        border-radius: 6px;
+        padding: 12px;
+      }
+      /* CONSUMER colour contract: recolour marks purely via CSS (data-label-safe).
      The canvas renderer must pick these up through the getComputedStyle probe. */
-  #contract .gap-bar { fill: rgb(220, 40, 40); }
-  #contract .gap-marker { fill: rgb(20, 120, 60); }
-  /* LineChart consumer colour contract: recolour line strokes purely via CSS. */
-  #lineContract .line { stroke: rgb(20, 120, 200); }
-  /* AreaChart consumer colour contract: recolour area fills purely via CSS. */
-  #areaContract .area { fill: rgb(180, 60, 160); }
-  /* ScatterPlot consumer colour contract: recolour point fills purely via CSS. */
-  #scatterContract .scatter-point { fill: rgb(40, 200, 120); }
-  /* VerticalStackBar consumer colour contract: recolour bar fills purely via CSS. */
-  #stackContract .bar { fill: rgb(230, 150, 20); }
-  /* ComparableBar consumer colour contract: recolour bar fills purely via CSS. */
-  #cmpContract .bar { fill: rgb(120, 40, 200); }
-  /* ComparableBar DESCENDANT consumer colour contract - thd's real MonitorV2
+      #contract .gap-bar {
+        fill: rgb(220, 40, 40);
+      }
+      #contract .gap-marker {
+        fill: rgb(20, 120, 60);
+      }
+      /* LineChart consumer colour contract: recolour line strokes purely via CSS. */
+      #lineContract .line {
+        stroke: rgb(20, 120, 200);
+      }
+      /* AreaChart consumer colour contract: recolour area fills purely via CSS. */
+      #areaContract .area {
+        fill: rgb(180, 60, 160);
+      }
+      /* ScatterPlot consumer colour contract: recolour point fills purely via CSS. */
+      #scatterContract .scatter-point {
+        fill: rgb(40, 200, 120);
+      }
+      /* VerticalStackBar consumer colour contract: recolour bar fills purely via CSS. */
+      #stackContract .bar {
+        fill: rgb(230, 150, 20);
+      }
+      /* ComparableBar consumer colour contract: recolour bar fills purely via CSS. */
+      #cmpContract .bar {
+        fill: rgb(120, 40, 200);
+      }
+      /* ComparableBar DESCENDANT consumer colour contract - thd's real MonitorV2
      shape (TariffStructure/ByPattern.jsx + TradeMap/TradeGrowthPotential.jsx):
      an ancestor `.bar[data-label-safe="X"]` selector styling a DESCENDANT
      `.value-based`/`.value-compared` element, not the same element. value-based
      also exercises the url()-fill-falls-through-to-stroke behaviour (a real
      thd pattern via patternsMapping). */
-  #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-based { fill: url(#nonexistent-pattern); stroke: rgb(10, 200, 10); }
-  #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-compared { fill: rgb(220, 20, 140); }
-  /* ComparableVerticalBar consumer colour contract: recolour bar fills purely via CSS. */
-  #cmpVContract .bar { fill: rgb(30, 110, 190); }
-  /* ComparableVerticalBar DESCENDANT consumer colour contract - same thd MonitorV2
+      #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-based {
+        fill: url(#nonexistent-pattern);
+        stroke: rgb(10, 200, 10);
+      }
+      #cmpDescendantContract .bar[data-label-safe="Alpha_One"] .value-compared {
+        fill: rgb(220, 20, 140);
+      }
+      /* ComparableVerticalBar consumer colour contract: recolour bar fills purely via CSS. */
+      #cmpVContract .bar {
+        fill: rgb(30, 110, 190);
+      }
+      /* ComparableVerticalBar DESCENDANT consumer colour contract - same thd MonitorV2
      shape as the horizontal chart's #cmpDescendantContract above. Targets "Beta"
      (valueBased 30 > valueCompared 22): unlike the horizontal chart's WIDTH-dependent
      z-order swap, this chart's z-order is FIXED (valueBased always behind), so the
      rear value-based sub-bar only peeks out above the front value-compared bar when
      it is the TALLER of the two - "Alpha One" (10 < 18) would be fully covered. */
-  #cmpVDescendantContract .bar[data-label-safe="Beta"] .value-based { fill: url(#nonexistent-pattern); stroke: rgb(10, 200, 10); }
-  #cmpVDescendantContract .bar[data-label-safe="Beta"] .value-compared { fill: rgb(220, 20, 140); }
-  /* DualBar consumer colour contract: recolour bar fills purely via CSS. */
-  #dualContract .bar { fill: rgb(0, 160, 160); }
-  /* BarBell consumer colour contract: recolour bar fills purely via CSS. */
-  #bellContract .bar { fill: rgb(210, 90, 40); }
-  /* Range consumer colour contract: recolour band fills purely via CSS. */
-  #rangeContract .area { fill: rgb(70, 50, 200); }
-  /* Ribbon consumer colour contract: recolour column fills purely via CSS. */
-  #ribbonContract .bar { fill: rgb(200, 30, 90); }
-  /* Radar consumer colour contract: recolour polygon fills purely via CSS. */
-  #radarContract .radar-area { fill: rgb(20, 170, 90); }
-  /* ChoroplethMap consumer colour contract: recolour ONE region's fill purely via
+      #cmpVDescendantContract .bar[data-label-safe="Beta"] .value-based {
+        fill: url(#nonexistent-pattern);
+        stroke: rgb(10, 200, 10);
+      }
+      #cmpVDescendantContract .bar[data-label-safe="Beta"] .value-compared {
+        fill: rgb(220, 20, 140);
+      }
+      /* DualBar consumer colour contract: recolour bar fills purely via CSS. */
+      #dualContract .bar {
+        fill: rgb(0, 160, 160);
+      }
+      /* BarBell consumer colour contract: recolour bar fills purely via CSS. */
+      #bellContract .bar {
+        fill: rgb(210, 90, 40);
+      }
+      /* Range consumer colour contract: recolour band fills purely via CSS. */
+      #rangeContract .area {
+        fill: rgb(70, 50, 200);
+      }
+      /* Ribbon consumer colour contract: recolour column fills purely via CSS. */
+      #ribbonContract .bar {
+        fill: rgb(200, 30, 90);
+      }
+      /* Radar consumer colour contract: recolour polygon fills purely via CSS. */
+      #radarContract .radar-area {
+        fill: rgb(20, 170, 90);
+      }
+      /* ChoroplethMap consumer colour contract: recolour ONE region's fill purely via
      CSS. Single-element selector (no descendant contract needed - a region has no
      sub-marks, unlike ComparableBar's based/compared pair). */
-  #choroContract .region[data-label-safe="Alpha"] { fill: rgb(215, 40, 150); }
-  /* SymbolMap consumer colour contract: recolour ONE symbol's fill purely via
+      #choroContract .region[data-label-safe="Alpha"] {
+        fill: rgb(215, 40, 150);
+      }
+      /* SymbolMap consumer colour contract: recolour ONE symbol's fill purely via
      CSS. Single-element selector (no descendant contract needed - a symbol
      has no sub-marks beyond its own optional concentric second circle, which
      shares the primary's colour, not a separate CSS-styleable one). */
-  #symbolContract .symbol[data-label-safe="Alpha"] { fill: rgb(30, 160, 220); }
-  /* RadialTree consumer colour contract: recolour ONE group's circles purely via
+      #symbolContract .symbol[data-label-safe="Alpha"] {
+        fill: rgb(30, 160, 220);
+      }
+      /* RadialTree consumer colour contract: recolour ONE group's circles purely via
      CSS. Keyed by GROUP label (data-label-safe), same as Treemap - a leaf shares
      its group's colour contract, so this ONE selector recolours the group circle
      AND every one of its leaf circles. */
-  #radialContract .radial-tree-node-circle[data-label-safe="Sectors"] { fill: rgb(230, 70, 20); }
-  /* Treemap consumer colour contract: recolour ONE tile's fill purely via CSS.
+      #radialContract .radial-tree-node-circle[data-label-safe="Sectors"] {
+        fill: rgb(230, 70, 20);
+      }
+      /* Treemap consumer colour contract: recolour ONE tile's fill purely via CSS.
      Flat (non-nested) dataset -> colorKey == the leaf's own label. */
-  #treemapContract .tile[data-label-safe="Coffee"] { fill: rgb(230, 60, 180); }
-  #results { white-space: pre; font-family: ui-monospace, monospace; font-size: 13px;
-    background: #2b1f18; color: #f3e9da; padding: 16px; border-radius: 6px; margin-top: 20px; }
-  .pass { color: #79f1a5; } .fail { color: #ff6b6b; }
-</style>
-</head>
-<body>
-<h1>@michi-vz/wc - GapChart PoC</h1>
-<p>Light-DOM native web component over the <code>@michi-vz/core</code> engine. The page self-tests below.</p>
-
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-gap-chart id="svg"></michi-vz-gap-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-gap-chart id="canvas"></michi-vz-gap-chart></div>
-</div>
-<h2>Consumer-CSS colour contract (canvas, <code>skip-color-mapping-dispatch</code>)</h2>
-<div class="card" id="contract"><michi-vz-gap-chart id="contractChart"></michi-vz-gap-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - LineChart</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-line-chart id="lineSvg"></michi-vz-line-chart></div>
-  <div class="card"><h2>Canvas renderer (LTTB)</h2><michi-vz-line-chart id="lineCanvas"></michi-vz-line-chart></div>
-</div>
-<h2>Line consumer-CSS stroke contract (canvas)</h2>
-<div class="card" id="lineContract"><michi-vz-line-chart id="lineContractChart"></michi-vz-line-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - AreaChart (stacked)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-area-chart id="areaSvg"></michi-vz-area-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-area-chart id="areaCanvas"></michi-vz-area-chart></div>
-</div>
-<h2>Area consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="areaContract"><michi-vz-area-chart id="areaContractChart"></michi-vz-area-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - ScatterPlot</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-scatter-chart id="scatterSvg"></michi-vz-scatter-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-scatter-chart id="scatterCanvas"></michi-vz-scatter-chart></div>
-  <div class="card"><h2>pointLabels + drawOrder="sizeDescending"</h2><michi-vz-scatter-chart id="scatterLabels"></michi-vz-scatter-chart></div>
-  <div class="card"><h2>drawOrder="sizeAscending" (legacy z-order parity)</h2><michi-vz-scatter-chart id="scatterAscending"></michi-vz-scatter-chart></div>
-</div>
-<h2>Scatter consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="scatterContract"><michi-vz-scatter-chart id="scatterContractChart"></michi-vz-scatter-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - VerticalStackBar (stacked, hasOwnProperty guard)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-vertical-stack-bar-chart id="stackSvg"></michi-vz-vertical-stack-bar-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-vertical-stack-bar-chart id="stackCanvas"></michi-vz-vertical-stack-bar-chart></div>
-</div>
-<h2>Stack consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="stackContract"><michi-vz-vertical-stack-bar-chart id="stackContractChart"></michi-vz-vertical-stack-bar-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - ComparableHorizontalBar</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-comparable-horizontal-bar-chart id="cmpSvg"></michi-vz-comparable-horizontal-bar-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-comparable-horizontal-bar-chart id="cmpCanvas"></michi-vz-comparable-horizontal-bar-chart></div>
-</div>
-<h2>Comparable consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="cmpContract"><michi-vz-comparable-horizontal-bar-chart id="cmpContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
-<h2>Comparable consumer-CSS DESCENDANT selector contract (canvas, thd MonitorV2 shape)</h2>
-<div class="card" id="cmpDescendantContract"><michi-vz-comparable-horizontal-bar-chart id="cmpDescendantContractChart"></michi-vz-comparable-horizontal-bar-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - ComparableVerticalBar (fixed z-order, full-bandwidth overlay)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-comparable-vertical-bar-chart id="cmpVSvg"></michi-vz-comparable-vertical-bar-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-comparable-vertical-bar-chart id="cmpVCanvas"></michi-vz-comparable-vertical-bar-chart></div>
-</div>
-<h2>ComparableVerticalBar consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="cmpVContract"><michi-vz-comparable-vertical-bar-chart id="cmpVContractChart"></michi-vz-comparable-vertical-bar-chart></div>
-<h2>ComparableVerticalBar consumer-CSS DESCENDANT selector contract (canvas, thd MonitorV2 shape)</h2>
-<div class="card" id="cmpVDescendantContract"><michi-vz-comparable-vertical-bar-chart id="cmpVDescendantContractChart"></michi-vz-comparable-vertical-bar-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - DualHorizontalBar (tornado)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-dual-horizontal-bar-chart id="dualSvg"></michi-vz-dual-horizontal-bar-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-dual-horizontal-bar-chart id="dualCanvas"></michi-vz-dual-horizontal-bar-chart></div>
-</div>
-<h2>Dual consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="dualContract"><michi-vz-dual-horizontal-bar-chart id="dualContractChart"></michi-vz-dual-horizontal-bar-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - BarBell (cumulative + end-caps)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-bar-bell-chart id="bellSvg"></michi-vz-bar-bell-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-bar-bell-chart id="bellCanvas"></michi-vz-bar-bell-chart></div>
-</div>
-<h2>BarBell consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="bellContract"><michi-vz-bar-bell-chart id="bellContractChart"></michi-vz-bar-bell-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - RangeChart (min/max bands)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-range-chart id="rangeSvg"></michi-vz-range-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-range-chart id="rangeCanvas"></michi-vz-range-chart></div>
-</div>
-<h2>Range consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="rangeContract"><michi-vz-range-chart id="rangeContractChart"></michi-vz-range-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - RibbonChart (stacked columns + connectors)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-ribbon-chart id="ribbonSvg"></michi-vz-ribbon-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-ribbon-chart id="ribbonCanvas"></michi-vz-ribbon-chart></div>
-</div>
-<h2>Ribbon consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="ribbonContract"><michi-vz-ribbon-chart id="ribbonContractChart"></michi-vz-ribbon-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - RadarChart (polar)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-radar-chart id="radarSvg"></michi-vz-radar-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-radar-chart id="radarCanvas"></michi-vz-radar-chart></div>
-</div>
-<h2>Radar consumer-CSS fill contract (canvas)</h2>
-<div class="card" id="radarContract"><michi-vz-radar-chart id="radarContractChart"></michi-vz-radar-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - ChoroplethMap (geo, first geo chart)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-choropleth-map-chart id="choroSvg"></michi-vz-choropleth-map-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-choropleth-map-chart id="choroCanvas"></michi-vz-choropleth-map-chart></div>
-</div>
-<h2>ChoroplethMap consumer-CSS fill contract (canvas, single-element path.region[data-label-safe] probe)</h2>
-<div class="card" id="choroContract"><michi-vz-choropleth-map-chart id="choroContractChart"></michi-vz-choropleth-map-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - SymbolMap (geo, force-de-overlapped bubble map)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer (dot-only)</h2><michi-vz-symbol-map-chart id="symbolSvg"></michi-vz-symbol-map-chart></div>
-  <div class="card"><h2>Canvas renderer (dot-only)</h2><michi-vz-symbol-map-chart id="symbolCanvas"></michi-vz-symbol-map-chart></div>
-  <div class="card"><h2>SVG renderer + optional backdrop geography</h2><michi-vz-symbol-map-chart id="symbolBackdrop"></michi-vz-symbol-map-chart></div>
-</div>
-<h2>SymbolMap consumer-CSS fill contract (canvas, single-element circle.symbol[data-label-safe] probe)</h2>
-<div class="card" id="symbolContract"><michi-vz-symbol-map-chart id="symbolContractChart"></michi-vz-symbol-map-chart></div>
-<h2>SymbolMap de-overlap sanity check (two identical-coordinate points)</h2>
-<div class="card"><michi-vz-symbol-map-chart id="symbolOverlap"></michi-vz-symbol-map-chart></div>
-
-<h2>SymbolMap edge-clipping check (B3.6 - extreme-west max-value + extreme-north large bubble)</h2>
-<div class="card"><michi-vz-symbol-map-chart id="symbolEdge"></michi-vz-symbol-map-chart></div>
-
-<h2>SymbolMap small-circle forgiving hover check (B3.7 - real pointer coords, both renderers)</h2>
-<div class="row">
-  <div class="card"><h2>SVG</h2><michi-vz-symbol-map-chart id="symbolSmallSvg"></michi-vz-symbol-map-chart></div>
-  <div class="card"><h2>Canvas</h2><michi-vz-symbol-map-chart id="symbolSmallCanvas"></michi-vz-symbol-map-chart></div>
-</div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - RadialTree (radial cluster()/dendrogram)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-radial-tree-chart id="radialSvg"></michi-vz-radial-tree-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-radial-tree-chart id="radialCanvas"></michi-vz-radial-tree-chart></div>
-  <div class="card"><h2>Dense tree - label density (abbreviate + rotate)</h2><michi-vz-radial-tree-chart id="radialDense"></michi-vz-radial-tree-chart></div>
-</div>
-<h2>RadialTree consumer-CSS fill contract (canvas, single-element circle.radial-tree-node-circle[data-label-safe] probe)</h2>
-<div class="card" id="radialContract"><michi-vz-radial-tree-chart id="radialContractChart"></michi-vz-radial-tree-chart></div>
-
-<h1 style="margin-top:36px">@michi-vz/wc - Treemap (squarified tiling, tileValueLabels)</h1>
-<div class="row">
-  <div class="card"><h2>SVG renderer</h2><michi-vz-treemap-chart id="treemapSvg"></michi-vz-treemap-chart></div>
-  <div class="card"><h2>Canvas renderer</h2><michi-vz-treemap-chart id="treemapCanvas"></michi-vz-treemap-chart></div>
-  <div class="card"><h2>tileValueLabels (value + % of total, 2nd line)</h2><michi-vz-treemap-chart id="treemapValueLabels"></michi-vz-treemap-chart></div>
-</div>
-<h2>Treemap consumer-CSS fill contract (canvas, rect.tile[data-label-safe] probe)</h2>
-<div class="card" id="treemapContract"><michi-vz-treemap-chart id="treemapContractChart"></michi-vz-treemap-chart></div>
-
-<div id="results">running…</div>
-
-<script type="module">
-const __RESULTS = document.getElementById("results");
-async function runPlayground() {
-await import("../packages/wc/dist/michi-vz-wc.bundle.js");
-
-const data = [
-  { label: "Alpha One", value1: 12, value2: 34 },
-  { label: "Beta",      value1: 55, value2: 20 },
-  { label: "Gamma",     value1: 30, value2: 31 },
-  { label: "Delta",     value1: 8,  value2: 40 },
-];
-
-const common = { width: 460, height: 280, xAxisDataType: "number", shapeValue1: "circle", shapeValue2: "square" };
-const out = [];
-const log = (ok, msg) => out.push(`${ok ? "✅ PASS" : "❌ FAIL"}  ${msg}`);
-const nextFrame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-const svgEl = document.getElementById("svg");
-const canvasEl = document.getElementById("canvas");
-const contractEl = document.getElementById("contractChart");
-
-// Same title on both so getContext() differs ONLY by renderer (see check #3).
-Object.assign(svgEl, { dataSet: data, chartTitle: "Value gap", renderer: "svg", ...common });
-Object.assign(canvasEl, { dataSet: data, chartTitle: "Value gap", renderer: "canvas", ...common });
-Object.assign(contractEl, {
-  dataSet: data, chartTitle: "Canvas + consumer CSS", renderer: "canvas",
-  skipColorMappingDispatch: true, ...common,
-});
-
-let dataProcessedFired = false;
-svgEl.addEventListener("michi-vz:dataprocessed", () => { dataProcessedFired = true; });
-
-// ---- LineChart setup ----
-const lineData = [
-  { label: "North", color: "#1f77b4", series: [
-    { date: 2016, value: 10, certainty: true }, { date: 2017, value: 22, certainty: true },
-    { date: 2018, value: 18, certainty: true }, { date: 2019, value: 30, certainty: true }] },
-  { label: "South Region", color: "#ff7f0e", series: [
-    { date: 2016, value: 5, certainty: true }, { date: 2017, value: 9, certainty: true },
-    { date: 2024, value: 26, certainty: true }] }, // 2019->2024 gap -> dashed run
-];
-const lineCommon = { width: 460, height: 280, xAxisDataType: "date_annual", detectGaps: true, showDataPoints: true };
-const lineSvgEl = document.getElementById("lineSvg");
-const lineCanvasEl = document.getElementById("lineCanvas");
-const lineContractEl = document.getElementById("lineContractChart");
-Object.assign(lineSvgEl, { dataSet: lineData, chartTitle: "Trend", renderer: "svg", ...lineCommon });
-Object.assign(lineCanvasEl, { dataSet: lineData, chartTitle: "Trend", renderer: "canvas", ...lineCommon });
-Object.assign(lineContractEl, { dataSet: lineData, chartTitle: "Line canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...lineCommon });
-
-// ---- AreaChart setup (stacked) ----
-const areaSeries = [
-  { date: 2018, Fruit: 10, Veg: 6, Dairy: 4 },
-  { date: 2019, Fruit: 14, Veg: 8, Dairy: 5 },
-  { date: 2020, Fruit: 9, Veg: 12, Dairy: 7 },
-  { date: 2021, Fruit: 16, Veg: 10, Dairy: 9 },
-];
-const areaKeys = ["Fruit", "Veg", "Dairy"];
-const areaCommon = { width: 460, height: 280, xAxisDataType: "number" };
-const areaSvgEl = document.getElementById("areaSvg");
-const areaCanvasEl = document.getElementById("areaCanvas");
-const areaContractEl = document.getElementById("areaContractChart");
-Object.assign(areaSvgEl, { series: areaSeries, keys: areaKeys, chartTitle: "Stack", renderer: "svg", ...areaCommon });
-Object.assign(areaCanvasEl, { series: areaSeries, keys: areaKeys, chartTitle: "Stack", renderer: "canvas", ...areaCommon });
-Object.assign(areaContractEl, { series: areaSeries, keys: areaKeys, chartTitle: "Area canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...areaCommon });
-
-// ---- ScatterPlot setup ----
-const scatterData = [
-  { label: "Alpha One", x: 1, y: 3, d: 6 },
-  { label: "Beta", x: 3, y: 7, d: 12 },
-  { label: "Gamma", x: 5, y: 6, d: 4 },
-  { label: "Delta", x: 7, y: 12, d: 9 },
-  { label: "Epsilon", x: 9, y: 15, d: 7 },
-];
-const scatterCommon = { width: 460, height: 280, xAxisDataType: "number" };
-const scatterSvgEl = document.getElementById("scatterSvg");
-const scatterCanvasEl = document.getElementById("scatterCanvas");
-const scatterContractEl = document.getElementById("scatterContractChart");
-const scatterLabelsEl = document.getElementById("scatterLabels");
-const scatterAscendingEl = document.getElementById("scatterAscending");
-Object.assign(scatterSvgEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "svg", ...scatterCommon });
-Object.assign(scatterCanvasEl, { dataSet: scatterData, chartTitle: "Cloud", renderer: "canvas", ...scatterCommon });
-Object.assign(scatterContractEl, { dataSet: scatterData, chartTitle: "Scatter canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...scatterCommon });
-// pointLabels (default off elsewhere) + drawOrder="sizeDescending" (explicit opt-in).
-Object.assign(scatterLabelsEl, {
-  dataSet: scatterData,
-  chartTitle: "Labels",
-  renderer: "svg",
-  pointLabels: true,
-  drawOrder: "sizeDescending",
-  ...scatterCommon,
-});
-// drawOrder="sizeAscending": genuine opt-in, flips z-order so the LARGEST
-// bubble draws last/on top (reproduces legacy sdg-trade's real z-order).
-Object.assign(scatterAscendingEl, {
-  dataSet: scatterData,
-  chartTitle: "Ascending",
-  renderer: "svg",
-  drawOrder: "sizeAscending",
-  ...scatterCommon,
-});
-
-// ---- VerticalStackBar setup (each DataSet owns ONLY its key -> guard territory) ----
-const stackData = [
-  { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: [
-    { date: "2001", Africa: "10" }, { date: "2002", Africa: "14" }, { date: "2003", Africa: "9" }] },
-  { seriesKey: "Non-LDC", seriesKeyAbbreviation: "NL", series: [
-    { date: "2001", "Non-LDC": "20" }, { date: "2002", "Non-LDC": "16" }, { date: "2003", "Non-LDC": "22" }] },
-];
-const stackKeys = ["Africa", "Non-LDC"];
-const stackCommon = { width: 460, height: 300, missingDataMarker: { height: 2 } };
-const stackSvgEl = document.getElementById("stackSvg");
-const stackCanvasEl = document.getElementById("stackCanvas");
-const stackContractEl = document.getElementById("stackContractChart");
-Object.assign(stackSvgEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stacked", renderer: "svg", ...stackCommon });
-Object.assign(stackCanvasEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stacked", renderer: "canvas", ...stackCommon });
-Object.assign(stackContractEl, { dataSet: stackData, keys: stackKeys, chartTitle: "Stack canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...stackCommon });
-
-// ---- ComparableHorizontalBar setup ----
-const cmpData = [
-  { label: "Alpha One", valueBased: 10, valueCompared: 18 },
-  { label: "Beta", valueBased: 30, valueCompared: 22 },
-  { label: "Gamma", valueBased: 16, valueCompared: 24 },
-];
-const cmpCommon = { width: 460, height: 280 };
-const cmpSvgEl = document.getElementById("cmpSvg");
-const cmpCanvasEl = document.getElementById("cmpCanvas");
-const cmpContractEl = document.getElementById("cmpContractChart");
-Object.assign(cmpSvgEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "svg", ...cmpCommon });
-Object.assign(cmpCanvasEl, { dataSet: cmpData, chartTitle: "Based vs Compared", renderer: "canvas", ...cmpCommon });
-Object.assign(cmpContractEl, { dataSet: cmpData, chartTitle: "Comparable canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...cmpCommon });
-const cmpDescendantContractEl = document.getElementById("cmpDescendantContractChart");
-Object.assign(cmpDescendantContractEl, {
-  dataSet: cmpData,
-  chartTitle: "Comparable canvas + descendant CSS",
-  renderer: "canvas",
-  skipColorMappingDispatch: true,
-  valueBasedOpacity: 1,
-  valueComparedOpacity: 1,
-  ...cmpCommon,
-});
-
-// ---- ComparableVerticalBar setup ----
-const cmpVData = [
-  { label: "Alpha One", valueBased: 10, valueCompared: 18 },
-  { label: "Beta", valueBased: 30, valueCompared: 22 },
-  { label: "Gamma", valueBased: 16, valueCompared: 24 },
-];
-const cmpVCommon = { width: 460, height: 280 };
-const cmpVSvgEl = document.getElementById("cmpVSvg");
-const cmpVCanvasEl = document.getElementById("cmpVCanvas");
-const cmpVContractEl = document.getElementById("cmpVContractChart");
-Object.assign(cmpVSvgEl, { dataSet: cmpVData, chartTitle: "Based vs Compared (columns)", renderer: "svg", deltaIndicator: { show: true }, ...cmpVCommon });
-Object.assign(cmpVCanvasEl, { dataSet: cmpVData, chartTitle: "Based vs Compared (columns)", renderer: "canvas", deltaIndicator: { show: true }, ...cmpVCommon });
-Object.assign(cmpVContractEl, { dataSet: cmpVData, chartTitle: "ComparableVertical canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...cmpVCommon });
-const cmpVDescendantContractEl = document.getElementById("cmpVDescendantContractChart");
-Object.assign(cmpVDescendantContractEl, {
-  dataSet: cmpVData,
-  chartTitle: "ComparableVertical canvas + descendant CSS",
-  renderer: "canvas",
-  skipColorMappingDispatch: true,
-  valueBasedOpacity: 1,
-  valueComparedOpacity: 1,
-  ...cmpVCommon,
-});
-
-// ---- DualHorizontalBar (tornado) setup ----
-const dualData = [
-  { label: "Alpha One", value1: 20, value2: 14 },
-  { label: "Beta", value1: 35, value2: 28 },
-  { label: "Gamma", value1: 10, value2: 22 },
-];
-const dualCommon = { width: 460, height: 280 };
-const dualSvgEl = document.getElementById("dualSvg");
-const dualCanvasEl = document.getElementById("dualCanvas");
-const dualContractEl = document.getElementById("dualContractChart");
-Object.assign(dualSvgEl, { dataSet: dualData, chartTitle: "Tornado", renderer: "svg", ...dualCommon });
-Object.assign(dualCanvasEl, { dataSet: dualData, chartTitle: "Tornado", renderer: "canvas", ...dualCommon });
-Object.assign(dualContractEl, { dataSet: dualData, chartTitle: "Dual canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...dualCommon });
-
-// ---- BarBell setup ----
-const bellData = [
-  { date: "2001", Fruit: 10, Veg: 6 },
-  { date: "2002", Fruit: 14, Veg: 9 },
-  { date: "2003", Fruit: 8, Veg: 13 },
-];
-const bellKeys = ["Fruit", "Veg"];
-const bellCommon = { width: 460, height: 280 };
-const bellSvgEl = document.getElementById("bellSvg");
-const bellCanvasEl = document.getElementById("bellCanvas");
-const bellContractEl = document.getElementById("bellContractChart");
-Object.assign(bellSvgEl, { dataSet: bellData, keys: bellKeys, chartTitle: "Cumulative", renderer: "svg", ...bellCommon });
-Object.assign(bellCanvasEl, { dataSet: bellData, keys: bellKeys, chartTitle: "Cumulative", renderer: "canvas", ...bellCommon });
-Object.assign(bellContractEl, { dataSet: bellData, keys: bellKeys, chartTitle: "BarBell canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...bellCommon });
-
-// ---- RangeChart setup ----
-const rangeData = [
-  { label: "Region A", color: "#1f77b4", series: [
-    { date: 2016, valueMin: 5, valueMax: 12, certainty: true },
-    { date: 2017, valueMin: 8, valueMax: 16, certainty: true },
-    { date: 2018, valueMin: 6, valueMax: 14, certainty: true }] },
-  { label: "Region B", color: "#ff7f0e", series: [
-    { date: 2016, valueMin: 2, valueMax: 6, certainty: true },
-    { date: 2017, valueMin: 3, valueMax: 7, certainty: true },
-    { date: 2018, valueMin: 4, valueMax: 9, certainty: true }] },
-];
-const rangeCommon = { width: 460, height: 280, xAxisDataType: "date_annual" };
-const rangeSvgEl = document.getElementById("rangeSvg");
-const rangeCanvasEl = document.getElementById("rangeCanvas");
-const rangeContractEl = document.getElementById("rangeContractChart");
-Object.assign(rangeSvgEl, { dataSet: rangeData, chartTitle: "Bands", renderer: "svg", ...rangeCommon });
-Object.assign(rangeCanvasEl, { dataSet: rangeData, chartTitle: "Bands", renderer: "canvas", ...rangeCommon });
-Object.assign(rangeContractEl, { dataSet: rangeData, chartTitle: "Range canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...rangeCommon });
-
-// ---- RibbonChart setup ----
-const ribbonData = [
-  { date: "2001", Fruit: 10, Veg: 6 },
-  { date: "2002", Fruit: 14, Veg: 9 },
-  { date: "2003", Fruit: 8, Veg: 13 },
-];
-const ribbonKeys = ["Fruit", "Veg"];
-const ribbonCommon = { width: 460, height: 300 };
-const ribbonSvgEl = document.getElementById("ribbonSvg");
-const ribbonCanvasEl = document.getElementById("ribbonCanvas");
-const ribbonContractEl = document.getElementById("ribbonContractChart");
-Object.assign(ribbonSvgEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Stream", renderer: "svg", ...ribbonCommon });
-Object.assign(ribbonCanvasEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Stream", renderer: "canvas", ...ribbonCommon });
-Object.assign(ribbonContractEl, { series: ribbonData, keys: ribbonKeys, chartTitle: "Ribbon canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...ribbonCommon });
-
-// ---- RadarChart setup ----
-const radarAxes = ["Speed", "Power", "Range", "Agility", "Cost"];
-const radarSeries = [
-  { label: "Model A", color: "#1f77b4", values: [8, 6, 7, 9, 5] },
-  { label: "Model B", color: "#ff7f0e", values: [5, 9, 6, 4, 8] },
-];
-const radarCommon = { width: 360, height: 320 };
-const radarSvgEl = document.getElementById("radarSvg");
-const radarCanvasEl = document.getElementById("radarCanvas");
-const radarContractEl = document.getElementById("radarContractChart");
-Object.assign(radarSvgEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar", renderer: "svg", ...radarCommon });
-Object.assign(radarCanvasEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar", renderer: "canvas", ...radarCommon });
-Object.assign(radarContractEl, { series: radarSeries, axes: radarAxes, chartTitle: "Radar canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...radarCommon });
-
-// ---- ChoroplethMap setup ---- (geography is ALWAYS a prop - a tiny inline
-// GeoFeatureItem[] sample here, same spirit as @michi-vz/examples' hand-curated
-// sample; NOT real coastlines)
-const choroGeography = [
-  { id: "Alpha", name: "Alpha", geometry: { type: "Polygon", coordinates: [[[-40, -10], [-20, -10], [-20, 10], [-40, 10], [-40, -10]]] } },
-  { id: "Beta", name: "Beta", geometry: { type: "Polygon", coordinates: [[[10, -10], [30, -10], [30, 10], [10, 10], [10, -10]]] } },
-  { id: "Gamma", name: "Gamma", geometry: { type: "Polygon", coordinates: [[[40, -10], [60, -10], [60, 10], [40, 10], [40, -10]]] } },
-];
-const choroData = [
-  { id: "Alpha", label: "Alpha", value: 10 },
-  { id: "Beta", label: "Beta", value: 90 },
-  // "Gamma" intentionally unmatched - exercises noDataColor.
-];
-const choroCommon = {
-  width: 460,
-  height: 280,
-  geography: choroGeography,
-  colorScale: { domain: [50], range: ["rgb(230,230,250)", "rgb(40,40,160)"] },
-  noDataColor: "rgb(200,200,200)",
-};
-const choroSvgEl = document.getElementById("choroSvg");
-const choroCanvasEl = document.getElementById("choroCanvas");
-const choroContractEl = document.getElementById("choroContractChart");
-Object.assign(choroSvgEl, { dataSet: choroData, chartTitle: "Choropleth (geo)", renderer: "svg", ...choroCommon });
-Object.assign(choroCanvasEl, { dataSet: choroData, chartTitle: "Choropleth (geo)", renderer: "canvas", ...choroCommon });
-Object.assign(choroContractEl, { dataSet: choroData, chartTitle: "Choropleth canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...choroCommon });
-
-// ---- SymbolMap setup ---- (dataSet items each supply their own lng/lat - core
-// bundles no coordinate table, unlike the legacy MapSymbolForce's CSV)
-const symbolCommon = { width: 460, height: 280 };
-const symbolData = [
-  { id: "Alpha", label: "Alpha", lng: -30, lat: 0, value: 40 },
-  { id: "Beta", label: "Beta", lng: 20, lat: 0, value: 90, valueSecond: 45 }, // concentric second ring
-  { id: "Gamma", label: "Gamma", lng: 50, lat: 5, value: 15 },
-];
-const symbolSvgEl = document.getElementById("symbolSvg");
-const symbolCanvasEl = document.getElementById("symbolCanvas");
-const symbolContractEl = document.getElementById("symbolContractChart");
-const symbolBackdropEl = document.getElementById("symbolBackdrop");
-const symbolOverlapEl = document.getElementById("symbolOverlap");
-Object.assign(symbolSvgEl, { dataSet: symbolData, chartTitle: "SymbolMap (dot-only)", renderer: "svg", ...symbolCommon });
-Object.assign(symbolCanvasEl, { dataSet: symbolData, chartTitle: "SymbolMap (dot-only)", renderer: "canvas", ...symbolCommon });
-Object.assign(symbolContractEl, { dataSet: symbolData, chartTitle: "SymbolMap canvas + CSS", renderer: "canvas", skipColorMappingDispatch: true, ...symbolCommon });
-// Reuses ChoroplethMap's tiny illustrative geography sample as the optional
-// muted backdrop, so the same three symbols read against a landmass context.
-Object.assign(symbolBackdropEl, {
-  dataSet: symbolData,
-  chartTitle: "SymbolMap + backdrop",
-  geography: choroGeography,
-  ...symbolCommon,
-});
-// De-overlap sanity check: two items at the EXACT same lng/lat must settle to
-// different, non-overlapping pixel positions once the force simulation runs.
-const symbolOverlapData = [
-  { id: "Same1", label: "Same1", lng: 0, lat: 0, value: 30 },
-  { id: "Same2", label: "Same2", lng: 0, lat: 0, value: 30 },
-];
-Object.assign(symbolOverlapEl, { dataSet: symbolOverlapData, chartTitle: "De-overlap check", renderer: "svg", ...symbolCommon });
-
-// B3.6 edge-clipping check: an extreme-west point carrying the MAX value
-// (largest radius, lands at the raw x-extent's edge - US-like) + an
-// extreme-north point that also gets a large radius (UK/Germany-like) - the
-// reported bug's exact shape: a big bubble at the projected extent's edge
-// used to render half off-canvas before the radius-aware fit + boundary
-// clamp (B3.6).
-const symbolEdgeEl = document.getElementById("symbolEdge");
-const symbolEdgeData = [
-  { id: "west", label: "West", lng: -170, lat: 0, value: 100 },
-  { id: "north", label: "North", lng: 20, lat: 80, value: 90 },
-  { id: "mid", label: "Mid", lng: 40, lat: -30, value: 10 },
-];
-Object.assign(symbolEdgeEl, { dataSet: symbolEdgeData, chartTitle: "Edge-clipping check", renderer: "svg", ...symbolCommon });
-
-// B3.7 small-circle forgiving hover check: a tiny (r=3, `radiusRange` floor)
-// dot far from a much bigger bubble, so a real Chromium pointer can be driven
-// to the tiny dot's EXACT center (the reported bug - no tooltip on small
-// circles) and a few px off-center (forgiveness), in BOTH renderers.
-const symbolSmallSvgEl = document.getElementById("symbolSmallSvg");
-const symbolSmallCanvasEl = document.getElementById("symbolSmallCanvas");
-const symbolSmallData = [
-  { id: "tiny", label: "Tiny", lng: -60, lat: 0, value: 1 },
-  { id: "huge", label: "Huge", lng: 60, lat: 0, value: 100 },
-];
-const symbolSmallCommon = { dataSet: symbolSmallData, radiusRange: [3, 30], width: 460, height: 280 };
-Object.assign(symbolSmallSvgEl, { chartTitle: "Small-circle hover (SVG)", renderer: "svg", ...symbolSmallCommon });
-Object.assign(symbolSmallCanvasEl, { chartTitle: "Small-circle hover (canvas)", renderer: "canvas", ...symbolSmallCommon });
-
-// ---- RadialTree setup ---- (2-level forest: RadialTreeNode mirrors TreemapNode's
-// shape - a group's value is always the sum of its children)
-const radialCommon = { width: 460, height: 320 };
-const radialData = [
-  {
-    label: "Sectors",
-    children: [
-      { label: "Coffee", value: 10 },
-      { label: "Tea", value: 30 },
-    ],
-  },
-  {
-    label: "Regions",
-    children: [
-      { label: "Africa", value: 5 },
-      { label: "Asia", value: 55 },
-    ],
-  },
-];
-const radialSvgEl = document.getElementById("radialSvg");
-const radialCanvasEl = document.getElementById("radialCanvas");
-const radialContractEl = document.getElementById("radialContractChart");
-const radialDenseEl = document.getElementById("radialDense");
-Object.assign(radialSvgEl, {
-  dataSet: radialData,
-  chartTitle: "RadialTree",
-  centerLabel: "Total Trade",
-  renderer: "svg",
-  ...radialCommon,
-});
-Object.assign(radialCanvasEl, {
-  dataSet: radialData,
-  chartTitle: "RadialTree",
-  centerLabel: "Total Trade",
-  renderer: "canvas",
-  ...radialCommon,
-});
-Object.assign(radialContractEl, {
-  dataSet: radialData,
-  chartTitle: "RadialTree canvas + CSS",
-  renderer: "canvas",
-  skipColorMappingDispatch: true,
-  ...radialCommon,
-});
-// Past rotateAbove (default 20 leaves): labels abbreviate to 3 letters + "." and
-// rotate radially instead of staying horizontal.
-const radialDenseData = [
-  {
-    label: "Group",
-    children: Array.from({ length: 25 }, (_, i) => ({ label: `Item${i}`, value: i + 1 })),
-  },
-];
-Object.assign(radialDenseEl, { dataSet: radialDenseData, chartTitle: "Dense tree", renderer: "svg", ...radialCommon });
-
-// ---- Treemap setup ---- (flat leaves -> colorKey == the leaf's own label, same
-// group-keyed colour contract RadialTree/Treemap share - see the CSS comment above)
-const treemapCommon = { width: 460, height: 280 };
-const treemapData = [
-  { label: "Coffee", value: 100 },
-  { label: "Tea", value: 60 },
-  { label: "Cocoa", value: 40 },
-];
-const treemapSvgEl = document.getElementById("treemapSvg");
-const treemapCanvasEl = document.getElementById("treemapCanvas");
-const treemapValueLabelsEl = document.getElementById("treemapValueLabels");
-const treemapContractEl = document.getElementById("treemapContractChart");
-Object.assign(treemapSvgEl, { dataSet: treemapData, chartTitle: "Treemap", renderer: "svg", showSplit: false, ...treemapCommon });
-Object.assign(treemapCanvasEl, { dataSet: treemapData, chartTitle: "Treemap", renderer: "canvas", showSplit: false, ...treemapCommon });
-// tileValueLabels (default off elsewhere): "{value} ({pct}%)" 2nd line under the name.
-Object.assign(treemapValueLabelsEl, {
-  dataSet: treemapData,
-  chartTitle: "Treemap value labels",
-  renderer: "svg",
-  showSplit: false,
-  tileValueLabels: true,
-  ...treemapCommon,
-});
-Object.assign(treemapContractEl, {
-  dataSet: treemapData,
-  chartTitle: "Treemap canvas + CSS",
-  renderer: "canvas",
-  showSplit: false,
-  skipColorMappingDispatch: true,
-  ...treemapCommon,
-});
-
-await nextFrame();
-
-try {
-  // 1. SVG marks rendered with sanitized data-label-safe
-  const bars = svgEl.querySelectorAll("rect.gap-bar");
-  log(bars.length === 4, `SVG renders 4 gap bars (got ${bars.length})`);
-  const safe = svgEl.querySelector('rect.gap-bar[data-label-safe="Alpha_One"]');
-  log(!!safe, 'SVG bar carries data-label-safe="Alpha_One"');
-
-  // 2. getContext() shape + stats
-  const ctx = svgEl.getContext();
-  log(ctx && ctx.chartType === "gap-chart" && ctx.stats.count === 4, "getContext() returns gap-chart with 4 series");
-  log(ctx.stats.maxGap.label === "Beta", `largest gap is Beta=35 (got ${ctx.stats.maxGap?.label}=${ctx.stats.maxGap?.value})`);
-  log(typeof ctx.summary === "string" && ctx.summary.includes("Largest gap"), "getContext() includes an NL summary");
-
-  // 3. getContext() identical across SVG and canvas (renderer aside)
-  const a = JSON.stringify({ ...svgEl.getContext(), renderer: 0 });
-  const b = JSON.stringify({ ...canvasEl.getContext(), renderer: 0 });
-  log(a === b, "getContext() identical in SVG vs canvas (renderer aside)");
-
-  // 4. onChartDataProcessed CustomEvent fired
-  log(dataProcessedFired, "michi-vz:dataprocessed CustomEvent fired");
-
-  // 5. a11y mirror present
-  log(svgEl.querySelectorAll(".mv-a11y table tbody tr").length === 4, "a11y table mirror has 4 rows");
-
-  // 6. THE colour contract: canvas pixels must reflect consumer CSS (rgb(220,40,40))
-  const cnv = contractEl.querySelector("canvas");
-  let contractOk = false;
-  if (cnv) {
-    const c = cnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, cnv.width, cnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 205 && px[i] < 235 && px[i + 1] < 70 && px[i + 2] < 70 && px[i + 3] > 0) { contractOk = true; break; }
-    }
-  }
-  log(contractOk, "CANVAS colour contract: consumer CSS rgb(220,40,40) reached canvas pixels");
-
-  // 7. light DOM (no shadow root) - required by the contract
-  log(svgEl.shadowRoot === null, "element renders in LIGHT DOM (no shadow root)");
-
-  // ---- LineChart checks ----
-  const lines = lineSvgEl.querySelectorAll("path.line");
-  log(lines.length >= 2, `LINE: SVG renders line paths (got ${lines.length})`);
-  log(!!lineSvgEl.querySelector('path.line[data-label-safe="South_Region"]'), 'LINE: path carries data-label-safe="South_Region"');
-
-  const dashed = lineSvgEl.querySelectorAll('path.line[stroke-dasharray="4,4"]');
-  log(dashed.length >= 1, `LINE: detectGaps produces a dashed run (got ${dashed.length})`);
-
-  const lctx = lineSvgEl.getContext();
-  log(lctx && lctx.chartType === "line-chart" && lctx.series.length === 2, "LINE: getContext() returns line-chart with 2 series");
-  log(typeof lctx.summary === "string" && lctx.summary.includes("Line chart"), "LINE: getContext() includes an NL summary");
-
-  const la = JSON.stringify({ ...lineSvgEl.getContext(), renderer: 0 });
-  const lb = JSON.stringify({ ...lineCanvasEl.getContext(), renderer: 0 });
-  log(la === lb, "LINE: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(lineSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2, "LINE: a11y table mirror has 2 rows");
-
-  // THE line colour contract: canvas pixels must reflect consumer CSS stroke rgb(20,120,200)
-  const lcnv = lineContractEl.querySelector("canvas");
-  let lineContractOk = false;
-  if (lcnv) {
-    const c = lcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, lcnv.width, lcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 70 && px[i + 1] > 95 && px[i + 1] < 145 && px[i + 2] > 175 && px[i + 2] < 225 && px[i + 3] > 0) { lineContractOk = true; break; }
-    }
-  }
-  log(lineContractOk, "LINE CANVAS colour contract: consumer CSS rgb(20,120,200) reached canvas pixels");
-
-  // ---- AreaChart checks ----
-  const areas = areaSvgEl.querySelectorAll("path.area");
-  log(areas.length === 3, `AREA: SVG renders 3 stacked area paths (got ${areas.length})`);
-  log(!!areaSvgEl.querySelector('path.area[data-label-safe="Fruit"]'), 'AREA: path carries data-label-safe="Fruit"');
-
-  const actx = areaSvgEl.getContext();
-  log(actx && actx.chartType === "area-chart" && actx.keys.length === 3, "AREA: getContext() returns area-chart with 3 keys");
-  log(typeof actx.summary === "string" && actx.summary.includes("area chart"), "AREA: getContext() includes an NL summary");
-
-  const aa = JSON.stringify({ ...areaSvgEl.getContext(), renderer: 0 });
-  const ab = JSON.stringify({ ...areaCanvasEl.getContext(), renderer: 0 });
-  log(aa === ab, "AREA: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(areaSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "AREA: a11y table mirror has 3 rows");
-
-  // THE area colour contract: canvas pixels must reflect consumer CSS fill rgb(180,60,160)
-  const acnv = areaContractEl.querySelector("canvas");
-  let areaContractOk = false;
-  if (acnv) {
-    const c = acnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, acnv.width, acnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 155 && px[i] < 205 && px[i + 1] > 35 && px[i + 1] < 85 && px[i + 2] > 135 && px[i + 2] < 185 && px[i + 3] > 0) { areaContractOk = true; break; }
-    }
-  }
-  log(areaContractOk, "AREA CANVAS colour contract: consumer CSS rgb(180,60,160) reached canvas pixels");
-
-  // ---- ScatterPlot checks ----
-  const marks = scatterSvgEl.querySelectorAll(".scatter-point");
-  log(marks.length === 5, `SCATTER: SVG renders 5 point marks (got ${marks.length})`);
-  log(!!scatterSvgEl.querySelector('.scatter-point[data-label-safe="Alpha_One"]'), 'SCATTER: mark carries data-label-safe="Alpha_One"');
-
-  const sctx = scatterSvgEl.getContext();
-  log(sctx && sctx.chartType === "scatter-plot-chart" && sctx.pointCount === 5, "SCATTER: getContext() returns scatter-plot-chart with 5 points");
-  log(typeof sctx.stats.correlation === "number", `SCATTER: getContext() includes a correlation (r=${sctx.stats.correlation})`);
-
-  const sa = JSON.stringify({ ...scatterSvgEl.getContext(), renderer: 0 });
-  const sb = JSON.stringify({ ...scatterCanvasEl.getContext(), renderer: 0 });
-  log(sa === sb, "SCATTER: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(scatterSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 5, "SCATTER: a11y table mirror has 5 rows");
-
-  // THE scatter colour contract: canvas pixels must reflect consumer CSS fill rgb(40,200,120)
-  const scnv = scatterContractEl.querySelector("canvas");
-  let scatterContractOk = false;
-  if (scnv) {
-    const c = scnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, scnv.width, scnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 90 && px[i + 1] > 175 && px[i + 2] > 95 && px[i + 2] < 145 && px[i + 3] > 0) { scatterContractOk = true; break; }
-    }
-  }
-  log(scatterContractOk, "SCATTER CANVAS colour contract: consumer CSS rgb(40,200,120) reached canvas pixels");
-
-  // pointLabels (default off elsewhere - none of the marks above have it) + drawOrder.
-  log(scatterSvgEl.querySelectorAll(".mv-point-label").length === 0, "SCATTER: pointLabels omitted -> zero .mv-point-label nodes");
-  const pointLabelEls = scatterLabelsEl.querySelectorAll(".mv-point-label");
-  log(pointLabelEls.length > 0, `SCATTER LABELS: renders ${pointLabelEls.length} point label(s) (pointLabels:true)`);
-  log(!!scatterLabelsEl.querySelector('.mv-point-label[data-label="Alpha One"]'), 'SCATTER LABELS: label carries data-label="Alpha One"');
-  const labelRadii = Array.from(scatterLabelsEl.querySelectorAll("circle.scatter-point")).map((c) => Number(c.getAttribute("r")));
-  const sizeDescOk = labelRadii.every((r, i) => i === 0 || labelRadii[i - 1] >= r);
-  log(sizeDescOk, `SCATTER DRAWORDER: drawOrder="sizeDescending" paints largest-first (radii ${JSON.stringify(labelRadii)})`);
-  const ascRadii = Array.from(scatterAscendingEl.querySelectorAll("circle.scatter-point")).map((c) => Number(c.getAttribute("r")));
-  const sizeAscOk = ascRadii.every((r, i) => i === 0 || ascRadii[i - 1] <= r);
-  log(sizeAscOk, `SCATTER DRAWORDER: drawOrder="sizeAscending" paints smallest-first / largest-last-on-top (radii ${JSON.stringify(ascRadii)})`);
-
-  // ---- VerticalStackBar checks (incl. the hasOwnProperty guard) ----
-  const stackBars = stackSvgEl.querySelectorAll("rect.bar");
-  // 2 datasets x 3 dates x 1 owned segment = 6. The guard suppresses cross-DataSet
-  // stubs; WITHOUT it (with missingDataMarker on) there'd be 12.
-  log(stackBars.length === 6, `STACK: SVG renders 6 bars, no phantom stubs from the guard (got ${stackBars.length})`);
-  log(!!stackSvgEl.querySelector('rect.bar[data-label-safe="Non_LDC"]'), 'STACK: bar carries data-label-safe="Non_LDC"');
-  log(![...stackBars].some((b) => b.getAttribute("data-label-safe") === "Non_LDC" && b.getAttribute("data-label") === "Africa"), "STACK: no Africa-row stub painted in Non-LDC slot");
-
-  const vctx = stackSvgEl.getContext();
-  log(vctx && vctx.chartType === "vertical-stack-bar-chart" && vctx.keys.length === 2, "STACK: getContext() returns vertical-stack-bar-chart with 2 keys");
-  log(typeof vctx.summary === "string" && vctx.summary.includes("Stacked bar chart"), "STACK: getContext() includes an NL summary");
-
-  const va = JSON.stringify({ ...stackSvgEl.getContext(), renderer: 0 });
-  const vb = JSON.stringify({ ...stackCanvasEl.getContext(), renderer: 0 });
-  log(va === vb, "STACK: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(stackSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "STACK: a11y table mirror has 3 rows (dates)");
-
-  // THE stack colour contract: canvas pixels must reflect consumer CSS fill rgb(230,150,20)
-  const vcnv = stackContractEl.querySelector("canvas");
-  let stackContractOk = false;
-  if (vcnv) {
-    const c = vcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, vcnv.width, vcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 205 && px[i + 1] > 125 && px[i + 1] < 175 && px[i + 2] < 60 && px[i + 3] > 0) { stackContractOk = true; break; }
-    }
-  }
-  log(stackContractOk, "STACK CANVAS colour contract: consumer CSS rgb(230,150,20) reached canvas pixels");
-
-  // ---- ComparableHorizontalBar checks ----
-  const cmpBars = cmpSvgEl.querySelectorAll("rect.bar");
-  log(cmpBars.length === 6, `CMP: SVG renders 6 bars (3 labels x based+compared) (got ${cmpBars.length})`);
-  log(cmpSvgEl.querySelectorAll("rect.bar.value-based").length === 3 && cmpSvgEl.querySelectorAll("rect.bar.value-compared").length === 3, "CMP: 3 based + 3 compared sub-bars");
-  log(!!cmpSvgEl.querySelector('rect.bar[data-label-safe="Alpha_One"]'), 'CMP: bar carries data-label-safe="Alpha_One"');
-
-  const cctx = cmpSvgEl.getContext();
-  log(cctx && cctx.chartType === "comparable-horizontal-bar-chart" && cctx.stats.count === 3, "CMP: getContext() returns comparable-horizontal-bar-chart with 3 items");
-  log(typeof cctx.summary === "string" && cctx.summary.includes("Comparable horizontal bar"), "CMP: getContext() includes an NL summary");
-
-  const ca2 = JSON.stringify({ ...cmpSvgEl.getContext(), renderer: 0 });
-  const cb2 = JSON.stringify({ ...cmpCanvasEl.getContext(), renderer: 0 });
-  log(ca2 === cb2, "CMP: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(cmpSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "CMP: a11y table mirror has 3 rows");
-
-  // THE comparable colour contract: canvas pixels must reflect consumer CSS fill rgb(120,40,200)
-  const ccnv = cmpContractEl.querySelector("canvas");
-  let cmpContractOk = false;
-  if (ccnv) {
-    const c = ccnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, ccnv.width, ccnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 95 && px[i] < 145 && px[i + 1] < 80 && px[i + 2] > 175 && px[i + 3] > 0) { cmpContractOk = true; break; }
-    }
-  }
-  log(cmpContractOk, "CMP CANVAS colour contract: consumer CSS rgb(120,40,200) reached canvas pixels");
-
-  // THE comparable DESCENDANT colour contract: thd's real MonitorV2 shape is a
-  // descendant selector keyed on an ancestor `.bar[data-label-safe="X"]` styling
-  // a DESCENDANT `.value-based`/`.value-compared` element (not the same element
-  // as a plain `.bar { fill }` rule). value-based also exercises the
-  // url()-fill-falls-through-to-stroke behaviour. Both sub-bars are rendered at
-  // opacity 1 here so pixels are exact, unblended colours.
-  const cdcnv = cmpDescendantContractEl.querySelector("canvas");
-  let cmpDescendantBasedOk = false;
-  let cmpDescendantComparedOk = false;
-  if (cdcnv) {
-    const c = cdcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, cdcnv.width, cdcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 40 && px[i + 1] > 175 && px[i + 2] < 40 && px[i + 3] > 0) cmpDescendantBasedOk = true;
-      if (px[i] > 195 && px[i + 1] < 50 && px[i + 2] > 110 && px[i + 2] < 170 && px[i + 3] > 0) cmpDescendantComparedOk = true;
-    }
-  }
-  log(cmpDescendantBasedOk, "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-based { stroke: rgb(10,200,10) }` (url() fill falls through) reached canvas pixels");
-  log(cmpDescendantComparedOk, "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels");
-
-  // ---- ComparableVerticalBar checks ----
-  const cmpVBars = cmpVSvgEl.querySelectorAll("rect.bar");
-  log(cmpVBars.length === 6, `CMPV: SVG renders 6 bars (3 categories x based+compared) (got ${cmpVBars.length})`);
-  log(cmpVSvgEl.querySelectorAll("rect.bar.value-based").length === 3 && cmpVSvgEl.querySelectorAll("rect.bar.value-compared").length === 3, "CMPV: 3 based + 3 compared sub-bars");
-  log(!!cmpVSvgEl.querySelector('rect.bar[data-label-safe="Alpha_One"]'), 'CMPV: bar carries data-label-safe="Alpha_One"');
-
-  // Fixed z-order (unlike CMP horizontal): valueBased is ALWAYS first/behind, valueCompared ALWAYS second/in front.
-  const cmpVOrder = Array.from(cmpVSvgEl.querySelectorAll('g.data-group[data-label="Alpha One"] rect.bar')).map((r) => r.classList.contains("value-based") ? "based" : "compared");
-  log(cmpVOrder.length === 2 && cmpVOrder[0] === "based" && cmpVOrder[1] === "compared", `CMPV: FIXED z-order valueBased behind, valueCompared in front (got ${cmpVOrder.join(",")})`);
-
-  // Full-bandwidth overlay: based and compared share the same x and width for a column.
-  const cmpVGroup = cmpVSvgEl.querySelector('g.data-group[data-label="Alpha One"]');
-  const cmpVBased = cmpVGroup.querySelector("rect.value-based");
-  const cmpVCompared = cmpVGroup.querySelector("rect.value-compared");
-  log(cmpVBased.getAttribute("x") === cmpVCompared.getAttribute("x") && cmpVBased.getAttribute("width") === cmpVCompared.getAttribute("width"), "CMPV: based/compared share the SAME x and width (full-bandwidth overlay)");
-
-  // Delta indicator: one .mv-delta glyph+label per category, drawn above the taller bar.
-  log(cmpVSvgEl.querySelectorAll(".mv-delta").length === 3, "CMPV: deltaIndicator renders one .mv-delta per category");
-
-  const cvctx = cmpVSvgEl.getContext();
-  log(cvctx && cvctx.chartType === "comparable-vertical-bar-chart" && cvctx.stats.count === 3, "CMPV: getContext() returns comparable-vertical-bar-chart with 3 items");
-  log(typeof cvctx.summary === "string" && cvctx.summary.includes("Comparable vertical bar"), "CMPV: getContext() includes an NL summary");
-  // Unlike CMP horizontal, this chart's context REFLECTS the delta indicator.
-  const cvAlpha = cvctx.series.find((s) => s.label === "Alpha One");
-  log(cvAlpha && cvAlpha.deltaDirection === "up" && cvAlpha.deltaLabel === "+8", `CMPV: context reflects deltaIndicator (deltaDirection/deltaLabel on series[]) (got ${cvAlpha && cvAlpha.deltaDirection}/${cvAlpha && cvAlpha.deltaLabel})`);
-
-  const cva2 = JSON.stringify({ ...cmpVSvgEl.getContext(), renderer: 0 });
-  const cvb2 = JSON.stringify({ ...cmpVCanvasEl.getContext(), renderer: 0 });
-  log(cva2 === cvb2, "CMPV: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(cmpVSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "CMPV: a11y table mirror has 3 rows");
-
-  // THE comparable-vertical colour contract: canvas pixels must reflect consumer CSS fill rgb(30,110,190)
-  const cvcnv = cmpVContractEl.querySelector("canvas");
-  let cmpVContractOk = false;
-  if (cvcnv) {
-    const c = cvcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, cvcnv.width, cvcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 60 && px[i + 1] > 85 && px[i + 1] < 135 && px[i + 2] > 165 && px[i + 3] > 0) { cmpVContractOk = true; break; }
-    }
-  }
-  log(cmpVContractOk, "CMPV CANVAS colour contract: consumer CSS rgb(30,110,190) reached canvas pixels");
-
-  // THE comparable-vertical DESCENDANT colour contract - same thd MonitorV2 shape as CMP horizontal's #cmpDescendantContract.
-  const cvdcnv = cmpVDescendantContractEl.querySelector("canvas");
-  let cmpVDescendantBasedOk = false;
-  let cmpVDescendantComparedOk = false;
-  if (cvdcnv) {
-    const c = cvdcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, cvdcnv.width, cvdcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 40 && px[i + 1] > 175 && px[i + 2] < 40 && px[i + 3] > 0) cmpVDescendantBasedOk = true;
-      if (px[i] > 195 && px[i + 1] < 50 && px[i + 2] > 110 && px[i + 2] < 170 && px[i + 3] > 0) cmpVDescendantComparedOk = true;
-    }
-  }
-  log(cmpVDescendantBasedOk, "CMPV DESCENDANT CANVAS colour contract: `.bar[data-label-safe=\"Beta\"] .value-based { stroke: rgb(10,200,10) }` (url() fill falls through, Beta's based bar is TALLER so it peeks out) reached canvas pixels");
-  log(cmpVDescendantComparedOk, "CMPV DESCENDANT CANVAS colour contract: `.bar[data-label-safe=\"Beta\"] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels");
-
-  // ---- DualHorizontalBar checks ----
-  const dualBars = dualSvgEl.querySelectorAll("rect.bar");
-  log(dualBars.length === 6, `DUAL: SVG renders 6 bars (3 labels x value1+value2) (got ${dualBars.length})`);
-  log(dualSvgEl.querySelectorAll("rect.bar.value1").length === 3 && dualSvgEl.querySelectorAll("rect.bar.value2").length === 3, "DUAL: 3 value1 (right) + 3 value2 (left) bars");
-  const dv1 = dualSvgEl.querySelector("rect.bar.value1");
-  const dv2 = dualSvgEl.querySelector("rect.bar.value2");
-  log(dv1 && dv2 && Number(dv1.getAttribute("x")) >= 229 && Number(dv2.getAttribute("x")) <= 231, "DUAL: value1 right of centre, value2 left of centre");
-
-  const dctx = dualSvgEl.getContext();
-  log(dctx && dctx.chartType === "dual-horizontal-bar-chart" && dctx.stats.count === 3, "DUAL: getContext() returns dual-horizontal-bar-chart with 3 items");
-
-  const da = JSON.stringify({ ...dualSvgEl.getContext(), renderer: 0 });
-  const db = JSON.stringify({ ...dualCanvasEl.getContext(), renderer: 0 });
-  log(da === db, "DUAL: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(dualSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "DUAL: a11y table mirror has 3 rows");
-
-  // THE dual colour contract: canvas pixels must reflect consumer CSS fill rgb(0,160,160)
-  const dcnv = dualContractEl.querySelector("canvas");
-  let dualContractOk = false;
-  if (dcnv) {
-    const c = dcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, dcnv.width, dcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 60 && px[i + 1] > 135 && px[i + 1] < 185 && px[i + 2] > 135 && px[i + 2] < 185 && px[i + 3] > 0) { dualContractOk = true; break; }
-    }
-  }
-  log(dualContractOk, "DUAL CANVAS colour contract: consumer CSS rgb(0,160,160) reached canvas pixels");
-
-  // ---- BarBell checks ----
-  const bellCaps = bellSvgEl.querySelectorAll(".bar-bell-cap");
-  log(bellCaps.length === 6, `BELL: SVG renders 6 end-cap circles (3 rows x 2 keys) (got ${bellCaps.length})`);
-  log(!!bellSvgEl.querySelector('.bar-bell-cap[data-label-safe="Fruit"]'), 'BELL: cap carries data-label-safe="Fruit"');
-
-  const bctx = bellSvgEl.getContext();
-  log(bctx && bctx.chartType === "bar-bell-chart" && bctx.keys.length === 2, "BELL: getContext() returns bar-bell-chart with 2 keys");
-  log(typeof bctx.summary === "string" && bctx.summary.includes("Bar-bell chart"), "BELL: getContext() includes an NL summary");
-
-  const ba = JSON.stringify({ ...bellSvgEl.getContext(), renderer: 0 });
-  const bb = JSON.stringify({ ...bellCanvasEl.getContext(), renderer: 0 });
-  log(ba === bb, "BELL: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(bellSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "BELL: a11y table mirror has 3 rows");
-
-  // THE bar-bell colour contract: canvas pixels must reflect consumer CSS fill rgb(210,90,40)
-  const bcnv = bellContractEl.querySelector("canvas");
-  let bellContractOk = false;
-  if (bcnv) {
-    const c = bcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, bcnv.width, bcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 185 && px[i] < 235 && px[i + 1] > 65 && px[i + 1] < 115 && px[i + 2] < 70 && px[i + 3] > 0) { bellContractOk = true; break; }
-    }
-  }
-  log(bellContractOk, "BELL CANVAS colour contract: consumer CSS rgb(210,90,40) reached canvas pixels");
-
-  // ---- RangeChart checks ----
-  const rangeAreas = rangeSvgEl.querySelectorAll("path.area");
-  log(rangeAreas.length === 2, `RANGE: SVG renders 2 band areas (got ${rangeAreas.length})`);
-  log(!!rangeSvgEl.querySelector('path.area[data-label-safe="Region_A"]'), 'RANGE: band carries data-label-safe="Region_A"');
-
-  const rctx = rangeSvgEl.getContext();
-  log(rctx && rctx.chartType === "range-chart" && rctx.series.length === 2, "RANGE: getContext() returns range-chart with 2 bands");
-  log(typeof rctx.summary === "string" && rctx.summary.includes("Range chart"), "RANGE: getContext() includes an NL summary");
-
-  const ra = JSON.stringify({ ...rangeSvgEl.getContext(), renderer: 0 });
-  const rb = JSON.stringify({ ...rangeCanvasEl.getContext(), renderer: 0 });
-  log(ra === rb, "RANGE: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(rangeSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2, "RANGE: a11y table mirror has 2 rows");
-
-  // THE range colour contract: canvas pixels must reflect consumer CSS fill rgb(70,50,200)
-  const rcnv = rangeContractEl.querySelector("canvas");
-  let rangeContractOk = false;
-  if (rcnv) {
-    const c = rcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, rcnv.width, rcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 110 && px[i + 1] < 90 && px[i + 2] > 175 && px[i + 3] > 0) { rangeContractOk = true; break; }
-    }
-  }
-  log(rangeContractOk, "RANGE CANVAS colour contract: consumer CSS rgb(70,50,200) reached canvas pixels");
-
-  // ---- RibbonChart checks ----
-  const ribbonCols = ribbonSvgEl.querySelectorAll("rect.bar");
-  log(ribbonCols.length === 6, `RIBBON: SVG renders 6 stacked columns (3 dates x 2 keys) (got ${ribbonCols.length})`);
-  log(ribbonSvgEl.querySelectorAll("path.ribbon").length === 4, `RIBBON: 4 connector ribbons (2 gaps x 2 keys) (got ${ribbonSvgEl.querySelectorAll("path.ribbon").length})`);
-  log(!!ribbonSvgEl.querySelector('rect.bar[data-label-safe="Fruit"]'), 'RIBBON: column carries data-label-safe="Fruit"');
-
-  const ibctx = ribbonSvgEl.getContext();
-  log(ibctx && ibctx.chartType === "ribbon-chart" && ibctx.keys.length === 2, "RIBBON: getContext() returns ribbon-chart with 2 keys");
-
-  const iba = JSON.stringify({ ...ribbonSvgEl.getContext(), renderer: 0 });
-  const ibb = JSON.stringify({ ...ribbonCanvasEl.getContext(), renderer: 0 });
-  log(iba === ibb, "RIBBON: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(ribbonSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "RIBBON: a11y table mirror has 3 rows");
-
-  // THE ribbon colour contract: canvas pixels must reflect consumer CSS fill rgb(200,30,90)
-  const ibcnv = ribbonContractEl.querySelector("canvas");
-  let ribbonContractOk = false;
-  if (ibcnv) {
-    const c = ibcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, ibcnv.width, ibcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 175 && px[i + 1] < 70 && px[i + 2] > 65 && px[i + 2] < 115 && px[i + 3] > 0) { ribbonContractOk = true; break; }
-    }
-  }
-  log(ribbonContractOk, "RIBBON CANVAS colour contract: consumer CSS rgb(200,30,90) reached canvas pixels");
-
-  // ---- RadarChart checks ----
-  const radarPolys = radarSvgEl.querySelectorAll("polygon.radar-area");
-  log(radarPolys.length === 2, `RADAR: SVG renders 2 series polygons (got ${radarPolys.length})`);
-  log(radarPolys[0] && radarPolys[0].getAttribute("points").trim().split(" ").length === 5, "RADAR: polygon has 5 vertices (5 axes)");
-  log(!!radarSvgEl.querySelector('polygon.radar-area[data-label-safe="Model_A"]'), 'RADAR: polygon carries data-label-safe="Model_A"');
-  log(radarSvgEl.querySelectorAll(".mv-radar-grid line").length === 5, "RADAR: polar grid has 5 spokes");
-
-  const rdctx = radarSvgEl.getContext();
-  log(rdctx && rdctx.chartType === "radar-chart" && rdctx.axes.length === 5, "RADAR: getContext() returns radar-chart with 5 axes");
-
-  const rda = JSON.stringify({ ...radarSvgEl.getContext(), renderer: 0 });
-  const rdb = JSON.stringify({ ...radarCanvasEl.getContext(), renderer: 0 });
-  log(rda === rdb, "RADAR: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(radarSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2, "RADAR: a11y table mirror has 2 rows");
-
-  // THE radar colour contract: canvas pixels must reflect consumer CSS fill rgb(20,170,90)
-  const rdcnv = radarContractEl.querySelector("canvas");
-  let radarContractOk = false;
-  if (rdcnv) {
-    const c = rdcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, rdcnv.width, rdcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 70 && px[i + 1] > 145 && px[i + 2] > 65 && px[i + 2] < 115 && px[i + 3] > 0) { radarContractOk = true; break; }
-    }
-  }
-  log(radarContractOk, "RADAR CANVAS colour contract: consumer CSS rgb(20,170,90) reached canvas pixels");
-
-  // ---- ChoroplethMap checks ----
-  const choroPaths = choroSvgEl.querySelectorAll("path.region");
-  log(choroPaths.length === 3, `CHORO: SVG renders 3 region paths (got ${choroPaths.length})`);
-  log(!!choroSvgEl.querySelector('path.region[data-label-safe="Alpha"]'), 'CHORO: path carries data-label-safe="Alpha"');
-
-  const gammaPath = choroSvgEl.querySelector('path.region[data-label="Gamma"]');
-  log(!!gammaPath && gammaPath.getAttribute("fill") === "rgb(200,200,200)", "CHORO: unmatched feature (Gamma) renders noDataColor");
-
-  const alphaPath = choroSvgEl.querySelector('path.region[data-label="Alpha"]');
-  const betaPath = choroSvgEl.querySelector('path.region[data-label="Beta"]');
-  log(!!alphaPath && alphaPath.getAttribute("fill") === "rgb(230,230,250)", "CHORO: colorScale assigns the low-domain colour (value 10 < 50)");
-  log(!!betaPath && betaPath.getAttribute("fill") === "rgb(40,40,160)", "CHORO: colorScale assigns the high-domain colour (value 90 >= 50)");
-
-  const chctx = choroSvgEl.getContext();
-  log(chctx && chctx.chartType === "choropleth-map-chart" && chctx.stats.featureCount === 3, "CHORO: getContext() returns choropleth-map-chart with 3 features");
-  log(chctx && chctx.stats.matchedCount === 2 && chctx.stats.unmatchedCount === 1, "CHORO: getContext() reports 2 matched / 1 unmatched");
-  log(chctx && chctx.projection === "geoRobinson", "CHORO: default projection is geoRobinson");
-  log(chctx && typeof chctx.summary === "string" && chctx.summary.includes("Choropleth"), "CHORO: getContext() includes an NL summary");
-
-  const cha = JSON.stringify({ ...choroSvgEl.getContext(), renderer: 0 });
-  const chb = JSON.stringify({ ...choroCanvasEl.getContext(), renderer: 0 });
-  log(cha === chb, "CHORO: getContext() identical in SVG vs canvas (renderer aside)");
-
-  log(choroSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3, "CHORO: a11y table mirror has 3 rows");
-
-  // THE choropleth colour contract: canvas pixels must reflect consumer CSS fill rgb(215,40,150)
-  const chcnv = choroContractEl.querySelector("canvas");
-  let choroContractOk = false;
-  if (chcnv) {
-    const c = chcnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, chcnv.width, chcnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 195 && px[i + 1] < 65 && px[i + 2] > 125 && px[i + 2] < 175 && px[i + 3] > 0) { choroContractOk = true; break; }
-    }
-  }
-  log(choroContractOk, "CHORO CANVAS colour contract: consumer CSS rgb(215,40,150) reached canvas pixels");
-
-  // ---- SymbolMap checks ----
-  const symbolCircles = symbolSvgEl.querySelectorAll("circle.symbol");
-  log(symbolCircles.length === 3, `SYMBOL: SVG renders 3 circle.symbol marks (got ${symbolCircles.length})`);
-  log(!!symbolSvgEl.querySelector('circle.symbol[data-label-safe="Alpha"]'), 'SYMBOL: circle carries data-label-safe="Alpha"');
-  log(symbolSvgEl.querySelectorAll("circle.symbol-second").length === 1, "SYMBOL: exactly 1 concentric second ring (Beta's valueSecond)");
-  log(symbolSvgEl.querySelectorAll("path.geography").length === 0, "SYMBOL: no backdrop geography by default (dot-only look)");
-  log(symbolBackdropEl.querySelectorAll("path.geography").length === 3, "SYMBOL: backdrop mode draws 3 muted geography paths");
-
-  const symCtx = symbolSvgEl.getContext();
-  log(symCtx && symCtx.chartType === "symbol-map-chart" && symCtx.stats.visibleCount === 3, "SYMBOL: getContext() returns symbol-map-chart with 3 visible symbols");
-  log(symCtx && symCtx.projection === "geoMercator", "SYMBOL: default projection is geoMercator");
-  log(symCtx && typeof symCtx.summary === "string" && symCtx.summary.includes("Symbol map"), "SYMBOL: getContext() includes an NL summary");
-
-  const symA = JSON.stringify({ ...symbolSvgEl.getContext(), renderer: 0 });
-  const symB = JSON.stringify({ ...symbolCanvasEl.getContext(), renderer: 0 });
-  log(symA === symB, "SYMBOL: getContext() identical in SVG vs canvas (renderer aside)");
-
-  // THE symbol colour contract: canvas pixels must reflect consumer CSS fill rgb(30,160,220)
-  const symCnv = symbolContractEl.querySelector("canvas");
-  let symbolContractOk = false;
-  if (symCnv) {
-    const c = symCnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, symCnv.width, symCnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] < 60 && px[i + 1] > 135 && px[i + 1] < 185 && px[i + 2] > 195 && px[i + 3] > 0) { symbolContractOk = true; break; }
-    }
-  }
-  log(symbolContractOk, "SYMBOL CANVAS colour contract: consumer CSS rgb(30,160,220) reached canvas pixels");
-
-  // De-overlap sanity check: two identical-coordinate points must settle to
-  // DIFFERENT pixel centres, at least as far apart as their combined radii
-  // (minus the small forceCollide padding tolerance) - never left stacked.
-  const overlapCircles = Array.from(symbolOverlapEl.querySelectorAll("circle.symbol"));
-  log(overlapCircles.length === 2, `SYMBOL DE-OVERLAP: renders 2 circles (got ${overlapCircles.length})`);
-  if (overlapCircles.length === 2) {
-    const cells = overlapCircles.map((c) => c.closest("g.symbol-cell"));
-    const coords = cells.map((g) => g.getAttribute("transform").match(/-?[\d.]+/g).map(Number));
-    const radii = overlapCircles.map((c) => Number(c.getAttribute("r")));
-    const dx = coords[0][0] - coords[1][0];
-    const dy = coords[0][1] - coords[1][1];
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    log(dist > radii[0] + radii[1] - 2, `SYMBOL DE-OVERLAP: two identical-coordinate points end up non-overlapping (dist=${dist.toFixed(1)}, radii sum=${(radii[0] + radii[1]).toFixed(1)})`);
-  }
-
-  // B3.6 edge-clipping check: every rendered circle (both the primary
-  // circle.symbol AND any concentric circle.symbol-second) must stay fully
-  // inside the plot's inner [0,width]x[0,height] - no negative left/top
-  // extent, no right/bottom extent past the plot bounds. Reads real pixel
-  // geometry off the DOM (g.symbol-cell transform + circle r), same pattern
-  // as the de-overlap check above.
-  const edgeCircles = Array.from(symbolEdgeEl.querySelectorAll("circle.symbol, circle.symbol-second"));
-  log(edgeCircles.length >= 3, `SYMBOL EDGE: renders at least 3 circles (got ${edgeCircles.length})`);
-  const edgePlotWidth = symbolCommon.width - 20; // default margin: left 10 + right 10
-  const edgePlotHeight = symbolCommon.height - 50; // default margin: top 40 + bottom 10
-  let edgeAllInBounds = edgeCircles.length > 0;
-  for (const c of edgeCircles) {
-    const cell = c.closest("g.symbol-cell");
-    const [cx, cy] = cell.getAttribute("transform").match(/-?[\d.]+/g).map(Number);
-    const r = Number(c.getAttribute("r"));
-    const tol = 0.5; // sub-pixel float tolerance
-    if (cx - r < -tol || cx + r > edgePlotWidth + tol || cy - r < -tol || cy + r > edgePlotHeight + tol) {
-      edgeAllInBounds = false;
-    }
-  }
-  log(edgeAllInBounds, `SYMBOL EDGE: all ${edgeCircles.length} circles stay within [0,${edgePlotWidth}]x[0,${edgePlotHeight}] (no clipping at plot edges)`);
-
-  // B3.7 small-circle forgiving hover check - the ONE place this repo can
-  // exercise REAL geometric pointer hit-testing (jsdom vitest dispatches
-  // events directly on elements/coordinates and never actually computes
-  // hit-testing from clientX/clientY, so it can't reproduce the reported bug:
-  // a real pointer landing on a tiny circle finding nothing). Drives a real
-  // MouseEvent at the tiny (r=3) node's true on-screen center via
-  // getBoundingClientRect, in both renderers.
-  const fireMoveAt = (hostEl, clientX, clientY) => hostEl.dispatchEvent(new MouseEvent("mousemove", { clientX, clientY, bubbles: true }));
-  const tooltipVisible = (chartEl) => {
-    const tip = chartEl.querySelector(".tooltip");
-    return !!tip && tip.style.visibility === "visible";
-  };
-
-  const smallSvgHost = symbolSmallSvgEl.querySelector(".mv-host");
-  const tinyCircleSvg = symbolSmallSvgEl.querySelector('circle.symbol[data-label="Tiny"]');
-  const tinyRectSvg = tinyCircleSvg ? tinyCircleSvg.getBoundingClientRect() : null;
-  log(!!tinyCircleSvg && Number(tinyCircleSvg.getAttribute("r")) === 3, "SYMBOL SMALL-CIRCLE: the tiny node renders at r=3 (below SYMBOL_MIN_HIT_RADIUS=8)");
-
-  // SVG hover is native per-mark `mouseenter`/`mouseleave` on a descendant
-  // <g> (renderSvg.ts) - a synthetic `dispatchEvent` call from in-page JS
-  // can't reach it (dispatchEvent only visits the given target + its
-  // ANCESTORS, never descendants, and the SVG listener lives on a descendant
-  // `<g>`, not the host). Only a REAL OS-level pointer move (which the
-  // browser resolves via actual hit-testing) can exercise this correctly, so
-  // this is driven from the Node-side Playwright harness
-  // (`scripts/verify-playground.mjs`) via `locator.hover()` (which also
-  // scroll-into-views the target - this card sits far down the page) and
-  // folded into the same pass/fail count. This helper just exposes the
-  // tooltip-visibility read the Node side can't do without an in-page hook.
-  window.__b37TooltipVisible = (id) => tooltipVisible(document.getElementById(id));
-
-  // Canvas mode has no DOM circle to measure - translate the SVG mount's
-  // known offset (relative to ITS OWN host) onto the canvas mount's own host:
-  // the force layout is a deterministic pure function of dataSet+dimensions
-  // (see the "two independent mounts settle to the identical layout" unit
-  // test), so the SAME dataSet+size settles to the SAME relative position in
-  // both mounts, and the offset transfers even though the two cards sit at
-  // different places on the page.
-  const smallCanvasHost = symbolSmallCanvasEl.querySelector(".mv-host");
-  if (tinyRectSvg && smallSvgHost && smallCanvasHost) {
-    const svgHostRect = smallSvgHost.getBoundingClientRect();
-    const offsetX = tinyRectSvg.left + tinyRectSvg.width / 2 - svgHostRect.left;
-    const offsetY = tinyRectSvg.top + tinyRectSvg.height / 2 - svgHostRect.top;
-    const canvasHostRect = smallCanvasHost.getBoundingClientRect();
-    const cx = canvasHostRect.left + offsetX;
-    const cy = canvasHostRect.top + offsetY;
-    fireMoveAt(smallCanvasHost, cx, cy);
-    log(tooltipVisible(symbolSmallCanvasEl), "SYMBOL CANVAS SMALL-CIRCLE: hovering the tiny (r=3) node's exact center shows the tooltip (B3.7 repro fixed)");
-    fireMoveAt(smallCanvasHost, cx + 6, cy);
-    log(tooltipVisible(symbolSmallCanvasEl), "SYMBOL CANVAS SMALL-CIRCLE: hovering 6px off the tiny node's center still shows the tooltip (forgiving hover)");
-    fireMoveAt(smallCanvasHost, cx + 300, cy + 300);
-    log(!tooltipVisible(symbolSmallCanvasEl), "SYMBOL CANVAS SMALL-CIRCLE: moving well away hides the tooltip again (forgiveness isn't unbounded)");
-  }
-
-  // ---- RadialTree checks ----
-  const radialCircles = radialSvgEl.querySelectorAll("circle.radial-tree-node-circle");
-  log(radialCircles.length === 6, `RADIAL: SVG renders 6 circles - 2 groups + 4 leaves (got ${radialCircles.length})`);
-  log(radialSvgEl.querySelectorAll("path.radial-tree-link").length === 6, "RADIAL: renders 6 dendrogram links");
-  log(!!radialSvgEl.querySelector('circle.radial-tree-node-circle[data-label-safe="Sectors"]'), 'RADIAL: circle carries data-label-safe="Sectors" (colour keyed by the GROUP)');
-  log(!!radialSvgEl.querySelector(".radial-tree-center-circle"), "RADIAL: draws a centre circle when centerLabel is set");
-  const centerLines = Array.from(radialSvgEl.querySelectorAll(".radial-tree-center-label tspan")).map((t) => t.textContent);
-  log(centerLines.join(" ") === "Total Trade", `RADIAL: centre label word-wraps to ["Total","Trade"] (got ${JSON.stringify(centerLines)})`);
-
-  const radCtx = radialSvgEl.getContext();
-  log(radCtx && radCtx.chartType === "radial-tree-chart" && radCtx.stats.leafCount === 4 && radCtx.stats.groupCount === 2, "RADIAL: getContext() returns radial-tree-chart with 4 leaves / 2 groups");
-  log(radCtx && typeof radCtx.summary === "string" && radCtx.summary.includes("Radial tree"), "RADIAL: getContext() includes an NL summary");
-
-  const radA = JSON.stringify({ ...radialSvgEl.getContext(), renderer: 0 });
-  const radB = JSON.stringify({ ...radialCanvasEl.getContext(), renderer: 0 });
-  log(radA === radB, "RADIAL: getContext() identical in SVG vs canvas (renderer aside)");
-
-  // Label-density check: past rotateAbove (25 leaves > 20), every label abbreviates
-  // to its own first 3 characters + "." and none of the original names remain.
-  const denseNames = Array.from(radialDenseEl.querySelectorAll("tspan.radial-tree-label-name")).map((t) => t.textContent);
-  log(denseNames.length > 0 && denseNames.every((n) => /^.{1,3}\.$/.test(n)), `RADIAL DENSITY: all ${denseNames.length} labels abbreviate to <=3 chars + "." past rotateAbove`);
-
-  // THE radial-tree colour contract: canvas pixels must reflect consumer CSS fill rgb(230,70,20)
-  const radCnv = radialContractEl.querySelector("canvas");
-  let radialContractOk = false;
-  if (radCnv) {
-    const c = radCnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, radCnv.width, radCnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 205 && px[i + 1] < 95 && px[i + 1] > 45 && px[i + 2] < 45 && px[i + 3] > 0) { radialContractOk = true; break; }
-    }
-  }
-  log(radialContractOk, "RADIAL CANVAS colour contract: consumer CSS rgb(230,70,20) reached canvas pixels");
-
-  // ---- Treemap checks ----
-  const treemapTiles = treemapSvgEl.querySelectorAll("rect.tile");
-  log(treemapTiles.length === 3, `TREEMAP: SVG renders 3 tiles (got ${treemapTiles.length})`);
-  log(!!treemapSvgEl.querySelector('rect.tile[data-label-safe="Coffee"]'), 'TREEMAP: tile carries data-label-safe="Coffee"');
-
-  const tmCtx = treemapSvgEl.getContext();
-  log(tmCtx && tmCtx.chartType === "treemap-chart" && tmCtx.leaves.length === 3, "TREEMAP: getContext() returns treemap-chart with 3 leaves");
-
-  const tmA = JSON.stringify({ ...treemapSvgEl.getContext(), renderer: 0 });
-  const tmB = JSON.stringify({ ...treemapCanvasEl.getContext(), renderer: 0 });
-  log(tmA === tmB, "TREEMAP: getContext() identical in SVG vs canvas (renderer aside)");
-
-  // tileValueLabels: default-off has none; the dedicated element (tileValueLabels:true) shows one per big-enough tile.
-  log(treemapSvgEl.querySelectorAll(".tile-value-label").length === 0, "TREEMAP: tileValueLabels omitted -> zero .tile-value-label nodes");
-  const treemapValueLabelEls = treemapValueLabelsEl.querySelectorAll(".tile-value-label");
-  log(treemapValueLabelEls.length > 0, `TREEMAP VALUE LABELS: renders ${treemapValueLabelEls.length} value label(s) (tileValueLabels:true)`);
-  const coffeeTile = treemapValueLabelsEl.querySelector('rect.tile[data-label-safe="Coffee"]');
-  const coffeeValueLabel = coffeeTile && coffeeTile.closest(".tile-cell").querySelector(".tile-value-label");
-  log(!!coffeeValueLabel && /100/.test(coffeeValueLabel.textContent) && /50%/.test(coffeeValueLabel.textContent), `TREEMAP VALUE LABELS: Coffee (100 of 200 total) shows "100 (50%)" (got "${coffeeValueLabel && coffeeValueLabel.textContent}")`);
-
-  // THE treemap colour contract: canvas pixels must reflect consumer CSS fill rgb(230,60,180)
-  const tmCnv = treemapContractEl.querySelector("canvas");
-  let treemapContractOk = false;
-  if (tmCnv) {
-    const c = tmCnv.getContext("2d");
-    const { data: px } = c.getImageData(0, 0, tmCnv.width, tmCnv.height);
-    for (let i = 0; i < px.length; i += 4) {
-      if (px[i] > 205 && px[i + 1] < 95 && px[i + 1] > 35 && px[i + 2] > 155 && px[i + 3] > 0) { treemapContractOk = true; break; }
-    }
-  }
-  log(treemapContractOk, "TREEMAP CANVAS colour contract: consumer CSS rgb(230,60,180) reached canvas pixels");
-} catch (e) {
-  log(false, "exception: " + (e && e.message));
-}
-
-const passed = out.filter((l) => l.startsWith("✅")).length;
-document.getElementById("results").innerHTML =
-  out.map((l) => `<span class="${l.startsWith("✅") ? "pass" : "fail"}">${l}</span>`).join("\n") +
-  `\n\n${passed}/${out.length} checks passed.`;
-}
-
-if (location.protocol === "file:") {
-  __RESULTS.textContent =
-    "⚠ Open this page over http, not file:// - browsers block ES-module imports on file://.\n" +
-    "Serve the repo root, e.g.  python3 -m http.server 8080  (or an nginx Docker container),\n" +
-    "then open  http://localhost:8080/playground/";
-} else {
-  runPlayground().catch((e) => {
-    __RESULTS.textContent =
-      "Playground failed to load: " + (e && e.message) +
-      "\nIf the wc bundle is missing, build it:  pnpm --filter @michi-vz/wc build";
-  });
-}
-</script>
-</body>
+      #treemapContract .tile[data-label-safe="Coffee"] {
+        fill: rgb(230, 60, 180);
+      }
+      #results {
+        white-space: pre;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        background: #2b1f18;
+        color: #f3e9da;
+        padding: 16px;
+        border-radius: 6px;
+        margin-top: 20px;
+      }
+      .pass {
+        color: #79f1a5;
+      }
+      .fail {
+        color: #ff6b6b;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>@michi-vz/wc - GapChart PoC</h1>
+    <p>
+      Light-DOM native web component over the <code>@michi-vz/core</code> engine. The page
+      self-tests below.
+    </p>
+
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-gap-chart id="svg"></michi-vz-gap-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-gap-chart id="canvas"></michi-vz-gap-chart>
+      </div>
+    </div>
+    <h2>Consumer-CSS colour contract (canvas, <code>skip-color-mapping-dispatch</code>)</h2>
+    <div class="card" id="contract">
+      <michi-vz-gap-chart id="contractChart"></michi-vz-gap-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - LineChart</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-line-chart id="lineSvg"></michi-vz-line-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer (LTTB)</h2>
+        <michi-vz-line-chart id="lineCanvas"></michi-vz-line-chart>
+      </div>
+    </div>
+    <h2>Line consumer-CSS stroke contract (canvas)</h2>
+    <div class="card" id="lineContract">
+      <michi-vz-line-chart id="lineContractChart"></michi-vz-line-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - AreaChart (stacked)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-area-chart id="areaSvg"></michi-vz-area-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-area-chart id="areaCanvas"></michi-vz-area-chart>
+      </div>
+    </div>
+    <h2>Area consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="areaContract">
+      <michi-vz-area-chart id="areaContractChart"></michi-vz-area-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - ScatterPlot</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-scatter-chart id="scatterSvg"></michi-vz-scatter-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-scatter-chart id="scatterCanvas"></michi-vz-scatter-chart>
+      </div>
+      <div class="card">
+        <h2>pointLabels + drawOrder="sizeDescending"</h2>
+        <michi-vz-scatter-chart id="scatterLabels"></michi-vz-scatter-chart>
+      </div>
+      <div class="card">
+        <h2>drawOrder="sizeAscending" (legacy z-order parity)</h2>
+        <michi-vz-scatter-chart id="scatterAscending"></michi-vz-scatter-chart>
+      </div>
+    </div>
+    <h2>Scatter consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="scatterContract">
+      <michi-vz-scatter-chart id="scatterContractChart"></michi-vz-scatter-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">
+      @michi-vz/wc - VerticalStackBar (stacked, hasOwnProperty guard)
+    </h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-vertical-stack-bar-chart id="stackSvg"></michi-vz-vertical-stack-bar-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-vertical-stack-bar-chart id="stackCanvas"></michi-vz-vertical-stack-bar-chart>
+      </div>
+    </div>
+    <h2>Stack consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="stackContract">
+      <michi-vz-vertical-stack-bar-chart
+        id="stackContractChart"
+      ></michi-vz-vertical-stack-bar-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - ComparableHorizontalBar</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-comparable-horizontal-bar-chart
+          id="cmpSvg"
+        ></michi-vz-comparable-horizontal-bar-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-comparable-horizontal-bar-chart
+          id="cmpCanvas"
+        ></michi-vz-comparable-horizontal-bar-chart>
+      </div>
+    </div>
+    <h2>Comparable consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="cmpContract">
+      <michi-vz-comparable-horizontal-bar-chart
+        id="cmpContractChart"
+      ></michi-vz-comparable-horizontal-bar-chart>
+    </div>
+    <h2>Comparable consumer-CSS DESCENDANT selector contract (canvas, thd MonitorV2 shape)</h2>
+    <div class="card" id="cmpDescendantContract">
+      <michi-vz-comparable-horizontal-bar-chart
+        id="cmpDescendantContractChart"
+      ></michi-vz-comparable-horizontal-bar-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">
+      @michi-vz/wc - ComparableVerticalBar (fixed z-order, full-bandwidth overlay)
+    </h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-comparable-vertical-bar-chart
+          id="cmpVSvg"
+        ></michi-vz-comparable-vertical-bar-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-comparable-vertical-bar-chart
+          id="cmpVCanvas"
+        ></michi-vz-comparable-vertical-bar-chart>
+      </div>
+    </div>
+    <h2>ComparableVerticalBar consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="cmpVContract">
+      <michi-vz-comparable-vertical-bar-chart
+        id="cmpVContractChart"
+      ></michi-vz-comparable-vertical-bar-chart>
+    </div>
+    <h2>
+      ComparableVerticalBar consumer-CSS DESCENDANT selector contract (canvas, thd MonitorV2 shape)
+    </h2>
+    <div class="card" id="cmpVDescendantContract">
+      <michi-vz-comparable-vertical-bar-chart
+        id="cmpVDescendantContractChart"
+      ></michi-vz-comparable-vertical-bar-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - DualHorizontalBar (tornado)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-dual-horizontal-bar-chart id="dualSvg"></michi-vz-dual-horizontal-bar-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-dual-horizontal-bar-chart id="dualCanvas"></michi-vz-dual-horizontal-bar-chart>
+      </div>
+    </div>
+    <h2>Dual consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="dualContract">
+      <michi-vz-dual-horizontal-bar-chart
+        id="dualContractChart"
+      ></michi-vz-dual-horizontal-bar-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - BarBell (cumulative + end-caps)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-bar-bell-chart id="bellSvg"></michi-vz-bar-bell-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-bar-bell-chart id="bellCanvas"></michi-vz-bar-bell-chart>
+      </div>
+    </div>
+    <h2>BarBell consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="bellContract">
+      <michi-vz-bar-bell-chart id="bellContractChart"></michi-vz-bar-bell-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - RangeChart (min/max bands)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-range-chart id="rangeSvg"></michi-vz-range-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-range-chart id="rangeCanvas"></michi-vz-range-chart>
+      </div>
+    </div>
+    <h2>Range consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="rangeContract">
+      <michi-vz-range-chart id="rangeContractChart"></michi-vz-range-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - RibbonChart (stacked columns + connectors)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-ribbon-chart id="ribbonSvg"></michi-vz-ribbon-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-ribbon-chart id="ribbonCanvas"></michi-vz-ribbon-chart>
+      </div>
+    </div>
+    <h2>Ribbon consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="ribbonContract">
+      <michi-vz-ribbon-chart id="ribbonContractChart"></michi-vz-ribbon-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - RadarChart (polar)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-radar-chart id="radarSvg"></michi-vz-radar-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-radar-chart id="radarCanvas"></michi-vz-radar-chart>
+      </div>
+    </div>
+    <h2>Radar consumer-CSS fill contract (canvas)</h2>
+    <div class="card" id="radarContract">
+      <michi-vz-radar-chart id="radarContractChart"></michi-vz-radar-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - ChoroplethMap (geo, first geo chart)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-choropleth-map-chart id="choroSvg"></michi-vz-choropleth-map-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-choropleth-map-chart id="choroCanvas"></michi-vz-choropleth-map-chart>
+      </div>
+    </div>
+    <h2>
+      ChoroplethMap consumer-CSS fill contract (canvas, single-element path.region[data-label-safe]
+      probe)
+    </h2>
+    <div class="card" id="choroContract">
+      <michi-vz-choropleth-map-chart id="choroContractChart"></michi-vz-choropleth-map-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - SymbolMap (geo, force-de-overlapped bubble map)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer (dot-only)</h2>
+        <michi-vz-symbol-map-chart id="symbolSvg"></michi-vz-symbol-map-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer (dot-only)</h2>
+        <michi-vz-symbol-map-chart id="symbolCanvas"></michi-vz-symbol-map-chart>
+      </div>
+      <div class="card">
+        <h2>SVG renderer + optional backdrop geography</h2>
+        <michi-vz-symbol-map-chart id="symbolBackdrop"></michi-vz-symbol-map-chart>
+      </div>
+    </div>
+    <h2>
+      SymbolMap consumer-CSS fill contract (canvas, single-element circle.symbol[data-label-safe]
+      probe)
+    </h2>
+    <div class="card" id="symbolContract">
+      <michi-vz-symbol-map-chart id="symbolContractChart"></michi-vz-symbol-map-chart>
+    </div>
+    <h2>SymbolMap de-overlap sanity check (two identical-coordinate points)</h2>
+    <div class="card">
+      <michi-vz-symbol-map-chart id="symbolOverlap"></michi-vz-symbol-map-chart>
+    </div>
+
+    <h2>
+      SymbolMap edge-clipping check (B3.6 - extreme-west max-value + extreme-north large bubble)
+    </h2>
+    <div class="card"><michi-vz-symbol-map-chart id="symbolEdge"></michi-vz-symbol-map-chart></div>
+
+    <h2>
+      SymbolMap small-circle forgiving hover check (B3.7 - real pointer coords, both renderers)
+    </h2>
+    <div class="row">
+      <div class="card">
+        <h2>SVG</h2>
+        <michi-vz-symbol-map-chart id="symbolSmallSvg"></michi-vz-symbol-map-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas</h2>
+        <michi-vz-symbol-map-chart id="symbolSmallCanvas"></michi-vz-symbol-map-chart>
+      </div>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - RadialTree (radial cluster()/dendrogram)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-radial-tree-chart id="radialSvg"></michi-vz-radial-tree-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-radial-tree-chart id="radialCanvas"></michi-vz-radial-tree-chart>
+      </div>
+      <div class="card">
+        <h2>Dense tree - label density (abbreviate + rotate)</h2>
+        <michi-vz-radial-tree-chart id="radialDense"></michi-vz-radial-tree-chart>
+      </div>
+    </div>
+    <h2>
+      RadialTree consumer-CSS fill contract (canvas, single-element
+      circle.radial-tree-node-circle[data-label-safe] probe)
+    </h2>
+    <div class="card" id="radialContract">
+      <michi-vz-radial-tree-chart id="radialContractChart"></michi-vz-radial-tree-chart>
+    </div>
+
+    <h1 style="margin-top: 36px">@michi-vz/wc - Treemap (squarified tiling, tileValueLabels)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-treemap-chart id="treemapSvg"></michi-vz-treemap-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas renderer</h2>
+        <michi-vz-treemap-chart id="treemapCanvas"></michi-vz-treemap-chart>
+      </div>
+      <div class="card">
+        <h2>tileValueLabels (value + % of total, 2nd line)</h2>
+        <michi-vz-treemap-chart id="treemapValueLabels"></michi-vz-treemap-chart>
+      </div>
+    </div>
+    <h2>Treemap consumer-CSS fill contract (canvas, rect.tile[data-label-safe] probe)</h2>
+    <div class="card" id="treemapContract">
+      <michi-vz-treemap-chart id="treemapContractChart"></michi-vz-treemap-chart>
+    </div>
+
+    <div id="results">running…</div>
+
+    <script type="module">
+      const __RESULTS = document.getElementById("results");
+      async function runPlayground() {
+        await import("../packages/wc/dist/michi-vz-wc.bundle.js");
+
+        const data = [
+          { label: "Alpha One", value1: 12, value2: 34 },
+          { label: "Beta", value1: 55, value2: 20 },
+          { label: "Gamma", value1: 30, value2: 31 },
+          { label: "Delta", value1: 8, value2: 40 },
+        ];
+
+        const common = {
+          width: 460,
+          height: 280,
+          xAxisDataType: "number",
+          shapeValue1: "circle",
+          shapeValue2: "square",
+        };
+        const out = [];
+        const log = (ok, msg) => out.push(`${ok ? "✅ PASS" : "❌ FAIL"}  ${msg}`);
+        const nextFrame = () =>
+          new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+        const svgEl = document.getElementById("svg");
+        const canvasEl = document.getElementById("canvas");
+        const contractEl = document.getElementById("contractChart");
+
+        // Same title on both so getContext() differs ONLY by renderer (see check #3).
+        Object.assign(svgEl, {
+          dataSet: data,
+          chartTitle: "Value gap",
+          renderer: "svg",
+          ...common,
+        });
+        Object.assign(canvasEl, {
+          dataSet: data,
+          chartTitle: "Value gap",
+          renderer: "canvas",
+          ...common,
+        });
+        Object.assign(contractEl, {
+          dataSet: data,
+          chartTitle: "Canvas + consumer CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...common,
+        });
+
+        let dataProcessedFired = false;
+        svgEl.addEventListener("michi-vz:dataprocessed", () => {
+          dataProcessedFired = true;
+        });
+
+        // ---- LineChart setup ----
+        const lineData = [
+          {
+            label: "North",
+            color: "#1f77b4",
+            series: [
+              { date: 2016, value: 10, certainty: true },
+              { date: 2017, value: 22, certainty: true },
+              { date: 2018, value: 18, certainty: true },
+              { date: 2019, value: 30, certainty: true },
+            ],
+          },
+          {
+            label: "South Region",
+            color: "#ff7f0e",
+            series: [
+              { date: 2016, value: 5, certainty: true },
+              { date: 2017, value: 9, certainty: true },
+              { date: 2024, value: 26, certainty: true },
+            ],
+          }, // 2019->2024 gap -> dashed run
+        ];
+        const lineCommon = {
+          width: 460,
+          height: 280,
+          xAxisDataType: "date_annual",
+          detectGaps: true,
+          showDataPoints: true,
+        };
+        const lineSvgEl = document.getElementById("lineSvg");
+        const lineCanvasEl = document.getElementById("lineCanvas");
+        const lineContractEl = document.getElementById("lineContractChart");
+        Object.assign(lineSvgEl, {
+          dataSet: lineData,
+          chartTitle: "Trend",
+          renderer: "svg",
+          ...lineCommon,
+        });
+        Object.assign(lineCanvasEl, {
+          dataSet: lineData,
+          chartTitle: "Trend",
+          renderer: "canvas",
+          ...lineCommon,
+        });
+        Object.assign(lineContractEl, {
+          dataSet: lineData,
+          chartTitle: "Line canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...lineCommon,
+        });
+
+        // ---- AreaChart setup (stacked) ----
+        const areaSeries = [
+          { date: 2018, Fruit: 10, Veg: 6, Dairy: 4 },
+          { date: 2019, Fruit: 14, Veg: 8, Dairy: 5 },
+          { date: 2020, Fruit: 9, Veg: 12, Dairy: 7 },
+          { date: 2021, Fruit: 16, Veg: 10, Dairy: 9 },
+        ];
+        const areaKeys = ["Fruit", "Veg", "Dairy"];
+        const areaCommon = { width: 460, height: 280, xAxisDataType: "number" };
+        const areaSvgEl = document.getElementById("areaSvg");
+        const areaCanvasEl = document.getElementById("areaCanvas");
+        const areaContractEl = document.getElementById("areaContractChart");
+        Object.assign(areaSvgEl, {
+          series: areaSeries,
+          keys: areaKeys,
+          chartTitle: "Stack",
+          renderer: "svg",
+          ...areaCommon,
+        });
+        Object.assign(areaCanvasEl, {
+          series: areaSeries,
+          keys: areaKeys,
+          chartTitle: "Stack",
+          renderer: "canvas",
+          ...areaCommon,
+        });
+        Object.assign(areaContractEl, {
+          series: areaSeries,
+          keys: areaKeys,
+          chartTitle: "Area canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...areaCommon,
+        });
+
+        // ---- ScatterPlot setup ----
+        const scatterData = [
+          { label: "Alpha One", x: 1, y: 3, d: 6 },
+          { label: "Beta", x: 3, y: 7, d: 12 },
+          { label: "Gamma", x: 5, y: 6, d: 4 },
+          { label: "Delta", x: 7, y: 12, d: 9 },
+          { label: "Epsilon", x: 9, y: 15, d: 7 },
+        ];
+        const scatterCommon = { width: 460, height: 280, xAxisDataType: "number" };
+        const scatterSvgEl = document.getElementById("scatterSvg");
+        const scatterCanvasEl = document.getElementById("scatterCanvas");
+        const scatterContractEl = document.getElementById("scatterContractChart");
+        const scatterLabelsEl = document.getElementById("scatterLabels");
+        const scatterAscendingEl = document.getElementById("scatterAscending");
+        Object.assign(scatterSvgEl, {
+          dataSet: scatterData,
+          chartTitle: "Cloud",
+          renderer: "svg",
+          ...scatterCommon,
+        });
+        Object.assign(scatterCanvasEl, {
+          dataSet: scatterData,
+          chartTitle: "Cloud",
+          renderer: "canvas",
+          ...scatterCommon,
+        });
+        Object.assign(scatterContractEl, {
+          dataSet: scatterData,
+          chartTitle: "Scatter canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...scatterCommon,
+        });
+        // pointLabels (default off elsewhere) + drawOrder="sizeDescending" (explicit opt-in).
+        Object.assign(scatterLabelsEl, {
+          dataSet: scatterData,
+          chartTitle: "Labels",
+          renderer: "svg",
+          pointLabels: true,
+          drawOrder: "sizeDescending",
+          ...scatterCommon,
+        });
+        // drawOrder="sizeAscending": genuine opt-in, flips z-order so the LARGEST
+        // bubble draws last/on top (reproduces legacy sdg-trade's real z-order).
+        Object.assign(scatterAscendingEl, {
+          dataSet: scatterData,
+          chartTitle: "Ascending",
+          renderer: "svg",
+          drawOrder: "sizeAscending",
+          ...scatterCommon,
+        });
+
+        // ---- VerticalStackBar setup (each DataSet owns ONLY its key -> guard territory) ----
+        const stackData = [
+          {
+            seriesKey: "Africa",
+            seriesKeyAbbreviation: "AF",
+            series: [
+              { date: "2001", Africa: "10" },
+              { date: "2002", Africa: "14" },
+              { date: "2003", Africa: "9" },
+            ],
+          },
+          {
+            seriesKey: "Non-LDC",
+            seriesKeyAbbreviation: "NL",
+            series: [
+              { date: "2001", "Non-LDC": "20" },
+              { date: "2002", "Non-LDC": "16" },
+              { date: "2003", "Non-LDC": "22" },
+            ],
+          },
+        ];
+        const stackKeys = ["Africa", "Non-LDC"];
+        const stackCommon = { width: 460, height: 300, missingDataMarker: { height: 2 } };
+        const stackSvgEl = document.getElementById("stackSvg");
+        const stackCanvasEl = document.getElementById("stackCanvas");
+        const stackContractEl = document.getElementById("stackContractChart");
+        Object.assign(stackSvgEl, {
+          dataSet: stackData,
+          keys: stackKeys,
+          chartTitle: "Stacked",
+          renderer: "svg",
+          ...stackCommon,
+        });
+        Object.assign(stackCanvasEl, {
+          dataSet: stackData,
+          keys: stackKeys,
+          chartTitle: "Stacked",
+          renderer: "canvas",
+          ...stackCommon,
+        });
+        Object.assign(stackContractEl, {
+          dataSet: stackData,
+          keys: stackKeys,
+          chartTitle: "Stack canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...stackCommon,
+        });
+
+        // ---- ComparableHorizontalBar setup ----
+        const cmpData = [
+          { label: "Alpha One", valueBased: 10, valueCompared: 18 },
+          { label: "Beta", valueBased: 30, valueCompared: 22 },
+          { label: "Gamma", valueBased: 16, valueCompared: 24 },
+        ];
+        const cmpCommon = { width: 460, height: 280 };
+        const cmpSvgEl = document.getElementById("cmpSvg");
+        const cmpCanvasEl = document.getElementById("cmpCanvas");
+        const cmpContractEl = document.getElementById("cmpContractChart");
+        Object.assign(cmpSvgEl, {
+          dataSet: cmpData,
+          chartTitle: "Based vs Compared",
+          renderer: "svg",
+          ...cmpCommon,
+        });
+        Object.assign(cmpCanvasEl, {
+          dataSet: cmpData,
+          chartTitle: "Based vs Compared",
+          renderer: "canvas",
+          ...cmpCommon,
+        });
+        Object.assign(cmpContractEl, {
+          dataSet: cmpData,
+          chartTitle: "Comparable canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...cmpCommon,
+        });
+        const cmpDescendantContractEl = document.getElementById("cmpDescendantContractChart");
+        Object.assign(cmpDescendantContractEl, {
+          dataSet: cmpData,
+          chartTitle: "Comparable canvas + descendant CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          valueBasedOpacity: 1,
+          valueComparedOpacity: 1,
+          ...cmpCommon,
+        });
+
+        // ---- ComparableVerticalBar setup ----
+        const cmpVData = [
+          { label: "Alpha One", valueBased: 10, valueCompared: 18 },
+          { label: "Beta", valueBased: 30, valueCompared: 22 },
+          { label: "Gamma", valueBased: 16, valueCompared: 24 },
+        ];
+        const cmpVCommon = { width: 460, height: 280 };
+        const cmpVSvgEl = document.getElementById("cmpVSvg");
+        const cmpVCanvasEl = document.getElementById("cmpVCanvas");
+        const cmpVContractEl = document.getElementById("cmpVContractChart");
+        Object.assign(cmpVSvgEl, {
+          dataSet: cmpVData,
+          chartTitle: "Based vs Compared (columns)",
+          renderer: "svg",
+          deltaIndicator: { show: true },
+          ...cmpVCommon,
+        });
+        Object.assign(cmpVCanvasEl, {
+          dataSet: cmpVData,
+          chartTitle: "Based vs Compared (columns)",
+          renderer: "canvas",
+          deltaIndicator: { show: true },
+          ...cmpVCommon,
+        });
+        Object.assign(cmpVContractEl, {
+          dataSet: cmpVData,
+          chartTitle: "ComparableVertical canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...cmpVCommon,
+        });
+        const cmpVDescendantContractEl = document.getElementById("cmpVDescendantContractChart");
+        Object.assign(cmpVDescendantContractEl, {
+          dataSet: cmpVData,
+          chartTitle: "ComparableVertical canvas + descendant CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          valueBasedOpacity: 1,
+          valueComparedOpacity: 1,
+          ...cmpVCommon,
+        });
+
+        // ---- DualHorizontalBar (tornado) setup ----
+        const dualData = [
+          { label: "Alpha One", value1: 20, value2: 14 },
+          { label: "Beta", value1: 35, value2: 28 },
+          { label: "Gamma", value1: 10, value2: 22 },
+        ];
+        const dualCommon = { width: 460, height: 280 };
+        const dualSvgEl = document.getElementById("dualSvg");
+        const dualCanvasEl = document.getElementById("dualCanvas");
+        const dualContractEl = document.getElementById("dualContractChart");
+        Object.assign(dualSvgEl, {
+          dataSet: dualData,
+          chartTitle: "Tornado",
+          renderer: "svg",
+          ...dualCommon,
+        });
+        Object.assign(dualCanvasEl, {
+          dataSet: dualData,
+          chartTitle: "Tornado",
+          renderer: "canvas",
+          ...dualCommon,
+        });
+        Object.assign(dualContractEl, {
+          dataSet: dualData,
+          chartTitle: "Dual canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...dualCommon,
+        });
+
+        // ---- BarBell setup ----
+        const bellData = [
+          { date: "2001", Fruit: 10, Veg: 6 },
+          { date: "2002", Fruit: 14, Veg: 9 },
+          { date: "2003", Fruit: 8, Veg: 13 },
+        ];
+        const bellKeys = ["Fruit", "Veg"];
+        const bellCommon = { width: 460, height: 280 };
+        const bellSvgEl = document.getElementById("bellSvg");
+        const bellCanvasEl = document.getElementById("bellCanvas");
+        const bellContractEl = document.getElementById("bellContractChart");
+        Object.assign(bellSvgEl, {
+          dataSet: bellData,
+          keys: bellKeys,
+          chartTitle: "Cumulative",
+          renderer: "svg",
+          ...bellCommon,
+        });
+        Object.assign(bellCanvasEl, {
+          dataSet: bellData,
+          keys: bellKeys,
+          chartTitle: "Cumulative",
+          renderer: "canvas",
+          ...bellCommon,
+        });
+        Object.assign(bellContractEl, {
+          dataSet: bellData,
+          keys: bellKeys,
+          chartTitle: "BarBell canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...bellCommon,
+        });
+
+        // ---- RangeChart setup ----
+        const rangeData = [
+          {
+            label: "Region A",
+            color: "#1f77b4",
+            series: [
+              { date: 2016, valueMin: 5, valueMax: 12, certainty: true },
+              { date: 2017, valueMin: 8, valueMax: 16, certainty: true },
+              { date: 2018, valueMin: 6, valueMax: 14, certainty: true },
+            ],
+          },
+          {
+            label: "Region B",
+            color: "#ff7f0e",
+            series: [
+              { date: 2016, valueMin: 2, valueMax: 6, certainty: true },
+              { date: 2017, valueMin: 3, valueMax: 7, certainty: true },
+              { date: 2018, valueMin: 4, valueMax: 9, certainty: true },
+            ],
+          },
+        ];
+        const rangeCommon = { width: 460, height: 280, xAxisDataType: "date_annual" };
+        const rangeSvgEl = document.getElementById("rangeSvg");
+        const rangeCanvasEl = document.getElementById("rangeCanvas");
+        const rangeContractEl = document.getElementById("rangeContractChart");
+        Object.assign(rangeSvgEl, {
+          dataSet: rangeData,
+          chartTitle: "Bands",
+          renderer: "svg",
+          ...rangeCommon,
+        });
+        Object.assign(rangeCanvasEl, {
+          dataSet: rangeData,
+          chartTitle: "Bands",
+          renderer: "canvas",
+          ...rangeCommon,
+        });
+        Object.assign(rangeContractEl, {
+          dataSet: rangeData,
+          chartTitle: "Range canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...rangeCommon,
+        });
+
+        // ---- RibbonChart setup ----
+        const ribbonData = [
+          { date: "2001", Fruit: 10, Veg: 6 },
+          { date: "2002", Fruit: 14, Veg: 9 },
+          { date: "2003", Fruit: 8, Veg: 13 },
+        ];
+        const ribbonKeys = ["Fruit", "Veg"];
+        const ribbonCommon = { width: 460, height: 300 };
+        const ribbonSvgEl = document.getElementById("ribbonSvg");
+        const ribbonCanvasEl = document.getElementById("ribbonCanvas");
+        const ribbonContractEl = document.getElementById("ribbonContractChart");
+        Object.assign(ribbonSvgEl, {
+          series: ribbonData,
+          keys: ribbonKeys,
+          chartTitle: "Stream",
+          renderer: "svg",
+          ...ribbonCommon,
+        });
+        Object.assign(ribbonCanvasEl, {
+          series: ribbonData,
+          keys: ribbonKeys,
+          chartTitle: "Stream",
+          renderer: "canvas",
+          ...ribbonCommon,
+        });
+        Object.assign(ribbonContractEl, {
+          series: ribbonData,
+          keys: ribbonKeys,
+          chartTitle: "Ribbon canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...ribbonCommon,
+        });
+
+        // ---- RadarChart setup ----
+        const radarAxes = ["Speed", "Power", "Range", "Agility", "Cost"];
+        const radarSeries = [
+          { label: "Model A", color: "#1f77b4", values: [8, 6, 7, 9, 5] },
+          { label: "Model B", color: "#ff7f0e", values: [5, 9, 6, 4, 8] },
+        ];
+        const radarCommon = { width: 360, height: 320 };
+        const radarSvgEl = document.getElementById("radarSvg");
+        const radarCanvasEl = document.getElementById("radarCanvas");
+        const radarContractEl = document.getElementById("radarContractChart");
+        Object.assign(radarSvgEl, {
+          series: radarSeries,
+          axes: radarAxes,
+          chartTitle: "Radar",
+          renderer: "svg",
+          ...radarCommon,
+        });
+        Object.assign(radarCanvasEl, {
+          series: radarSeries,
+          axes: radarAxes,
+          chartTitle: "Radar",
+          renderer: "canvas",
+          ...radarCommon,
+        });
+        Object.assign(radarContractEl, {
+          series: radarSeries,
+          axes: radarAxes,
+          chartTitle: "Radar canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...radarCommon,
+        });
+
+        // ---- ChoroplethMap setup ---- (geography is ALWAYS a prop - a tiny inline
+        // GeoFeatureItem[] sample here, same spirit as @michi-vz/examples' hand-curated
+        // sample; NOT real coastlines)
+        const choroGeography = [
+          {
+            id: "Alpha",
+            name: "Alpha",
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-40, -10],
+                  [-20, -10],
+                  [-20, 10],
+                  [-40, 10],
+                  [-40, -10],
+                ],
+              ],
+            },
+          },
+          {
+            id: "Beta",
+            name: "Beta",
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [10, -10],
+                  [30, -10],
+                  [30, 10],
+                  [10, 10],
+                  [10, -10],
+                ],
+              ],
+            },
+          },
+          {
+            id: "Gamma",
+            name: "Gamma",
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [40, -10],
+                  [60, -10],
+                  [60, 10],
+                  [40, 10],
+                  [40, -10],
+                ],
+              ],
+            },
+          },
+        ];
+        const choroData = [
+          { id: "Alpha", label: "Alpha", value: 10 },
+          { id: "Beta", label: "Beta", value: 90 },
+          // "Gamma" intentionally unmatched - exercises noDataColor.
+        ];
+        const choroCommon = {
+          width: 460,
+          height: 280,
+          geography: choroGeography,
+          colorScale: { domain: [50], range: ["rgb(230,230,250)", "rgb(40,40,160)"] },
+          noDataColor: "rgb(200,200,200)",
+        };
+        const choroSvgEl = document.getElementById("choroSvg");
+        const choroCanvasEl = document.getElementById("choroCanvas");
+        const choroContractEl = document.getElementById("choroContractChart");
+        Object.assign(choroSvgEl, {
+          dataSet: choroData,
+          chartTitle: "Choropleth (geo)",
+          renderer: "svg",
+          ...choroCommon,
+        });
+        Object.assign(choroCanvasEl, {
+          dataSet: choroData,
+          chartTitle: "Choropleth (geo)",
+          renderer: "canvas",
+          ...choroCommon,
+        });
+        Object.assign(choroContractEl, {
+          dataSet: choroData,
+          chartTitle: "Choropleth canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...choroCommon,
+        });
+
+        // ---- SymbolMap setup ---- (dataSet items each supply their own lng/lat - core
+        // bundles no coordinate table, unlike the legacy MapSymbolForce's CSV)
+        const symbolCommon = { width: 460, height: 280 };
+        const symbolData = [
+          { id: "Alpha", label: "Alpha", lng: -30, lat: 0, value: 40 },
+          { id: "Beta", label: "Beta", lng: 20, lat: 0, value: 90, valueSecond: 45 }, // concentric second ring
+          { id: "Gamma", label: "Gamma", lng: 50, lat: 5, value: 15 },
+        ];
+        const symbolSvgEl = document.getElementById("symbolSvg");
+        const symbolCanvasEl = document.getElementById("symbolCanvas");
+        const symbolContractEl = document.getElementById("symbolContractChart");
+        const symbolBackdropEl = document.getElementById("symbolBackdrop");
+        const symbolOverlapEl = document.getElementById("symbolOverlap");
+        Object.assign(symbolSvgEl, {
+          dataSet: symbolData,
+          chartTitle: "SymbolMap (dot-only)",
+          renderer: "svg",
+          ...symbolCommon,
+        });
+        Object.assign(symbolCanvasEl, {
+          dataSet: symbolData,
+          chartTitle: "SymbolMap (dot-only)",
+          renderer: "canvas",
+          ...symbolCommon,
+        });
+        Object.assign(symbolContractEl, {
+          dataSet: symbolData,
+          chartTitle: "SymbolMap canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...symbolCommon,
+        });
+        // Reuses ChoroplethMap's tiny illustrative geography sample as the optional
+        // muted backdrop, so the same three symbols read against a landmass context.
+        Object.assign(symbolBackdropEl, {
+          dataSet: symbolData,
+          chartTitle: "SymbolMap + backdrop",
+          geography: choroGeography,
+          ...symbolCommon,
+        });
+        // De-overlap sanity check: two items at the EXACT same lng/lat must settle to
+        // different, non-overlapping pixel positions once the force simulation runs.
+        const symbolOverlapData = [
+          { id: "Same1", label: "Same1", lng: 0, lat: 0, value: 30 },
+          { id: "Same2", label: "Same2", lng: 0, lat: 0, value: 30 },
+        ];
+        Object.assign(symbolOverlapEl, {
+          dataSet: symbolOverlapData,
+          chartTitle: "De-overlap check",
+          renderer: "svg",
+          ...symbolCommon,
+        });
+
+        // B3.6 edge-clipping check: an extreme-west point carrying the MAX value
+        // (largest radius, lands at the raw x-extent's edge - US-like) + an
+        // extreme-north point that also gets a large radius (UK/Germany-like) - the
+        // reported bug's exact shape: a big bubble at the projected extent's edge
+        // used to render half off-canvas before the radius-aware fit + boundary
+        // clamp (B3.6).
+        const symbolEdgeEl = document.getElementById("symbolEdge");
+        const symbolEdgeData = [
+          { id: "west", label: "West", lng: -170, lat: 0, value: 100 },
+          { id: "north", label: "North", lng: 20, lat: 80, value: 90 },
+          { id: "mid", label: "Mid", lng: 40, lat: -30, value: 10 },
+        ];
+        Object.assign(symbolEdgeEl, {
+          dataSet: symbolEdgeData,
+          chartTitle: "Edge-clipping check",
+          renderer: "svg",
+          ...symbolCommon,
+        });
+
+        // B3.7 small-circle forgiving hover check: a tiny (r=3, `radiusRange` floor)
+        // dot far from a much bigger bubble, so a real Chromium pointer can be driven
+        // to the tiny dot's EXACT center (the reported bug - no tooltip on small
+        // circles) and a few px off-center (forgiveness), in BOTH renderers.
+        const symbolSmallSvgEl = document.getElementById("symbolSmallSvg");
+        const symbolSmallCanvasEl = document.getElementById("symbolSmallCanvas");
+        const symbolSmallData = [
+          { id: "tiny", label: "Tiny", lng: -60, lat: 0, value: 1 },
+          { id: "huge", label: "Huge", lng: 60, lat: 0, value: 100 },
+        ];
+        const symbolSmallCommon = {
+          dataSet: symbolSmallData,
+          radiusRange: [3, 30],
+          width: 460,
+          height: 280,
+        };
+        Object.assign(symbolSmallSvgEl, {
+          chartTitle: "Small-circle hover (SVG)",
+          renderer: "svg",
+          ...symbolSmallCommon,
+        });
+        Object.assign(symbolSmallCanvasEl, {
+          chartTitle: "Small-circle hover (canvas)",
+          renderer: "canvas",
+          ...symbolSmallCommon,
+        });
+
+        // ---- RadialTree setup ---- (2-level forest: RadialTreeNode mirrors TreemapNode's
+        // shape - a group's value is always the sum of its children)
+        const radialCommon = { width: 460, height: 320 };
+        const radialData = [
+          {
+            label: "Sectors",
+            children: [
+              { label: "Coffee", value: 10 },
+              { label: "Tea", value: 30 },
+            ],
+          },
+          {
+            label: "Regions",
+            children: [
+              { label: "Africa", value: 5 },
+              { label: "Asia", value: 55 },
+            ],
+          },
+        ];
+        const radialSvgEl = document.getElementById("radialSvg");
+        const radialCanvasEl = document.getElementById("radialCanvas");
+        const radialContractEl = document.getElementById("radialContractChart");
+        const radialDenseEl = document.getElementById("radialDense");
+        Object.assign(radialSvgEl, {
+          dataSet: radialData,
+          chartTitle: "RadialTree",
+          centerLabel: "Total Trade",
+          renderer: "svg",
+          ...radialCommon,
+        });
+        Object.assign(radialCanvasEl, {
+          dataSet: radialData,
+          chartTitle: "RadialTree",
+          centerLabel: "Total Trade",
+          renderer: "canvas",
+          ...radialCommon,
+        });
+        Object.assign(radialContractEl, {
+          dataSet: radialData,
+          chartTitle: "RadialTree canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
+          ...radialCommon,
+        });
+        // Past rotateAbove (default 20 leaves): labels abbreviate to 3 letters + "." and
+        // rotate radially instead of staying horizontal.
+        const radialDenseData = [
+          {
+            label: "Group",
+            children: Array.from({ length: 25 }, (_, i) => ({ label: `Item${i}`, value: i + 1 })),
+          },
+        ];
+        Object.assign(radialDenseEl, {
+          dataSet: radialDenseData,
+          chartTitle: "Dense tree",
+          renderer: "svg",
+          ...radialCommon,
+        });
+
+        // ---- Treemap setup ---- (flat leaves -> colorKey == the leaf's own label, same
+        // group-keyed colour contract RadialTree/Treemap share - see the CSS comment above)
+        const treemapCommon = { width: 460, height: 280 };
+        const treemapData = [
+          { label: "Coffee", value: 100 },
+          { label: "Tea", value: 60 },
+          { label: "Cocoa", value: 40 },
+        ];
+        const treemapSvgEl = document.getElementById("treemapSvg");
+        const treemapCanvasEl = document.getElementById("treemapCanvas");
+        const treemapValueLabelsEl = document.getElementById("treemapValueLabels");
+        const treemapContractEl = document.getElementById("treemapContractChart");
+        Object.assign(treemapSvgEl, {
+          dataSet: treemapData,
+          chartTitle: "Treemap",
+          renderer: "svg",
+          showSplit: false,
+          ...treemapCommon,
+        });
+        Object.assign(treemapCanvasEl, {
+          dataSet: treemapData,
+          chartTitle: "Treemap",
+          renderer: "canvas",
+          showSplit: false,
+          ...treemapCommon,
+        });
+        // tileValueLabels (default off elsewhere): "{value} ({pct}%)" 2nd line under the name.
+        Object.assign(treemapValueLabelsEl, {
+          dataSet: treemapData,
+          chartTitle: "Treemap value labels",
+          renderer: "svg",
+          showSplit: false,
+          tileValueLabels: true,
+          ...treemapCommon,
+        });
+        Object.assign(treemapContractEl, {
+          dataSet: treemapData,
+          chartTitle: "Treemap canvas + CSS",
+          renderer: "canvas",
+          showSplit: false,
+          skipColorMappingDispatch: true,
+          ...treemapCommon,
+        });
+
+        await nextFrame();
+
+        try {
+          // 1. SVG marks rendered with sanitized data-label-safe
+          const bars = svgEl.querySelectorAll("rect.gap-bar");
+          log(bars.length === 4, `SVG renders 4 gap bars (got ${bars.length})`);
+          const safe = svgEl.querySelector('rect.gap-bar[data-label-safe="Alpha_One"]');
+          log(!!safe, 'SVG bar carries data-label-safe="Alpha_One"');
+
+          // 2. getContext() shape + stats
+          const ctx = svgEl.getContext();
+          log(
+            ctx && ctx.chartType === "gap-chart" && ctx.stats.count === 4,
+            "getContext() returns gap-chart with 4 series",
+          );
+          log(
+            ctx.stats.maxGap.label === "Beta",
+            `largest gap is Beta=35 (got ${ctx.stats.maxGap?.label}=${ctx.stats.maxGap?.value})`,
+          );
+          log(
+            typeof ctx.summary === "string" && ctx.summary.includes("Largest gap"),
+            "getContext() includes an NL summary",
+          );
+
+          // 3. getContext() identical across SVG and canvas (renderer aside)
+          const a = JSON.stringify({ ...svgEl.getContext(), renderer: 0 });
+          const b = JSON.stringify({ ...canvasEl.getContext(), renderer: 0 });
+          log(a === b, "getContext() identical in SVG vs canvas (renderer aside)");
+
+          // 4. onChartDataProcessed CustomEvent fired
+          log(dataProcessedFired, "michi-vz:dataprocessed CustomEvent fired");
+
+          // 5. a11y mirror present
+          log(
+            svgEl.querySelectorAll(".mv-a11y table tbody tr").length === 4,
+            "a11y table mirror has 4 rows",
+          );
+
+          // 6. THE colour contract: canvas pixels must reflect consumer CSS (rgb(220,40,40))
+          const cnv = contractEl.querySelector("canvas");
+          let contractOk = false;
+          if (cnv) {
+            const c = cnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, cnv.width, cnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (px[i] > 205 && px[i] < 235 && px[i + 1] < 70 && px[i + 2] < 70 && px[i + 3] > 0) {
+                contractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            contractOk,
+            "CANVAS colour contract: consumer CSS rgb(220,40,40) reached canvas pixels",
+          );
+
+          // 7. light DOM (no shadow root) - required by the contract
+          log(svgEl.shadowRoot === null, "element renders in LIGHT DOM (no shadow root)");
+
+          // ---- LineChart checks ----
+          const lines = lineSvgEl.querySelectorAll("path.line");
+          log(lines.length >= 2, `LINE: SVG renders line paths (got ${lines.length})`);
+          log(
+            !!lineSvgEl.querySelector('path.line[data-label-safe="South_Region"]'),
+            'LINE: path carries data-label-safe="South_Region"',
+          );
+
+          const dashed = lineSvgEl.querySelectorAll('path.line[stroke-dasharray="4,4"]');
+          log(dashed.length >= 1, `LINE: detectGaps produces a dashed run (got ${dashed.length})`);
+
+          const lctx = lineSvgEl.getContext();
+          log(
+            lctx && lctx.chartType === "line-chart" && lctx.series.length === 2,
+            "LINE: getContext() returns line-chart with 2 series",
+          );
+          log(
+            typeof lctx.summary === "string" && lctx.summary.includes("Line chart"),
+            "LINE: getContext() includes an NL summary",
+          );
+
+          const la = JSON.stringify({ ...lineSvgEl.getContext(), renderer: 0 });
+          const lb = JSON.stringify({ ...lineCanvasEl.getContext(), renderer: 0 });
+          log(la === lb, "LINE: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            lineSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2,
+            "LINE: a11y table mirror has 2 rows",
+          );
+
+          // THE line colour contract: canvas pixels must reflect consumer CSS stroke rgb(20,120,200)
+          const lcnv = lineContractEl.querySelector("canvas");
+          let lineContractOk = false;
+          if (lcnv) {
+            const c = lcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, lcnv.width, lcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] < 70 &&
+                px[i + 1] > 95 &&
+                px[i + 1] < 145 &&
+                px[i + 2] > 175 &&
+                px[i + 2] < 225 &&
+                px[i + 3] > 0
+              ) {
+                lineContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            lineContractOk,
+            "LINE CANVAS colour contract: consumer CSS rgb(20,120,200) reached canvas pixels",
+          );
+
+          // ---- AreaChart checks ----
+          const areas = areaSvgEl.querySelectorAll("path.area");
+          log(areas.length === 3, `AREA: SVG renders 3 stacked area paths (got ${areas.length})`);
+          log(
+            !!areaSvgEl.querySelector('path.area[data-label-safe="Fruit"]'),
+            'AREA: path carries data-label-safe="Fruit"',
+          );
+
+          const actx = areaSvgEl.getContext();
+          log(
+            actx && actx.chartType === "area-chart" && actx.keys.length === 3,
+            "AREA: getContext() returns area-chart with 3 keys",
+          );
+          log(
+            typeof actx.summary === "string" && actx.summary.includes("area chart"),
+            "AREA: getContext() includes an NL summary",
+          );
+
+          const aa = JSON.stringify({ ...areaSvgEl.getContext(), renderer: 0 });
+          const ab = JSON.stringify({ ...areaCanvasEl.getContext(), renderer: 0 });
+          log(aa === ab, "AREA: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            areaSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "AREA: a11y table mirror has 3 rows",
+          );
+
+          // THE area colour contract: canvas pixels must reflect consumer CSS fill rgb(180,60,160)
+          const acnv = areaContractEl.querySelector("canvas");
+          let areaContractOk = false;
+          if (acnv) {
+            const c = acnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, acnv.width, acnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] > 155 &&
+                px[i] < 205 &&
+                px[i + 1] > 35 &&
+                px[i + 1] < 85 &&
+                px[i + 2] > 135 &&
+                px[i + 2] < 185 &&
+                px[i + 3] > 0
+              ) {
+                areaContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            areaContractOk,
+            "AREA CANVAS colour contract: consumer CSS rgb(180,60,160) reached canvas pixels",
+          );
+
+          // ---- ScatterPlot checks ----
+          const marks = scatterSvgEl.querySelectorAll(".scatter-point");
+          log(marks.length === 5, `SCATTER: SVG renders 5 point marks (got ${marks.length})`);
+          log(
+            !!scatterSvgEl.querySelector('.scatter-point[data-label-safe="Alpha_One"]'),
+            'SCATTER: mark carries data-label-safe="Alpha_One"',
+          );
+
+          const sctx = scatterSvgEl.getContext();
+          log(
+            sctx && sctx.chartType === "scatter-plot-chart" && sctx.pointCount === 5,
+            "SCATTER: getContext() returns scatter-plot-chart with 5 points",
+          );
+          log(
+            typeof sctx.stats.correlation === "number",
+            `SCATTER: getContext() includes a correlation (r=${sctx.stats.correlation})`,
+          );
+
+          const sa = JSON.stringify({ ...scatterSvgEl.getContext(), renderer: 0 });
+          const sb = JSON.stringify({ ...scatterCanvasEl.getContext(), renderer: 0 });
+          log(sa === sb, "SCATTER: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            scatterSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 5,
+            "SCATTER: a11y table mirror has 5 rows",
+          );
+
+          // THE scatter colour contract: canvas pixels must reflect consumer CSS fill rgb(40,200,120)
+          const scnv = scatterContractEl.querySelector("canvas");
+          let scatterContractOk = false;
+          if (scnv) {
+            const c = scnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, scnv.width, scnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] < 90 &&
+                px[i + 1] > 175 &&
+                px[i + 2] > 95 &&
+                px[i + 2] < 145 &&
+                px[i + 3] > 0
+              ) {
+                scatterContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            scatterContractOk,
+            "SCATTER CANVAS colour contract: consumer CSS rgb(40,200,120) reached canvas pixels",
+          );
+
+          // pointLabels (default off elsewhere - none of the marks above have it) + drawOrder.
+          log(
+            scatterSvgEl.querySelectorAll(".mv-point-label").length === 0,
+            "SCATTER: pointLabels omitted -> zero .mv-point-label nodes",
+          );
+          const pointLabelEls = scatterLabelsEl.querySelectorAll(".mv-point-label");
+          log(
+            pointLabelEls.length > 0,
+            `SCATTER LABELS: renders ${pointLabelEls.length} point label(s) (pointLabels:true)`,
+          );
+          log(
+            !!scatterLabelsEl.querySelector('.mv-point-label[data-label="Alpha One"]'),
+            'SCATTER LABELS: label carries data-label="Alpha One"',
+          );
+          const labelRadii = Array.from(
+            scatterLabelsEl.querySelectorAll("circle.scatter-point"),
+          ).map((c) => Number(c.getAttribute("r")));
+          const sizeDescOk = labelRadii.every((r, i) => i === 0 || labelRadii[i - 1] >= r);
+          log(
+            sizeDescOk,
+            `SCATTER DRAWORDER: drawOrder="sizeDescending" paints largest-first (radii ${JSON.stringify(labelRadii)})`,
+          );
+          const ascRadii = Array.from(
+            scatterAscendingEl.querySelectorAll("circle.scatter-point"),
+          ).map((c) => Number(c.getAttribute("r")));
+          const sizeAscOk = ascRadii.every((r, i) => i === 0 || ascRadii[i - 1] <= r);
+          log(
+            sizeAscOk,
+            `SCATTER DRAWORDER: drawOrder="sizeAscending" paints smallest-first / largest-last-on-top (radii ${JSON.stringify(ascRadii)})`,
+          );
+
+          // ---- VerticalStackBar checks (incl. the hasOwnProperty guard) ----
+          const stackBars = stackSvgEl.querySelectorAll("rect.bar");
+          // 2 datasets x 3 dates x 1 owned segment = 6. The guard suppresses cross-DataSet
+          // stubs; WITHOUT it (with missingDataMarker on) there'd be 12.
+          log(
+            stackBars.length === 6,
+            `STACK: SVG renders 6 bars, no phantom stubs from the guard (got ${stackBars.length})`,
+          );
+          log(
+            !!stackSvgEl.querySelector('rect.bar[data-label-safe="Non_LDC"]'),
+            'STACK: bar carries data-label-safe="Non_LDC"',
+          );
+          log(
+            ![...stackBars].some(
+              (b) =>
+                b.getAttribute("data-label-safe") === "Non_LDC" &&
+                b.getAttribute("data-label") === "Africa",
+            ),
+            "STACK: no Africa-row stub painted in Non-LDC slot",
+          );
+
+          const vctx = stackSvgEl.getContext();
+          log(
+            vctx && vctx.chartType === "vertical-stack-bar-chart" && vctx.keys.length === 2,
+            "STACK: getContext() returns vertical-stack-bar-chart with 2 keys",
+          );
+          log(
+            typeof vctx.summary === "string" && vctx.summary.includes("Stacked bar chart"),
+            "STACK: getContext() includes an NL summary",
+          );
+
+          const va = JSON.stringify({ ...stackSvgEl.getContext(), renderer: 0 });
+          const vb = JSON.stringify({ ...stackCanvasEl.getContext(), renderer: 0 });
+          log(va === vb, "STACK: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            stackSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "STACK: a11y table mirror has 3 rows (dates)",
+          );
+
+          // THE stack colour contract: canvas pixels must reflect consumer CSS fill rgb(230,150,20)
+          const vcnv = stackContractEl.querySelector("canvas");
+          let stackContractOk = false;
+          if (vcnv) {
+            const c = vcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, vcnv.width, vcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] > 205 &&
+                px[i + 1] > 125 &&
+                px[i + 1] < 175 &&
+                px[i + 2] < 60 &&
+                px[i + 3] > 0
+              ) {
+                stackContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            stackContractOk,
+            "STACK CANVAS colour contract: consumer CSS rgb(230,150,20) reached canvas pixels",
+          );
+
+          // ---- ComparableHorizontalBar checks ----
+          const cmpBars = cmpSvgEl.querySelectorAll("rect.bar");
+          log(
+            cmpBars.length === 6,
+            `CMP: SVG renders 6 bars (3 labels x based+compared) (got ${cmpBars.length})`,
+          );
+          log(
+            cmpSvgEl.querySelectorAll("rect.bar.value-based").length === 3 &&
+              cmpSvgEl.querySelectorAll("rect.bar.value-compared").length === 3,
+            "CMP: 3 based + 3 compared sub-bars",
+          );
+          log(
+            !!cmpSvgEl.querySelector('rect.bar[data-label-safe="Alpha_One"]'),
+            'CMP: bar carries data-label-safe="Alpha_One"',
+          );
+
+          const cctx = cmpSvgEl.getContext();
+          log(
+            cctx && cctx.chartType === "comparable-horizontal-bar-chart" && cctx.stats.count === 3,
+            "CMP: getContext() returns comparable-horizontal-bar-chart with 3 items",
+          );
+          log(
+            typeof cctx.summary === "string" && cctx.summary.includes("Comparable horizontal bar"),
+            "CMP: getContext() includes an NL summary",
+          );
+
+          const ca2 = JSON.stringify({ ...cmpSvgEl.getContext(), renderer: 0 });
+          const cb2 = JSON.stringify({ ...cmpCanvasEl.getContext(), renderer: 0 });
+          log(ca2 === cb2, "CMP: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            cmpSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "CMP: a11y table mirror has 3 rows",
+          );
+
+          // THE comparable colour contract: canvas pixels must reflect consumer CSS fill rgb(120,40,200)
+          const ccnv = cmpContractEl.querySelector("canvas");
+          let cmpContractOk = false;
+          if (ccnv) {
+            const c = ccnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, ccnv.width, ccnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (px[i] > 95 && px[i] < 145 && px[i + 1] < 80 && px[i + 2] > 175 && px[i + 3] > 0) {
+                cmpContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            cmpContractOk,
+            "CMP CANVAS colour contract: consumer CSS rgb(120,40,200) reached canvas pixels",
+          );
+
+          // THE comparable DESCENDANT colour contract: thd's real MonitorV2 shape is a
+          // descendant selector keyed on an ancestor `.bar[data-label-safe="X"]` styling
+          // a DESCENDANT `.value-based`/`.value-compared` element (not the same element
+          // as a plain `.bar { fill }` rule). value-based also exercises the
+          // url()-fill-falls-through-to-stroke behaviour. Both sub-bars are rendered at
+          // opacity 1 here so pixels are exact, unblended colours.
+          const cdcnv = cmpDescendantContractEl.querySelector("canvas");
+          let cmpDescendantBasedOk = false;
+          let cmpDescendantComparedOk = false;
+          if (cdcnv) {
+            const c = cdcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, cdcnv.width, cdcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (px[i] < 40 && px[i + 1] > 175 && px[i + 2] < 40 && px[i + 3] > 0)
+                cmpDescendantBasedOk = true;
+              if (
+                px[i] > 195 &&
+                px[i + 1] < 50 &&
+                px[i + 2] > 110 &&
+                px[i + 2] < 170 &&
+                px[i + 3] > 0
+              )
+                cmpDescendantComparedOk = true;
+            }
+          }
+          log(
+            cmpDescendantBasedOk,
+            "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-based { stroke: rgb(10,200,10) }` (url() fill falls through) reached canvas pixels",
+          );
+          log(
+            cmpDescendantComparedOk,
+            "CMP DESCENDANT CANVAS colour contract: `.bar[data-label-safe] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels",
+          );
+
+          // ---- ComparableVerticalBar checks ----
+          const cmpVBars = cmpVSvgEl.querySelectorAll("rect.bar");
+          log(
+            cmpVBars.length === 6,
+            `CMPV: SVG renders 6 bars (3 categories x based+compared) (got ${cmpVBars.length})`,
+          );
+          log(
+            cmpVSvgEl.querySelectorAll("rect.bar.value-based").length === 3 &&
+              cmpVSvgEl.querySelectorAll("rect.bar.value-compared").length === 3,
+            "CMPV: 3 based + 3 compared sub-bars",
+          );
+          log(
+            !!cmpVSvgEl.querySelector('rect.bar[data-label-safe="Alpha_One"]'),
+            'CMPV: bar carries data-label-safe="Alpha_One"',
+          );
+
+          // Fixed z-order (unlike CMP horizontal): valueBased is ALWAYS first/behind, valueCompared ALWAYS second/in front.
+          const cmpVOrder = Array.from(
+            cmpVSvgEl.querySelectorAll('g.data-group[data-label="Alpha One"] rect.bar'),
+          ).map((r) => (r.classList.contains("value-based") ? "based" : "compared"));
+          log(
+            cmpVOrder.length === 2 && cmpVOrder[0] === "based" && cmpVOrder[1] === "compared",
+            `CMPV: FIXED z-order valueBased behind, valueCompared in front (got ${cmpVOrder.join(",")})`,
+          );
+
+          // Full-bandwidth overlay: based and compared share the same x and width for a column.
+          const cmpVGroup = cmpVSvgEl.querySelector('g.data-group[data-label="Alpha One"]');
+          const cmpVBased = cmpVGroup.querySelector("rect.value-based");
+          const cmpVCompared = cmpVGroup.querySelector("rect.value-compared");
+          log(
+            cmpVBased.getAttribute("x") === cmpVCompared.getAttribute("x") &&
+              cmpVBased.getAttribute("width") === cmpVCompared.getAttribute("width"),
+            "CMPV: based/compared share the SAME x and width (full-bandwidth overlay)",
+          );
+
+          // Delta indicator: one .mv-delta glyph+label per category, drawn above the taller bar.
+          log(
+            cmpVSvgEl.querySelectorAll(".mv-delta").length === 3,
+            "CMPV: deltaIndicator renders one .mv-delta per category",
+          );
+
+          const cvctx = cmpVSvgEl.getContext();
+          log(
+            cvctx && cvctx.chartType === "comparable-vertical-bar-chart" && cvctx.stats.count === 3,
+            "CMPV: getContext() returns comparable-vertical-bar-chart with 3 items",
+          );
+          log(
+            typeof cvctx.summary === "string" && cvctx.summary.includes("Comparable vertical bar"),
+            "CMPV: getContext() includes an NL summary",
+          );
+          // Unlike CMP horizontal, this chart's context REFLECTS the delta indicator.
+          const cvAlpha = cvctx.series.find((s) => s.label === "Alpha One");
+          log(
+            cvAlpha && cvAlpha.deltaDirection === "up" && cvAlpha.deltaLabel === "+8",
+            `CMPV: context reflects deltaIndicator (deltaDirection/deltaLabel on series[]) (got ${cvAlpha && cvAlpha.deltaDirection}/${cvAlpha && cvAlpha.deltaLabel})`,
+          );
+
+          const cva2 = JSON.stringify({ ...cmpVSvgEl.getContext(), renderer: 0 });
+          const cvb2 = JSON.stringify({ ...cmpVCanvasEl.getContext(), renderer: 0 });
+          log(cva2 === cvb2, "CMPV: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            cmpVSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "CMPV: a11y table mirror has 3 rows",
+          );
+
+          // THE comparable-vertical colour contract: canvas pixels must reflect consumer CSS fill rgb(30,110,190)
+          const cvcnv = cmpVContractEl.querySelector("canvas");
+          let cmpVContractOk = false;
+          if (cvcnv) {
+            const c = cvcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, cvcnv.width, cvcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] < 60 &&
+                px[i + 1] > 85 &&
+                px[i + 1] < 135 &&
+                px[i + 2] > 165 &&
+                px[i + 3] > 0
+              ) {
+                cmpVContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            cmpVContractOk,
+            "CMPV CANVAS colour contract: consumer CSS rgb(30,110,190) reached canvas pixels",
+          );
+
+          // THE comparable-vertical DESCENDANT colour contract - same thd MonitorV2 shape as CMP horizontal's #cmpDescendantContract.
+          const cvdcnv = cmpVDescendantContractEl.querySelector("canvas");
+          let cmpVDescendantBasedOk = false;
+          let cmpVDescendantComparedOk = false;
+          if (cvdcnv) {
+            const c = cvdcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, cvdcnv.width, cvdcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (px[i] < 40 && px[i + 1] > 175 && px[i + 2] < 40 && px[i + 3] > 0)
+                cmpVDescendantBasedOk = true;
+              if (
+                px[i] > 195 &&
+                px[i + 1] < 50 &&
+                px[i + 2] > 110 &&
+                px[i + 2] < 170 &&
+                px[i + 3] > 0
+              )
+                cmpVDescendantComparedOk = true;
+            }
+          }
+          log(
+            cmpVDescendantBasedOk,
+            'CMPV DESCENDANT CANVAS colour contract: `.bar[data-label-safe="Beta"] .value-based { stroke: rgb(10,200,10) }` (url() fill falls through, Beta\'s based bar is TALLER so it peeks out) reached canvas pixels',
+          );
+          log(
+            cmpVDescendantComparedOk,
+            'CMPV DESCENDANT CANVAS colour contract: `.bar[data-label-safe="Beta"] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels',
+          );
+
+          // ---- DualHorizontalBar checks ----
+          const dualBars = dualSvgEl.querySelectorAll("rect.bar");
+          log(
+            dualBars.length === 6,
+            `DUAL: SVG renders 6 bars (3 labels x value1+value2) (got ${dualBars.length})`,
+          );
+          log(
+            dualSvgEl.querySelectorAll("rect.bar.value1").length === 3 &&
+              dualSvgEl.querySelectorAll("rect.bar.value2").length === 3,
+            "DUAL: 3 value1 (right) + 3 value2 (left) bars",
+          );
+          const dv1 = dualSvgEl.querySelector("rect.bar.value1");
+          const dv2 = dualSvgEl.querySelector("rect.bar.value2");
+          log(
+            dv1 &&
+              dv2 &&
+              Number(dv1.getAttribute("x")) >= 229 &&
+              Number(dv2.getAttribute("x")) <= 231,
+            "DUAL: value1 right of centre, value2 left of centre",
+          );
+
+          const dctx = dualSvgEl.getContext();
+          log(
+            dctx && dctx.chartType === "dual-horizontal-bar-chart" && dctx.stats.count === 3,
+            "DUAL: getContext() returns dual-horizontal-bar-chart with 3 items",
+          );
+
+          const da = JSON.stringify({ ...dualSvgEl.getContext(), renderer: 0 });
+          const db = JSON.stringify({ ...dualCanvasEl.getContext(), renderer: 0 });
+          log(da === db, "DUAL: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            dualSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "DUAL: a11y table mirror has 3 rows",
+          );
+
+          // THE dual colour contract: canvas pixels must reflect consumer CSS fill rgb(0,160,160)
+          const dcnv = dualContractEl.querySelector("canvas");
+          let dualContractOk = false;
+          if (dcnv) {
+            const c = dcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, dcnv.width, dcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] < 60 &&
+                px[i + 1] > 135 &&
+                px[i + 1] < 185 &&
+                px[i + 2] > 135 &&
+                px[i + 2] < 185 &&
+                px[i + 3] > 0
+              ) {
+                dualContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            dualContractOk,
+            "DUAL CANVAS colour contract: consumer CSS rgb(0,160,160) reached canvas pixels",
+          );
+
+          // ---- BarBell checks ----
+          const bellCaps = bellSvgEl.querySelectorAll(".bar-bell-cap");
+          log(
+            bellCaps.length === 6,
+            `BELL: SVG renders 6 end-cap circles (3 rows x 2 keys) (got ${bellCaps.length})`,
+          );
+          log(
+            !!bellSvgEl.querySelector('.bar-bell-cap[data-label-safe="Fruit"]'),
+            'BELL: cap carries data-label-safe="Fruit"',
+          );
+
+          const bctx = bellSvgEl.getContext();
+          log(
+            bctx && bctx.chartType === "bar-bell-chart" && bctx.keys.length === 2,
+            "BELL: getContext() returns bar-bell-chart with 2 keys",
+          );
+          log(
+            typeof bctx.summary === "string" && bctx.summary.includes("Bar-bell chart"),
+            "BELL: getContext() includes an NL summary",
+          );
+
+          const ba = JSON.stringify({ ...bellSvgEl.getContext(), renderer: 0 });
+          const bb = JSON.stringify({ ...bellCanvasEl.getContext(), renderer: 0 });
+          log(ba === bb, "BELL: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            bellSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "BELL: a11y table mirror has 3 rows",
+          );
+
+          // THE bar-bell colour contract: canvas pixels must reflect consumer CSS fill rgb(210,90,40)
+          const bcnv = bellContractEl.querySelector("canvas");
+          let bellContractOk = false;
+          if (bcnv) {
+            const c = bcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, bcnv.width, bcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] > 185 &&
+                px[i] < 235 &&
+                px[i + 1] > 65 &&
+                px[i + 1] < 115 &&
+                px[i + 2] < 70 &&
+                px[i + 3] > 0
+              ) {
+                bellContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            bellContractOk,
+            "BELL CANVAS colour contract: consumer CSS rgb(210,90,40) reached canvas pixels",
+          );
+
+          // ---- RangeChart checks ----
+          const rangeAreas = rangeSvgEl.querySelectorAll("path.area");
+          log(
+            rangeAreas.length === 2,
+            `RANGE: SVG renders 2 band areas (got ${rangeAreas.length})`,
+          );
+          log(
+            !!rangeSvgEl.querySelector('path.area[data-label-safe="Region_A"]'),
+            'RANGE: band carries data-label-safe="Region_A"',
+          );
+
+          const rctx = rangeSvgEl.getContext();
+          log(
+            rctx && rctx.chartType === "range-chart" && rctx.series.length === 2,
+            "RANGE: getContext() returns range-chart with 2 bands",
+          );
+          log(
+            typeof rctx.summary === "string" && rctx.summary.includes("Range chart"),
+            "RANGE: getContext() includes an NL summary",
+          );
+
+          const ra = JSON.stringify({ ...rangeSvgEl.getContext(), renderer: 0 });
+          const rb = JSON.stringify({ ...rangeCanvasEl.getContext(), renderer: 0 });
+          log(ra === rb, "RANGE: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            rangeSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2,
+            "RANGE: a11y table mirror has 2 rows",
+          );
+
+          // THE range colour contract: canvas pixels must reflect consumer CSS fill rgb(70,50,200)
+          const rcnv = rangeContractEl.querySelector("canvas");
+          let rangeContractOk = false;
+          if (rcnv) {
+            const c = rcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, rcnv.width, rcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (px[i] < 110 && px[i + 1] < 90 && px[i + 2] > 175 && px[i + 3] > 0) {
+                rangeContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            rangeContractOk,
+            "RANGE CANVAS colour contract: consumer CSS rgb(70,50,200) reached canvas pixels",
+          );
+
+          // ---- RibbonChart checks ----
+          const ribbonCols = ribbonSvgEl.querySelectorAll("rect.bar");
+          log(
+            ribbonCols.length === 6,
+            `RIBBON: SVG renders 6 stacked columns (3 dates x 2 keys) (got ${ribbonCols.length})`,
+          );
+          log(
+            ribbonSvgEl.querySelectorAll("path.ribbon").length === 4,
+            `RIBBON: 4 connector ribbons (2 gaps x 2 keys) (got ${ribbonSvgEl.querySelectorAll("path.ribbon").length})`,
+          );
+          log(
+            !!ribbonSvgEl.querySelector('rect.bar[data-label-safe="Fruit"]'),
+            'RIBBON: column carries data-label-safe="Fruit"',
+          );
+
+          const ibctx = ribbonSvgEl.getContext();
+          log(
+            ibctx && ibctx.chartType === "ribbon-chart" && ibctx.keys.length === 2,
+            "RIBBON: getContext() returns ribbon-chart with 2 keys",
+          );
+
+          const iba = JSON.stringify({ ...ribbonSvgEl.getContext(), renderer: 0 });
+          const ibb = JSON.stringify({ ...ribbonCanvasEl.getContext(), renderer: 0 });
+          log(iba === ibb, "RIBBON: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            ribbonSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "RIBBON: a11y table mirror has 3 rows",
+          );
+
+          // THE ribbon colour contract: canvas pixels must reflect consumer CSS fill rgb(200,30,90)
+          const ibcnv = ribbonContractEl.querySelector("canvas");
+          let ribbonContractOk = false;
+          if (ibcnv) {
+            const c = ibcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, ibcnv.width, ibcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] > 175 &&
+                px[i + 1] < 70 &&
+                px[i + 2] > 65 &&
+                px[i + 2] < 115 &&
+                px[i + 3] > 0
+              ) {
+                ribbonContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            ribbonContractOk,
+            "RIBBON CANVAS colour contract: consumer CSS rgb(200,30,90) reached canvas pixels",
+          );
+
+          // ---- RadarChart checks ----
+          const radarPolys = radarSvgEl.querySelectorAll("polygon.radar-area");
+          log(
+            radarPolys.length === 2,
+            `RADAR: SVG renders 2 series polygons (got ${radarPolys.length})`,
+          );
+          log(
+            radarPolys[0] && radarPolys[0].getAttribute("points").trim().split(" ").length === 5,
+            "RADAR: polygon has 5 vertices (5 axes)",
+          );
+          log(
+            !!radarSvgEl.querySelector('polygon.radar-area[data-label-safe="Model_A"]'),
+            'RADAR: polygon carries data-label-safe="Model_A"',
+          );
+          log(
+            radarSvgEl.querySelectorAll(".mv-radar-grid line").length === 5,
+            "RADAR: polar grid has 5 spokes",
+          );
+
+          const rdctx = radarSvgEl.getContext();
+          log(
+            rdctx && rdctx.chartType === "radar-chart" && rdctx.axes.length === 5,
+            "RADAR: getContext() returns radar-chart with 5 axes",
+          );
+
+          const rda = JSON.stringify({ ...radarSvgEl.getContext(), renderer: 0 });
+          const rdb = JSON.stringify({ ...radarCanvasEl.getContext(), renderer: 0 });
+          log(rda === rdb, "RADAR: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            radarSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 2,
+            "RADAR: a11y table mirror has 2 rows",
+          );
+
+          // THE radar colour contract: canvas pixels must reflect consumer CSS fill rgb(20,170,90)
+          const rdcnv = radarContractEl.querySelector("canvas");
+          let radarContractOk = false;
+          if (rdcnv) {
+            const c = rdcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, rdcnv.width, rdcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] < 70 &&
+                px[i + 1] > 145 &&
+                px[i + 2] > 65 &&
+                px[i + 2] < 115 &&
+                px[i + 3] > 0
+              ) {
+                radarContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            radarContractOk,
+            "RADAR CANVAS colour contract: consumer CSS rgb(20,170,90) reached canvas pixels",
+          );
+
+          // ---- ChoroplethMap checks ----
+          const choroPaths = choroSvgEl.querySelectorAll("path.region");
+          log(
+            choroPaths.length === 3,
+            `CHORO: SVG renders 3 region paths (got ${choroPaths.length})`,
+          );
+          log(
+            !!choroSvgEl.querySelector('path.region[data-label-safe="Alpha"]'),
+            'CHORO: path carries data-label-safe="Alpha"',
+          );
+
+          const gammaPath = choroSvgEl.querySelector('path.region[data-label="Gamma"]');
+          log(
+            !!gammaPath && gammaPath.getAttribute("fill") === "rgb(200,200,200)",
+            "CHORO: unmatched feature (Gamma) renders noDataColor",
+          );
+
+          const alphaPath = choroSvgEl.querySelector('path.region[data-label="Alpha"]');
+          const betaPath = choroSvgEl.querySelector('path.region[data-label="Beta"]');
+          log(
+            !!alphaPath && alphaPath.getAttribute("fill") === "rgb(230,230,250)",
+            "CHORO: colorScale assigns the low-domain colour (value 10 < 50)",
+          );
+          log(
+            !!betaPath && betaPath.getAttribute("fill") === "rgb(40,40,160)",
+            "CHORO: colorScale assigns the high-domain colour (value 90 >= 50)",
+          );
+
+          const chctx = choroSvgEl.getContext();
+          log(
+            chctx && chctx.chartType === "choropleth-map-chart" && chctx.stats.featureCount === 3,
+            "CHORO: getContext() returns choropleth-map-chart with 3 features",
+          );
+          log(
+            chctx && chctx.stats.matchedCount === 2 && chctx.stats.unmatchedCount === 1,
+            "CHORO: getContext() reports 2 matched / 1 unmatched",
+          );
+          log(
+            chctx && chctx.projection === "geoRobinson",
+            "CHORO: default projection is geoRobinson",
+          );
+          log(
+            chctx && typeof chctx.summary === "string" && chctx.summary.includes("Choropleth"),
+            "CHORO: getContext() includes an NL summary",
+          );
+
+          const cha = JSON.stringify({ ...choroSvgEl.getContext(), renderer: 0 });
+          const chb = JSON.stringify({ ...choroCanvasEl.getContext(), renderer: 0 });
+          log(cha === chb, "CHORO: getContext() identical in SVG vs canvas (renderer aside)");
+
+          log(
+            choroSvgEl.querySelectorAll(".mv-a11y table tbody tr").length === 3,
+            "CHORO: a11y table mirror has 3 rows",
+          );
+
+          // THE choropleth colour contract: canvas pixels must reflect consumer CSS fill rgb(215,40,150)
+          const chcnv = choroContractEl.querySelector("canvas");
+          let choroContractOk = false;
+          if (chcnv) {
+            const c = chcnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, chcnv.width, chcnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] > 195 &&
+                px[i + 1] < 65 &&
+                px[i + 2] > 125 &&
+                px[i + 2] < 175 &&
+                px[i + 3] > 0
+              ) {
+                choroContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            choroContractOk,
+            "CHORO CANVAS colour contract: consumer CSS rgb(215,40,150) reached canvas pixels",
+          );
+
+          // ---- SymbolMap checks ----
+          const symbolCircles = symbolSvgEl.querySelectorAll("circle.symbol");
+          log(
+            symbolCircles.length === 3,
+            `SYMBOL: SVG renders 3 circle.symbol marks (got ${symbolCircles.length})`,
+          );
+          log(
+            !!symbolSvgEl.querySelector('circle.symbol[data-label-safe="Alpha"]'),
+            'SYMBOL: circle carries data-label-safe="Alpha"',
+          );
+          log(
+            symbolSvgEl.querySelectorAll("circle.symbol-second").length === 1,
+            "SYMBOL: exactly 1 concentric second ring (Beta's valueSecond)",
+          );
+          log(
+            symbolSvgEl.querySelectorAll("path.geography").length === 0,
+            "SYMBOL: no backdrop geography by default (dot-only look)",
+          );
+          log(
+            symbolBackdropEl.querySelectorAll("path.geography").length === 3,
+            "SYMBOL: backdrop mode draws 3 muted geography paths",
+          );
+
+          const symCtx = symbolSvgEl.getContext();
+          log(
+            symCtx && symCtx.chartType === "symbol-map-chart" && symCtx.stats.visibleCount === 3,
+            "SYMBOL: getContext() returns symbol-map-chart with 3 visible symbols",
+          );
+          log(
+            symCtx && symCtx.projection === "geoMercator",
+            "SYMBOL: default projection is geoMercator",
+          );
+          log(
+            symCtx && typeof symCtx.summary === "string" && symCtx.summary.includes("Symbol map"),
+            "SYMBOL: getContext() includes an NL summary",
+          );
+
+          const symA = JSON.stringify({ ...symbolSvgEl.getContext(), renderer: 0 });
+          const symB = JSON.stringify({ ...symbolCanvasEl.getContext(), renderer: 0 });
+          log(symA === symB, "SYMBOL: getContext() identical in SVG vs canvas (renderer aside)");
+
+          // THE symbol colour contract: canvas pixels must reflect consumer CSS fill rgb(30,160,220)
+          const symCnv = symbolContractEl.querySelector("canvas");
+          let symbolContractOk = false;
+          if (symCnv) {
+            const c = symCnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, symCnv.width, symCnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] < 60 &&
+                px[i + 1] > 135 &&
+                px[i + 1] < 185 &&
+                px[i + 2] > 195 &&
+                px[i + 3] > 0
+              ) {
+                symbolContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            symbolContractOk,
+            "SYMBOL CANVAS colour contract: consumer CSS rgb(30,160,220) reached canvas pixels",
+          );
+
+          // De-overlap sanity check: two identical-coordinate points must settle to
+          // DIFFERENT pixel centres, at least as far apart as their combined radii
+          // (minus the small forceCollide padding tolerance) - never left stacked.
+          const overlapCircles = Array.from(symbolOverlapEl.querySelectorAll("circle.symbol"));
+          log(
+            overlapCircles.length === 2,
+            `SYMBOL DE-OVERLAP: renders 2 circles (got ${overlapCircles.length})`,
+          );
+          if (overlapCircles.length === 2) {
+            const cells = overlapCircles.map((c) => c.closest("g.symbol-cell"));
+            const coords = cells.map((g) =>
+              g
+                .getAttribute("transform")
+                .match(/-?[\d.]+/g)
+                .map(Number),
+            );
+            const radii = overlapCircles.map((c) => Number(c.getAttribute("r")));
+            const dx = coords[0][0] - coords[1][0];
+            const dy = coords[0][1] - coords[1][1];
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            log(
+              dist > radii[0] + radii[1] - 2,
+              `SYMBOL DE-OVERLAP: two identical-coordinate points end up non-overlapping (dist=${dist.toFixed(1)}, radii sum=${(radii[0] + radii[1]).toFixed(1)})`,
+            );
+          }
+
+          // B3.6 edge-clipping check: every rendered circle (both the primary
+          // circle.symbol AND any concentric circle.symbol-second) must stay fully
+          // inside the plot's inner [0,width]x[0,height] - no negative left/top
+          // extent, no right/bottom extent past the plot bounds. Reads real pixel
+          // geometry off the DOM (g.symbol-cell transform + circle r), same pattern
+          // as the de-overlap check above.
+          const edgeCircles = Array.from(
+            symbolEdgeEl.querySelectorAll("circle.symbol, circle.symbol-second"),
+          );
+          log(
+            edgeCircles.length >= 3,
+            `SYMBOL EDGE: renders at least 3 circles (got ${edgeCircles.length})`,
+          );
+          const edgePlotWidth = symbolCommon.width - 20; // default margin: left 10 + right 10
+          const edgePlotHeight = symbolCommon.height - 50; // default margin: top 40 + bottom 10
+          let edgeAllInBounds = edgeCircles.length > 0;
+          for (const c of edgeCircles) {
+            const cell = c.closest("g.symbol-cell");
+            const [cx, cy] = cell
+              .getAttribute("transform")
+              .match(/-?[\d.]+/g)
+              .map(Number);
+            const r = Number(c.getAttribute("r"));
+            const tol = 0.5; // sub-pixel float tolerance
+            if (
+              cx - r < -tol ||
+              cx + r > edgePlotWidth + tol ||
+              cy - r < -tol ||
+              cy + r > edgePlotHeight + tol
+            ) {
+              edgeAllInBounds = false;
+            }
+          }
+          log(
+            edgeAllInBounds,
+            `SYMBOL EDGE: all ${edgeCircles.length} circles stay within [0,${edgePlotWidth}]x[0,${edgePlotHeight}] (no clipping at plot edges)`,
+          );
+
+          // B3.7 small-circle forgiving hover check - the ONE place this repo can
+          // exercise REAL geometric pointer hit-testing (jsdom vitest dispatches
+          // events directly on elements/coordinates and never actually computes
+          // hit-testing from clientX/clientY, so it can't reproduce the reported bug:
+          // a real pointer landing on a tiny circle finding nothing). Drives a real
+          // MouseEvent at the tiny (r=3) node's true on-screen center via
+          // getBoundingClientRect, in both renderers.
+          const fireMoveAt = (hostEl, clientX, clientY) =>
+            hostEl.dispatchEvent(new MouseEvent("mousemove", { clientX, clientY, bubbles: true }));
+          const tooltipVisible = (chartEl) => {
+            const tip = chartEl.querySelector(".tooltip");
+            return !!tip && tip.style.visibility === "visible";
+          };
+
+          const smallSvgHost = symbolSmallSvgEl.querySelector(".mv-host");
+          const tinyCircleSvg = symbolSmallSvgEl.querySelector('circle.symbol[data-label="Tiny"]');
+          const tinyRectSvg = tinyCircleSvg ? tinyCircleSvg.getBoundingClientRect() : null;
+          log(
+            !!tinyCircleSvg && Number(tinyCircleSvg.getAttribute("r")) === 3,
+            "SYMBOL SMALL-CIRCLE: the tiny node renders at r=3 (below SYMBOL_MIN_HIT_RADIUS=8)",
+          );
+
+          // SVG hover is native per-mark `mouseenter`/`mouseleave` on a descendant
+          // <g> (renderSvg.ts) - a synthetic `dispatchEvent` call from in-page JS
+          // can't reach it (dispatchEvent only visits the given target + its
+          // ANCESTORS, never descendants, and the SVG listener lives on a descendant
+          // `<g>`, not the host). Only a REAL OS-level pointer move (which the
+          // browser resolves via actual hit-testing) can exercise this correctly, so
+          // this is driven from the Node-side Playwright harness
+          // (`scripts/verify-playground.mjs`) via `locator.hover()` (which also
+          // scroll-into-views the target - this card sits far down the page) and
+          // folded into the same pass/fail count. This helper just exposes the
+          // tooltip-visibility read the Node side can't do without an in-page hook.
+          window.__b37TooltipVisible = (id) => tooltipVisible(document.getElementById(id));
+
+          // Canvas mode has no DOM circle to measure - translate the SVG mount's
+          // known offset (relative to ITS OWN host) onto the canvas mount's own host:
+          // the force layout is a deterministic pure function of dataSet+dimensions
+          // (see the "two independent mounts settle to the identical layout" unit
+          // test), so the SAME dataSet+size settles to the SAME relative position in
+          // both mounts, and the offset transfers even though the two cards sit at
+          // different places on the page.
+          const smallCanvasHost = symbolSmallCanvasEl.querySelector(".mv-host");
+          if (tinyRectSvg && smallSvgHost && smallCanvasHost) {
+            const svgHostRect = smallSvgHost.getBoundingClientRect();
+            const offsetX = tinyRectSvg.left + tinyRectSvg.width / 2 - svgHostRect.left;
+            const offsetY = tinyRectSvg.top + tinyRectSvg.height / 2 - svgHostRect.top;
+            const canvasHostRect = smallCanvasHost.getBoundingClientRect();
+            const cx = canvasHostRect.left + offsetX;
+            const cy = canvasHostRect.top + offsetY;
+            fireMoveAt(smallCanvasHost, cx, cy);
+            log(
+              tooltipVisible(symbolSmallCanvasEl),
+              "SYMBOL CANVAS SMALL-CIRCLE: hovering the tiny (r=3) node's exact center shows the tooltip (B3.7 repro fixed)",
+            );
+            fireMoveAt(smallCanvasHost, cx + 6, cy);
+            log(
+              tooltipVisible(symbolSmallCanvasEl),
+              "SYMBOL CANVAS SMALL-CIRCLE: hovering 6px off the tiny node's center still shows the tooltip (forgiving hover)",
+            );
+            fireMoveAt(smallCanvasHost, cx + 300, cy + 300);
+            log(
+              !tooltipVisible(symbolSmallCanvasEl),
+              "SYMBOL CANVAS SMALL-CIRCLE: moving well away hides the tooltip again (forgiveness isn't unbounded)",
+            );
+          }
+
+          // ---- RadialTree checks ----
+          const radialCircles = radialSvgEl.querySelectorAll("circle.radial-tree-node-circle");
+          log(
+            radialCircles.length === 6,
+            `RADIAL: SVG renders 6 circles - 2 groups + 4 leaves (got ${radialCircles.length})`,
+          );
+          log(
+            radialSvgEl.querySelectorAll("path.radial-tree-link").length === 6,
+            "RADIAL: renders 6 dendrogram links",
+          );
+          log(
+            !!radialSvgEl.querySelector(
+              'circle.radial-tree-node-circle[data-label-safe="Sectors"]',
+            ),
+            'RADIAL: circle carries data-label-safe="Sectors" (colour keyed by the GROUP)',
+          );
+          log(
+            !!radialSvgEl.querySelector(".radial-tree-center-circle"),
+            "RADIAL: draws a centre circle when centerLabel is set",
+          );
+          const centerLines = Array.from(
+            radialSvgEl.querySelectorAll(".radial-tree-center-label tspan"),
+          ).map((t) => t.textContent);
+          log(
+            centerLines.join(" ") === "Total Trade",
+            `RADIAL: centre label word-wraps to ["Total","Trade"] (got ${JSON.stringify(centerLines)})`,
+          );
+
+          const radCtx = radialSvgEl.getContext();
+          log(
+            radCtx &&
+              radCtx.chartType === "radial-tree-chart" &&
+              radCtx.stats.leafCount === 4 &&
+              radCtx.stats.groupCount === 2,
+            "RADIAL: getContext() returns radial-tree-chart with 4 leaves / 2 groups",
+          );
+          log(
+            radCtx && typeof radCtx.summary === "string" && radCtx.summary.includes("Radial tree"),
+            "RADIAL: getContext() includes an NL summary",
+          );
+
+          const radA = JSON.stringify({ ...radialSvgEl.getContext(), renderer: 0 });
+          const radB = JSON.stringify({ ...radialCanvasEl.getContext(), renderer: 0 });
+          log(radA === radB, "RADIAL: getContext() identical in SVG vs canvas (renderer aside)");
+
+          // Label-density check: past rotateAbove (25 leaves > 20), every label abbreviates
+          // to its own first 3 characters + "." and none of the original names remain.
+          const denseNames = Array.from(
+            radialDenseEl.querySelectorAll("tspan.radial-tree-label-name"),
+          ).map((t) => t.textContent);
+          log(
+            denseNames.length > 0 && denseNames.every((n) => /^.{1,3}\.$/.test(n)),
+            `RADIAL DENSITY: all ${denseNames.length} labels abbreviate to <=3 chars + "." past rotateAbove`,
+          );
+
+          // THE radial-tree colour contract: canvas pixels must reflect consumer CSS fill rgb(230,70,20)
+          const radCnv = radialContractEl.querySelector("canvas");
+          let radialContractOk = false;
+          if (radCnv) {
+            const c = radCnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, radCnv.width, radCnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] > 205 &&
+                px[i + 1] < 95 &&
+                px[i + 1] > 45 &&
+                px[i + 2] < 45 &&
+                px[i + 3] > 0
+              ) {
+                radialContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            radialContractOk,
+            "RADIAL CANVAS colour contract: consumer CSS rgb(230,70,20) reached canvas pixels",
+          );
+
+          // ---- Treemap checks ----
+          const treemapTiles = treemapSvgEl.querySelectorAll("rect.tile");
+          log(
+            treemapTiles.length === 3,
+            `TREEMAP: SVG renders 3 tiles (got ${treemapTiles.length})`,
+          );
+          log(
+            !!treemapSvgEl.querySelector('rect.tile[data-label-safe="Coffee"]'),
+            'TREEMAP: tile carries data-label-safe="Coffee"',
+          );
+
+          const tmCtx = treemapSvgEl.getContext();
+          log(
+            tmCtx && tmCtx.chartType === "treemap-chart" && tmCtx.leaves.length === 3,
+            "TREEMAP: getContext() returns treemap-chart with 3 leaves",
+          );
+
+          const tmA = JSON.stringify({ ...treemapSvgEl.getContext(), renderer: 0 });
+          const tmB = JSON.stringify({ ...treemapCanvasEl.getContext(), renderer: 0 });
+          log(tmA === tmB, "TREEMAP: getContext() identical in SVG vs canvas (renderer aside)");
+
+          // tileValueLabels: default-off has none; the dedicated element (tileValueLabels:true) shows one per big-enough tile.
+          log(
+            treemapSvgEl.querySelectorAll(".tile-value-label").length === 0,
+            "TREEMAP: tileValueLabels omitted -> zero .tile-value-label nodes",
+          );
+          const treemapValueLabelEls = treemapValueLabelsEl.querySelectorAll(".tile-value-label");
+          log(
+            treemapValueLabelEls.length > 0,
+            `TREEMAP VALUE LABELS: renders ${treemapValueLabelEls.length} value label(s) (tileValueLabels:true)`,
+          );
+          const coffeeTile = treemapValueLabelsEl.querySelector(
+            'rect.tile[data-label-safe="Coffee"]',
+          );
+          const coffeeValueLabel =
+            coffeeTile && coffeeTile.closest(".tile-cell").querySelector(".tile-value-label");
+          log(
+            !!coffeeValueLabel &&
+              /100/.test(coffeeValueLabel.textContent) &&
+              /50%/.test(coffeeValueLabel.textContent),
+            `TREEMAP VALUE LABELS: Coffee (100 of 200 total) shows "100 (50%)" (got "${coffeeValueLabel && coffeeValueLabel.textContent}")`,
+          );
+
+          // THE treemap colour contract: canvas pixels must reflect consumer CSS fill rgb(230,60,180)
+          const tmCnv = treemapContractEl.querySelector("canvas");
+          let treemapContractOk = false;
+          if (tmCnv) {
+            const c = tmCnv.getContext("2d");
+            const { data: px } = c.getImageData(0, 0, tmCnv.width, tmCnv.height);
+            for (let i = 0; i < px.length; i += 4) {
+              if (
+                px[i] > 205 &&
+                px[i + 1] < 95 &&
+                px[i + 1] > 35 &&
+                px[i + 2] > 155 &&
+                px[i + 3] > 0
+              ) {
+                treemapContractOk = true;
+                break;
+              }
+            }
+          }
+          log(
+            treemapContractOk,
+            "TREEMAP CANVAS colour contract: consumer CSS rgb(230,60,180) reached canvas pixels",
+          );
+        } catch (e) {
+          log(false, "exception: " + (e && e.message));
+        }
+
+        const passed = out.filter((l) => l.startsWith("✅")).length;
+        document.getElementById("results").innerHTML =
+          out
+            .map((l) => `<span class="${l.startsWith("✅") ? "pass" : "fail"}">${l}</span>`)
+            .join("\n") + `\n\n${passed}/${out.length} checks passed.`;
+      }
+
+      if (location.protocol === "file:") {
+        __RESULTS.textContent =
+          "⚠ Open this page over http, not file:// - browsers block ES-module imports on file://.\n" +
+          "Serve the repo root, e.g.  python3 -m http.server 8080  (or an nginx Docker container),\n" +
+          "then open  http://localhost:8080/playground/";
+      } else {
+        runPlayground().catch((e) => {
+          __RESULTS.textContent =
+            "Playground failed to load: " +
+            (e && e.message) +
+            "\nIf the wc bundle is missing, build it:  pnpm --filter @michi-vz/wc build";
+        });
+      }
+    </script>
+  </body>
 </html>

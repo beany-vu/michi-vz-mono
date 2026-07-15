@@ -27,7 +27,7 @@ export function drawRibbonWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RibbonRenderModel,
-  o: RibbonWebgpuOptions
+  o: RibbonWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME probe canvas mode uses (rect.bar[data-label-safe]).
   const keys = [...new Set(model.columns.map((c) => c.key))];
@@ -37,7 +37,7 @@ export function drawRibbonWebgpu(
     keys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
   const colorOf = (key: string, fb: string): string => fillColors.get(key) || fb;
 
@@ -67,7 +67,7 @@ export function drawRibbonWebgpu(
         [rx, bottom1],
         [lx, bottom2],
       ],
-      c
+      c,
     );
   }
 
@@ -87,7 +87,7 @@ export function drawRibbonWebgpu(
  * (built in ribbonChart/renderModel.ts) back into its four corner y-values.
  */
 function parseRibbonPath(
-  path: string
+  path: string,
 ): { rx: number; lx: number; top1: number; top2: number; bottom1: number; bottom2: number } | null {
   const nums = path.match(/-?\d+(?:\.\d+)?/g);
   if (!nums || nums.length < 8) return null;

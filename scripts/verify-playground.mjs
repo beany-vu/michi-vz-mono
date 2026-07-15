@@ -12,7 +12,12 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".map": "application/json" };
+const MIME = {
+  ".html": "text/html",
+  ".js": "text/javascript",
+  ".css": "text/css",
+  ".map": "application/json",
+};
 
 const server = createServer(async (req, res) => {
   try {
@@ -38,9 +43,12 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(url, { waitUntil: "networkidle" });
-  await page.waitForFunction(() => document.getElementById("results")?.textContent?.includes("checks passed"), {
-    timeout: 15000,
-  });
+  await page.waitForFunction(
+    () => document.getElementById("results")?.textContent?.includes("checks passed"),
+    {
+      timeout: 15000,
+    },
+  );
   const text = await page.$eval("#results", (el) => el.textContent);
   console.log("\n" + text + "\n");
   if (errors.length) console.log("page errors:\n" + errors.join("\n"));
@@ -60,7 +68,8 @@ try {
   // - exactly what jsdom vitest tests cannot do, and the only way to prove
   // the reported bug (tiny circles finding nothing on hover) is actually
   // fixed for the SVG renderer.
-  const tooltipVisible = () => page.evaluate((id) => window.__b37TooltipVisible(id), "symbolSmallSvg");
+  const tooltipVisible = () =>
+    page.evaluate((id) => window.__b37TooltipVisible(id), "symbolSmallSvg");
   const tinyLocator = page.locator('#symbolSmallSvg circle.symbol[data-label="Tiny"]');
   const extra = [];
   if ((await tinyLocator.count()) > 0) {
@@ -71,14 +80,26 @@ try {
     // too, and the `g.symbol-cell` listener fires regardless of which of its
     // painted children the browser resolves as the topmost hit target.
     await tinyLocator.hover({ force: true });
-    extra.push(["SYMBOL SVG SMALL-CIRCLE (real pointer): hovering the tiny (r=3) node's exact center shows the tooltip (B3.7 repro fixed)", await tooltipVisible()]);
+    extra.push([
+      "SYMBOL SVG SMALL-CIRCLE (real pointer): hovering the tiny (r=3) node's exact center shows the tooltip (B3.7 repro fixed)",
+      await tooltipVisible(),
+    ]);
     const box = await tinyLocator.boundingBox();
     await tinyLocator.hover({ position: { x: box.width / 2 + 6, y: box.height / 2 }, force: true });
-    extra.push(["SYMBOL SVG SMALL-CIRCLE (real pointer): hovering 6px off the tiny node's center still shows the tooltip (forgiving hover)", await tooltipVisible()]);
+    extra.push([
+      "SYMBOL SVG SMALL-CIRCLE (real pointer): hovering 6px off the tiny node's center still shows the tooltip (forgiving hover)",
+      await tooltipVisible(),
+    ]);
     await page.mouse.move(1, 1);
-    extra.push(["SYMBOL SVG SMALL-CIRCLE (real pointer): moving well away hides the tooltip again (forgiveness isn't unbounded)", !(await tooltipVisible())]);
+    extra.push([
+      "SYMBOL SVG SMALL-CIRCLE (real pointer): moving well away hides the tooltip again (forgiveness isn't unbounded)",
+      !(await tooltipVisible()),
+    ]);
   } else {
-    extra.push(["SYMBOL SVG SMALL-CIRCLE (real pointer): tiny node's circle.symbol was not found in the page", false]);
+    extra.push([
+      "SYMBOL SVG SMALL-CIRCLE (real pointer): tiny node's circle.symbol was not found in the page",
+      false,
+    ]);
   }
   for (const [msg, ok] of extra) {
     console.log(`${ok ? "✅ PASS" : "❌ FAIL"}  ${msg}`);

@@ -69,7 +69,8 @@ export function cssColorToPremultiplied(css: string | undefined | null): RGBA {
       const g = parseFloat(parts[1]);
       const b = parseFloat(parts[2]);
       const a = parts.length >= 4 ? parseFloat(parts[3]) : 1;
-      if (![r, g, b, a].some(Number.isNaN)) return premultiply(r, g, b, Math.max(0, Math.min(1, a)));
+      if (![r, g, b, a].some(Number.isNaN))
+        return premultiply(r, g, b, Math.max(0, Math.min(1, a)));
     }
   }
 

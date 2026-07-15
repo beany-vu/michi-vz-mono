@@ -71,7 +71,13 @@ export const RotatedAxis: Story = {
  * the single largest of the two grouped series. The legend mirrors the kept bars.
  */
 export const TopNGroups: Story = {
-  args: { ...grouped, filter: { limit: 1, sortingDir: "desc" }, width: 820, height: 480, renderer: "svg" },
+  args: {
+    ...grouped,
+    filter: { limit: 1, sortingDir: "desc" },
+    width: 820,
+    height: 480,
+    renderer: "svg",
+  },
 };
 
 /**

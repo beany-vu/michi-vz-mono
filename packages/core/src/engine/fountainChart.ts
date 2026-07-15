@@ -111,7 +111,7 @@ function checkData(dataSet: FountainDataItem[]): DataWarning[] {
 export function mountFountainChart(
   host: HTMLElement,
   initial: FountainChartProps,
-  opts?: MountOptions<FountainChartProps>
+  opts?: MountOptions<FountainChartProps>,
 ): ChartInstance<FountainChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-fountain-chart");
@@ -243,14 +243,14 @@ export function mountFountainChart(
       props.dataSet,
       props.xAxisDataType,
       props.disabledItems,
-      props.yAxisDomain
+      props.yAxisDomain,
     );
 
     const colors = buildFountainColors(
       processed.items,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -271,7 +271,7 @@ export function mountFountainChart(
       r.width,
       r.height,
       margin,
-      processed.temporalType
+      processed.temporalType,
     );
 
     // Snapshot (band) x-axis layout, same policy as the stack/bar charts: fit
@@ -289,7 +289,7 @@ export function mountFountainChart(
       if (bandAxis.mode === "rotated") {
         const maxLabelWidth = bandAxis.tickValues.reduce(
           (m, v) => Math.max(m, measureLabelWidth(String(xFormat(v)))),
-          0
+          0,
         );
         // 25 (axis offset) + 14 (label translate) + label·sin45 + 12 (descender pad)
         const required = Math.ceil(25 + 14 + maxLabelWidth * Math.SQRT1_2 + 12);
@@ -304,23 +304,30 @@ export function mountFountainChart(
             r.width,
             r.height,
             margin,
-            processed.temporalType
+            processed.temporalType,
           );
         }
       }
     }
 
-    model = buildFountainRenderModel(processed.items, processed.mode, processed.temporalType, scales, colors, {
-      style: r.style,
-      frothLayers: r.frothLayers,
-      bloomExponent: r.bloomExponent,
-      stemFraction: r.stemFraction,
-      showDroplets: r.showDroplets,
-      showMist: r.showMist,
-      showTrendLine: r.showTrendLine,
-      highlightItems: props.highlightItems ?? [],
-      maxDensity: processed.maxDensity,
-    });
+    model = buildFountainRenderModel(
+      processed.items,
+      processed.mode,
+      processed.temporalType,
+      scales,
+      colors,
+      {
+        style: r.style,
+        frothLayers: r.frothLayers,
+        bloomExponent: r.bloomExponent,
+        stemFraction: r.stemFraction,
+        showDroplets: r.showDroplets,
+        showMist: r.showMist,
+        showTrendLine: r.showTrendLine,
+        highlightItems: props.highlightItems ?? [],
+        maxDensity: processed.maxDensity,
+      },
+    );
 
     const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
 
@@ -328,7 +335,8 @@ export function mountFountainChart(
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
     if (processed.mode === "trend" && scales.xLinear && processed.temporalType) {
-      const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(processed.temporalType, props.locale);
+      const xFormat =
+        props.xAxisFormat ?? defaultXAxisFormatter(processed.temporalType, props.locale);
       renderXAxisLinear(svg, scales.xLinear, {
         width: r.width,
         height: r.height,
@@ -378,7 +386,7 @@ export function mountFountainChart(
             tooltip.classList.add("sticky");
             showTooltip(jet, ev);
           },
-        }
+        },
       );
     }
 
@@ -386,7 +394,8 @@ export function mountFountainChart(
     // var(--michi-vz-ink, currentColor) instead of a hardcoded grey (also read by
     // the progressive-draw canvas redraw below, painted or not).
     const cs = getComputedStyle(host);
-    const inkColor = (cs.getPropertyValue("--michi-vz-ink") || "").trim() || cs.color || "rgba(130,130,130,1)";
+    const inkColor =
+      (cs.getPropertyValue("--michi-vz-ink") || "").trim() || cs.color || "rgba(130,130,130,1)";
 
     if (isPainted(r.renderer)) {
       if (r.renderer === "webgpu") {
@@ -430,7 +439,13 @@ export function mountFountainChart(
       endPx: r.width,
       canvasRedraw:
         r.renderer === "canvas"
-          ? (x) => drawFountainCanvas(canvas, svg, model!, { width: r.width, height: r.height, inkColor, revealX: x })
+          ? (x) =>
+              drawFountainCanvas(canvas, svg, model!, {
+                width: r.width,
+                height: r.height,
+                inkColor,
+                revealX: x,
+              })
           : undefined,
     });
 
@@ -462,7 +477,12 @@ export function mountFountainChart(
         canvasRedraw:
           r.renderer === "canvas"
             ? (x) =>
-                drawFountainCanvas(canvas, svg, model!, { width: r.width, height: r.height, inkColor, revealX: x })
+                drawFountainCanvas(canvas, svg, model!, {
+                  width: r.width,
+                  height: r.height,
+                  inkColor,
+                  revealX: x,
+                })
             : undefined,
       });
     } else {

@@ -68,7 +68,8 @@ export interface TreemapRenderModel {
    * extra). Already bound to the resolved value formatter + a leaf ->
    * TreemapLeafContext conversion by the engine (see engine/treemapChart.ts),
    * so the renderers just call it with (value, fractionOfTotal, leaf). */
-  tileValueLabelFormatter: ((value: number, fractionOfTotal: number, leaf: TreemapLeafMark) => string) | null;
+  tileValueLabelFormatter:
+    ((value: number, fractionOfTotal: number, leaf: TreemapLeafMark) => string) | null;
 }
 
 export interface BuildTreemapModelOptions {
@@ -80,13 +81,14 @@ export interface BuildTreemapModelOptions {
   paddingTop: number;
   highlightItems: string[];
   /** @see TreemapRenderModel["tileValueLabelFormatter"] */
-  tileValueLabelFormatter?: ((value: number, fractionOfTotal: number, leaf: TreemapLeafMark) => string) | null;
+  tileValueLabelFormatter?:
+    ((value: number, fractionOfTotal: number, leaf: TreemapLeafMark) => string) | null;
 }
 
 export function buildTreemapRenderModel(
   laidOut: LaidOutNode[],
   colors: TreemapColorResolver,
-  o: BuildTreemapModelOptions
+  o: BuildTreemapModelOptions,
 ): TreemapRenderModel {
   const ml = o.margin.left;
   const mt = o.margin.top;

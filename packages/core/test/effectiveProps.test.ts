@@ -5,7 +5,7 @@ describe("resolveEffectiveProps", () => {
   it("merges colorsMapping with prop winning per-label", () => {
     const out = resolveEffectiveProps(
       { colorsMapping: { A: "#prop" } },
-      { colorsMapping: { A: "#state", B: "#state" } }
+      { colorsMapping: { A: "#state", B: "#state" } },
     );
     expect(out.colorsMapping).toEqual({ A: "#prop", B: "#state" });
   });
@@ -13,7 +13,7 @@ describe("resolveEffectiveProps", () => {
   it("fills highlight/disabled/fontFamily/singlePointLine from state only when prop is absent", () => {
     const out = resolveEffectiveProps(
       { highlightItems: ["P"] },
-      { highlightItems: ["S"], disabledItems: ["D"], fontFamily: "Museo", singlePointLine: true }
+      { highlightItems: ["S"], disabledItems: ["D"], fontFamily: "Museo", singlePointLine: true },
     );
     expect(out.highlightItems).toEqual(["P"]); // prop wins
     expect(out.disabledItems).toEqual(["D"]); // filled from state

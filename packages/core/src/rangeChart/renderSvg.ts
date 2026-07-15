@@ -18,7 +18,7 @@ export function renderRangeSvg(
   parent: SVGElement,
   model: RangeRenderModel,
   o: RangeSvgOptions,
-  ia: RangeInteractions
+  ia: RangeInteractions,
 ): void {
   const root = svgEl("g", { class: "range-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
@@ -54,7 +54,7 @@ export function renderRangeSvg(
           stroke: s.color,
           "stroke-width": 1.5,
           opacity: 0.9,
-        })
+        }),
       );
     }
     root.appendChild(g);

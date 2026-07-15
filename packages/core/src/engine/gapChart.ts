@@ -13,11 +13,7 @@ import { buildGapColors } from "../gapChart/colors";
 import { createGapScales } from "../gapChart/scales";
 import { buildGapRenderModel } from "../gapChart/renderModel";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
-import {
-  renderGapSvg,
-  buildGapLegendItems,
-  renderGapLegend,
-} from "../gapChart/renderSvg";
+import { renderGapSvg, buildGapLegendItems, renderGapLegend } from "../gapChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawGapCanvas } from "../gapChart/renderCanvas";
 import { drawGapWebgpu } from "../gapChart/renderWebgpu";
@@ -51,12 +47,10 @@ import type {
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 150, bottom: 100, left: 150 };
 
-
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
 // the host-level hit-test path. svg does not.
 type GapRenderer = "svg" | "canvas" | "webgpu";
-const isPainted = (rr: GapRenderer): boolean =>
-  rr === "canvas" || rr === "webgpu";
+const isPainted = (rr: GapRenderer): boolean => rr === "canvas" || rr === "webgpu";
 
 interface Resolved {
   width: number;
@@ -194,8 +188,7 @@ export function mountGapChart(
   let canvasModel: ReturnType<typeof buildGapRenderModel> | null = null;
   const onHostMove = (ev: MouseEvent): void => {
     if (scrubbing) return;
-    if (!isPainted(resolve(baseProps).renderer) || !canvasModel || sticky)
-      return;
+    if (!isPainted(resolve(baseProps).renderer) || !canvasModel || sticky) return;
     const rect = svg.getBoundingClientRect();
     const x = ev.clientX - rect.left;
     const y = ev.clientY - rect.top;
@@ -259,12 +252,11 @@ export function mountGapChart(
     // Timeline (opt-in): swap in the active period's rows; the user's own filter
     // still applies within the period (its `date` is neutralized while playing).
     const tlData = engineTl.beforeRender(r.timeline, props.dataSet, props.filter);
-    const { processedDataSet, yAxisDomain, xAxisDomain: derivedXDomain } = processGapChartData(
-      tlData.dataSet,
-      tlData.filter,
-      disabledItems,
-      explicitTickValues,
-    );
+    const {
+      processedDataSet,
+      yAxisDomain,
+      xAxisDomain: derivedXDomain,
+    } = processGapChartData(tlData.dataSet, tlData.filter, disabledItems, explicitTickValues);
     // Explicit [min, max] wins over the derived zero-baseline domain (e.g. to zoom
     // a life-expectancy story into its 35-90 band instead of anchoring at 0).
     const xAxisDomain = props.xAxisDomain ?? derivedXDomain;
@@ -316,8 +308,7 @@ export function mountGapChart(
     );
     canvasModel = model;
 
-    const xFormat =
-      props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
+    const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
     const yFormat = props.yAxisFormat ?? ((d: number | string) => String(d));
 
     // ----- SVG layer (axes + title always; marks only in svg mode) -----
@@ -374,7 +365,8 @@ export function mountGapChart(
               if (!el) return;
               showTooltip(
                 el.d,
-                (pointer as MouseEvent) ?? labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY)
+                (pointer as MouseEvent) ??
+                  labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY),
               );
               props.onHighlightItem?.(el.d);
             },
@@ -390,7 +382,8 @@ export function mountGapChart(
               tooltip.classList.add("sticky");
               showTooltip(
                 el.d,
-                (pointer as MouseEvent) ?? labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY)
+                (pointer as MouseEvent) ??
+                  labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY),
               );
             },
           }
@@ -428,8 +421,7 @@ export function mountGapChart(
 
     // ----- Canvas / WebGPU layer -----
     if (r.renderer === "webgpu") {
-      if (!webgpuCanvas)
-        webgpuCanvas = makeLayerCanvas("gapChart-webgpu-canvas");
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("gapChart-webgpu-canvas");
       const painted = drawGapWebgpu(webgpuCanvas, svg, model, {
         width: r.width,
         height: r.height,

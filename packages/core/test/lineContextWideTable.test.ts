@@ -7,12 +7,23 @@ import type { LineDataItem } from "../src/types";
 // One row per series is missing a period on purpose (Beta has no 2021) to prove the
 // wide table fills gaps with "-".
 const dataSet: LineDataItem[] = [
-  { label: "Alpha", color: "#f00", series: [
-    { date: 2020, value: 10 }, { date: 2021, value: 12 }, { date: 2022, value: 15 },
-  ] },
-  { label: "Beta", color: "#00f", series: [
-    { date: 2020, value: 5 }, { date: 2022, value: 9 },
-  ] },
+  {
+    label: "Alpha",
+    color: "#f00",
+    series: [
+      { date: 2020, value: 10 },
+      { date: 2021, value: 12 },
+      { date: 2022, value: 15 },
+    ],
+  },
+  {
+    label: "Beta",
+    color: "#00f",
+    series: [
+      { date: 2020, value: 5 },
+      { date: 2022, value: 9 },
+    ],
+  },
 ];
 
 const input = {
@@ -43,7 +54,14 @@ describe("buildLineContext a11yTable (wide per-period)", () => {
 
   it("labels date_annual year-integer periods as YEARS, not 1970 (epoch trap)", () => {
     const annual: LineDataItem[] = [
-      { label: "A", color: "#000", series: [{ date: 2005, value: 1 }, { date: 2010, value: 2 }] },
+      {
+        label: "A",
+        color: "#000",
+        series: [
+          { date: 2005, value: 1 },
+          { date: 2010, value: 2 },
+        ],
+      },
     ];
     const ctx = buildLineContext({
       renderer: "svg",

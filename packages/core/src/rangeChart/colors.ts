@@ -12,14 +12,16 @@ export function buildRangeColors(
   items: RangeDataItem[],
   colors: string[] = [],
   colorsMapping?: Record<string, string>,
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): RangeColorResolver {
   const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
   for (const it of items) {
     if (generated[it.label]) continue;
-    generated[it.label] = skipColorMappingDispatch ? "transparent" : it.color ?? palette[i % palette.length];
+    generated[it.label] = skipColorMappingDispatch
+      ? "transparent"
+      : (it.color ?? palette[i % palette.length]);
     i++;
   }
   return { getColor: (l) => generated[l] || palette[0], generatedColorsMapping: generated };

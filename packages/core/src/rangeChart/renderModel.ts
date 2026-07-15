@@ -28,7 +28,7 @@ export function buildRangeRenderModel(
   items: RangeDataItem[],
   scales: LineScales,
   colors: RangeColorResolver,
-  o: BuildRangeModelOptions
+  o: BuildRangeModelOptions,
 ): RangeRenderModel {
   const area = makeRangeAreaGenerator(scales.xScale, scales.yScale, o.xAxisDataType, o.curve);
   const median = makeRangeMedianGenerator(scales.xScale, scales.yScale, o.xAxisDataType, o.curve);

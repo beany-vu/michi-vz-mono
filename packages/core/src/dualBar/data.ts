@@ -16,7 +16,7 @@ export interface ProcessedDual {
 
 export function processDualBarData(
   dataSet: DualBarDataPoint[],
-  opts: ProcessDualOptions
+  opts: ProcessDualOptions,
 ): ProcessedDual {
   const disabled = new Set(opts.disabledItems ?? []);
   let points = dataSet.filter((d) => !disabled.has(d.label));
@@ -33,5 +33,9 @@ export function processDualBarData(
     if (Number.isFinite(d.value2) && d.value2 > hi) hi = d.value2;
   }
 
-  return { points, labels: points.map((d) => d.label), xAxisDomain: opts.xAxisDomain ?? [0, hi || 1] };
+  return {
+    points,
+    labels: points.map((d) => d.label),
+    xAxisDomain: opts.xAxisDomain ?? [0, hi || 1],
+  };
 }

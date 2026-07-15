@@ -109,8 +109,22 @@ describe("mountAreaChart - webgpu renderer (capability gate + fallback)", () => 
     setGpu(true);
     const { host, chart } = mount({ renderer: "webgpu" });
     expect(() => {
-      chart.update({ series, keys, width: 600, height: 300, xAxisDataType: "number", renderer: "svg" });
-      chart.update({ series, keys, width: 600, height: 300, xAxisDataType: "number", renderer: "webgpu" });
+      chart.update({
+        series,
+        keys,
+        width: 600,
+        height: 300,
+        xAxisDataType: "number",
+        renderer: "svg",
+      });
+      chart.update({
+        series,
+        keys,
+        width: 600,
+        height: 300,
+        xAxisDataType: "number",
+        renderer: "webgpu",
+      });
     }).not.toThrow();
     expect(host.querySelectorAll("path.area").length).toBe(0);
     chart.destroy();

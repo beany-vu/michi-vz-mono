@@ -17,7 +17,12 @@ import type {
   RangeDataItem,
   RangeDataPoint,
 } from "@michi-vz/core";
-import { computeForecast, type ForecastMethod, type ForecastOptions, type ForecastResult } from "./compute";
+import {
+  computeForecast,
+  type ForecastMethod,
+  type ForecastOptions,
+  type ForecastResult,
+} from "./compute";
 import { linearFit } from "./methods";
 import { getForecastAdapter } from "./adapters";
 
@@ -183,7 +188,11 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
             label: `${item.label} (trend)`,
             series: [
               { date: xs[0], value: round(intercept), certainty: true },
-              { date: lastX, value: round(slope * (values.length - 1) + intercept), certainty: true },
+              {
+                date: lastX,
+                value: round(slope * (values.length - 1) + intercept),
+                certainty: true,
+              },
             ],
           });
         }
@@ -212,7 +221,10 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
       if (ctx.chartType !== "line-chart") {
         // adapter charts: a generic forecast note (the appended data is the forecast).
         if (lastAdapterHorizon > 0 && getForecastAdapter(ctx.chartType)) {
-          return { ...ctx, summary: `${ctx.summary} Forecast extended ${lastAdapterHorizon} periods.` };
+          return {
+            ...ctx,
+            summary: `${ctx.summary} Forecast extended ${lastAdapterHorizon} periods.`,
+          };
         }
         return ctx;
       }
@@ -228,7 +240,8 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
         let s = `${label} projected to ${last} by ${endX} (${sf.result.method}, ${acc})`;
         if (threshold) {
           const cx = crossingX(sf, threshold.value);
-          if (cx != null) s += `, crosses ${threshold.label ?? threshold.value} around ${round(cx)}`;
+          if (cx != null)
+            s += `, crosses ${threshold.label ?? threshold.value} around ${round(cx)}`;
         }
         parts.push(s);
       }
@@ -248,15 +261,33 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
         end = Math.max(end, sf.lastX + sf.step * horizon);
       }
       if (showZone && Number.isFinite(boundary) && end > boundary) {
-        anns.push({ type: "xband", at: boundary, at2: end, label: "forecast", color: "#64748b", opacity: 0.1 });
+        anns.push({
+          type: "xband",
+          at: boundary,
+          at2: end,
+          label: "forecast",
+          color: "#64748b",
+          opacity: 0.1,
+        });
       }
 
       // Threshold/goal line + the "fall point" where the forecast crosses it.
       if (threshold) {
-        anns.push({ type: "hline", value: threshold.value, label: threshold.label ?? `Target ${threshold.value}`, dashed: true });
+        anns.push({
+          type: "hline",
+          value: threshold.value,
+          label: threshold.label ?? `Target ${threshold.value}`,
+          dashed: true,
+        });
         for (const [, sf] of results) {
           const cx = crossingX(sf, threshold.value);
-          if (cx != null) anns.push({ type: "point", at: round(cx), value: threshold.value, label: "fall point" });
+          if (cx != null)
+            anns.push({
+              type: "point",
+              at: round(cx),
+              value: threshold.value,
+              label: "fall point",
+            });
         }
       }
       return anns;
@@ -294,7 +325,7 @@ export function forecast(options: ForecastPluginOptions = {}): MichiVzPlugin<any
 export function forecastFanBands(
   series: DataPoint[],
   opts: ForecastPluginOptions = {},
-  baseLabel = "forecast"
+  baseLabel = "forecast",
 ): RangeDataItem[] {
   const xs = numericDates(series);
   if (!xs) return [];
@@ -335,7 +366,7 @@ export function forecastFanBands(
 export function forecastFan(
   history: DataPoint[],
   options: ForecastPluginOptions = {},
-  label = "series"
+  label = "series",
 ): FanDataItem {
   const xs = numericDates(history);
   const values = history.map((d) => d.value);

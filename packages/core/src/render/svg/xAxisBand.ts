@@ -26,7 +26,7 @@ export interface XAxisBandOptions {
 export function renderXAxisBand(
   parent: SVGElement,
   scale: ScaleBand<string>,
-  o: XAxisBandOptions
+  o: XAxisBandOptions,
 ): SVGGElement {
   const g = svgEl("g", { class: "mv-x-axis mv-x-axis-band" });
   const bottom = o.height - o.margin.bottom;

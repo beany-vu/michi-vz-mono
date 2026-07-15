@@ -22,7 +22,10 @@ function makeDom() {
   return { host, svg, marks };
 }
 
-function make(cfgIn: Parameters<typeof resolveTimeline>[0] = { easing: "linear", tweenMs: 400 }, motion?: MotionPreference) {
+function make(
+  cfgIn: Parameters<typeof resolveTimeline>[0] = { easing: "linear", tweenMs: 400 },
+  motion?: MotionPreference,
+) {
   const ticker: ManualTicker = createManualTicker();
   const cum = createCumulativeTimeline({ ticker, motion });
   const dom = makeDom();

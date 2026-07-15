@@ -96,7 +96,7 @@ describe("mountRibbonChart - webgpu renderer (capability gate + fallback)", () =
     // Read a column's pixel coords from an SVG mount (same scales/model as webgpu).
     const svgMount = mount({ renderer: "svg" });
     const rect = Array.from(svgMount.host.querySelectorAll<SVGRectElement>("rect.bar")).find(
-      (r) => r.getAttribute("data-label") === "Fruit Sales"
+      (r) => r.getAttribute("data-label") === "Fruit Sales",
     )!;
     const x = Number(rect.getAttribute("x")) + Number(rect.getAttribute("width")) / 2;
     const y = Number(rect.getAttribute("y")) + Number(rect.getAttribute("height")) / 2;

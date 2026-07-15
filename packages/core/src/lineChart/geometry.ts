@@ -48,7 +48,7 @@ export function makeLineGenerator(
   xScale: LineXScale,
   yScale: LineYScale,
   xAxisDataType: XaxisDataType,
-  curve?: CurveType
+  curve?: CurveType,
 ): (points: DataPoint[]) => string | null {
   const factory: CurveFactory = resolveCurveFactory(curve);
   const gen = d3line<DataPoint>()

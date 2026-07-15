@@ -77,7 +77,7 @@ export function buildBubbleContext(input: BuildBubbleContextInput): BubbleChartC
       base.push(
         b.partial ?? "-",
         b.remainder ?? "-",
-        b.partialPct != null ? `${Math.round(b.partialPct * 100)}%` : "-"
+        b.partialPct != null ? `${Math.round(b.partialPct * 100)}%` : "-",
       );
     }
     return base;

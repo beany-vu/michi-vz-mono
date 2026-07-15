@@ -55,7 +55,9 @@ export interface BuildComparableModelOptions {
 // Legacy z-order: the LONGER sub-bar is drawn first and the shorter one last (on
 // top), so both stay visible when one contains the other. Ties keep the historical
 // based-then-compared order.
-export function comparableDrawOrder(bar: ComparableBarModel): ["based" | "compared", "based" | "compared"] {
+export function comparableDrawOrder(
+  bar: ComparableBarModel,
+): ["based" | "compared", "based" | "compared"] {
   return bar.based.width < bar.compared.width ? ["compared", "based"] : ["based", "compared"];
 }
 
@@ -63,7 +65,7 @@ export function buildComparableRenderModel(
   points: ComparableBarDataPoint[],
   scales: ComparableScales,
   colors: ComparableColorResolver,
-  o: BuildComparableModelOptions
+  o: BuildComparableModelOptions,
 ): ComparableRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
@@ -103,7 +105,9 @@ export function buildComparableRenderModel(
       // rowY/rowHeight passed here are the FULL row band (y, bandHeight), not the
       // (possibly half-height, grouped-layout) segments, so the glyph stays
       // centred on the row regardless of layout.
-      delta: o.deltaIndicator ? computeComparableDelta(d, based, compared, y, bandHeight, o.deltaIndicator) : undefined,
+      delta: o.deltaIndicator
+        ? computeComparableDelta(d, based, compared, y, bandHeight, o.deltaIndicator)
+        : undefined,
     };
   });
 

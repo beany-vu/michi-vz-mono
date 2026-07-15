@@ -13,7 +13,7 @@ function applyAttrs(node: Element, attrs: Attrs): void {
 
 export function svgEl<K extends keyof SVGElementTagNameMap>(
   tag: K,
-  attrs: Attrs = {}
+  attrs: Attrs = {},
 ): SVGElementTagNameMap[K] {
   const node = document.createElementNS(SVG_NS, tag) as SVGElementTagNameMap[K];
   applyAttrs(node, attrs);
@@ -22,7 +22,7 @@ export function svgEl<K extends keyof SVGElementTagNameMap>(
 
 export function htmlEl<K extends keyof HTMLElementTagNameMap>(
   tag: K,
-  attrs: Attrs = {}
+  attrs: Attrs = {},
 ): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
   applyAttrs(node, attrs);

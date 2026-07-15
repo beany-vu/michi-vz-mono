@@ -178,10 +178,9 @@ onBeforeUnmount(() => {
   <div class="gpu-demo">
     <div class="gpu-caveat" role="note">
       <strong>⚗️ Experimental - not yet stable.</strong>
-      WebGPU rendering is an opt-in preview. It needs a WebGPU-capable browser
-      (Chrome / Edge, or Safari 26+); everywhere else it falls back to canvas
-      automatically. Axes, labels and tooltips stay on the SVG layer - only the
-      data marks are painted on the GPU.
+      WebGPU rendering is an opt-in preview. It needs a WebGPU-capable browser (Chrome / Edge, or
+      Safari 26+); everywhere else it falls back to canvas automatically. Axes, labels and tooltips
+      stay on the SVG layer - only the data marks are painted on the GPU.
     </div>
     <div class="gpu-bar">
       <span class="gpu-title">
@@ -209,8 +208,8 @@ onBeforeUnmount(() => {
       {{ summary }}
     </p>
     <p v-if="fellBack" class="gpu-note">
-      Your browser has no WebGPU adapter available, so these marks are drawn with the
-      canvas 2D renderer instead. The chart is otherwise identical.
+      Your browser has no WebGPU adapter available, so these marks are drawn with the canvas 2D
+      renderer instead. The chart is otherwise identical.
     </p>
   </div>
 </template>
@@ -264,9 +263,21 @@ onBeforeUnmount(() => {
   font-size: 12.5px;
   color: var(--vp-c-text-2);
 }
-.gpu-legend li { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
-.gpu-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
-.gpu-legend li .gpu-swatch + .gpu-swatch { margin-left: -3px; }
+.gpu-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+.gpu-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+.gpu-legend li .gpu-swatch + .gpu-swatch {
+  margin-left: -3px;
+}
 .gpu-pill.on {
   background: var(--vp-c-brand-1);
   color: #fff;

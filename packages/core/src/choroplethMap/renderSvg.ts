@@ -22,7 +22,7 @@ export function renderChoroplethSvg(
   parent: SVGElement,
   model: ChoroplethMapRenderModel,
   o: ChoroplethSvgOptions,
-  ia: ChoroplethInteractions
+  ia: ChoroplethInteractions,
 ): void {
   const root = svgEl("g", { class: "choropleth-map-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";

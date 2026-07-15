@@ -4,7 +4,10 @@ import { mountLineChart } from "../src/engine/lineChart";
 import { sanitizeForClassName } from "../src/math/sanitize";
 import type { LineChartProps, LineDataItem } from "../src/types";
 
-const annual = (vals: number[], start = 2016): { date: number; value: number; certainty: boolean }[] =>
+const annual = (
+  vals: number[],
+  start = 2016,
+): { date: number; value: number; certainty: boolean }[] =>
   vals.map((value, i) => ({ date: start + i, value, certainty: true }));
 
 const sample: LineDataItem[] = [
@@ -38,7 +41,9 @@ describe("mountLineChart (jsdom)", () => {
   });
 
   it("injects svgChildren (axis-title text) into a .mv-svg-children group", () => {
-    const { host, chart } = mount({ svgChildren: '<text x="50" y="25">Trade after policy change</text>' });
+    const { host, chart } = mount({
+      svgChildren: '<text x="50" y="25">Trade after policy change</text>',
+    });
     const g = host.querySelector(".mv-svg-children")!;
     expect(g).not.toBeNull();
     expect(g.querySelector("text")!.textContent).toBe("Trade after policy change");
@@ -48,11 +53,17 @@ describe("mountLineChart (jsdom)", () => {
 
   it("draws a dashed run when detectGaps flags a gap", () => {
     const { host, chart } = mount({
-      dataSet: [{ label: "Gappy", color: "#00f", series: [
-        { date: 2016, value: 1, certainty: true },
-        { date: 2017, value: 2, certainty: true },
-        { date: 2024, value: 3, certainty: true },
-      ] }],
+      dataSet: [
+        {
+          label: "Gappy",
+          color: "#00f",
+          series: [
+            { date: 2016, value: 1, certainty: true },
+            { date: 2017, value: 2, certainty: true },
+            { date: 2024, value: 3, certainty: true },
+          ],
+        },
+      ],
       detectGaps: true,
     });
     const dashed = host.querySelectorAll('path.line[stroke-dasharray="4,4"]');
@@ -63,7 +74,9 @@ describe("mountLineChart (jsdom)", () => {
 
   it("draws a single-point guide line for one-point series", () => {
     const { host, chart } = mount({
-      dataSet: [{ label: "Solo", color: "#abc", series: [{ date: 2016, value: 42, certainty: true }] }],
+      dataSet: [
+        { label: "Solo", color: "#abc", series: [{ date: 2016, value: 42, certainty: true }] },
+      ],
       singlePointLine: true,
     });
     expect(host.querySelectorAll("line.single-point-line").length).toBe(1);
@@ -138,10 +151,15 @@ describe("mountLineChart (jsdom)", () => {
     document.body.appendChild(host);
     let warned: unknown[] = [];
     const chart = mountLineChart(host, {
-      dataSet: [{ label: "Dup", series: [
-        { date: 2016, value: 1, certainty: true },
-        { date: 2016, value: 2, certainty: true },
-      ] }],
+      dataSet: [
+        {
+          label: "Dup",
+          series: [
+            { date: 2016, value: 1, certainty: true },
+            { date: 2016, value: 2, certainty: true },
+          ],
+        },
+      ],
       xAxisDataType: "date_annual",
       onDataWarning: (w) => (warned = w),
     });
@@ -152,7 +170,12 @@ describe("mountLineChart (jsdom)", () => {
 
   it("update() re-renders and destroy() cleans up", () => {
     const { host, chart } = mount();
-    chart.update({ dataSet: sample.slice(0, 1), width: 600, height: 300, xAxisDataType: "date_annual" });
+    chart.update({
+      dataSet: sample.slice(0, 1),
+      width: 600,
+      height: 300,
+      xAxisDataType: "date_annual",
+    });
     expect(host.querySelectorAll("g.data-group").length).toBe(1);
     chart.destroy();
     expect(host.querySelectorAll("svg").length).toBe(0);
@@ -177,7 +200,15 @@ describe("mountLineChart x-axis: first + last never dropped (Layer 1)", () => {
       width: 900,
       xAxisFormat: yearLabel,
       dataSet: [
-        { label: "S", color: "#00f", series: [2020, 2021, 2022, 2023, 2024].map((y, i) => ({ date: y, value: i + 1, certainty: true })) },
+        {
+          label: "S",
+          color: "#00f",
+          series: [2020, 2021, 2022, 2023, 2024].map((y, i) => ({
+            date: y,
+            value: i + 1,
+            certainty: true,
+          })),
+        },
       ],
     });
     const labels = axisTexts(host);
@@ -222,13 +253,19 @@ describe("mountLineChart fillPeriodTicks (Layer 2)", () => {
     fillPeriodTicks: true,
     // 2022 is MISSING from the data
     dataSet: [
-      { label: "S", color: "#00f", series: [2020, 2021, 2023, 2024].map((yr) => ({ date: yr, value: 1, certainty: true })) },
+      {
+        label: "S",
+        color: "#00f",
+        series: [2020, 2021, 2023, 2024].map((yr) => ({ date: yr, value: 1, certainty: true })),
+      },
     ],
   };
 
   it("draws the missing period (2022) as a faded no-data tick; present years stay normal", () => {
     const { host, chart } = mount(withGap);
-    const faded = Array.from(host.querySelectorAll("text.mv-tick-nodata")).map((l) => l.textContent);
+    const faded = Array.from(host.querySelectorAll("text.mv-tick-nodata")).map(
+      (l) => l.textContent,
+    );
     expect(faded).toContain("2022");
     const normal = Array.from(host.querySelectorAll(".mv-x-axis text.mv-axis-label"))
       .filter((l) => !(l.getAttribute("class") ?? "").includes("mv-tick-nodata"))
@@ -295,9 +332,9 @@ describe("mountLineChart enableMouseLine crosshair (legacy mouse-line parity)", 
     Array.from(
       new Set(
         Array.from(host.querySelectorAll<SVGCircleElement>("circle.data-point")).map((c) =>
-          Number(c.getAttribute("cx"))
-        )
-      )
+          Number(c.getAttribute("cx")),
+        ),
+      ),
     ).sort((a, b) => a - b);
 
   it("renders .mv-mouse-line by default (no prop passed)", () => {
@@ -320,7 +357,7 @@ describe("mountLineChart enableMouseLine crosshair (legacy mouse-line parity)", 
     const target = xs[1]; // middle of the 3 annual ticks, safely inside the plot
     const line = host.querySelector<SVGLineElement>("line.mv-mouse-line")!;
     host.dispatchEvent(
-      new MouseEvent("mousemove", { clientX: target + 4, clientY: 100, bubbles: true })
+      new MouseEvent("mousemove", { clientX: target + 4, clientY: 100, bubbles: true }),
     );
     expect(line.style.visibility).toBe("visible");
     expect(line.getAttribute("x1")).toBe(String(target));
@@ -334,7 +371,9 @@ describe("mountLineChart enableMouseLine crosshair (legacy mouse-line parity)", 
     const { host, chart } = mount({ showDataPoints: true });
     const xs = pointXs(host);
     const line = host.querySelector<SVGLineElement>("line.mv-mouse-line")!;
-    host.dispatchEvent(new MouseEvent("mousemove", { clientX: xs[1], clientY: 100, bubbles: true }));
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: xs[1], clientY: 100, bubbles: true }),
+    );
     expect(line.style.visibility).toBe("visible");
     host.dispatchEvent(new MouseEvent("mouseleave"));
     expect(line.style.visibility).toBe("hidden");
@@ -472,7 +511,7 @@ describe("mountLineChart yAxisScale (log y-axis)", () => {
     const dots = host.querySelectorAll('circle.data-point[data-label="Mixed"]');
     expect(dots.length).toBe(2);
     const warning = warned.find(
-      (w) => (w as { type: string }).type === "non-positive-log-value"
+      (w) => (w as { type: string }).type === "non-positive-log-value",
     ) as { type: string; message: string; label?: string } | undefined;
     expect(warning).toBeDefined();
     expect(warning!.label).toBe("Mixed");
@@ -498,7 +537,9 @@ describe("mountLineChart yAxisScale (log y-axis)", () => {
       onDataWarning: (w) => (warned = w),
     });
     expect(host.querySelectorAll('circle.data-point[data-label="Mixed"]').length).toBe(2);
-    expect(warned.some((w) => (w as { type: string }).type === "non-positive-log-value")).toBe(false);
+    expect(warned.some((w) => (w as { type: string }).type === "non-positive-log-value")).toBe(
+      false,
+    );
     chart.destroy();
     host.remove();
   });
@@ -533,7 +574,9 @@ describe("mountLineChart yAxisScale (log y-axis)", () => {
       yAxisScale: "log",
       onDataWarning: (w) => (warned = w),
     });
-    expect(warned.some((w) => (w as { type: string }).type === "non-positive-log-value")).toBe(true);
+    expect(warned.some((w) => (w as { type: string }).type === "non-positive-log-value")).toBe(
+      true,
+    );
     chart.destroy();
     host.remove();
   });
@@ -587,7 +630,7 @@ describe("mountLineChart yAxisScale (log y-axis)", () => {
       height: 300,
     });
     const yLabels = Array.from(host.querySelectorAll(".mv-y-axis text.mv-axis-label")).map(
-      (l) => l.textContent
+      (l) => l.textContent,
     );
     const yGrid = host.querySelectorAll(".mv-y-axis line.mv-grid");
     // Every remaining label is an exact power of 10 (no "2", "30", "500", …).
@@ -615,7 +658,7 @@ describe("mountLineChart yAxisScale (log y-axis)", () => {
       height: 300,
     });
     const yLabels = Array.from(host.querySelectorAll(".mv-y-axis text.mv-axis-label")).map(
-      (l) => l.textContent
+      (l) => l.textContent,
     );
     expect(yLabels.length).toBeGreaterThan(0);
     expect(yLabels.every((t) => t!.startsWith("~") && t!.endsWith("~"))).toBe(true);

@@ -30,7 +30,7 @@ export function drawRadarWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RadarRenderModel,
-  o: RadarWebgpuOptions
+  o: RadarWebgpuOptions,
 ): boolean {
   // Resolve colours through the SAME probe as canvas mode (stroke, falling
   // through to fill) - see radarChart/renderCanvas.ts.
@@ -41,7 +41,7 @@ export function drawRadarWebgpu(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("polygon", "radar-area", "stroke"),
-    ["stroke", "fill"]
+    ["stroke", "fill"],
   );
 
   const batch = emptyBatch();

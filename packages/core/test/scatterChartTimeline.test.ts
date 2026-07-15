@@ -17,14 +17,14 @@ function mount(extra: Partial<ScatterChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountScatterChart(
     host,
     { dataSet, width: 600, height: 300, xAxisDataType: "number", ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
 
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("[data-label]")).map(e => e.getAttribute("data-label")!)
+    Array.from(host.querySelectorAll("[data-label]")).map((e) => e.getAttribute("data-label")!),
   );
 
 describe("scatter chart timeline", () => {

@@ -25,7 +25,7 @@ export function drawScatterWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: ScatterRenderModel,
-  o: ScatterWebgpuOptions
+  o: ScatterWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME nested `<g data-label-safe><circle>` probe
   // canvas mode uses (a flat probe would miss the consumer's descendant selector).
@@ -36,7 +36,7 @@ export function drawScatterWebgpu(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeGroupedScatterProbe,
-    "fill"
+    "fill",
   );
 
   const batch = emptyBatch();

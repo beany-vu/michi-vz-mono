@@ -1,15 +1,23 @@
 import { describe, it, expect } from "vitest";
-import { SYMBOL_MIN_HIT_RADIUS, symbolEffectiveHitRadius, pickNearestSymbolHit } from "../src/symbolMap/hitTest";
+import {
+  SYMBOL_MIN_HIT_RADIUS,
+  symbolEffectiveHitRadius,
+  pickNearestSymbolHit,
+} from "../src/symbolMap/hitTest";
 
 describe("symbolMap/hitTest (B3.7 - forgiving, nearest-match-wins hit-test)", () => {
   it("SYMBOL_MIN_HIT_RADIUS floor: a small mark's effective radius is floored, a large mark's is untouched", () => {
-    expect(symbolEffectiveHitRadius({ x: 0, y: 0, radius: 3, radiusSecond: null })).toBe(SYMBOL_MIN_HIT_RADIUS);
+    expect(symbolEffectiveHitRadius({ x: 0, y: 0, radius: 3, radiusSecond: null })).toBe(
+      SYMBOL_MIN_HIT_RADIUS,
+    );
     expect(symbolEffectiveHitRadius({ x: 0, y: 0, radius: 25, radiusSecond: null })).toBe(25);
   });
 
   it("considers radiusSecond - the larger of the two rings floors/wins", () => {
     // valueSecond ring bigger than primary but still under the floor.
-    expect(symbolEffectiveHitRadius({ x: 0, y: 0, radius: 2, radiusSecond: 5 })).toBe(SYMBOL_MIN_HIT_RADIUS);
+    expect(symbolEffectiveHitRadius({ x: 0, y: 0, radius: 2, radiusSecond: 5 })).toBe(
+      SYMBOL_MIN_HIT_RADIUS,
+    );
     // valueSecond ring bigger than primary AND over the floor.
     expect(symbolEffectiveHitRadius({ x: 0, y: 0, radius: 4, radiusSecond: 12 })).toBe(12);
   });

@@ -44,7 +44,7 @@ export function renderComparableDeltaSvg(svg: SVGElement, bars: ComparableBarMod
         class: `mv-delta-arrow mv-delta-arrow--${delta.direction}`,
         d: glyphPath(delta.direction, cx, cy),
         fill: delta.color,
-      })
+      }),
     );
     const text = svgEl("text", {
       class: "mv-delta-label",

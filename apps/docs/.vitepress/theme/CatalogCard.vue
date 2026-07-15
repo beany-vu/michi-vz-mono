@@ -90,9 +90,33 @@ onBeforeUnmount(() => {
     <div class="mv-card-crest" aria-hidden="true">
       <svg class="mv-crest-mark" viewBox="0 0 24 40" fill="none">
         <circle cx="12" cy="8" r="5.2" stroke="currentColor" stroke-width="2" />
-        <line x1="12" y1="13" x2="12" y2="35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        <line x1="12" y1="29" x2="17.5" y2="29" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        <line x1="12" y1="33" x2="16" y2="33" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <line
+          x1="12"
+          y1="13"
+          x2="12"
+          y2="35"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <line
+          x1="12"
+          y1="29"
+          x2="17.5"
+          y2="29"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <line
+          x1="12"
+          y1="33"
+          x2="16"
+          y2="33"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
       </svg>
       <div class="mv-card-crest-foot">
         <div class="mv-roman">{{ roman }}</div>

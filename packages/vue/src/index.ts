@@ -90,7 +90,7 @@ export const GapChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -122,7 +122,7 @@ export const LineChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -154,7 +154,7 @@ export const FanChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -186,7 +186,7 @@ export const AreaChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -218,7 +218,7 @@ export const ScatterChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -250,7 +250,7 @@ export const VerticalStackBarChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -282,7 +282,7 @@ export const ComparableHorizontalBarChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -314,7 +314,7 @@ export const ComparableVerticalBarChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -346,7 +346,7 @@ export const DualHorizontalBarChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -378,7 +378,7 @@ export const BarBellChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -410,7 +410,7 @@ export const RangeChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -442,7 +442,7 @@ export const RibbonChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -474,7 +474,7 @@ export const RadarChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -506,7 +506,7 @@ export const TreemapChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -538,7 +538,7 @@ export const PieChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -570,7 +570,7 @@ export const BubbleChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -602,7 +602,7 @@ export const SankeyChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -634,7 +634,7 @@ export const FountainChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -666,7 +666,7 @@ export const ChoroplethMapChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -698,7 +698,7 @@ export const SymbolMapChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 
@@ -730,7 +730,7 @@ export const RadialTreeChart = defineComponent({
     watch(
       () => props.options,
       (next) => chart?.update(next),
-      { deep: true }
+      { deep: true },
     );
     onBeforeUnmount(() => chart?.destroy());
 

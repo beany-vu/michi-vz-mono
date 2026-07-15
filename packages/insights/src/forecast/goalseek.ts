@@ -41,10 +41,9 @@ export function pacingToGoal(
   cumulative: number,
   target: number,
   periodsElapsed: number,
-  periodsTotal: number
+  periodsTotal: number,
 ): Pacing {
-  const projected =
-    periodsElapsed > 0 ? (cumulative / periodsElapsed) * periodsTotal : 0;
+  const projected = periodsElapsed > 0 ? (cumulative / periodsElapsed) * periodsTotal : 0;
   const attainmentPct = target !== 0 ? (projected / target) * 100 : 0;
   const onTrack = projected >= target;
   const periodsRemaining = periodsTotal - periodsElapsed;

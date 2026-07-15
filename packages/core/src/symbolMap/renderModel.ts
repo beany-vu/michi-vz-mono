@@ -57,7 +57,7 @@ export interface BuildSymbolMapModelOptions {
 
 export function buildSymbolMapBackdrop(
   features: NormalizedGeoFeature[],
-  projection: GeoProjection
+  projection: GeoProjection,
 ): SymbolMapBackdropMark[] {
   const pathGen: GeoPath = createGeoPathGenerator(projection);
   return features.map((f) => {
@@ -80,7 +80,7 @@ export function buildSymbolMapRenderModel(
   opacityOf: (value: number) => number,
   o: BuildSymbolMapModelOptions,
   projection: GeoProjection,
-  backdrop: SymbolMapBackdropMark[] = []
+  backdrop: SymbolMapBackdropMark[] = [],
 ): SymbolMapRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;

@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mountLineChart, mountScatterChart, type LineChartProps, type ChartContext } from "@michi-vz/core";
+import {
+  mountLineChart,
+  mountScatterChart,
+  type LineChartProps,
+  type ChartContext,
+} from "@michi-vz/core";
 import { mountDevtools, type DevtoolsHandle } from "../src/panel";
 
 interface G {
@@ -37,7 +42,7 @@ function q(node: ParentNode, sel: string): HTMLElement | null {
 
 function clickTab(r: ShadowRoot, label: string): void {
   const tab = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-tab")).find(
-    (b) => b.textContent === label
+    (b) => b.textContent === label,
   );
   if (!tab) throw new Error(`tab not found: ${label}`);
   tab.click();
@@ -146,7 +151,7 @@ describe("mountDevtools panel", () => {
     ];
     ta!.value = JSON.stringify(edited);
     const applyBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
-      (b) => b.textContent === "Apply"
+      (b) => b.textContent === "Apply",
     );
     expect(applyBtn).not.toBeNull();
     applyBtn!.click();
@@ -173,7 +178,9 @@ describe("mountDevtools panel", () => {
     cb.checked = true;
     cb.dispatchEvent(new Event("change"));
     const ta = r.querySelector<HTMLTextAreaElement>("textarea")!;
-    ta.value = JSON.stringify([{ label: "Revenue", series: [{ date: 2020, value: 1, certainty: true }] }]);
+    ta.value = JSON.stringify([
+      { label: "Revenue", series: [{ date: 2020, value: 1, certainty: true }] },
+    ]);
     Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn"))
       .find((b) => b.textContent === "Apply")!
       .click();
@@ -182,7 +189,7 @@ describe("mountDevtools panel", () => {
 
     // reset -> back to the 3-point original, edits gone
     const resetBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
-      (b) => b.textContent === "Reset chart"
+      (b) => b.textContent === "Reset chart",
     );
     expect(resetBtn).not.toBeNull();
     resetBtn!.click();
@@ -220,9 +227,9 @@ describe("mountDevtools panel", () => {
     expect(nav?.textContent).toContain("2/2");
     expect(q(r, ".mv-devtools-summary")?.textContent).toContain("555");
 
-    const older = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
-      (b) => b.textContent === "◀"
-    );
+    const older = Array.from(
+      r.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn"),
+    ).find((b) => b.textContent === "◀");
     expect(older).not.toBeNull();
     older!.click();
 
@@ -231,9 +238,9 @@ describe("mountDevtools panel", () => {
     expect(q(r, ".mv-devtools-summary")?.textContent).not.toContain("555");
     expect(r.querySelector("textarea")).toBeNull();
 
-    const liveBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn")).find(
-      (b) => b.textContent?.includes("live")
-    );
+    const liveBtn = Array.from(
+      r.querySelectorAll<HTMLButtonElement>(".mv-devtools-history .mv-devtools-btn"),
+    ).find((b) => b.textContent?.includes("live"));
     liveBtn!.click();
     expect(q(r, ".mv-devtools-histbanner")).toBeNull();
     expect(r.querySelector("textarea")).not.toBeNull();
@@ -321,8 +328,8 @@ describe("mountDevtools panel", () => {
     const dt = mountDevtools({ open: true });
     const r = root(dt);
     const panel = q(r, ".mv-devtools")!;
-    const maxBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find(
-      (b) => b.title.toLowerCase().includes("maximize")
+    const maxBtn = Array.from(r.querySelectorAll<HTMLButtonElement>(".mv-devtools-btn")).find((b) =>
+      b.title.toLowerCase().includes("maximize"),
     );
     expect(maxBtn).not.toBeNull();
     maxBtn!.click();
@@ -340,7 +347,9 @@ describe("mountDevtools panel", () => {
     const handle = q(r, ".mv-devtools-resize");
     expect(handle).not.toBeNull();
 
-    handle!.dispatchEvent(new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }));
+    handle!.dispatchEvent(
+      new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }),
+    );
     window.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 400 }));
     window.dispatchEvent(new MouseEvent("mouseup", {}));
 
@@ -371,7 +380,9 @@ describe("mountDevtools panel", () => {
     const handle = q(r, ".mv-devtools-resize-l");
     expect(handle).not.toBeNull();
 
-    handle!.dispatchEvent(new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }));
+    handle!.dispatchEvent(
+      new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }),
+    );
     window.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 200 }));
     window.dispatchEvent(new MouseEvent("mouseup", {}));
 
@@ -391,7 +402,9 @@ describe("mountDevtools panel", () => {
     const handle = q(r, ".mv-devtools-resize-t");
     expect(handle).not.toBeNull();
 
-    handle!.dispatchEvent(new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }));
+    handle!.dispatchEvent(
+      new MouseEvent("mousedown", { clientX: 500, clientY: 500, bubbles: true }),
+    );
     window.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 300 }));
     window.dispatchEvent(new MouseEvent("mouseup", {}));
 
@@ -422,7 +435,12 @@ describe("devtools tabs", () => {
     clearDevtoolsStorage();
   });
 
-  function mountWithChart(): { dt: DevtoolsHandle; r: ShadowRoot; host: HTMLDivElement; chart: ReturnType<typeof mountLineChart> } {
+  function mountWithChart(): {
+    dt: DevtoolsHandle;
+    r: ShadowRoot;
+    host: HTMLDivElement;
+    chart: ReturnType<typeof mountLineChart>;
+  } {
     const dt = mountDevtools({ open: true });
     const r = root(dt);
     const host = document.createElement("div");
@@ -434,7 +452,16 @@ describe("devtools tabs", () => {
   it("shows the full tab bar", () => {
     const { dt, r, chart } = mountWithChart();
     const labels = Array.from(r.querySelectorAll(".mv-devtools-tab")).map((t) => t.textContent);
-    expect(labels).toEqual(["Overview", "Sizing", "Scales", "Diff", "Hit-test", "Profiler", "Insights", "A11y"]);
+    expect(labels).toEqual([
+      "Overview",
+      "Sizing",
+      "Scales",
+      "Diff",
+      "Hit-test",
+      "Profiler",
+      "Insights",
+      "A11y",
+    ]);
     chart.destroy();
     dt.destroy();
   });
@@ -496,7 +523,17 @@ describe("devtools tabs", () => {
     const { dt, r, host, chart } = mountWithChart();
     Object.defineProperty(host, "getBoundingClientRect", {
       configurable: true,
-      value: () => ({ width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0, x: 0, y: 0, toJSON: () => ({}) }),
+      value: () => ({
+        width: 0,
+        height: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }),
     });
     clickTab(r, "Sizing");
     const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
@@ -512,7 +549,17 @@ describe("devtools tabs", () => {
     Object.defineProperty(host, "clientHeight", { configurable: true, value: 300 });
     Object.defineProperty(host, "getBoundingClientRect", {
       configurable: true,
-      value: () => ({ width: 300, height: 300, top: 0, left: 0, right: 300, bottom: 300, x: 0, y: 0, toJSON: () => ({}) }),
+      value: () => ({
+        width: 300,
+        height: 300,
+        top: 0,
+        left: 0,
+        right: 300,
+        bottom: 300,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }),
     });
     clickTab(r, "Sizing");
     const text = q(r, ".mv-devtools-detail")?.textContent ?? "";
@@ -542,7 +589,11 @@ describe("devtools tabs", () => {
     const node = document.createElement("div");
     node.className = "michi-vz-pie-chart";
     (node as HTMLElement & { getContext: () => ChartContext }).getContext = () =>
-      ({ chartType: "pie-chart", renderer: "svg", summary: "Pie chart." }) as unknown as ChartContext;
+      ({
+        chartType: "pie-chart",
+        renderer: "svg",
+        summary: "Pie chart.",
+      }) as unknown as ChartContext;
     document.body.appendChild(node);
     dt.refresh();
     clickTab(r, "Scales");
@@ -649,7 +700,9 @@ describe("devtools tabs", () => {
     expect(labels.some((l) => l?.includes("anomal"))).toBe(true);
     // no mystery: every action explains what actually runs (no LLM by default)
     for (const b of buttons) expect(b.title.toLowerCase()).toContain("no language model");
-    expect(q(r, ".mv-devtools-ai-caption")?.textContent?.toLowerCase()).toContain("no language model");
+    expect(q(r, ".mv-devtools-ai-caption")?.textContent?.toLowerCase()).toContain(
+      "no language model",
+    );
 
     buttons.find((b) => b.textContent?.includes("Narrate"))!.click();
     await new Promise((res) => setTimeout(res, 0));

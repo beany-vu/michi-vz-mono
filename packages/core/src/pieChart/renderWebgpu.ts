@@ -27,7 +27,7 @@ function sampleArc(
   cy: number,
   radius: number,
   startAngle: number,
-  endAngle: number
+  endAngle: number,
 ): Array<[number, number]> {
   const span = endAngle - startAngle;
   const steps = Math.max(1, Math.ceil((Math.abs(span) / (Math.PI * 2)) * RING_STEPS));
@@ -44,7 +44,7 @@ export function drawPieWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: PieRenderModel,
-  o: PieWebgpuOptions
+  o: PieWebgpuOptions,
 ): boolean {
   const fallback = new Map<string, string>();
   for (const s of model.slices) if (!fallback.has(s.colorKey)) fallback.set(s.colorKey, s.fill);
@@ -53,7 +53,7 @@ export function drawPieWebgpu(
     model.groupKeys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("path", "slice", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;

@@ -18,12 +18,7 @@ export interface CsvOptions {
 // escape interior double-quotes by doubling them.
 function escapeField(value: string | number | null | undefined, delimiter: string): string {
   const s = value === null || value === undefined ? "" : String(value);
-  if (
-    s.includes(delimiter) ||
-    s.includes('"') ||
-    s.includes("\n") ||
-    s.includes("\r")
-  ) {
+  if (s.includes(delimiter) || s.includes('"') || s.includes("\n") || s.includes("\r")) {
     return '"' + s.replace(/"/g, '""') + '"';
   }
   return s;
@@ -37,7 +32,7 @@ function escapeField(value: string | number | null | undefined, delimiter: strin
  */
 export function chartContextToCsv(
   ctx: ChartContext | null | undefined,
-  opts: CsvOptions = {}
+  opts: CsvOptions = {},
 ): string {
   const table = ctx?.a11yTable;
   if (!table || !Array.isArray(table.headers)) return "";

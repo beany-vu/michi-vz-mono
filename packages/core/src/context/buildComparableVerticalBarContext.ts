@@ -29,7 +29,7 @@ export interface BuildComparableVerticalContextInput {
 }
 
 export function buildComparableVerticalBarContext(
-  input: BuildComparableVerticalContextInput
+  input: BuildComparableVerticalContextInput,
 ): ComparableVerticalBarChartContext {
   let improved = 0;
   let worsened = 0;
@@ -43,7 +43,10 @@ export function buildComparableVerticalBarContext(
       difference,
     };
     if (input.deltaIndicator) {
-      const { direction, color } = resolveDeltaDirectionColor(d.valueCompared - d.valueBased, input.deltaIndicator);
+      const { direction, color } = resolveDeltaDirectionColor(
+        d.valueCompared - d.valueBased,
+        input.deltaIndicator,
+      );
       row.deltaDirection = direction;
       row.deltaColor = color;
       row.deltaLabel = input.deltaIndicator.formatter(d.valueCompared - d.valueBased, d);
@@ -97,7 +100,7 @@ export function buildComparableVerticalBarContext(
   const rows = series.map((s) =>
     input.deltaIndicator
       ? [s.label, s.valueBased, s.valueCompared, s.difference, s.deltaLabel ?? ""]
-      : [s.label, s.valueBased, s.valueCompared, s.difference]
+      : [s.label, s.valueBased, s.valueCompared, s.difference],
   );
 
   return {
@@ -107,7 +110,17 @@ export function buildComparableVerticalBarContext(
     xAxis: { labels: series.map((s) => s.label) },
     yAxis: { domain: input.yAxisDomain },
     series,
-    stats: { count: series.length, totalBased, totalCompared, largestMover, grew, shrank, unchanged, improved, worsened },
+    stats: {
+      count: series.length,
+      totalBased,
+      totalCompared,
+      largestMover,
+      grew,
+      shrank,
+      unchanged,
+      improved,
+      worsened,
+    },
     colorsMapping: input.colorsMapping,
     legendData,
     summary,

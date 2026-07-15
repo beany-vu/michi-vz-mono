@@ -65,10 +65,7 @@ function quantileSorted(sorted: number[], q: number): number {
   return sorted[lo] * (1 - frac) + sorted[hi] * frac;
 }
 
-export function monteCarloForecast(
-  values: number[],
-  opts: MonteCarloOptions
-): MonteCarloResult {
+export function monteCarloForecast(values: number[], opts: MonteCarloOptions): MonteCarloResult {
   const horizon = Math.max(1, Math.floor(opts.horizon));
   const runs = Math.max(1, Math.floor(opts.runs ?? 500));
   const seed = opts.seed ?? 1;

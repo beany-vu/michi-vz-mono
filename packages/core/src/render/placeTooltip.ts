@@ -6,7 +6,7 @@ export function placeTooltip(
   host: HTMLElement,
   tooltip: HTMLElement,
   ev: MouseEvent,
-  offset = 10
+  offset = 10,
 ): void {
   const r = host.getBoundingClientRect();
   const cx = ev.clientX - r.left;

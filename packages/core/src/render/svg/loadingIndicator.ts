@@ -12,7 +12,7 @@ export interface LoadingIndicatorOptions {
 
 export function renderLoadingIndicator(
   host: HTMLElement,
-  o: LoadingIndicatorOptions = {}
+  o: LoadingIndicatorOptions = {},
 ): HTMLDivElement {
   const el = htmlEl("div", { class: o.className ?? "mv-loading" });
   el.setAttribute("aria-hidden", "true");
@@ -25,7 +25,7 @@ export function renderLoadingIndicator(
 export function toggleLoadingIndicator(
   host: HTMLElement,
   loading: boolean,
-  existing: HTMLDivElement | null
+  existing: HTMLDivElement | null,
 ): HTMLDivElement | null {
   if (loading) {
     return existing ?? renderLoadingIndicator(host);

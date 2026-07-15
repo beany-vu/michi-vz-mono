@@ -125,7 +125,12 @@ describe("mountScatterChart (jsdom)", () => {
 
   it("update() re-renders and destroy() cleans up", () => {
     const { host, chart } = mount();
-    chart.update({ dataSet: dataSet.slice(0, 2), width: 600, height: 300, xAxisDataType: "number" });
+    chart.update({
+      dataSet: dataSet.slice(0, 2),
+      width: 600,
+      height: 300,
+      xAxisDataType: "number",
+    });
     expect(host.querySelectorAll(".scatter-point").length).toBe(2);
     chart.destroy();
     expect(host.querySelectorAll("svg").length).toBe(0);
@@ -176,7 +181,7 @@ describe("mountScatterChart - band x-axis (ByPattern contract)", () => {
       Number(
         Array.from(host.querySelectorAll<SVGRectElement>("rect.scatter-point"))
           .find((r) => r.getAttribute("data-label") === label)!
-          .getAttribute("x")
+          .getAttribute("x"),
       );
     expect(rectX("Beta")).toBeGreaterThan(rectX("Alpha"));
     chart.destroy();
@@ -186,7 +191,7 @@ describe("mountScatterChart - band x-axis (ByPattern contract)", () => {
   it("renders one band tick label per category", () => {
     const { host, chart } = mountBand();
     const labels = Array.from(host.querySelectorAll(".mv-x-axis-band .mv-axis-label")).map(
-      (t) => t.textContent
+      (t) => t.textContent,
     );
     expect(labels).toContain("Alpha");
     expect(labels).toContain("Beta");
@@ -197,7 +202,7 @@ describe("mountScatterChart - band x-axis (ByPattern contract)", () => {
   it("marks carry data-label-safe (the canvas colour-probe hook)", () => {
     const { host, chart } = mountBand();
     const safes = Array.from(host.querySelectorAll(".scatter-point")).map((m) =>
-      m.getAttribute("data-label-safe")
+      m.getAttribute("data-label-safe"),
     );
     expect(safes).toContain(sanitizeForClassName("Alpha"));
     chart.destroy();
@@ -220,7 +225,9 @@ describe("mountScatterChart - band x-axis (ByPattern contract)", () => {
 
 describe("mountScatterChart - URP features (crosshair / dScaleLegend / grid / ticks / children)", () => {
   it("renders a .michi-vz-legend group when dScaleLegend is provided, none otherwise", () => {
-    const a = mount({ dScaleLegend: { title: "Trade", valueFormatter: (d) => `${Math.round(d)}` } });
+    const a = mount({
+      dScaleLegend: { title: "Trade", valueFormatter: (d) => `${Math.round(d)}` },
+    });
     expect(a.host.querySelector(".michi-vz-legend")).not.toBeNull();
     a.chart.destroy();
     a.host.remove();
@@ -241,7 +248,8 @@ describe("mountScatterChart - URP features (crosshair / dScaleLegend / grid / ti
   it("honours yTicksQty for the y-axis tick count (fewer < more)", () => {
     const few = mount({ yTicksQty: 2 });
     const many = mount({ yTicksQty: 10 });
-    const count = (h: HTMLElement): number => h.querySelectorAll(".mv-y-axis .mv-axis-label").length;
+    const count = (h: HTMLElement): number =>
+      h.querySelectorAll(".mv-y-axis .mv-axis-label").length;
     expect(count(few.host)).toBeLessThan(count(many.host));
     few.chart.destroy();
     few.host.remove();
@@ -304,7 +312,7 @@ describe("canvas-mode hover throttle (rAF)", () => {
     // Read pixel coords from an SVG mount (same scales/model as canvas).
     const svgMount = mountFor({ renderer: "svg" });
     const dot = Array.from(
-      svgMount.host.querySelectorAll<SVGCircleElement>("circle.scatter-point")
+      svgMount.host.querySelectorAll<SVGCircleElement>("circle.scatter-point"),
     ).find((c) => c.getAttribute("data-label") === label)!;
     const cx = Number(dot.getAttribute("cx"));
     const cy = Number(dot.getAttribute("cy"));
@@ -366,7 +374,9 @@ describe("canvas-mode hover throttle (rAF)", () => {
     host.dispatchEvent(new MouseEvent("mousemove", { clientX: 1, clientY: 1, bubbles: true })); // leading miss
     const afterLeading = highlighted.length;
     for (let i = 0; i < 20; i++) {
-      host.dispatchEvent(new MouseEvent("mousemove", { clientX: 2 + i, clientY: 1, bubbles: true }));
+      host.dispatchEvent(
+        new MouseEvent("mousemove", { clientX: 2 + i, clientY: 1, bubbles: true }),
+      );
     }
     host.dispatchEvent(new MouseEvent("mousemove", { clientX: cx, clientY: cy, bubbles: true })); // latest = hit
     await frame();
@@ -422,7 +432,9 @@ describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
     const { host, chart } = mount({ dataSet: spread, pointLabels: true });
     const labels = host.querySelectorAll(".mv-point-label");
     expect(labels.length).toBe(4);
-    const texts = Array.from(labels).map((g) => g.querySelector(".mv-point-label-text")!.textContent);
+    const texts = Array.from(labels).map(
+      (g) => g.querySelector(".mv-point-label-text")!.textContent,
+    );
     expect(texts).toEqual(["Point A", "Beta", "Gamma", "Delta"]);
     const first = labels[0];
     expect(first.getAttribute("data-label")).toBe("Point A");
@@ -436,7 +448,9 @@ describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
       dataSet: spread,
       pointLabels: { formatter: (d) => `${d.label}!` },
     });
-    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map(
+      (t) => t.textContent,
+    );
     expect(texts).toEqual(["Point A!", "Beta!", "Gamma!", "Delta!"]);
     chart.destroy();
     host.remove();
@@ -447,7 +461,9 @@ describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
       dataSet: spread,
       pointLabels: { formatter: (d) => (d.label === "Gamma" ? "" : d.label) },
     });
-    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map(
+      (t) => t.textContent,
+    );
     expect(texts).not.toContain("Gamma");
     expect(texts.length).toBe(3);
     chart.destroy();
@@ -460,7 +476,9 @@ describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
       { label: "Second", x: 4, y: 8, d: 5 }, // identical pixel position -> guaranteed box overlap
     ];
     const { host, chart } = mount({ dataSet: overlapping, pointLabels: true });
-    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+    const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map(
+      (t) => t.textContent,
+    );
     expect(texts).toEqual(["First"]); // "Second"'s label box collides with "First"'s and is skipped
     chart.destroy();
     host.remove();
@@ -474,7 +492,9 @@ describe("pointLabels (default-off, right-of-point + overlap-hide)", () => {
     ];
     const run = () => {
       const { host, chart } = mount({ dataSet: overlapping, pointLabels: true });
-      const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map((t) => t.textContent);
+      const texts = Array.from(host.querySelectorAll(".mv-point-label-text")).map(
+        (t) => t.textContent,
+      );
       chart.destroy();
       host.remove();
       return texts;
@@ -489,7 +509,17 @@ describe("buildScatterPointLabels edge-flip (right-edge labels avoid cropping)",
   // "ExampleLabel" (12 chars) => 84px. LABEL_GAP = 4.
   const TEXT = "ExampleLabel";
   const pt = (cx: number, cy: number, r: number): ScatterPointModel =>
-    ({ raw: { label: TEXT, x: 0, y: 0 }, label: TEXT, safe: TEXT, cx, cy, r, shape: "circle", color: "#000", dimmed: false } as ScatterPointModel);
+    ({
+      raw: { label: TEXT, x: 0, y: 0 },
+      label: TEXT,
+      safe: TEXT,
+      cx,
+      cy,
+      r,
+      shape: "circle",
+      color: "#000",
+      dimmed: false,
+    }) as ScatterPointModel;
   const build = (p: ScatterPointModel, bounds?: { plotLeft: number; plotRight: number }) =>
     buildScatterPointLabels([p], () => TEXT, bounds)[0];
 

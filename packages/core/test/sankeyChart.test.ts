@@ -3,12 +3,7 @@ import { mountSankeyChart } from "../src/engine/sankeyChart";
 import { sanitizeForClassName } from "../src/math/sanitize";
 import type { SankeyChartProps, SankeyNodeItem, SankeyLinkItem } from "../src/types";
 
-const nodes: SankeyNodeItem[] = [
-  { id: "France" },
-  { id: "Germany" },
-  { id: "EU" },
-  { id: "Asia" },
-];
+const nodes: SankeyNodeItem[] = [{ id: "France" }, { id: "Germany" }, { id: "EU" }, { id: "Asia" }];
 const links: SankeyLinkItem[] = [
   { source: "France", target: "EU", value: 40 },
   { source: "France", target: "Asia", value: 20 },
@@ -16,7 +11,9 @@ const links: SankeyLinkItem[] = [
   { source: "Germany", target: "Asia", value: 10 },
 ];
 
-function mount(props: Partial<SankeyChartProps> & { nodes: SankeyNodeItem[]; links: SankeyLinkItem[] }) {
+function mount(
+  props: Partial<SankeyChartProps> & { nodes: SankeyNodeItem[]; links: SankeyLinkItem[] },
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountSankeyChart(host, { width: 600, height: 400, title: "Trade", ...props });
@@ -30,7 +27,7 @@ describe("mountSankeyChart (jsdom)", () => {
     const paths = host.querySelectorAll<SVGPathElement>("path.link");
     expect(paths.length).toBe(4);
     const safes = Array.from(host.querySelectorAll("rect.node")).map((n) =>
-      n.getAttribute("data-label-safe")
+      n.getAttribute("data-label-safe"),
     );
     expect(safes).toContain(sanitizeForClassName("France"));
     expect(paths[0].getAttribute("d")).toBeTruthy();
@@ -100,10 +97,14 @@ describe("mountSankeyChart (jsdom)", () => {
 
   it("link width is proportional to value (France→EU thicker than France→Asia)", () => {
     const { host, chart } = mount({ nodes, links });
-    const big = host.querySelector<SVGPathElement>('path.link[data-source="France"][data-target="EU"]')!;
-    const small = host.querySelector<SVGPathElement>('path.link[data-source="France"][data-target="Asia"]')!;
+    const big = host.querySelector<SVGPathElement>(
+      'path.link[data-source="France"][data-target="EU"]',
+    )!;
+    const small = host.querySelector<SVGPathElement>(
+      'path.link[data-source="France"][data-target="Asia"]',
+    )!;
     expect(Number(big.getAttribute("data-width"))).toBeGreaterThan(
-      Number(small.getAttribute("data-width"))
+      Number(small.getAttribute("data-width")),
     );
     chart.destroy();
     host.remove();
@@ -149,7 +150,7 @@ describe("mountSankeyChart (jsdom)", () => {
       onDataWarning: (w) => (warned2 = w),
     });
     expect(
-      warned2.some((w) => (w as { message: string }).message.includes("unknown target node"))
+      warned2.some((w) => (w as { message: string }).message.includes("unknown target node")),
     ).toBe(true);
     b.chart.destroy();
     b.host.remove();
@@ -157,7 +158,11 @@ describe("mountSankeyChart (jsdom)", () => {
 
   it("fires onChartDataProcessed with the sankey context", () => {
     let ctxType = "";
-    const { host, chart } = mount({ nodes, links, onChartDataProcessed: (c) => (ctxType = c.chartType) });
+    const { host, chart } = mount({
+      nodes,
+      links,
+      onChartDataProcessed: (c) => (ctxType = c.chartType),
+    });
     expect(ctxType).toBe("sankey-chart");
     chart.destroy();
     host.remove();

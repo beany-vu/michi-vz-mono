@@ -35,7 +35,7 @@ export function drawAreaWebgpu(
   model: AreaRenderModel,
   scales: AreaScales,
   xAxisDataType: XaxisDataType,
-  o: AreaWebgpuOptions
+  o: AreaWebgpuOptions,
 ): boolean {
   const keys = model.series.map((s) => s.key);
   const fallback = new Map(model.series.map((s) => [s.key, s.fill]));
@@ -44,7 +44,7 @@ export function drawAreaWebgpu(
     keys,
     (k) => fallback.get(k) || "#fdfdfd",
     makeSimpleProbe("path", "area", "fill"),
-    "fill"
+    "fill",
   );
 
   const batch = emptyBatch();

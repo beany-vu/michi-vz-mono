@@ -97,7 +97,7 @@ function planTicks(scale: LinearOrLogScale, ticksOption: number | undefined): Ti
 export function renderYAxisLinear(
   parent: SVGElement,
   scale: LinearOrLogScale,
-  o: YAxisLinearOptions
+  o: YAxisLinearOptions,
 ): SVGGElement {
   const g = svgEl("g", { class: "mv-y-axis mv-y-axis-linear" });
   const showGrid = o.showGrid !== false;
@@ -119,7 +119,7 @@ export function renderYAxisLinear(
           x2: right,
           y1: py,
           y2: py,
-        })
+        }),
       );
     }
 

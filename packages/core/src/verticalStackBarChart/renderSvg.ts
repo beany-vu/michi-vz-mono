@@ -21,7 +21,7 @@ export function renderStackSvg(
   parent: SVGElement,
   model: StackRenderModel,
   o: StackSvgOptions,
-  ia: StackInteractions
+  ia: StackInteractions,
 ): void {
   const root = svgEl("g", { class: "stack-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";

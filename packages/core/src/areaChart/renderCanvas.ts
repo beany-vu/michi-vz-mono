@@ -18,7 +18,7 @@ export function drawAreaCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: AreaRenderModel,
-  o: AreaCanvasOptions
+  o: AreaCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -38,7 +38,7 @@ export function drawAreaCanvas(
     keys,
     (k) => fallback.get(k) || "#fdfdfd",
     makeSimpleProbe("path", "area", "fill"),
-    "fill"
+    "fill",
   );
 
   for (const s of model.series) {

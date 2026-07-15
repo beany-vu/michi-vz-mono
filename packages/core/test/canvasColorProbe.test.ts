@@ -97,11 +97,11 @@ describe("makeSubBarProbe (ComparableHorizontalBar) - dual-form probe shape", ()
 
 describe("makeMultiPropProbe (RadarChart) - candidate properties are seeded with the neutral sentinel", () => {
   it('seeds every candidate colour property with "none", not the real fallback colour', () => {
-    const probe = makeMultiPropProbe(
-      "polygon",
-      "radar-area",
-      ["stroke", "fill"]
-    )("Model A", "Model_A", "#2ca02c");
+    const probe = makeMultiPropProbe("polygon", "radar-area", ["stroke", "fill"])(
+      "Model A",
+      "Model_A",
+      "#2ca02c",
+    );
     expect(probe.root).toBe(probe.target);
     expect(probe.target.getAttribute("stroke")).toBe("none");
     expect(probe.target.getAttribute("fill")).toBe("none");
@@ -116,7 +116,7 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
     document.getElementById("host")?.remove();
   });
 
-  it("thd ByPattern.jsx's exact descendant rule: `.bar[data-label=\"X\"] .value-compared { fill }`", () => {
+  it('thd ByPattern.jsx\'s exact descendant rule: `.bar[data-label="X"] .value-compared { fill }`', () => {
     // Quoted verbatim (colour substituted) from thd frontend/src/sites/ato/pages/
     // MonitorV2/Result/MacMap/TariffStructure/ByPattern.jsx:76.
     style = withStyle('.bar[data-label="Alpha One"] .value-compared { fill: rgb(220, 20, 140); }');
@@ -127,7 +127,7 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
       ["Alpha One"],
       () => "#111111",
       makeSubBarProbe("value-compared"),
-      ["fill", "stroke"]
+      ["fill", "stroke"],
     );
 
     expect(resolved.get("Alpha One")).toBe("rgb(220, 20, 140)");
@@ -141,7 +141,7 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
     // resolveMarkColors must fall through to that same rule's `stroke`.
     style = withStyle(
       '.bar[data-label-safe="K"] .value-based { fill: url(#pattern-K); stroke: rgb(10, 200, 10); }\n' +
-        '.bar[data-label-safe="K"] .value-compared { fill: rgb(220, 20, 140); }'
+        '.bar[data-label-safe="K"] .value-compared { fill: rgb(220, 20, 140); }',
     );
     const { svg } = mountHost();
 
@@ -151,10 +151,13 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
     ]);
     expect(based.get("K")).toBe("rgb(10, 200, 10)");
 
-    const compared = resolveMarkColors(svg, ["K"], () => "#111111", makeSubBarProbe("value-compared"), [
-      "fill",
-      "stroke",
-    ]);
+    const compared = resolveMarkColors(
+      svg,
+      ["K"],
+      () => "#111111",
+      makeSubBarProbe("value-compared"),
+      ["fill", "stroke"],
+    );
     expect(compared.get("K")).toBe("rgb(220, 20, 140)");
   });
 
@@ -167,7 +170,7 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
       ["Alpha One"],
       () => "#111111",
       makeSubBarProbe("value-based"),
-      ["fill", "stroke"]
+      ["fill", "stroke"],
     );
 
     expect(resolved.get("Alpha One")).toBe("rgb(120, 40, 200)");
@@ -182,7 +185,7 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
       ["Gamma"],
       () => "#111111",
       makeSubBarProbe("value-based"),
-      ["fill", "stroke"]
+      ["fill", "stroke"],
     );
 
     expect(resolved.get("Gamma")).toBe("rgb(9, 9, 9)");
@@ -197,7 +200,7 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
       ["Delta"],
       () => "#111111",
       makeSubBarProbe("value-based"),
-      ["fill", "stroke"]
+      ["fill", "stroke"],
     );
 
     expect(resolved.get("Delta")).toBe("rgb(11, 22, 33)");
@@ -211,7 +214,7 @@ describe("resolveMarkColors - ComparableHorizontalBar sub-bar CSS contract", () 
       ["Alpha One"],
       () => "#111111",
       makeSubBarProbe("value-based"),
-      ["fill", "stroke"]
+      ["fill", "stroke"],
     );
 
     expect(resolved.get("Alpha One")).toBe("#111111");
@@ -235,7 +238,7 @@ describe("resolveMarkColors - RadarChart fill/stroke CSS contract", () => {
       ["Model A"],
       () => "#111111",
       makeMultiPropProbe("polygon", "radar-area", ["stroke", "fill"]),
-      ["stroke", "fill"]
+      ["stroke", "fill"],
     );
 
     expect(resolved.get("Model A")).toBe("rgb(20, 170, 90)");
@@ -250,7 +253,7 @@ describe("resolveMarkColors - RadarChart fill/stroke CSS contract", () => {
       ["Model A"],
       () => "#111111",
       makeMultiPropProbe("polygon", "radar-area", ["stroke", "fill"]),
-      ["stroke", "fill"]
+      ["stroke", "fill"],
     );
 
     expect(resolved.get("Model A")).toBe("rgb(9, 9, 200)");
@@ -264,7 +267,7 @@ describe("resolveMarkColors - RadarChart fill/stroke CSS contract", () => {
       ["Model A"],
       () => "#111111",
       makeMultiPropProbe("polygon", "radar-area", ["stroke", "fill"]),
-      ["stroke", "fill"]
+      ["stroke", "fill"],
     );
 
     expect(resolved.get("Model A")).toBe("#111111");

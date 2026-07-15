@@ -20,7 +20,7 @@ export interface ProcessedScatter {
 
 export function processScatterData(
   dataSet: ScatterDataPoint[],
-  opts: ProcessScatterOptions
+  opts: ProcessScatterOptions,
 ): ProcessedScatter {
   const disabled = new Set(opts.disabledItems ?? []);
   let points = dataSet.filter((p) => !disabled.has(p.label));
@@ -28,7 +28,7 @@ export function processScatterData(
   if (opts.filter) {
     const { criteria, sortingDir, limit, date } = opts.filter;
     const pick = (p: ScatterDataPoint): number =>
-      criteria === "y" ? p.y : criteria === "d" ? p.d ?? 0 : p.x;
+      criteria === "y" ? p.y : criteria === "d" ? (p.d ?? 0) : p.x;
     let arr = points;
     if (date !== undefined && date !== "") arr = arr.filter((p) => String(p.date) === String(date));
     const dir = sortingDir === "asc" ? 1 : -1;

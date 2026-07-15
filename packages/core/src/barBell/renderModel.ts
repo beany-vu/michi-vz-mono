@@ -47,7 +47,7 @@ export function buildBarBellRenderModel(
   dataSet: BarBellDataRow[],
   scales: BarBellScales,
   colors: BarBellColorResolver,
-  o: BuildBarBellModelOptions
+  o: BuildBarBellModelOptions,
 ): BarBellRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
@@ -87,7 +87,7 @@ export function buildBarBellRenderModel(
       const dodge = computeCircleDodgeOffsets(
         rowSegs.map((s) => s.cx),
         capRadius,
-        bandwidth
+        bandwidth,
       );
       rowSegs.forEach((s, i) => {
         s.capCy = rowMid + dodge[i];

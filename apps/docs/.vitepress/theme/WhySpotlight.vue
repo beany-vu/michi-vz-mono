@@ -269,7 +269,7 @@ function buildChartForActiveTab() {
       const item = forecastFanFn(
         FORECAST_HISTORY,
         { method: "holt-winters", horizon: 4, levels: [0.5, 0.8], level: 0.95 },
-        "Museum visits (thousands)"
+        "Museum visits (thousands)",
       );
       const p = {
         dataSet: [{ ...item, color: RED }],

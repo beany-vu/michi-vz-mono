@@ -1,12 +1,7 @@
 // Renderer-agnostic semantic context for AreaChart (stacked). Per-key totals +
 // chart-agnostic a11yTable + deterministic NL summary, derived from the data
 // (identical in SVG and canvas).
-import type {
-  AreaChartContext,
-  AreaDataRow,
-  AreaSeriesContext,
-  XaxisDataType,
-} from "../types";
+import type { AreaChartContext, AreaDataRow, AreaSeriesContext, XaxisDataType } from "../types";
 import { provenanceCounts } from "../math/provenance";
 import { buildLegendData } from "./legend";
 
@@ -35,7 +30,7 @@ function keyContext(key: string, series: AreaDataRow[], color: string): AreaSeri
 
 export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext {
   const series = input.activeKeys.map((k) =>
-    keyContext(k, input.series, input.colorsMapping[k] ?? "")
+    keyContext(k, input.series, input.colorsMapping[k] ?? ""),
   );
   const grandTotal = round(series.reduce((a, s) => a + s.total, 0));
 
@@ -58,7 +53,8 @@ export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext
   }.`;
   if (largestKey) summary += ` Largest series: ${largestKey.key} (total ${largestKey.total}).`;
   summary += ` Combined total ${grandTotal}.`;
-  if (predictedRows > 0) summary += ` ${predictedRows} forecast row${predictedRows === 1 ? "" : "s"} from ${String(forecastStart)}.`;
+  if (predictedRows > 0)
+    summary += ` ${predictedRows} forecast row${predictedRows === 1 ? "" : "s"} from ${String(forecastStart)}.`;
 
   // Flat colour-contract payload the consumer colour authority reads via
   // onChartDataProcessed(ctx).legendData. Without it thd's setMetadata

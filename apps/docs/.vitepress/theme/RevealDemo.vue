@@ -99,7 +99,9 @@ onBeforeUnmount(() => {
           {{ r }}
         </button>
       </div>
-      <span v-if="renderer === 'webgpu'" class="rvd-note">webgpu paints the full frame instantly</span>
+      <span v-if="renderer === 'webgpu'" class="rvd-note"
+        >webgpu paints the full frame instantly</span
+      >
     </div>
     <div class="rvd-stage michi-vz-calm" ref="host"></div>
     <p class="rvd-hint">

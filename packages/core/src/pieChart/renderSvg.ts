@@ -24,7 +24,7 @@ export function renderPieSvg(
   parent: SVGElement,
   model: PieRenderModel,
   o: PieSvgOptions,
-  ia: PieInteractions
+  ia: PieInteractions,
 ): void {
   const root = svgEl("g", {
     class: "pie-chart-content",

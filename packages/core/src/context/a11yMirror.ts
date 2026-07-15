@@ -37,7 +37,11 @@ function applySvgSemantics(svg: SVGElement, ctx: BaseChartContext): void {
     name: titleText,
     description: ctx.summary,
     encodingFormat: "image/svg+xml",
-    creator: { "@type": "SoftwareApplication", name: "michi-vz", url: "https://michi-vz.netlify.app" },
+    creator: {
+      "@type": "SoftwareApplication",
+      name: "michi-vz",
+      url: "https://michi-vz.netlify.app",
+    },
   });
 
   // Semantic order: title -> desc -> metadata at the top of the <svg>.

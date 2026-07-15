@@ -18,7 +18,7 @@ export function drawRangeCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RangeRenderModel,
-  o: RangeCanvasOptions
+  o: RangeCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -38,7 +38,7 @@ export function drawRangeCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("path", "area", "fill"),
-    "fill"
+    "fill",
   );
 
   for (const s of model.series) {

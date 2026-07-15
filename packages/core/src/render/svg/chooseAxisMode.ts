@@ -71,7 +71,7 @@ export function sampleBandTicks(
   domain: string[],
   bandSize: number,
   minSlot: number,
-  maxTicks: number
+  maxTicks: number,
 ): string[] {
   if (domain.length === 0) return [];
   if (domain.length === 1) return domain;

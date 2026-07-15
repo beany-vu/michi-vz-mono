@@ -32,7 +32,7 @@ export function renderDScaleLegend(
   sizeScale: ScaleLinear<number, number>,
   sizeRange: [number, number],
   cfg: DScaleLegendConfig,
-  o: DScaleLegendOptions
+  o: DScaleLegendOptions,
 ): SVGGElement {
   const px = o.width - 100;
   const py = o.height / 3;
@@ -50,7 +50,7 @@ export function renderDScaleLegend(
   // Arcs largest-first so the smaller ones nest visibly inside.
   for (const rad of [...sentinels].sort((a, b) => b - a)) {
     g.appendChild(
-      svgEl("path", { d: halfLeftCirclePath(px, py, rad), fill: "none", stroke: "#ccc" })
+      svgEl("path", { d: halfLeftCirclePath(px, py, rad), fill: "none", stroke: "#ccc" }),
     );
   }
 

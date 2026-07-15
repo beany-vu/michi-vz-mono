@@ -29,21 +29,35 @@ export function drawComparableVerticalBarWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: ComparableVerticalRenderModel,
-  o: ComparableVerticalWebgpuOptions
+  o: ComparableVerticalWebgpuOptions,
 ): boolean {
   const labels = model.bars.map((b) => b.label);
   const fb = (l: string) => model.bars.find((b) => b.label === l)?.color || "transparent";
   const fbBased = (l: string) => model.bars.find((b) => b.label === l)?.basedColor || "transparent";
-  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), ["fill", "stroke"]);
-  const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), ["fill", "stroke"]);
+  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), [
+    "fill",
+    "stroke",
+  ]);
+  const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), [
+    "fill",
+    "stroke",
+  ]);
 
   const batch = emptyBatch();
   for (const bar of model.bars) {
     const groupAlpha = bar.dimmed ? 0.3 : 1;
     const parts = comparableVerticalDrawOrder(bar).map((type) =>
       type === "based"
-        ? { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.basedColor }
-        : { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color }
+        ? {
+            seg: bar.based,
+            opacity: o.valueBasedOpacity,
+            color: basedColors.get(bar.label) || bar.basedColor,
+          }
+        : {
+            seg: bar.compared,
+            opacity: o.valueComparedOpacity,
+            color: comparedColors.get(bar.label) || bar.color,
+          },
     );
     for (const part of parts) {
       if (isTransparent(part.color)) continue;
@@ -54,7 +68,7 @@ export function drawComparableVerticalBarWebgpu(
         part.seg.y,
         part.seg.width,
         part.seg.height,
-        markColor(part.color, groupAlpha * part.opacity)
+        markColor(part.color, groupAlpha * part.opacity),
       );
     }
   }

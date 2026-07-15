@@ -29,7 +29,7 @@ export function renderBubbleSvg(
   parent: SVGElement,
   model: BubbleRenderModel,
   o: BubbleSvgOptions,
-  ia: BubbleInteractions
+  ia: BubbleInteractions,
 ): void {
   const root = svgEl("g", { class: "bubble-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
@@ -49,7 +49,7 @@ export function renderBubbleSvg(
         cy: d.y,
         r: d.r,
         fill: d.fill,
-      })
+      }),
     );
 
     if (model.showSplit && d.partialPct != null && d.realizedRadius < d.r) {
@@ -63,7 +63,7 @@ export function renderBubbleSvg(
           r: d.r,
           fill: "#ffffff",
           opacity: veil,
-        })
+        }),
       );
       g.appendChild(
         svgEl("circle", {
@@ -73,7 +73,7 @@ export function renderBubbleSvg(
           cy: d.y,
           r: d.realizedRadius,
           fill: d.fill,
-        })
+        }),
       );
     }
 

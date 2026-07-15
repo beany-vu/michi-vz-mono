@@ -49,10 +49,15 @@ function resolveSvg(el: HTMLElement): SVGSVGElement | null {
   return el.querySelector("svg");
 }
 
-function measure(el: HTMLElement, svg: SVGSVGElement, opts: StyledSvgOptions): { w: number; h: number } {
+function measure(
+  el: HTMLElement,
+  svg: SVGSVGElement,
+  opts: StyledSvgOptions,
+): { w: number; h: number } {
   const box = typeof svg.getBoundingClientRect === "function" ? svg.getBoundingClientRect() : null;
   const w = opts.width ?? numericAttr(svg, "width") ?? (box && box.width) ?? el.clientWidth ?? 0;
-  const h = opts.height ?? numericAttr(svg, "height") ?? (box && box.height) ?? el.clientHeight ?? 0;
+  const h =
+    opts.height ?? numericAttr(svg, "height") ?? (box && box.height) ?? el.clientHeight ?? 0;
   return { w, h };
 }
 
@@ -158,7 +163,13 @@ export function chartToPngDataUrl(el: HTMLElement, opts: PngOptions = {}): Promi
         if (canvasSurface && canvasSurface.width > 0) {
           const hostBox = el.getBoundingClientRect();
           const cBox = canvasSurface.getBoundingClientRect();
-          cx.drawImage(canvasSurface, cBox.left - hostBox.left, cBox.top - hostBox.top, cBox.width, cBox.height);
+          cx.drawImage(
+            canvasSurface,
+            cBox.left - hostBox.left,
+            cBox.top - hostBox.top,
+            cBox.width,
+            cBox.height,
+          );
         }
         resolve(out.toDataURL("image/png"));
       } catch (err) {

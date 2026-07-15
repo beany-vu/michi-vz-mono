@@ -12,7 +12,7 @@ export function buildScatterColors(
   points: ScatterDataPoint[],
   colors: string[] = [],
   colorsMapping?: Record<string, string>,
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): ScatterColorResolver {
   const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
   const generated: Record<string, string> = { ...colorsMapping };
@@ -22,7 +22,7 @@ export function buildScatterColors(
     if (generated[p.label]) continue;
     generated[p.label] = skipColorMappingDispatch
       ? "transparent"
-      : p.color ?? palette[i % palette.length];
+      : (p.color ?? palette[i % palette.length]);
     i++;
   }
 

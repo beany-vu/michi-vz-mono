@@ -95,7 +95,8 @@ const SHIELD_MARK_URI =
 const OPEN_KEY = "michi-vz-devtools-open";
 const BTN_KEY = "michi-vz-devtools-btn";
 
-type TabKey = "overview" | "sizing" | "scales" | "diff" | "hittest" | "profiler" | "insights" | "a11y";
+type TabKey =
+  "overview" | "sizing" | "scales" | "diff" | "hittest" | "profiler" | "insights" | "a11y";
 const TABS: Array<[TabKey, string]> = [
   ["overview", "Overview"],
   ["sizing", "Sizing"],
@@ -133,7 +134,7 @@ const AI_ACTIONS: Array<{ key: string; label: string; hint: string }> = [
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   attrs: Record<string, string> = {},
-  children: Array<Node | string> = []
+  children: Array<Node | string> = [],
 ): HTMLElementTagNameMap[K] {
   const n = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
@@ -188,7 +189,15 @@ function domEntry(node: WcElement, index: number): DevtoolsChartEntry {
 export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   if (typeof document === "undefined") {
     const noop = () => {};
-    return { open: noop, close: noop, toggle: noop, isOpen: () => false, refresh: noop, destroy: noop, getRoot: () => null };
+    return {
+      open: noop,
+      close: noop,
+      toggle: noop,
+      isOpen: () => false,
+      refresh: noop,
+      destroy: noop,
+      getRoot: () => null,
+    };
   }
   const hook = enableDevtools();
   const container = opts.container ?? document.body;
@@ -234,13 +243,21 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   // Each chart's editable props as first seen by the panel, so Reset can undo every
   // panel-driven edit (dataSet, highlight, disable) in one click. JSON-cloned: the
   // three fields are data-only, and function props are never touched by the panel.
-  const initialProps = new Map<string, { dataSet?: unknown; highlightItems: string[]; disabledItems: string[] }>();
+  const initialProps = new Map<
+    string,
+    { dataSet?: unknown; highlightItems: string[]; disabledItems: string[] }
+  >();
   function rememberInitial(e: DevtoolsChartEntry): void {
     if (initialProps.has(e.id)) return;
-    const p = (e.getProps() ?? {}) as { dataSet?: unknown; highlightItems?: string[]; disabledItems?: string[] };
+    const p = (e.getProps() ?? {}) as {
+      dataSet?: unknown;
+      highlightItems?: string[];
+      disabledItems?: string[];
+    };
     try {
       initialProps.set(e.id, {
-        dataSet: p.dataSet === undefined ? undefined : (JSON.parse(JSON.stringify(p.dataSet)) as unknown),
+        dataSet:
+          p.dataSet === undefined ? undefined : (JSON.parse(JSON.stringify(p.dataSet)) as unknown),
         highlightItems: [...(p.highlightItems ?? [])],
         disabledItems: [...(p.disabledItems ?? [])],
       });
@@ -363,7 +380,11 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const countEl = el("span", { class: "mv-devtools-count" });
   // Long-lived filter input (never rebuilt, so typing survives re-renders).
   let filterText = "";
-  const filterEl = el("input", { class: "mv-devtools-filter", type: "search", placeholder: "filter charts" });
+  const filterEl = el("input", {
+    class: "mv-devtools-filter",
+    type: "search",
+    placeholder: "filter charts",
+  });
   filterEl.addEventListener("input", () => {
     filterText = filterEl.value.trim().toLowerCase();
     render();
@@ -378,7 +399,9 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const detailEl = el("div", { class: "mv-devtools-detail" }, [historyNavEl, tabsEl, contentEl]);
 
   const refreshBtn = el("button", { class: "mv-devtools-btn" }, ["⟳"]);
-  const maxBtn = el("button", { class: "mv-devtools-btn", title: "Maximize / restore panel" }, ["⛶"]);
+  const maxBtn = el("button", { class: "mv-devtools-btn", title: "Maximize / restore panel" }, [
+    "⛶",
+  ]);
   const closeBtn = el("button", { class: "mv-devtools-btn" }, ["×"]);
   const header = el("div", { class: "mv-devtools-header" }, [
     el("span", { class: "mv-devtools-title" }, ["michi-vz devtools"]),
@@ -392,8 +415,14 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   // (single axis each). The panel is anchored bottom-right, so all three grow
   // the panel toward the top-left of the viewport.
   const resizeHandle = el("div", { class: "mv-devtools-resize", title: "Drag to resize" });
-  const resizeL = el("div", { class: "mv-devtools-resize-edge mv-devtools-resize-l", title: "Drag to resize width" });
-  const resizeT = el("div", { class: "mv-devtools-resize-edge mv-devtools-resize-t", title: "Drag to resize height" });
+  const resizeL = el("div", {
+    class: "mv-devtools-resize-edge mv-devtools-resize-l",
+    title: "Drag to resize width",
+  });
+  const resizeT = el("div", {
+    class: "mv-devtools-resize-edge mv-devtools-resize-t",
+    title: "Drag to resize height",
+  });
   const panel = el("div", { class: "mv-devtools" }, [
     resizeL,
     resizeT,
@@ -409,8 +438,10 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const SIZE_KEY = "michi-vz-devtools-size";
   const MIN_W = 360;
   const MIN_H = 240;
-  const clampW = (w: number): number => Math.min(Math.max(w, MIN_W), Math.max(MIN_W, window.innerWidth - 32));
-  const clampH = (h: number): number => Math.min(Math.max(h, MIN_H), Math.max(MIN_H, window.innerHeight - 32));
+  const clampW = (w: number): number =>
+    Math.min(Math.max(w, MIN_W), Math.max(MIN_W, window.innerWidth - 32));
+  const clampH = (h: number): number =>
+    Math.min(Math.max(h, MIN_H), Math.max(MIN_H, window.innerHeight - 32));
   // Pass null for an axis to leave it untouched (e.g. an edge drag that only
   // changes one dimension keeps the other's current value / auto height).
   function applySize(w: number | null, h: number | null): void {
@@ -418,8 +449,15 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     if (typeof h === "number") panel.style.setProperty("--mvdt-h", `${clampH(h)}px`);
   }
   try {
-    const saved = JSON.parse(localStorage.getItem(SIZE_KEY) ?? "null") as { w?: number; h?: number } | null;
-    if (saved) applySize(typeof saved.w === "number" ? saved.w : null, typeof saved.h === "number" ? saved.h : null);
+    const saved = JSON.parse(localStorage.getItem(SIZE_KEY) ?? "null") as {
+      w?: number;
+      h?: number;
+    } | null;
+    if (saved)
+      applySize(
+        typeof saved.w === "number" ? saved.w : null,
+        typeof saved.h === "number" ? saved.h : null,
+      );
   } catch {
     // storage unavailable (privacy mode) - keep defaults
   }
@@ -443,7 +481,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
         JSON.stringify({
           ...(Number.isFinite(w) ? { w } : {}),
           ...(Number.isFinite(h) ? { h } : {}),
-        })
+        }),
       );
     } catch {
       // storage unavailable - size stays session-only
@@ -463,7 +501,10 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     endDrag();
     panel.classList.add("is-resizing");
     dragMove = (ev: MouseEvent) =>
-      applySize(horiz ? startW + (startX - ev.clientX) : null, vert ? startH + (startY - ev.clientY) : null);
+      applySize(
+        horiz ? startW + (startX - ev.clientX) : null,
+        vert ? startH + (startY - ev.clientY) : null,
+      );
     dragUp = () => {
       endDrag();
       panel.classList.remove("is-resizing");
@@ -496,7 +537,10 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   }
   let btnPlaced = false;
   try {
-    const saved = JSON.parse(localStorage.getItem(BTN_KEY) ?? "null") as { left?: number; top?: number } | null;
+    const saved = JSON.parse(localStorage.getItem(BTN_KEY) ?? "null") as {
+      left?: number;
+      top?: number;
+    } | null;
     if (saved && typeof saved.left === "number" && typeof saved.top === "number") {
       placeBtn(saved.left, saved.top);
       btnPlaced = true;
@@ -531,7 +575,10 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       try {
         localStorage.setItem(
           BTN_KEY,
-          JSON.stringify({ left: parseFloat(toggleBtn.style.left), top: parseFloat(toggleBtn.style.top) })
+          JSON.stringify({
+            left: parseFloat(toggleBtn.style.left),
+            top: parseFloat(toggleBtn.style.top),
+          }),
         );
       } catch {
         // storage unavailable - position stays session-only
@@ -601,14 +648,22 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       return;
     }
     const shown = filterText
-      ? list.filter((e) => e.id.toLowerCase().includes(filterText) || e.chartType.toLowerCase().includes(filterText))
+      ? list.filter(
+          (e) =>
+            e.id.toLowerCase().includes(filterText) ||
+            e.chartType.toLowerCase().includes(filterText),
+        )
       : list;
     if (shown.length === 0) {
       listEl.append(el("div", { class: "empty" }, [`No charts match "${filterText}"`]));
       return;
     }
     for (const e of shown) {
-      const locate = el("button", { class: "mv-devtools-btn locate", title: "Locate this chart on the page" }, ["◎"]);
+      const locate = el(
+        "button",
+        { class: "mv-devtools-btn locate", title: "Locate this chart on the page" },
+        ["◎"],
+      );
       locate.addEventListener("click", (ev) => {
         ev.stopPropagation();
         locateChart(e.host);
@@ -617,7 +672,11 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       const children: Array<Node | string> = [el("span", { class: "ct" }, [e.chartType]), locate];
       if (renderer) children.push(el("span", { class: "rend" }, [renderer]));
       children.push(el("div", {}, [e.id]));
-      const item = el("div", { class: "mv-devtools-item" + (e.id === selectedId ? " is-active" : "") }, children);
+      const item = el(
+        "div",
+        { class: "mv-devtools-item" + (e.id === selectedId ? " is-active" : "") },
+        children,
+      );
       item.addEventListener("click", () => {
         selectedId = e.id;
         render();
@@ -629,7 +688,11 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   function renderTabs(): void {
     tabsEl.replaceChildren();
     for (const [key, label] of TABS) {
-      const btn = el("button", { class: "mv-devtools-tab" + (key === selectedTab ? " is-active" : "") }, [label]);
+      const btn = el(
+        "button",
+        { class: "mv-devtools-tab" + (key === selectedTab ? " is-active" : "") },
+        [label],
+      );
       btn.addEventListener("click", () => {
         selectedTab = key;
         render();
@@ -653,7 +716,9 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     const live = viewBack === 0;
     const older = el("button", { class: "mv-devtools-btn" }, ["◀"]);
     const newer = el("button", { class: "mv-devtools-btn" }, ["▶"]);
-    const liveBtn = el("button", { class: "mv-devtools-btn" + (live ? " is-active" : "") }, ["● live"]);
+    const liveBtn = el("button", { class: "mv-devtools-btn" + (live ? " is-active" : "") }, [
+      "● live",
+    ]);
     const pos = live ? `${hist.length}/${hist.length}` : `${hist.length - viewBack}/${hist.length}`;
     older.addEventListener("click", () => {
       viewBack = Math.min(viewBack + 1, hist.length - 1);
@@ -674,10 +739,12 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
         el("span", { class: "k" }, [pos]),
         newer,
         liveBtn,
-      ])
+      ]),
     );
     if (!live) {
-      historyNavEl.append(el("div", { class: "mv-devtools-histbanner" }, ["viewing snapshot (read-only)"]));
+      historyNavEl.append(
+        el("div", { class: "mv-devtools-histbanner" }, ["viewing snapshot (read-only)"]),
+      );
     }
   }
 
@@ -728,10 +795,12 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
         : ctx.renderer === "webgpu"
           ? "webgpu - data marks paint on a GPU canvas (falls back to canvas when no adapter). Axes, labels and tooltips stay SVG/DOM."
           : "svg - everything is vector DOM: marks, axes, labels. Every mark is inspectable in the browser's Elements panel.";
-    readoutEl.append(el("div", { class: "mv-devtools-kv" }, [
-      el("span", { class: "k" }, ["marks"]),
-      el("span", {}, [rendererNote]),
-    ]));
+    readoutEl.append(
+      el("div", { class: "mv-devtools-kv" }, [
+        el("span", { class: "k" }, ["marks"]),
+        el("span", {}, [rendererNote]),
+      ]),
+    );
 
     // Summary - "what the AI sees".
     readoutEl.append(el("h4", {}, ["Summary"]));
@@ -756,7 +825,15 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       const head = ["label", "points"];
       if (hasProvenance) head.push("actual", "predicted", "forecastStart");
       const table = el("table");
-      table.append(el("thead", {}, [el("tr", {}, head.map((h) => el("th", {}, [h])))]));
+      table.append(
+        el("thead", {}, [
+          el(
+            "tr",
+            {},
+            head.map((h) => el("th", {}, [h])),
+          ),
+        ]),
+      );
       const tbody = el("tbody");
       for (const s of series) {
         const actual = (s.actualCount ?? s.historyCount) as number | undefined;
@@ -770,7 +847,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
           cells.push(
             el("td", {}, [el("span", { class: "badge actual" }, [String(actual ?? 0)])]),
             el("td", {}, [el("span", { class: "badge predicted" }, [String(predicted ?? 0)])]),
-            el("td", {}, [s.forecastStart == null ? "-" : String(s.forecastStart)])
+            el("td", {}, [s.forecastStart == null ? "-" : String(s.forecastStart)]),
           );
         }
         tbody.append(el("tr", {}, cells));
@@ -816,22 +893,24 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       contentEl.append(
         el("div", { class: "mv-devtools-flag err" }, [
           "Host has zero size - the chart is invisible. Check for display:none ancestors, a collapsed flex/grid track, or a container measured before layout (e.g. a hidden tab).",
-        ])
+        ]),
       );
     } else if (reqW != null && host.clientWidth > 0 && reqW > innerW) {
       contentEl.append(
         el("div", { class: "mv-devtools-flag warn" }, [
           `Requested width ${reqW}px exceeds the host's inner width (${innerW}px = clientWidth ${host.clientWidth} minus ${padX}px padding). clientWidth INCLUDES padding - subtract paddingLeft + paddingRight when sizing a chart from it, or the chart overflows the host.`,
-        ])
+        ]),
       );
     } else if (reqW != null && reqW > rect.width) {
       contentEl.append(
         el("div", { class: "mv-devtools-flag warn" }, [
           `Requested width ${reqW}px is wider than the host's rendered box (${Math.round(rect.width)}px) - the chart overflows or is clipped.`,
-        ])
+        ]),
       );
     } else {
-      contentEl.append(el("div", { class: "mv-devtools-flag ok" }, ["No sizing problems detected."]));
+      contentEl.append(
+        el("div", { class: "mv-devtools-flag ok" }, ["No sizing problems detected."]),
+      );
     }
 
     contentEl.append(el("h4", {}, ["Responsive hint"]));
@@ -847,7 +926,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   requestAnimationFrame(() => chart.update({ ...props, width: w }));
 });
 ro.observe(host);`,
-      ])
+      ]),
     );
   }
 
@@ -865,7 +944,7 @@ ro.observe(host);`,
       contentEl.append(
         el("div", { class: "empty" }, [
           `${ctx.chartType} has no axis scales (pie, sankey, treemap and friends place marks without x/y domains).`,
-        ])
+        ]),
       );
       return;
     }
@@ -876,19 +955,35 @@ ro.observe(host);`,
       const [a, b] = domain as [unknown, unknown];
       if (typeof a !== "number" || typeof b !== "number") return;
       if (Number.isNaN(a) || Number.isNaN(b)) {
-        checks.push({ kind: "err", text: `${name} domain contains NaN - a data point's value/date failed to parse.` });
+        checks.push({
+          kind: "err",
+          text: `${name} domain contains NaN - a data point's value/date failed to parse.`,
+        });
       } else if (a === b) {
-        checks.push({ kind: "warn", text: `${name} domain is zero-width [${a}, ${b}] - all values are identical, marks collapse onto one coordinate.` });
+        checks.push({
+          kind: "warn",
+          text: `${name} domain is zero-width [${a}, ${b}] - all values are identical, marks collapse onto one coordinate.`,
+        });
       } else if (a > b) {
-        checks.push({ kind: "warn", text: `${name} domain is inverted [${a}, ${b}] - the axis runs backwards; check a manual domain prop.` });
+        checks.push({
+          kind: "warn",
+          text: `${name} domain is inverted [${a}, ${b}] - the axis runs backwards; check a manual domain prop.`,
+        });
       }
     };
 
     if (anyCtx.xAxis) {
       contentEl.append(el("h4", {}, ["xAxis"]));
       const kv = el("div", { class: "mv-devtools-kv" });
-      if (anyCtx.xAxis.type) kv.append(el("span", { class: "k" }, ["type"]), el("span", {}, [String(anyCtx.xAxis.type)]));
-      kv.append(el("span", { class: "k" }, ["domain"]), el("span", {}, [shortJson(anyCtx.xAxis.domain, 160)]));
+      if (anyCtx.xAxis.type)
+        kv.append(
+          el("span", { class: "k" }, ["type"]),
+          el("span", {}, [String(anyCtx.xAxis.type)]),
+        );
+      kv.append(
+        el("span", { class: "k" }, ["domain"]),
+        el("span", {}, [shortJson(anyCtx.xAxis.domain, 160)]),
+      );
       contentEl.append(kv);
       numericChecks("xAxis", anyCtx.xAxis.domain);
     }
@@ -896,13 +991,16 @@ ro.observe(host);`,
       contentEl.append(el("h4", {}, ["yAxis"]));
       const kv = el("div", { class: "mv-devtools-kv" });
       if (anyCtx.yAxis.domain !== undefined) {
-        kv.append(el("span", { class: "k" }, ["domain"]), el("span", {}, [shortJson(anyCtx.yAxis.domain, 160)]));
+        kv.append(
+          el("span", { class: "k" }, ["domain"]),
+          el("span", {}, [shortJson(anyCtx.yAxis.domain, 160)]),
+        );
         numericChecks("yAxis", anyCtx.yAxis.domain);
       }
       if (Array.isArray(anyCtx.yAxis.labels)) {
         kv.append(
           el("span", { class: "k" }, ["labels"]),
-          el("span", {}, [`${anyCtx.yAxis.labels.length}: ${shortJson(anyCtx.yAxis.labels, 140)}`])
+          el("span", {}, [`${anyCtx.yAxis.labels.length}: ${shortJson(anyCtx.yAxis.labels, 140)}`]),
         );
       }
       contentEl.append(kv);
@@ -912,7 +1010,8 @@ ro.observe(host);`,
     if (checks.length === 0) {
       contentEl.append(el("div", { class: "mv-devtools-flag ok" }, ["Domains look sane."]));
     } else {
-      for (const c of checks) contentEl.append(el("div", { class: `mv-devtools-flag ${c.kind}` }, [c.text]));
+      for (const c of checks)
+        contentEl.append(el("div", { class: `mv-devtools-flag ${c.kind}` }, [c.text]));
     }
   }
 
@@ -923,26 +1022,37 @@ ro.observe(host);`,
       contentEl.append(
         el("div", { class: "empty" }, [
           "Need at least two snapshots to diff. Update the chart (new data, a prop change) and the difference between the last two ChartContext snapshots shows here.",
-        ])
+        ]),
       );
       return;
     }
     const idx = hist.length - 1 - viewBack;
     if (idx <= 0) {
-      contentEl.append(el("div", { class: "empty" }, ["Viewing the oldest snapshot - nothing earlier to diff against."]));
+      contentEl.append(
+        el("div", { class: "empty" }, [
+          "Viewing the oldest snapshot - nothing earlier to diff against.",
+        ]),
+      );
       return;
     }
     const prev = hist[idx - 1];
     const next = hist[idx];
     const changes = diffObjects(prev, next);
-    contentEl.append(el("h4", {}, [`Snapshot ${idx} → ${idx + 1} (${changes.length} change${changes.length === 1 ? "" : "s"})`]));
+    contentEl.append(
+      el("h4", {}, [
+        `Snapshot ${idx} → ${idx + 1} (${changes.length} change${changes.length === 1 ? "" : "s"})`,
+      ]),
+    );
     if (changes.length === 0) {
       contentEl.append(el("div", { class: "mv-devtools-flag ok" }, ["Snapshots are identical."]));
       return;
     }
     const grid = el("div", { class: "mv-devtools-diff" });
     for (const c of changes.slice(0, 200)) {
-      grid.append(el("span", { class: `kind ${c.kind}` }, [c.kind]), el("span", { class: "path" }, [c.path]));
+      grid.append(
+        el("span", { class: `kind ${c.kind}` }, [c.kind]),
+        el("span", { class: "path" }, [c.path]),
+      );
       const vals =
         c.kind === "changed"
           ? `${shortJson(c.from)} → ${shortJson(c.to)}`
@@ -953,7 +1063,9 @@ ro.observe(host);`,
     }
     contentEl.append(grid);
     if (changes.length > 200) {
-      contentEl.append(el("div", { class: "empty" }, [`… ${changes.length - 200} more changes not shown`]));
+      contentEl.append(
+        el("div", { class: "empty" }, [`… ${changes.length - 200} more changes not shown`]),
+      );
     }
   }
 
@@ -966,7 +1078,7 @@ ro.observe(host);`,
       contentEl.append(
         el("div", { class: "empty" }, [
           "Waiting for pointer events. Move the mouse over the chart (canvas/webgpu mode - SVG marks are inspectable directly). If the log stays silent while you hover, the chart's canvas listener is dead.",
-        ])
+        ]),
       );
       return;
     }
@@ -977,7 +1089,7 @@ ro.observe(host);`,
         last.label
           ? `Last: hit "${last.label}" at ${Math.round(last.x)}, ${Math.round(last.y)}`
           : `Last: miss at ${Math.round(last.x)}, ${Math.round(last.y)}`,
-      ])
+      ]),
     );
     const log = el("div", { class: "mv-devtools-hitlog" });
     const rows = mine.slice(-50).reverse();
@@ -988,12 +1100,14 @@ ro.observe(host);`,
           el("span", { class: "k" }, [`${Math.round(e.x)}, ${Math.round(e.y)}`]),
           el("span", {}, [e.label ?? "-"]),
           el("span", { class: "k" }, [`${Math.round(e.t)} ms`]),
-        ])
+        ]),
       );
     }
     contentEl.append(log);
     if (mine.length > 50) {
-      contentEl.append(el("div", { class: "empty" }, [`showing the last 50 of ${mine.length} events`]));
+      contentEl.append(
+        el("div", { class: "empty" }, [`showing the last 50 of ${mine.length} events`]),
+      );
     }
   }
 
@@ -1005,7 +1119,7 @@ ro.observe(host);`,
       contentEl.append(
         el("div", { class: "empty" }, [
           "No updates timed yet. Update the chart (new data, a prop change) and each update's render duration appears here.",
-        ])
+        ]),
       );
       return;
     }
@@ -1041,7 +1155,7 @@ ro.observe(host);`,
         contentEl.append(
           el("div", { class: "mv-devtools-flag warn" }, [
             `Render time is trending up (${early.toFixed(1)} ms → ${recent.toFixed(1)} ms mean). Look for growing data, non-memoized props forcing full re-renders, or leaked listeners.`,
-          ])
+          ]),
         );
       } else {
         contentEl.append(el("div", { class: "mv-devtools-flag ok" }, ["Render time is stable."]));
@@ -1067,10 +1181,24 @@ ro.observe(host);`,
       return;
     }
     const t = el("table");
-    t.append(el("thead", {}, [el("tr", {}, table.headers.map((h) => el("th", {}, [h])))]));
+    t.append(
+      el("thead", {}, [
+        el(
+          "tr",
+          {},
+          table.headers.map((h) => el("th", {}, [h])),
+        ),
+      ]),
+    );
     const tbody = el("tbody");
     for (const r of table.rows.slice(0, 30)) {
-      tbody.append(el("tr", {}, r.map((c) => el("td", {}, [String(c)]))));
+      tbody.append(
+        el(
+          "tr",
+          {},
+          r.map((c) => el("td", {}, [String(c)])),
+        ),
+      );
     }
     t.append(tbody);
     contentEl.append(t);
@@ -1084,9 +1212,12 @@ ro.observe(host);`,
     contentEl.append(
       el(
         "h4",
-        { title: "The plain-language summary every chart carries in its ChartContext - this exact text is what an AI agent or a screen reader receives. Computed from the data; no model involved." },
-        ["What the AI sees"]
-      )
+        {
+          title:
+            "The plain-language summary every chart carries in its ChartContext - this exact text is what an AI agent or a screen reader receives. Computed from the data; no model involved.",
+        },
+        ["What the AI sees"],
+      ),
     );
     if (ctx?.summary) {
       contentEl.append(el("div", { class: "mv-devtools-ai" }, [ctx.summary]));
@@ -1096,7 +1227,9 @@ ro.observe(host);`,
 
     const tools = entry.getTools?.() ?? [];
     const findTool = (key: string): AgentTool | undefined =>
-      tools.find((t) => t.name === key || t.name.endsWith(`.${key}`) || t.name.startsWith(`${key}.`));
+      tools.find(
+        (t) => t.name === key || t.name.endsWith(`.${key}`) || t.name.startsWith(`${key}.`),
+      );
     const known = AI_ACTIONS.map((a) => ({ ...a, tool: findTool(a.key) })).filter((a) => a.tool);
 
     if (known.length === 0 && tools.length === 0) {
@@ -1104,7 +1237,7 @@ ro.observe(host);`,
       contentEl.append(
         el("div", { class: "empty" }, [
           "Attach @michi-vz/insights to unlock one-click AI actions here: chart.use(narrate()) for prose narration, chart.use(anomaly()) for outlier detection, chart.use(forecast()) for projections.",
-        ])
+        ]),
       );
       return;
     }
@@ -1114,11 +1247,13 @@ ro.observe(host);`,
       contentEl.append(
         el("div", { class: "mv-devtools-ai-caption" }, [
           "These run the chart's attached insights plugins locally, in your browser. By default they are deterministic rules and statistics - no language model runs and nothing is downloaded. Hover an action for what it computes.",
-        ])
+        ]),
       );
       const rowEl = el("div", { class: "row" });
       for (const action of known) {
-        const btn = el("button", { class: "mv-devtools-ai-action", title: action.hint }, [action.label]);
+        const btn = el("button", { class: "mv-devtools-ai-action", title: action.hint }, [
+          action.label,
+        ]);
         btn.addEventListener("click", async () => {
           btn.disabled = true;
           try {
@@ -1134,7 +1269,11 @@ ro.observe(host);`,
                   .filter((r) => r.label && Array.isArray(r.anomalies) && r.anomalies.length > 0)
                   .map((r) => String(r.label))
               : undefined;
-            aiState.set(entry.id, { tool: action.key, text, labels: labels?.length ? labels : undefined });
+            aiState.set(entry.id, {
+              tool: action.key,
+              text,
+              labels: labels?.length ? labels : undefined,
+            });
           } catch (err) {
             aiState.set(entry.id, { tool: action.key, text: `Error: ${(err as Error).message}` });
           }
@@ -1191,7 +1330,7 @@ ro.observe(host);`,
           el("div", { class: "row" }, [el("strong", {}, [tool.name]), run]),
           el("div", {}, [tool.description]),
           args,
-          out
+          out,
         );
       }
       contentEl.append(el("h4", {}, ["Advanced"]), details);
@@ -1205,7 +1344,9 @@ ro.observe(host);`,
     const hist = history.get(entry.id) ?? [];
     if (viewBack !== 0 && hist.length > 0) {
       controlsEl.append(
-        el("div", { class: "empty" }, ["Controls are disabled while viewing history. Click the live button to resume."])
+        el("div", { class: "empty" }, [
+          "Controls are disabled while viewing history. Click the live button to resume.",
+        ]),
       );
       return;
     }
@@ -1225,7 +1366,9 @@ ro.observe(host);`,
     };
     const ctx = entry.getContext();
     const labels: string[] = Array.isArray((ctx as { series?: Array<{ label?: string }> })?.series)
-      ? (ctx as { series: Array<{ label?: string }> }).series.map((s) => String(s.label ?? "")).filter(Boolean)
+      ? (ctx as { series: Array<{ label?: string }> }).series
+          .map((s) => String(s.label ?? ""))
+          .filter(Boolean)
       : [];
 
     // Highlight / disable toggles per series.
@@ -1236,7 +1379,10 @@ ro.observe(host);`,
       controlsEl.append(el("h4", {}, ["Highlight"]));
       const hRow = el("div", { class: "row" });
       for (const label of labels) {
-        const cb = el("input", highlight.has(label) ? { type: "checkbox", checked: "" } : { type: "checkbox" });
+        const cb = el(
+          "input",
+          highlight.has(label) ? { type: "checkbox", checked: "" } : { type: "checkbox" },
+        );
         cb.addEventListener("change", () => {
           if (cb.checked) highlight.add(label);
           else highlight.delete(label);
@@ -1249,7 +1395,10 @@ ro.observe(host);`,
       controlsEl.append(el("h4", {}, ["Disable"]));
       const dRow = el("div", { class: "row" });
       for (const label of labels) {
-        const cb = el("input", disabled.has(label) ? { type: "checkbox", checked: "" } : { type: "checkbox" });
+        const cb = el(
+          "input",
+          disabled.has(label) ? { type: "checkbox", checked: "" } : { type: "checkbox" },
+        );
         cb.addEventListener("change", () => {
           if (cb.checked) disabled.add(label);
           else disabled.delete(label);
@@ -1265,15 +1414,20 @@ ro.observe(host);`,
     if (initial) {
       const resetBtn = el(
         "button",
-        { class: "mv-devtools-btn", title: "Restore the chart's dataSet, highlight and disable state as they were when devtools first saw it" },
-        ["Reset chart"]
+        {
+          class: "mv-devtools-btn",
+          title:
+            "Restore the chart's dataSet, highlight and disable state as they were when devtools first saw it",
+        },
+        ["Reset chart"],
       );
       resetBtn.addEventListener("click", () => {
         const patch: Record<string, unknown> = {
           highlightItems: [...initial.highlightItems],
           disabledItems: [...initial.disabledItems],
         };
-        if (initial.dataSet !== undefined) patch.dataSet = JSON.parse(JSON.stringify(initial.dataSet));
+        if (initial.dataSet !== undefined)
+          patch.dataSet = JSON.parse(JSON.stringify(initial.dataSet));
         controlsKey = ""; // force the controls (incl. the dataSet textarea) to rebuild
         apply(patch);
       });
@@ -1343,8 +1497,12 @@ ro.observe(host);`,
   if (hotkey) {
     onKey = (e: KeyboardEvent) => {
       const mod = (hotkey.ctrl && e.ctrlKey) || (hotkey.meta && e.metaKey);
-      if (mod && (!hotkey.shift || e.shiftKey) && (!hotkey.alt || e.altKey) &&
-          e.key.toLowerCase() === hotkey.key.toLowerCase()) {
+      if (
+        mod &&
+        (!hotkey.shift || e.shiftKey) &&
+        (!hotkey.alt || e.altKey) &&
+        e.key.toLowerCase() === hotkey.key.toLowerCase()
+      ) {
         e.preventDefault();
         toggle();
       }

@@ -93,9 +93,7 @@ const legendRows = computed<DemoLegendItem[]>(() => {
   // Auto mode: only worth showing when there is more than one coloured series.
   return autoLegend.value.length > 1 ? autoLegend.value : [];
 });
-const hasLegendToggle = computed(
-  () => props.legend !== false && pairedLegend.value.length > 1,
-);
+const hasLegendToggle = computed(() => props.legend !== false && pairedLegend.value.length > 1);
 // Canvas-first: we built the canvas renderer in parallel with SVG and it is the
 // faster path, so the live demos lead with it. The toggle proves SVG/canvas parity.
 const renderer = ref<"canvas" | "svg">("canvas");
@@ -139,7 +137,11 @@ function buildNode() {
     const paleOf = (node as any).colorsBasedMapping as Record<string, string> | undefined;
     const fromContext = raw
       .filter((l: any) => l.paleColor)
-      .map((l: any) => ({ label: String(l.label), color: String(l.color || ""), pale: String(l.paleColor) }));
+      .map((l: any) => ({
+        label: String(l.label),
+        color: String(l.color || ""),
+        pale: String(l.paleColor),
+      }));
     pairedLegend.value = fromContext.length
       ? fromContext
       : paleOf
@@ -170,7 +172,9 @@ async function start() {
     const w = Math.max(280, Math.floor(entries[0].contentRect.width));
     if (!el.value || w === el.value.width) return;
     cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => { if (el.value) el.value.width = w; });
+    raf = requestAnimationFrame(() => {
+      if (el.value) el.value.width = w;
+    });
   });
   ro.observe(host.value);
 }
@@ -213,7 +217,10 @@ function setRenderer(r: "canvas" | "svg") {
   if (renderer.value === r) return;
   renderer.value = r;
   ctx.value = "";
-  if (el.value) { el.value.remove?.(); el.value = null; }
+  if (el.value) {
+    el.value.remove?.();
+    el.value = null;
+  }
   buildNode();
 }
 
@@ -232,7 +239,9 @@ function toggleContext() {
     <div class="chart-demo-bar">
       <span class="chart-demo-title">{{ title || "Example" }}</span>
       <span class="chart-demo-rtoggle" role="group" aria-label="renderer">
-        <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">Canvas</button>
+        <button :class="{ on: renderer === 'canvas' }" @click="setRenderer('canvas')">
+          Canvas
+        </button>
         <button :class="{ on: renderer === 'svg' }" @click="setRenderer('svg')">SVG</button>
       </span>
     </div>
@@ -252,16 +261,27 @@ function toggleContext() {
           {{ item.label }}
         </li>
       </ul>
-      <span v-if="hasLegendToggle" class="chart-demo-rtoggle chart-demo-ltoggle" role="group" aria-label="legend mode">
-        <button :class="{ on: legendMode === 'meaning' }" @click="legendMode = 'meaning'">{{ t.demoLegendMeaning }}</button>
-        <button :class="{ on: legendMode === 'pairs' }" @click="legendMode = 'pairs'">{{ t.demoLegendPairs }}</button>
+      <span
+        v-if="hasLegendToggle"
+        class="chart-demo-rtoggle chart-demo-ltoggle"
+        role="group"
+        aria-label="legend mode"
+      >
+        <button :class="{ on: legendMode === 'meaning' }" @click="legendMode = 'meaning'">
+          {{ t.demoLegendMeaning }}
+        </button>
+        <button :class="{ on: legendMode === 'pairs' }" @click="legendMode = 'pairs'">
+          {{ t.demoLegendPairs }}
+        </button>
       </span>
     </div>
     <div class="chart-demo-foot">
       <button class="chart-demo-btn" @click="toggleContext">
         {{ ctx ? "▴ Hide" : "▾ Show" }} LLM context · getContext()
       </button>
-      <span class="chart-demo-note">{{ renderer === 'canvas' ? 'canvas · responsive' : 'SVG · responsive' }}</span>
+      <span class="chart-demo-note">{{
+        renderer === "canvas" ? "canvas · responsive" : "SVG · responsive"
+      }}</span>
     </div>
     <pre v-if="ctx" class="chart-demo-ctx">{{ ctx }}</pre>
     <div class="chart-demo-bait">
@@ -299,16 +319,60 @@ function toggleContext() {
   border-bottom: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg);
 }
-.chart-demo-title { font-family: "Josefin Sans", system-ui, sans-serif; font-weight: 600; }
+.chart-demo-title {
+  font-family: "Josefin Sans", system-ui, sans-serif;
+  font-weight: 600;
+}
 /* Renderer toggle - a small segmented control; Canvas is the promoted default. */
-.chart-demo-rtoggle { display: inline-flex; border: 1px solid var(--vp-c-divider); border-radius: 999px; overflow: hidden; }
-.chart-demo-rtoggle button { font: inherit; font-size: 12px; padding: 3px 12px; border: none; background: var(--vp-c-bg-soft); color: var(--vp-c-text-2); cursor: pointer; }
-.chart-demo-rtoggle button.on { background: var(--vp-c-brand-1); color: #fff; }
-.chart-demo-stage { padding: 12px 16px; }
-.chart-demo-foot { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 12px; }
-.chart-demo-btn { font: inherit; font-size: 12.5px; color: var(--vp-c-brand-1); background: none; border: none; cursor: pointer; padding: 0; }
-.chart-demo-note { font-family: var(--vp-font-family-mono); font-size: 11px; color: var(--vp-c-text-3); letter-spacing: 0.04em; }
-.chart-demo-ctx { max-height: 300px; overflow: auto; font-size: 12px; margin: 0 16px 16px; }
+.chart-demo-rtoggle {
+  display: inline-flex;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.chart-demo-rtoggle button {
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 12px;
+  border: none;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+}
+.chart-demo-rtoggle button.on {
+  background: var(--vp-c-brand-1);
+  color: #fff;
+}
+.chart-demo-stage {
+  padding: 12px 16px;
+}
+.chart-demo-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px 12px;
+}
+.chart-demo-btn {
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--vp-c-brand-1);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.chart-demo-note {
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  color: var(--vp-c-text-3);
+  letter-spacing: 0.04em;
+}
+.chart-demo-ctx {
+  max-height: 300px;
+  overflow: auto;
+  font-size: 12px;
+  margin: 0 16px 16px;
+}
 /* Auto legend - compact swatch rows for demos whose colours have no on-chart key. */
 .chart-demo-legend-row {
   display: flex;
@@ -326,9 +390,19 @@ function toggleContext() {
   font-size: 12.5px;
   color: var(--vp-c-text-2);
 }
-.chart-demo-legend li { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
-.chart-demo-legend li .chart-demo-swatch + .chart-demo-swatch { margin-left: -3px; }
-.chart-demo-ltoggle { margin-left: auto; flex: none; }
+.chart-demo-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+.chart-demo-legend li .chart-demo-swatch + .chart-demo-swatch {
+  margin-left: -3px;
+}
+.chart-demo-ltoggle {
+  margin-left: auto;
+  flex: none;
+}
 .chart-demo-swatch {
   width: 10px;
   height: 10px;
@@ -357,12 +431,27 @@ function toggleContext() {
   padding: 4px 12px;
   cursor: pointer;
 }
-.chart-demo-action:hover { background: var(--vp-c-brand-soft); }
-.chart-demo-action:disabled { opacity: 0.6; cursor: wait; }
-.chart-demo-bait-links { margin-left: auto; }
-.chart-demo-bait a { color: var(--vp-c-brand-1); text-decoration: none; font-weight: 500; }
-.chart-demo-bait a:hover { text-decoration: underline; }
-.chart-demo-bait-sep { color: var(--vp-c-text-3); }
+.chart-demo-action:hover {
+  background: var(--vp-c-brand-soft);
+}
+.chart-demo-action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.chart-demo-bait-links {
+  margin-left: auto;
+}
+.chart-demo-bait a {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  font-weight: 500;
+}
+.chart-demo-bait a:hover {
+  text-decoration: underline;
+}
+.chart-demo-bait-sep {
+  color: var(--vp-c-text-3);
+}
 /* The live answer from @michi-vz/insights - rendered like a spoken aside. */
 .chart-demo-explanation {
   margin: 0;

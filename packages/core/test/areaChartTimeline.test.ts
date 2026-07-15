@@ -19,13 +19,17 @@ const T0 = 68;
 const T1 = 313;
 const T2 = WIDTH;
 
-function mount(extra: Partial<AreaChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<AreaChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountAreaChart(
     host,
     { series, keys, width: WIDTH, height: 300, xAxisDataType: "number", ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -98,7 +102,7 @@ describe("AreaChart timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: true, progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(clipWidth(host)).toBeCloseTo(T0, 3);
     ticker.tick(500);
@@ -123,7 +127,7 @@ describe("AreaChart timeline canvas mode", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: { easing: "linear", tweenMs: 400 }, renderer: "canvas" },
-      ticker
+      ticker,
     );
     // The control still drives via the SVG-side clip bookkeeping even though the
     // visible paint is the canvas layer's revealX redraw.

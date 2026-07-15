@@ -19,13 +19,17 @@ export function renderDualSvg(
   parent: SVGElement,
   model: DualRenderModel,
   o: DualSvgOptions,
-  ia: DualInteractions
+  ia: DualInteractions,
 ): void {
   const root = svgEl("g", { class: "dual-bar-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
 
   for (const bar of model.bars) {
-    const g = svgEl("g", { class: "data-group", "data-label": bar.label, "data-label-safe": bar.safe });
+    const g = svgEl("g", {
+      class: "data-group",
+      "data-label": bar.label,
+      "data-label-safe": bar.safe,
+    });
     g.style.opacity = bar.dimmed ? "0.3" : "1";
     g.style.transition = transition;
 

@@ -19,7 +19,7 @@ export function createAreaScales(
   margin: Margin,
   xAxisDataType: XaxisDataType,
   forcePercentageScale = false,
-  stackOffset?: "none" | "expand"
+  stackOffset?: "none" | "expand",
 ): AreaScales {
   const [xlo, xhi] = xDomain;
   let xScale: AreaXScale;

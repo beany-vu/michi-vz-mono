@@ -43,7 +43,7 @@ export function buildScatterRenderModel(
   points: ScatterDataPoint[],
   scales: ScatterScales,
   colors: ScatterColorResolver,
-  o: BuildScatterModelOptions
+  o: BuildScatterModelOptions,
 ): ScatterRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;

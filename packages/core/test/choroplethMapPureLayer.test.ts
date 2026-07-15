@@ -13,8 +13,12 @@ const identity = ((p: [number, number]) => p) as unknown as GeoProjection;
 
 describe("choroplethMap/data.ts - normalizeGeography", () => {
   it("passes a flat GeoFeatureItem[] through unchanged (id/name/geometry)", () => {
-    const flat: GeoFeatureItem[] = [{ id: "A", name: "Alpha", geometry: { type: "Point", coordinates: [0, 0] } }];
-    expect(normalizeGeography(flat)).toEqual([{ id: "A", name: "Alpha", geometry: flat[0].geometry }]);
+    const flat: GeoFeatureItem[] = [
+      { id: "A", name: "Alpha", geometry: { type: "Point", coordinates: [0, 0] } },
+    ];
+    expect(normalizeGeography(flat)).toEqual([
+      { id: "A", name: "Alpha", geometry: flat[0].geometry },
+    ]);
   });
 
   it("reads a FeatureCollection's top-level Feature.id, falling back to properties.id", () => {
@@ -61,13 +65,17 @@ describe("choroplethMap/data.ts - processChoroplethMapData (join)", () => {
       { id: "not-a", label: "Alpha", value: 1 },
       { id: "not-b", label: "Beta", value: 2 },
     ];
-    const { features: fs, matchFor } = processChoroplethMapData(features, misIded, { joinBy: "name" });
+    const { features: fs, matchFor } = processChoroplethMapData(features, misIded, {
+      joinBy: "name",
+    });
     expect(matchFor(fs[0])?.value).toBe(1);
     expect(matchFor(fs[1])?.value).toBe(2);
   });
 
   it("treats a disabled label as unmatched", () => {
-    const { features: fs, matchFor } = processChoroplethMapData(features, dataSet, { disabledItems: ["Alpha"] });
+    const { features: fs, matchFor } = processChoroplethMapData(features, dataSet, {
+      disabledItems: ["Alpha"],
+    });
     expect(matchFor(fs[0])).toBeUndefined();
     expect(matchFor(fs[1])?.label).toBe("Beta");
   });
@@ -80,12 +88,20 @@ describe("choroplethMap/colors.ts - buildChoroplethColors precedence", () => {
   ];
 
   it("colorsMapping wins over everything", () => {
-    const colors = buildChoroplethColors(dataSet, [], { Alpha: "#mapped" }, { domain: [50], range: ["#lo", "#hi"] });
+    const colors = buildChoroplethColors(
+      dataSet,
+      [],
+      { Alpha: "#mapped" },
+      { domain: [50], range: ["#lo", "#hi"] },
+    );
     expect(colors.getColor(dataSet[0])).toBe("#mapped");
   });
 
   it("colorScale (scaleThreshold) wins over the row's explicit color", () => {
-    const colors = buildChoroplethColors(dataSet, [], undefined, { domain: [50], range: ["#lo", "#hi"] });
+    const colors = buildChoroplethColors(dataSet, [], undefined, {
+      domain: [50],
+      range: ["#lo", "#hi"],
+    });
     expect(colors.getColor(dataSet[0])).toBe("#lo"); // 10 < 50
     expect(colors.getColor(dataSet[1])).toBe("#hi"); // 60 >= 50
   });
@@ -128,7 +144,9 @@ describe("choroplethMap/scales.ts - createChoroplethProjection (legacy MakeProje
   });
 
   it("skips rotate/center/parallels for geoAlbersUsa (fixed composite projection)", () => {
-    expect(() => createChoroplethProjection("geoAlbersUsa", { rotate: [10, 0] }, 900, 500)).not.toThrow();
+    expect(() =>
+      createChoroplethProjection("geoAlbersUsa", { rotate: [10, 0] }, 900, 500),
+    ).not.toThrow();
   });
 
   it("dispatches all 13 named projections without throwing", () => {
@@ -242,7 +260,9 @@ describe("validate/choroplethMapWarnings.ts - checkChoroplethMapData", () => {
 
   it("flags an unmatched dataSet id", () => {
     const warnings = checkChoroplethMapData(features, dataSet);
-    expect(warnings.some((w) => w.type === "unmatched-dataset-id" && w.label === "Ghost")).toBe(true);
+    expect(warnings.some((w) => w.type === "unmatched-dataset-id" && w.label === "Ghost")).toBe(
+      true,
+    );
   });
 
   it("flags a feature missing an id", () => {
@@ -256,7 +276,9 @@ describe("validate/choroplethMapWarnings.ts - checkChoroplethMapData", () => {
   });
 
   it("is clean for a fully-matched, valid dataset", () => {
-    const clean: GeoFeatureItem[] = [{ id: "A", name: "Alpha", geometry: { type: "Point", coordinates: [0, 0] } }];
+    const clean: GeoFeatureItem[] = [
+      { id: "A", name: "Alpha", geometry: { type: "Point", coordinates: [0, 0] } },
+    ];
     const cleanData: ChoroplethDataItem[] = [{ id: "A", label: "Alpha" }];
     expect(checkChoroplethMapData(clean, cleanData)).toEqual([]);
   });

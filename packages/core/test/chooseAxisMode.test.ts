@@ -36,7 +36,13 @@ describe("chooseAxisMode", () => {
 
   test("returns fallback with evenly-spaced sample when even rotation overflows", () => {
     const result = chooseAxisMode({
-      domain: ["pos-12-01-2023", "pos-12-02-2023", "pos-12-03-2023", "pos-12-04-2023", "pos-12-05-2023"],
+      domain: [
+        "pos-12-01-2023",
+        "pos-12-02-2023",
+        "pos-12-03-2023",
+        "pos-12-04-2023",
+        "pos-12-05-2023",
+      ],
       formatter: (d) => String(d),
       bandWidth: 20,
       measure,
@@ -52,7 +58,10 @@ describe("chooseAxisMode", () => {
     // 12 long labels at a 20px band: below the rotated-clearance threshold
     // (20·cos45 ≈ 14px < 16px line-height), so it thins rather than rotates, and
     // the band is wide enough to fit 3 evenly-spaced ticks (endpoints + midpoint).
-    const domain = Array.from({ length: 12 }, (_, i) => `2023-long-month-${String(i).padStart(2, "0")}`);
+    const domain = Array.from(
+      { length: 12 },
+      (_, i) => `2023-long-month-${String(i).padStart(2, "0")}`,
+    );
     const result = chooseAxisMode({
       domain,
       formatter: (d) => String(d),
@@ -95,7 +104,12 @@ describe("chooseAxisMode", () => {
   });
 
   test("empty domain returns horizontal with no ticks", () => {
-    const result = chooseAxisMode({ domain: [], formatter: (d) => String(d), bandWidth: 80, measure });
+    const result = chooseAxisMode({
+      domain: [],
+      formatter: (d) => String(d),
+      bandWidth: 80,
+      measure,
+    });
     expect(result.mode).toBe("horizontal");
     expect(result.tickValues).toEqual([]);
   });

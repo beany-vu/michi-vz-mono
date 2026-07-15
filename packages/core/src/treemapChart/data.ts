@@ -39,11 +39,7 @@ export interface ProcessedTreemap {
 
 const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
-function normalize(
-  nodes: TreemapNode[],
-  parentPath: string[],
-  disabled: Set<string>
-): TmNode[] {
+function normalize(nodes: TreemapNode[], parentPath: string[], disabled: Set<string>): TmNode[] {
   const out: TmNode[] = [];
   for (const n of nodes) {
     if (disabled.has(n.label)) continue;
@@ -114,7 +110,7 @@ export function processTreemapData(
     disabledItems?: string[];
     filter?: { limit: number; sortingDir: "asc" | "desc" };
     minTileShare?: number;
-  } = {}
+  } = {},
 ): ProcessedTreemap {
   const disabled = new Set(opts.disabledItems ?? []);
   let roots = normalize(dataSet ?? [], [], disabled);

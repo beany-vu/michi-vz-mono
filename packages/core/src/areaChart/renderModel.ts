@@ -30,7 +30,7 @@ export function buildAreaRenderModel(
   stacked: AreaDatum[],
   scales: AreaScales,
   colors: AreaColorResolver,
-  o: BuildAreaModelOptions
+  o: BuildAreaModelOptions,
 ): AreaRenderModel {
   const gen = makeAreaGenerator(scales.xScale, scales.yScale, o.xAxisDataType, o.curve);
   const highlightSet = new Set(o.highlightItems);

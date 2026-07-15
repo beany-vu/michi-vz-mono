@@ -13,7 +13,11 @@ import { renderTitle } from "../render/svg";
 import { processTreemapData } from "../treemapChart/data";
 import { buildTreemapColors } from "../treemapChart/colors";
 import { layoutTreemap, layoutStack } from "../treemapChart/layout";
-import { buildTreemapRenderModel, type TreemapLeafMark, type TreemapRenderModel } from "../treemapChart/renderModel";
+import {
+  buildTreemapRenderModel,
+  type TreemapLeafMark,
+  type TreemapRenderModel,
+} from "../treemapChart/renderModel";
 import { renderTreemapSvg } from "../treemapChart/renderSvg";
 import { drawTreemapCanvas } from "../treemapChart/renderCanvas";
 import { drawTreemapWebgpu } from "../treemapChart/renderWebgpu";
@@ -75,7 +79,7 @@ interface Resolved {
 // resolveSinglePointLine (engine/lineChart.ts): `true` -> default config `{}`,
 // omitted/false -> null (feature off, no-op).
 function resolveTileValueLabels(
-  v: TreemapChartProps["tileValueLabels"]
+  v: TreemapChartProps["tileValueLabels"],
 ): TreemapTileValueLabelsConfig | null {
   if (!v) return null;
   return v === true ? {} : v;
@@ -110,7 +114,7 @@ function resolve(p: TreemapChartProps): Resolved {
 export function mountTreemapChart(
   host: HTMLElement,
   initial: TreemapChartProps,
-  opts?: MountOptions<TreemapChartProps>
+  opts?: MountOptions<TreemapChartProps>,
 ): ChartInstance<TreemapChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-treemap-chart");
@@ -251,7 +255,7 @@ export function mountTreemapChart(
           height: 12,
           rx: 2,
           fill: m.legendColor,
-        })
+        }),
       );
       if (item.opacity < 1) {
         g.appendChild(
@@ -264,7 +268,7 @@ export function mountTreemapChart(
             rx: 2,
             fill: "#ffffff",
             opacity: Math.max(0, Math.min(0.95, 1 - item.opacity)),
-          })
+          }),
         );
       }
       const text = svgEl("text", {
@@ -312,7 +316,7 @@ export function mountTreemapChart(
       processed.groupKeys,
       props.colors,
       seededMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -404,7 +408,7 @@ export function mountTreemapChart(
               tooltip.classList.add("sticky");
               showTooltip(leaf, ev);
             },
-          }
+          },
         );
       }
 
@@ -460,7 +464,12 @@ export function mountTreemapChart(
         endPx: r.width,
         canvasRedraw:
           r.renderer === "canvas"
-            ? (x) => drawTreemapCanvas(canvas, svg, model!, { width: r.width, height: r.height, revealX: x })
+            ? (x) =>
+                drawTreemapCanvas(canvas, svg, model!, {
+                  width: r.width,
+                  height: r.height,
+                  revealX: x,
+                })
             : undefined,
       });
     } else {

@@ -27,7 +27,7 @@ export function extractDataKeys(dataSet: VerticalStackBarDataSet[]): string[] {
 export function resolveEffectiveKeys(
   dataKeys: string[],
   keys?: string[],
-  disabledItems?: string[]
+  disabledItems?: string[],
 ): string[] {
   const disabled = new Set(disabledItems ?? []);
   let ordered: string[];
@@ -41,10 +41,7 @@ export function resolveEffectiveKeys(
   return ordered.filter((k) => !disabled.has(k));
 }
 
-export function collectDates(
-  dataSet: VerticalStackBarDataSet[],
-  xAxisDomain?: string[]
-): string[] {
+export function collectDates(dataSet: VerticalStackBarDataSet[], xAxisDomain?: string[]): string[] {
   if (xAxisDomain && xAxisDomain.length > 0) return xAxisDomain;
   const set = new Set<string>();
   for (const ds of dataSet) {
@@ -78,7 +75,7 @@ export function applyDateFilter(
   dates: string[],
   dataSet: VerticalStackBarDataSet[],
   keys: string[],
-  filter: NonNullable<VerticalStackBarChartProps["filter"]>
+  filter: NonNullable<VerticalStackBarChartProps["filter"]>,
 ): string[] {
   const dir = filter.sortingDir === "asc" ? 1 : -1;
   const ranked = [...dates]
@@ -95,7 +92,7 @@ export function applyDateFilter(
 // 0.6.18 "legend === bars" invariant). Only DistributionOfTrade passes `filter`.
 export function applySeriesFilter(
   dataSet: VerticalStackBarDataSet[],
-  filter: NonNullable<VerticalStackBarChartProps["filter"]>
+  filter: NonNullable<VerticalStackBarChartProps["filter"]>,
 ): VerticalStackBarDataSet[] {
   const totalled = dataSet.map((ds) => {
     let total = 0;
@@ -115,7 +112,7 @@ export function applySeriesFilter(
 export function computeYDomain(
   dataSet: VerticalStackBarDataSet[],
   keys: string[],
-  yAxisDomain?: [number, number]
+  yAxisDomain?: [number, number],
 ): [number, number] {
   if (yAxisDomain) return yAxisDomain;
   let min = 0;

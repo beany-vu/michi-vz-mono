@@ -18,7 +18,14 @@ export interface StackCanvasOptions {
   revealX?: number;
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
   if (typeof ctx.roundRect === "function") {
     ctx.beginPath();
     ctx.roundRect(x, y, w, h, r);
@@ -32,7 +39,7 @@ export function drawStackCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: StackRenderModel,
-  o: StackCanvasOptions
+  o: StackCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -46,13 +53,15 @@ export function drawStackCanvas(
   }
 
   const labels = model.keys;
-  const fallback = new Map(model.keys.map((k) => [k, model.stackedRectData[k]?.[0]?.fill ?? "transparent"]));
+  const fallback = new Map(
+    model.keys.map((k) => [k, model.stackedRectData[k]?.[0]?.fill ?? "transparent"]),
+  );
   const fillColors = resolveMarkColors(
     svg,
     labels,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
 
   const hl = o.highlightSet ?? model.highlightSet;

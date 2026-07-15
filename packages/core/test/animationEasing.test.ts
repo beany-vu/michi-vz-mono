@@ -50,7 +50,7 @@ describe("resolveEasing", () => {
   });
 
   it("passes a custom function through untouched", () => {
-    const custom: EasingFn = t => t * t;
+    const custom: EasingFn = (t) => t * t;
     expect(resolveEasing(custom, linear)).toBe(custom);
   });
 

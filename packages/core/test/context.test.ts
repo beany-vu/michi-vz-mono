@@ -65,7 +65,14 @@ describe("renderA11yMirror (chart-agnostic)", () => {
       renderer: "svg",
       colorsMapping: {},
       summary: "A fake chart for testing.",
-      a11yTable: { headers: ["X", "Y"], rows: [[1, 2], [3, 4], [5, 6]] },
+      a11yTable: {
+        headers: ["X", "Y"],
+        rows: [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+        ],
+      },
     };
     renderA11yMirror(host, fake);
     expect(host.getAttribute("aria-label")).toBe("A fake chart for testing.");

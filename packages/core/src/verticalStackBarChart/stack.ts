@@ -2,10 +2,7 @@
 // legacy VerticalStackBarChart so the documented flooring + the hasOwnProperty
 // marker guard are preserved exactly. Pure (no DOM). HARD RULE: the guard lives
 // here and ONLY here; the canvas renderer must not re-implement it.
-import type {
-  StackRectData,
-  VerticalStackBarDataSet,
-} from "../types";
+import type { StackRectData, VerticalStackBarDataSet } from "../types";
 import type { StackScales } from "./scales";
 import type { StackColorResolver } from "./colors";
 
@@ -32,7 +29,7 @@ export function prepareStackedData(
   effectiveKeys: string[],
   scales: StackScales,
   colors: StackColorResolver,
-  o: PrepareStackOptions
+  o: PrepareStackOptions,
 ): PreparedStack {
   const stackedData: Record<string, StackRectData[]> = {};
   for (const k of effectiveKeys) stackedData[k] = [];
@@ -47,8 +44,7 @@ export function prepareStackedData(
 
   // topToBottom: keys[0] renders at the TOP, so stack keys[last] first at the
   // bottom -> iterate reversed. bottomToTop anchors keys[0] at the bottom.
-  const orderedKeys =
-    o.keysOrder === "bottomToTop" ? effectiveKeys : [...effectiveKeys].reverse();
+  const orderedKeys = o.keysOrder === "bottomToTop" ? effectiveKeys : [...effectiveKeys].reverse();
 
   visibleDataSet.forEach((dataItem, groupIndex) => {
     for (const yearData of dataItem.series) {

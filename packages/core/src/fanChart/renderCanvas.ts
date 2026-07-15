@@ -36,7 +36,7 @@ export function drawFanCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   args: FanCanvasArgs,
-  o: FanCanvasOptions
+  o: FanCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return; // jsdom / no 2D context
@@ -57,7 +57,7 @@ export function drawFanCanvas(
     bandLabels,
     (l) => bandFallback.get(l) || "transparent",
     makeSimpleProbe("path", "area", "fill"),
-    "fill"
+    "fill",
   );
   for (const b of args.bands) {
     if (!b.areaPath) continue;
@@ -76,7 +76,7 @@ export function drawFanCanvas(
     lineLabels,
     (l) => lineFallback.get(l) || "transparent",
     makeSimpleProbe("path", "line", "stroke"),
-    "stroke"
+    "stroke",
   );
   for (const s of args.lineModel.series) {
     const color = strokeColors.get(s.label) || s.color;

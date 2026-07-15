@@ -14,7 +14,7 @@ function hasCoordinates(geometry: GeoJSON.Geometry | null | undefined): boolean 
 export function checkChoroplethMapData(
   geography: GeoJSON.FeatureCollection | GeoFeatureItem[],
   dataSet: ChoroplethDataItem[],
-  joinBy: "id" | "name" = "id"
+  joinBy: "id" | "name" = "id",
 ): DataWarning[] {
   const warnings: DataWarning[] = [];
   const features = normalizeGeography(geography ?? []);
@@ -36,7 +36,9 @@ export function checkChoroplethMapData(
     }
   }
 
-  const featureKeys = new Set(features.map((f) => (joinBy === "name" ? f.name : f.id)).filter(Boolean));
+  const featureKeys = new Set(
+    features.map((f) => (joinBy === "name" ? f.name : f.id)).filter(Boolean),
+  );
   for (const d of dataSet ?? []) {
     const key = joinBy === "name" ? d.label : d.id;
     if (!featureKeys.has(key)) {

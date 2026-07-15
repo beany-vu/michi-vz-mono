@@ -24,7 +24,7 @@ export function drawChoroplethMapCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: ChoroplethMapRenderModel,
-  o: ChoroplethCanvasOptions
+  o: ChoroplethCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -37,7 +37,7 @@ export function drawChoroplethMapCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("path", "region", "fill"),
-    "fill"
+    "fill",
   );
 
   const pathGen = createChoroplethPathGenerator(model.projection, ctx);

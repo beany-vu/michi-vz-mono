@@ -22,13 +22,17 @@ const T0 = bandX("2001")! + bandX.bandwidth() + 8;
 const T1 = bandX("2002")! + bandX.bandwidth() + 8;
 const T2 = WIDTH;
 
-function mount(extra: Partial<RibbonChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<RibbonChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountRibbonChart(
     host,
     { series, keys, width: WIDTH, height: 300, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -101,7 +105,7 @@ describe("RibbonChart timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: true, progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(clipWidth(host)).toBeCloseTo(T0, 6);
     ticker.tick(500);
@@ -126,7 +130,7 @@ describe("RibbonChart timeline canvas mode", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: { easing: "linear", tweenMs: 400 }, renderer: "canvas" },
-      ticker
+      ticker,
     );
     expect(host.querySelector(".mv-timeline")).not.toBeNull();
     expect(() => {

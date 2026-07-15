@@ -38,7 +38,7 @@ function valueAtDate(item: LineDataItem, date: number | string): number {
 
 export function processLineChartData(
   dataSet: LineDataItem[],
-  opts: ProcessLineOptions
+  opts: ProcessLineOptions,
 ): ProcessedLine {
   const disabled = new Set(opts.disabledItems ?? []);
   let items = dataSet.filter((it) => !disabled.has(it.label));

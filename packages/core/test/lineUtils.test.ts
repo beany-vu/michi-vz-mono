@@ -29,7 +29,7 @@ describe("enumeratePeriods", () => {
     const viaEnum = enumeratePeriods(
       new Date("2020-01-01"),
       new Date("2020-01-01"),
-      "date_annual"
+      "date_annual",
     )[0];
     expect(viaEnum).toBe((parseXValue("2020", "date_annual") as Date).valueOf());
   });

@@ -120,7 +120,7 @@ export function bindChart<E, P>(
   el: E,
   props: Signal<P>,
   apply: (el: E, props: P) => void,
-  injector?: Injector
+  injector?: Injector,
 ): void {
   effect(() => apply(el, props()), injector ? { injector } : undefined);
 }
@@ -134,7 +134,8 @@ export function applyGapChartProps(el: GapChartElement, props: GapChartProps): v
   if (props.renderer !== undefined) el.renderer = props.renderer;
   if (props.xAxisDataType !== undefined) el.xAxisDataType = props.xAxisDataType;
   if (props.xAxisDomain !== undefined) el.xAxisDomain = props.xAxisDomain;
-  if (props.interactiveRowLabels !== undefined) el.interactiveRowLabels = props.interactiveRowLabels;
+  if (props.interactiveRowLabels !== undefined)
+    el.interactiveRowLabels = props.interactiveRowLabels;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
@@ -265,7 +266,8 @@ export function applyAreaChartProps(el: AreaChartElement, props: AreaChartProps)
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.curve !== undefined) el.curve = props.curve;
-  if (props.forcePercentageScale !== undefined) el.forcePercentageScale = props.forcePercentageScale;
+  if (props.forcePercentageScale !== undefined)
+    el.forcePercentageScale = props.forcePercentageScale;
   if (props.stackOffset !== undefined) el.stackOffset = props.stackOffset;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
@@ -337,7 +339,7 @@ export function applyScatterChartProps(el: ScatterChartElement, props: ScatterCh
 /** Apply engine props onto a <michi-vz-vertical-stack-bar-chart> element. */
 export function applyVerticalStackBarChartProps(
   el: VerticalStackBarChartElement,
-  props: VerticalStackBarChartProps
+  props: VerticalStackBarChartProps,
 ): void {
   el.dataSet = props.dataSet;
   if (props.keys !== undefined) el.keys = props.keys;
@@ -381,7 +383,7 @@ export function applyVerticalStackBarChartProps(
 /** Apply engine props onto a <michi-vz-comparable-horizontal-bar-chart> element. */
 export function applyComparableHorizontalBarChartProps(
   el: ComparableHorizontalBarChartElement,
-  props: ComparableBarChartProps
+  props: ComparableBarChartProps,
 ): void {
   el.dataSet = props.dataSet;
   if (props.title !== undefined) el.chartTitle = props.title;
@@ -390,11 +392,13 @@ export function applyComparableHorizontalBarChartProps(
   if (props.renderer !== undefined) el.renderer = props.renderer;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.colorsBasedMapping !== undefined) el.colorsBasedMapping = props.colorsBasedMapping;
-  if (props.interactiveRowLabels !== undefined) el.interactiveRowLabels = props.interactiveRowLabels;
+  if (props.interactiveRowLabels !== undefined)
+    el.interactiveRowLabels = props.interactiveRowLabels;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.valueBasedOpacity !== undefined) el.valueBasedOpacity = props.valueBasedOpacity;
-  if (props.valueComparedOpacity !== undefined) el.valueComparedOpacity = props.valueComparedOpacity;
+  if (props.valueComparedOpacity !== undefined)
+    el.valueComparedOpacity = props.valueComparedOpacity;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
@@ -432,7 +436,7 @@ export function applyComparableHorizontalBarChartProps(
 /** Apply engine props onto a <michi-vz-comparable-vertical-bar-chart> element. */
 export function applyComparableVerticalBarChartProps(
   el: ComparableVerticalBarChartElement,
-  props: ComparableVerticalBarChartProps
+  props: ComparableVerticalBarChartProps,
 ): void {
   el.dataSet = props.dataSet;
   if (props.title !== undefined) el.chartTitle = props.title;
@@ -444,7 +448,8 @@ export function applyComparableVerticalBarChartProps(
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.valueBasedOpacity !== undefined) el.valueBasedOpacity = props.valueBasedOpacity;
-  if (props.valueComparedOpacity !== undefined) el.valueComparedOpacity = props.valueComparedOpacity;
+  if (props.valueComparedOpacity !== undefined)
+    el.valueComparedOpacity = props.valueComparedOpacity;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
@@ -458,7 +463,8 @@ export function applyComparableVerticalBarChartProps(
   if (props.xAxisLabelPadding !== undefined) el.xAxisLabelPadding = props.xAxisLabelPadding;
   if (props.xAxisMode !== undefined) el.xAxisMode = props.xAxisMode;
   if (props.patternsMapping !== undefined) el.patternsMapping = props.patternsMapping;
-  if (props.showZeroLineForYAxis !== undefined) el.showZeroLineForYAxis = props.showZeroLineForYAxis;
+  if (props.showZeroLineForYAxis !== undefined)
+    el.showZeroLineForYAxis = props.showZeroLineForYAxis;
   if (props.showGrid !== undefined) el.showGrid = props.showGrid;
   if (props.hideTickLabels !== undefined) el.hideTickLabels = props.hideTickLabels;
   if (props.minBarHeight !== undefined) el.minBarHeight = props.minBarHeight;
@@ -476,7 +482,7 @@ export function applyComparableVerticalBarChartProps(
 /** Apply engine props onto a <michi-vz-dual-horizontal-bar-chart> element. */
 export function applyDualHorizontalBarChartProps(
   el: DualHorizontalBarChartElement,
-  props: DualBarChartProps
+  props: DualBarChartProps,
 ): void {
   el.dataSet = props.dataSet;
   if (props.title !== undefined) el.chartTitle = props.title;
@@ -500,7 +506,8 @@ export function applyDualHorizontalBarChartProps(
   if (props.ticks !== undefined) el.ticks = props.ticks;
   if (props.tickHtmlWidth !== undefined) el.tickHtmlWidth = props.tickHtmlWidth;
   if (props.yAxisPosition !== undefined) el.yAxisPosition = props.yAxisPosition;
-  if (props.interactiveRowLabels !== undefined) el.interactiveRowLabels = props.interactiveRowLabels;
+  if (props.interactiveRowLabels !== undefined)
+    el.interactiveRowLabels = props.interactiveRowLabels;
   if (props.filter !== undefined) el.filter = props.filter;
   if (props.enableTransitions !== undefined) el.enableTransitions = props.enableTransitions;
   if (props.timeline !== undefined) el.timeline = props.timeline;
@@ -800,7 +807,7 @@ export function applyFountainChartProps(el: FountainChartElement, props: Fountai
 /** Apply engine props onto a <michi-vz-choropleth-map-chart> element (property binding). */
 export function applyChoroplethMapChartProps(
   el: ChoroplethMapChartElement,
-  props: ChoroplethMapChartProps
+  props: ChoroplethMapChartProps,
 ): void {
   el.geography = props.geography;
   el.dataSet = props.dataSet;
@@ -832,7 +839,10 @@ export function applyChoroplethMapChartProps(
 }
 
 /** Apply engine props onto a <michi-vz-symbol-map-chart> element (property binding). */
-export function applySymbolMapChartProps(el: SymbolMapChartElement, props: SymbolMapChartProps): void {
+export function applySymbolMapChartProps(
+  el: SymbolMapChartElement,
+  props: SymbolMapChartProps,
+): void {
   el.dataSet = props.dataSet;
   if (props.geography !== undefined) el.geography = props.geography;
   if (props.title !== undefined) el.chartTitle = props.title;
@@ -865,7 +875,10 @@ export function applySymbolMapChartProps(el: SymbolMapChartElement, props: Symbo
 }
 
 /** Apply engine props onto a <michi-vz-radial-tree-chart> element (property binding). */
-export function applyRadialTreeChartProps(el: RadialTreeChartElement, props: RadialTreeChartProps): void {
+export function applyRadialTreeChartProps(
+  el: RadialTreeChartElement,
+  props: RadialTreeChartProps,
+): void {
   el.dataSet = props.dataSet;
   if (props.centerLabel !== undefined) el.centerLabel = props.centerLabel;
   if (props.title !== undefined) el.chartTitle = props.title;
@@ -873,7 +886,8 @@ export function applyRadialTreeChartProps(el: RadialTreeChartElement, props: Rad
   if (props.height !== undefined) el.height = props.height;
   if (props.renderer !== undefined) el.renderer = props.renderer;
   if (props.radiusRange !== undefined) el.radiusRange = props.radiusRange;
-  if (props.labelDensityThresholds !== undefined) el.labelDensityThresholds = props.labelDensityThresholds;
+  if (props.labelDensityThresholds !== undefined)
+    el.labelDensityThresholds = props.labelDensityThresholds;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.colors !== undefined) el.colors = props.colors;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;

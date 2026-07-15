@@ -44,7 +44,7 @@ function makeBadge(
   margin: Margin,
   width: number,
   height: number,
-  placement: "auto" | "fixed"
+  placement: "auto" | "fixed",
 ): SVGGElement {
   const badgeW = Math.max(28, label.length * 6 + 16);
   const { x, y } = resolveCrosshairBadgePlacement({
@@ -73,7 +73,7 @@ function makeBadge(
       stroke: color,
       "stroke-width": 1,
       rx: 4,
-    })
+    }),
   );
   const text = svgEl("text", {
     x,
@@ -109,7 +109,7 @@ export function drawCrosshair(
   cy: number,
   r: number,
   color: string,
-  o: DrawCrosshairOptions
+  o: DrawCrosshairOptions,
 ): void {
   clearCrosshair(g);
   const { margin, width, height, dashed, showLabels, span, placement, xLabel, yLabel, opacity } = o;
@@ -129,7 +129,7 @@ export function drawCrosshair(
       "stroke-opacity": opacity,
       "stroke-width": 1.5,
       "pointer-events": "none",
-    })
+    }),
   );
   // Horizontal line: y1=y2=cy; from the left axis to the right (or the bubble, when "half").
   g.appendChild(
@@ -144,7 +144,7 @@ export function drawCrosshair(
       "stroke-opacity": opacity,
       "stroke-width": 1.5,
       "pointer-events": "none",
-    })
+    }),
   );
 
   if (showLabels) {

@@ -27,7 +27,7 @@ export interface LayoutOptions {
 
 export function layoutTreemap(root: TmNode, o: LayoutOptions): LaidOutNode[] {
   const h = hierarchy<TmNode>(root)
-    .sum((d) => (d.children && d.children.length ? 0 : d.tileValue ?? 0))
+    .sum((d) => (d.children && d.children.length ? 0 : (d.tileValue ?? 0)))
     .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
   const layout = treemap<TmNode>()

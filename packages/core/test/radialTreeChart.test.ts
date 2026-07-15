@@ -47,7 +47,7 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
     const coffeeCircle = host.querySelector<SVGCircleElement>('circle[data-label="Sectors"]');
     expect(coffeeCircle).not.toBeNull();
     const safes = Array.from(host.querySelectorAll("circle.radial-tree-node-circle")).map((c) =>
-      c.getAttribute("data-label-safe")
+      c.getAttribute("data-label-safe"),
     );
     expect(safes).toContain(sanitizeForClassName("Sectors"));
     chart.destroy();
@@ -63,7 +63,9 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
 
   it("shows full name + value labels at low leaf density", () => {
     const { host, chart } = mount();
-    const labels = Array.from(host.querySelectorAll("tspan.radial-tree-label-name")).map((t) => t.textContent);
+    const labels = Array.from(host.querySelectorAll("tspan.radial-tree-label-name")).map(
+      (t) => t.textContent,
+    );
     expect(labels).toContain("Coffee");
     chart.destroy();
     host.remove();
@@ -80,7 +82,9 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
   it("draws a centre circle + word-wrapped label when centerLabel is set", () => {
     const { host, chart } = mount({ centerLabel: "Total Merchandise Trade" });
     expect(host.querySelector(".radial-tree-center-circle")).not.toBeNull();
-    const tspans = Array.from(host.querySelectorAll(".radial-tree-center-label tspan")).map((t) => t.textContent);
+    const tspans = Array.from(host.querySelectorAll(".radial-tree-center-label tspan")).map(
+      (t) => t.textContent,
+    );
     expect(tspans).toEqual(["Total", "Merchandise", "Trade"]);
     chart.destroy();
     host.remove();
@@ -107,7 +111,9 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
       },
     ];
     const { host, chart } = mount({ dataSet: manyLeaves });
-    const names = Array.from(host.querySelectorAll("tspan.radial-tree-label-name")).map((t) => t.textContent);
+    const names = Array.from(host.querySelectorAll("tspan.radial-tree-label-name")).map(
+      (t) => t.textContent,
+    );
     // Every label (group "G" and every "LeafN") is abbreviated to its own first
     // 3 characters + "." - so nothing longer than 4 characters should appear.
     expect(names.length).toBeGreaterThan(0);
@@ -124,7 +130,10 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
         children: Array.from({ length: 6 }, (_, i) => ({ label: `Leaf${i}`, value: i + 1 })),
       },
     ];
-    const { host, chart } = mount({ dataSet: manyLeaves, labelDensityThresholds: { rotateAbove: 5, hideAbove: 5 } });
+    const { host, chart } = mount({
+      dataSet: manyLeaves,
+      labelDensityThresholds: { rotateAbove: 5, hideAbove: 5 },
+    });
     expect(host.querySelectorAll("text.radial-tree-label").length).toBe(0);
     chart.destroy();
     host.remove();
@@ -135,7 +144,9 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
     const nodes = Array.from(host.querySelectorAll<SVGGElement>("g.radial-tree-node"));
     const coffeeNode = nodes.find((g) => g.querySelector('circle[data-label="Sectors"]'));
     const africaNode = nodes.find((g) =>
-      Array.from(g.querySelectorAll("tspan.radial-tree-label-name")).some((t) => t.textContent === "Africa")
+      Array.from(g.querySelectorAll("tspan.radial-tree-label-name")).some(
+        (t) => t.textContent === "Africa",
+      ),
     );
     expect(coffeeNode!.style.opacity).toBe("1");
     expect(africaNode!.style.opacity).toBe("0.3");
@@ -147,7 +158,7 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
     const formatter = vi.fn((d: RadialTreeNode) => "tip");
     const { host, chart } = mount({ tooltipFormatter: formatter });
     const g = Array.from(host.querySelectorAll<SVGGElement>("g.radial-tree-node")).find((el) =>
-      el.querySelector('circle[data-label="Sectors"]')
+      el.querySelector('circle[data-label="Sectors"]'),
     )!;
     g.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     expect(formatter).toHaveBeenCalled();
@@ -174,7 +185,10 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
 
   it("emits onDataWarning for an empty children array", () => {
     const onDataWarning = vi.fn();
-    const { host, chart } = mount({ dataSet: [...dataSet, { label: "Empty", children: [] }], onDataWarning });
+    const { host, chart } = mount({
+      dataSet: [...dataSet, { label: "Empty", children: [] }],
+      onDataWarning,
+    });
     expect(onDataWarning).toHaveBeenCalled();
     const warnings = onDataWarning.mock.calls[0][0];
     expect(warnings.some((w: { type: string }) => w.type === "empty-group")).toBe(true);
@@ -225,7 +239,7 @@ describe("mountRadialTreeChart (jsdom, canvas renderer)", () => {
         clientX: marginLeft + centerX + cx,
         clientY: marginTop + centerY + cy,
         bubbles: true,
-      })
+      }),
     );
     expect(highlighted.some((h) => h.length > 0)).toBe(true);
     chart.destroy();
@@ -268,7 +282,9 @@ describe("mountRadialTreeChart - svg vs canvas parity", () => {
   it("resolves the same colorsMapping in both renderers", () => {
     const svgMount = mount({ renderer: "svg" });
     const canvasMount = mount({ renderer: "canvas" });
-    expect(svgMount.chart.getContext()!.colorsMapping).toEqual(canvasMount.chart.getContext()!.colorsMapping);
+    expect(svgMount.chart.getContext()!.colorsMapping).toEqual(
+      canvasMount.chart.getContext()!.colorsMapping,
+    );
     svgMount.chart.destroy();
     svgMount.host.remove();
     canvasMount.chart.destroy();

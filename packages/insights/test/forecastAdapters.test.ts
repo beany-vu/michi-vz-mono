@@ -38,7 +38,7 @@ describe("forecast adapters (multi-chart prediction)", () => {
           },
         ],
       },
-      { plugins: [fc()] }
+      { plugins: [fc()] },
     );
     expect(ctxOf(chart).series[0].pointCount).toBe(5);
     chart.destroy();
@@ -56,7 +56,7 @@ describe("forecast adapters (multi-chart prediction)", () => {
           { date: 2020, A: 30, B: 11 },
         ],
       },
-      { plugins: [fc()] }
+      { plugins: [fc()] },
     );
     expect(ctxOf(chart).stats.rowCount).toBe(5);
     chart.destroy();
@@ -79,7 +79,7 @@ describe("forecast adapters (multi-chart prediction)", () => {
           },
         ],
       },
-      { plugins: [fc()] }
+      { plugins: [fc()] },
     );
     expect(ctxOf(chart).stats.dateCount).toBe(5);
     chart.destroy();
@@ -96,7 +96,7 @@ describe("forecast adapters (multi-chart prediction)", () => {
           { date: "2020", A: 30, B: 11 },
         ],
       },
-      { plugins: [fc()] }
+      { plugins: [fc()] },
     );
     expect(ctxOf(chart).stats.dateCount).toBe(5);
     chart.destroy();
@@ -113,7 +113,7 @@ describe("forecast adapters (multi-chart prediction)", () => {
           { date: "2020", A: 30, B: 11 },
         ],
       },
-      { plugins: [fc()] }
+      { plugins: [fc()] },
     );
     expect(ctxOf(chart).stats.rowCount).toBe(5);
     chart.destroy();

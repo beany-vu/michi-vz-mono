@@ -156,7 +156,7 @@ export interface VerticalStackBarChartAction {
 
 export function verticalStackBarChart(
   node: HTMLElement,
-  props: VerticalStackBarChartProps
+  props: VerticalStackBarChartProps,
 ): VerticalStackBarChartAction {
   const chart = mountVerticalStackBarChart(node, props);
   return {
@@ -174,7 +174,7 @@ export interface ComparableHorizontalBarChartAction {
 
 export function comparableHorizontalBarChart(
   node: HTMLElement,
-  props: ComparableBarChartProps
+  props: ComparableBarChartProps,
 ): ComparableHorizontalBarChartAction {
   const chart = mountComparableHorizontalBarChart(node, props);
   return {
@@ -192,7 +192,7 @@ export interface ComparableVerticalBarChartAction {
 
 export function comparableVerticalBarChart(
   node: HTMLElement,
-  props: ComparableVerticalBarChartProps
+  props: ComparableVerticalBarChartProps,
 ): ComparableVerticalBarChartAction {
   const chart = mountComparableVerticalBarChart(node, props);
   return {
@@ -210,7 +210,7 @@ export interface DualHorizontalBarChartAction {
 
 export function dualHorizontalBarChart(
   node: HTMLElement,
-  props: DualBarChartProps
+  props: DualBarChartProps,
 ): DualHorizontalBarChartAction {
   const chart = mountDualHorizontalBarChart(node, props);
   return {
@@ -361,7 +361,10 @@ export interface ChoroplethMapChartAction {
   getContext: ChartInstance<ChoroplethMapChartProps>["getContext"];
 }
 
-export function choroplethMapChart(node: HTMLElement, props: ChoroplethMapChartProps): ChoroplethMapChartAction {
+export function choroplethMapChart(
+  node: HTMLElement,
+  props: ChoroplethMapChartProps,
+): ChoroplethMapChartAction {
   const chart = mountChoroplethMapChart(node, props);
   return {
     update: (next: ChoroplethMapChartProps) => chart.update(next),
@@ -376,7 +379,10 @@ export interface SymbolMapChartAction {
   getContext: ChartInstance<SymbolMapChartProps>["getContext"];
 }
 
-export function symbolMapChart(node: HTMLElement, props: SymbolMapChartProps): SymbolMapChartAction {
+export function symbolMapChart(
+  node: HTMLElement,
+  props: SymbolMapChartProps,
+): SymbolMapChartAction {
   const chart = mountSymbolMapChart(node, props);
   return {
     update: (next: SymbolMapChartProps) => chart.update(next),
@@ -391,7 +397,10 @@ export interface RadialTreeChartAction {
   getContext: ChartInstance<RadialTreeChartProps>["getContext"];
 }
 
-export function radialTreeChart(node: HTMLElement, props: RadialTreeChartProps): RadialTreeChartAction {
+export function radialTreeChart(
+  node: HTMLElement,
+  props: RadialTreeChartProps,
+): RadialTreeChartAction {
   const chart = mountRadialTreeChart(node, props);
   return {
     update: (next: RadialTreeChartProps) => chart.update(next),

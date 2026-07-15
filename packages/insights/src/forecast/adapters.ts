@@ -31,7 +31,10 @@ function medianStep(nums: number[]): number {
 }
 
 /** Future x-values, preserving number-vs-string type of the original axis. Empty if non-numeric. */
-function futureDates(xsRaw: Array<number | string | null>, horizon: number): Array<number | string> {
+function futureDates(
+  xsRaw: Array<number | string | null>,
+  horizon: number,
+): Array<number | string> {
   const nums = xsRaw.map((x) => (typeof x === "number" ? x : Number(x)));
   if (!nums.every((n) => Number.isFinite(n))) return [];
   const step = medianStep(nums);
@@ -61,14 +64,21 @@ function rowsAdapter(chartType: string, field: string): ForecastAdapter {
     apply(props, opts) {
       const rows = (props[field] as Row[]) ?? [];
       if (rows.length < 2) return props;
-      const fdates = futureDates(rows.map((r) => r.date as number | string), opts.horizon);
+      const fdates = futureDates(
+        rows.map((r) => r.date as number | string),
+        opts.horizon,
+      );
       if (!fdates.length) return props;
 
       const keys = rowKeys(props, rows[0]);
       const future: Row[] = fdates.map((d) => ({ date: d }));
       for (const key of keys) {
         const values = rows.map((r) => Number(r[key]) || 0);
-        const r = computeForecast(values, { method: opts.method, horizon: opts.horizon, level: opts.level });
+        const r = computeForecast(values, {
+          method: opts.method,
+          horizon: opts.horizon,
+          level: opts.level,
+        });
         r.predictions.forEach((yhat, h) => {
           future[h][key] = round(yhat);
         });
@@ -83,15 +93,30 @@ const rangeAdapter: ForecastAdapter = {
   chartType: "range-chart",
   hasUncertaintyVisual: true,
   apply(props, opts) {
-    const dataSet = (props.dataSet as Array<{ label: string; color?: string; series: Array<Record<string, unknown>> }>).map((item) => {
+    const dataSet = (
+      props.dataSet as Array<{
+        label: string;
+        color?: string;
+        series: Array<Record<string, unknown>>;
+      }>
+    ).map((item) => {
       const pts = item.series;
       if (pts.length < 2) return item;
-      const fdates = futureDates(pts.map((p) => p.date as number | string), opts.horizon);
+      const fdates = futureDates(
+        pts.map((p) => p.date as number | string),
+        opts.horizon,
+      );
       if (!fdates.length) return item;
       const values = pts.map((p) =>
-        typeof p.valueMedium === "number" ? p.valueMedium : (Number(p.valueMin) + Number(p.valueMax)) / 2
+        typeof p.valueMedium === "number"
+          ? p.valueMedium
+          : (Number(p.valueMin) + Number(p.valueMax)) / 2,
       );
-      const r = computeForecast(values, { method: opts.method, horizon: opts.horizon, level: opts.level });
+      const r = computeForecast(values, {
+        method: opts.method,
+        horizon: opts.horizon,
+        level: opts.level,
+      });
       const future = r.predictions.map((yhat, h) => ({
         date: fdates[h],
         valueMin: round(r.lower[h]),
@@ -113,13 +138,20 @@ const stackAdapter: ForecastAdapter = {
     const dataSet = (props.dataSet as Array<{ seriesKey: string; series: Row[] }>).map((sk) => {
       const rows = sk.series;
       if (rows.length < 2) return sk;
-      const fdates = futureDates(rows.map((r) => r.date as number | string | null), opts.horizon);
+      const fdates = futureDates(
+        rows.map((r) => r.date as number | string | null),
+        opts.horizon,
+      );
       if (!fdates.length) return sk;
       const keys = rowKeys(props, rows[0]);
       const future: Row[] = fdates.map((d) => ({ date: String(d) }));
       for (const key of keys) {
         const values = rows.map((r) => Number(r[key]) || 0);
-        const r = computeForecast(values, { method: opts.method, horizon: opts.horizon, level: opts.level });
+        const r = computeForecast(values, {
+          method: opts.method,
+          horizon: opts.horizon,
+          level: opts.level,
+        });
         r.predictions.forEach((yhat, h) => {
           future[h][key] = round(yhat);
         });

@@ -56,7 +56,7 @@ export function projectSymbolMapPoints(
    * for (see symbolMapChart.ts's `effectiveRadiusOf`). Used to inset the
    * rescale target range (B3.6 fix - see the block below); omitted (or a
    * dataset with radius 0 everywhere) reproduces the old center-only fit. */
-  radiusOf?: (node: SymbolMapNode) => number
+  radiusOf?: (node: SymbolMapNode) => number,
 ): ProjectSymbolMapResult {
   if (hasGeography) {
     const projection = createTunedProjection(projectionName, projectionConfig, width, height, {
@@ -107,8 +107,16 @@ export function projectSymbolMapPoints(
   const xInset = Math.max(0, Math.min(maxRadius, width / 2));
   const yInset = Math.max(0, Math.min(maxRadius, height / 2));
 
-  const xScale = xFlat ? null : scaleLinear().domain(xExtent).range([xInset, width - xInset]);
-  const yScale = yFlat ? null : scaleLinear().domain(yExtent).range([yInset, height - yInset]);
+  const xScale = xFlat
+    ? null
+    : scaleLinear()
+        .domain(xExtent)
+        .range([xInset, width - xInset]);
+  const yScale = yFlat
+    ? null
+    : scaleLinear()
+        .domain(yExtent)
+        .range([yInset, height - yInset]);
 
   const points: ProjectedPoint[] = raw.map((r) => ({
     node: r.node,
@@ -145,14 +153,17 @@ export interface SymbolMapRadiusScale {
 export function buildSymbolMapRadiusScale(
   located: SymbolMapNode[],
   radiusRange: [number, number],
-  radiusVisibleMin: number | undefined
+  radiusVisibleMin: number | undefined,
 ): SymbolMapRadiusScale {
   const values: number[] = [];
   for (const n of located) {
     values.push(n.value);
     if (n.valueSecond != null) values.push(n.valueSecond);
   }
-  const [rawLo, rawHi] = (extent(values) as [number | undefined, number | undefined]) ?? [undefined, undefined];
+  const [rawLo, rawHi] = (extent(values) as [number | undefined, number | undefined]) ?? [
+    undefined,
+    undefined,
+  ];
   let lo = rawLo ?? 0;
   const hi = rawHi ?? 0;
   // Legacy quirk (Chart.js's own "set min value to 10" comment): when the domain

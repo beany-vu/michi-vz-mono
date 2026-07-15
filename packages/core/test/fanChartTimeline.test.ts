@@ -34,13 +34,17 @@ const T0 = 68;
 const T1 = 60 + 490 / 3 + 8;
 const T3 = WIDTH;
 
-function mount(extra: Partial<FanChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<FanChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountFanChart(
     host,
     { dataSet, width: WIDTH, height: 300, xAxisDataType: "number", ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -113,7 +117,7 @@ describe("FanChart timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: true, progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(clipWidth(host)).toBeCloseTo(T0, 3);
     ticker.tick(500);
@@ -138,7 +142,7 @@ describe("FanChart timeline canvas mode", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: { easing: "linear", tweenMs: 400 }, renderer: "canvas" },
-      ticker
+      ticker,
     );
     expect(host.querySelector(".mv-timeline")).not.toBeNull();
     expect(() => {

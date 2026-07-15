@@ -23,7 +23,7 @@ export function drawBubbleCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: BubbleRenderModel,
-  o: BubbleCanvasOptions
+  o: BubbleCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -36,7 +36,7 @@ export function drawBubbleCanvas(
     model.groupKeys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("circle", "bubble", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;

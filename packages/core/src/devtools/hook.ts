@@ -123,7 +123,12 @@ function createHook(): MichiVzDevtoolsHook {
  * Safe to call unconditionally: it is a no-op unless devtools is enabled, and it
  * tolerates an older hook (version skew) that predates the hit channel.
  */
-export function reportDevtoolsHit(host: HTMLElement, x: number, y: number, label: string | null): void {
+export function reportDevtoolsHit(
+  host: HTMLElement,
+  x: number,
+  y: number,
+  label: string | null,
+): void {
   const hook = g.__MICHI_VZ_DEVTOOLS_HOOK__;
   if (!hook || typeof hook.reportHit !== "function") return;
   const t = typeof performance !== "undefined" ? performance.now() : 0;
@@ -162,7 +167,7 @@ export function attachDevtools<P>(
   instance: ChartInstance<P>,
   host: HTMLElement,
   chartType: string,
-  getProps: () => P
+  getProps: () => P,
 ): ChartInstance<P> {
   const hook = getDevtoolsHook();
   if (!hook) return instance;

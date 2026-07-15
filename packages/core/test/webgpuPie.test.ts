@@ -103,9 +103,7 @@ describe("mountPieChart - webgpu renderer (capability gate + fallback)", () => {
     // the model's cx/cy pixel coordinates. width=height=400, default margin 8/36, so
     // the plot centre sits at roughly (200, 222). Placing the point just above centre
     // lands inside the largest ("Coffee") slice, which starts at angle 0 (12 o'clock).
-    host.dispatchEvent(
-      new MouseEvent("mousemove", { clientX: 200, clientY: 130, bubbles: true })
-    );
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 200, clientY: 130, bubbles: true }));
     expect(highlighted.some((h) => h.includes("Coffee"))).toBe(true);
     chart.destroy();
     host.remove();

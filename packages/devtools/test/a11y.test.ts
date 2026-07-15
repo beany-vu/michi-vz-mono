@@ -31,7 +31,13 @@ describe("findDuplicateColors", () => {
 describe("auditContext", () => {
   const base = {
     summary: "Line chart with 2 series.",
-    a11yTable: { headers: ["label", "value"], rows: [["A", 1], ["B", 2]] },
+    a11yTable: {
+      headers: ["label", "value"],
+      rows: [
+        ["A", 1],
+        ["B", 2],
+      ],
+    },
     colorsMapping: { A: "#1f77b4", B: "#d62728" },
     series: [{ label: "A" }, { label: "B" }],
   };
@@ -44,7 +50,9 @@ describe("auditContext", () => {
 
   it("flags a missing summary as an error", () => {
     const findings = auditContext({ ...base, summary: "" });
-    expect(findings.some((f) => f.kind === "err" && f.text.toLowerCase().includes("summary"))).toBe(true);
+    expect(findings.some((f) => f.kind === "err" && f.text.toLowerCase().includes("summary"))).toBe(
+      true,
+    );
   });
 
   it("flags duplicate series colors", () => {
@@ -55,7 +63,9 @@ describe("auditContext", () => {
   it("flags a low-contrast series color naming the background it fails on", () => {
     // pale yellow: fine on dark, unreadable on light
     const findings = auditContext({ ...base, colorsMapping: { A: "#ffe97a", B: "#1f77b4" } });
-    expect(findings.some((f) => f.kind === "warn" && f.text.includes("light background"))).toBe(true);
+    expect(findings.some((f) => f.kind === "warn" && f.text.includes("light background"))).toBe(
+      true,
+    );
   });
 
   it("flags an a11y table with fewer rows than series", () => {
@@ -64,6 +74,8 @@ describe("auditContext", () => {
       a11yTable: { headers: ["label"], rows: [["A"]] },
       series: [{ label: "A" }, { label: "B" }, { label: "C" }],
     });
-    expect(findings.some((f) => f.kind === "warn" && f.text.toLowerCase().includes("table"))).toBe(true);
+    expect(findings.some((f) => f.kind === "warn" && f.text.toLowerCase().includes("table"))).toBe(
+      true,
+    );
   });
 });

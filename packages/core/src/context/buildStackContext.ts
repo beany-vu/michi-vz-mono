@@ -43,7 +43,7 @@ export function buildStackContext(input: BuildStackContextInput): VerticalStackB
     let total = 0;
     for (const key of keys) {
       const rect = (stackedRectData[key] ?? []).find((r) => r.date === date);
-      const v = rect && !rect.isMissing ? rect.value ?? 0 : 0;
+      const v = rect && !rect.isMissing ? (rect.value ?? 0) : 0;
       total += v;
       if (v > 0 && (!largestSegment || v > largestSegment.value)) {
         largestSegment = { key, date, value: round(v) };
@@ -53,7 +53,8 @@ export function buildStackContext(input: BuildStackContextInput): VerticalStackB
   });
   const grandTotal = round(perDateTotals.reduce((a, b) => a + b.total, 0));
   let largestDate: { date: string; total: number } | null = null;
-  for (const pd of perDateTotals) if (!largestDate || pd.total > largestDate.total) largestDate = pd;
+  for (const pd of perDateTotals)
+    if (!largestDate || pd.total > largestDate.total) largestDate = pd;
 
   const titlePart = input.title ? `"${input.title}" ` : "";
   let summary = `Stacked bar chart ${titlePart}with ${keys.length} segment${

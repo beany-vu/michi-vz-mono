@@ -17,14 +17,14 @@ function mount(extra: Partial<DualBarChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountDualHorizontalBarChart(
     host,
     { dataSet: years, width: 600, height: 300, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
 
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("[data-label]")).map(e => e.getAttribute("data-label")!)
+    Array.from(host.querySelectorAll("[data-label]")).map((e) => e.getAttribute("data-label")!),
   );
 
 describe("dual horizontal bar chart timeline (off by default)", () => {

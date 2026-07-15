@@ -16,7 +16,7 @@ export function wireStickyDismiss(
     isSticky: () => boolean;
     /** Engine-specific unpin: clear the sticky flag (+ any highlight state). */
     unpin: () => void;
-  }
+  },
 ): () => void {
   const dismiss = (): void => {
     opts.unpin();

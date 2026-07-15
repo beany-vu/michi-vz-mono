@@ -21,7 +21,7 @@ export function drawBubbleWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: BubbleRenderModel,
-  o: BubbleWebgpuOptions
+  o: BubbleWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME probe canvas mode uses.
   const fallback = new Map<string, string>();
@@ -31,7 +31,7 @@ export function drawBubbleWebgpu(
     model.groupKeys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("circle", "bubble", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;

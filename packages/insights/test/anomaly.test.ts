@@ -113,7 +113,7 @@ describe("detectAnomalies - forecast", () => {
   it("is deterministic", () => {
     const data = [10, 11, 12, 13, 14, 15, 200, 17];
     expect(detectAnomalies(data, { method: "forecast" })).toEqual(
-      detectAnomalies(data, { method: "forecast" })
+      detectAnomalies(data, { method: "forecast" }),
     );
   });
 });

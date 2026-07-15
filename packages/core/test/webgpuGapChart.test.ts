@@ -29,7 +29,13 @@ function setGpu(present: boolean): void {
 function mount(extra: Partial<GapChartProps> = {}) {
   const host = document.createElement("div");
   document.body.appendChild(host);
-  const chart = mountGapChart(host, { dataSet: sample, title: "Demo", width: 600, height: 300, ...extra });
+  const chart = mountGapChart(host, {
+    dataSet: sample,
+    title: "Demo",
+    width: 600,
+    height: 300,
+    ...extra,
+  });
   return { host, chart };
 }
 
@@ -93,9 +99,9 @@ describe("mountGapChart - webgpu renderer (capability gate + fallback)", () => {
   it("reuses the canvas-mode host hit-test: a mousemove over a bar fires onHighlightItem", () => {
     // Read the bar pixel coords from an SVG mount (same scales/model as webgpu).
     const svgMount = mount({ renderer: "svg" });
-    const bar = Array.from(
-      svgMount.host.querySelectorAll<SVGRectElement>("rect.gap-bar")
-    ).find((r) => r.getAttribute("data-label") === "Beta")!;
+    const bar = Array.from(svgMount.host.querySelectorAll<SVGRectElement>("rect.gap-bar")).find(
+      (r) => r.getAttribute("data-label") === "Beta",
+    )!;
     const x = Number(bar.getAttribute("x")) + Number(bar.getAttribute("width")) / 2;
     const y = Number(bar.getAttribute("y")) + 4; // bar is centred at y+4 (8px tall)
     svgMount.chart.destroy();

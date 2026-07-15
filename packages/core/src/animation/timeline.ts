@@ -78,7 +78,7 @@ export class TimelineController {
     const idx =
       typeof indexOrPeriod === "number" && !this.periods.includes(indexOrPeriod)
         ? indexOrPeriod
-        : this.periods.findIndex(p => String(p) === String(indexOrPeriod));
+        : this.periods.findIndex((p) => String(p) === String(indexOrPeriod));
     this.moveTo(clamp(idx, 0, this.lastIndex()));
     this.lastStepAt = this.ticker.now();
   }
@@ -135,7 +135,7 @@ export class TimelineController {
   }
 
   private scheduleFrame(): void {
-    this.frameId = this.ticker.request(now => this.onFrame(now));
+    this.frameId = this.ticker.request((now) => this.onFrame(now));
   }
 
   private cancelFrame(): void {

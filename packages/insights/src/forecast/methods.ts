@@ -49,12 +49,17 @@ export function holtForecast(
   values: number[],
   horizon: number,
   alpha = 0.5,
-  beta = 0.3
+  beta = 0.3,
 ): FitResult {
   const n = values.length;
-  if (n === 0) return { predictions: Array.from({ length: horizon }, () => 0), fitted: [], fittedOffset: 1 };
+  if (n === 0)
+    return { predictions: Array.from({ length: horizon }, () => 0), fitted: [], fittedOffset: 1 };
   if (n === 1)
-    return { predictions: Array.from({ length: horizon }, () => values[0]), fitted: [], fittedOffset: 1 };
+    return {
+      predictions: Array.from({ length: horizon }, () => values[0]),
+      fitted: [],
+      fittedOffset: 1,
+    };
 
   let level = values[0];
   let trend = values[1] - values[0];

@@ -26,7 +26,7 @@ export function buildDualRenderModel(
   points: DualBarDataPoint[],
   scales: DualScales,
   colors: DualColorResolver,
-  highlightItems: string[]
+  highlightItems: string[],
 ): DualRenderModel {
   const highlightSet = new Set(highlightItems);
   const anyHighlight = highlightSet.size > 0;

@@ -18,7 +18,7 @@ function mount(extra: Partial<RadarChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountRadarChart(
     host,
     { series, axes, width: 400, height: 400, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
@@ -26,8 +26,8 @@ function mount(extra: Partial<RadarChartProps> = {}, ticker?: ManualTicker) {
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
     Array.from(host.querySelectorAll<SVGPolygonElement>("polygon.radar-area")).map((p) =>
-      p.getAttribute("data-label")
-    )
+      p.getAttribute("data-label"),
+    ),
   );
 
 describe("radar chart timeline (off by default)", () => {
@@ -102,10 +102,7 @@ describe("radar chart timeline (enabled)", () => {
 
   it("mid-tween, a shared series' per-axis value is STRICTLY between the two periods' values", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: { easing: "linear", tweenMs: 400 } },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: { easing: "linear", tweenMs: 400 } }, ticker);
     chart.timeline!()!.stepForward(); // start tweening Model A: 4 -> 8 per axis
     ticker.tick(200); // halfway through the 400ms tween
     const ctx = chart.getContext()!;

@@ -22,7 +22,7 @@ export function createComparableVerticalBarScales(
   width: number,
   height: number,
   margin: Margin,
-  maxBarWidth?: number
+  maxBarWidth?: number,
 ): ComparableVerticalScales {
   const yScale = scaleLinear()
     .domain(yDomain)

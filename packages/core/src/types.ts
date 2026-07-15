@@ -446,19 +446,13 @@ export interface LineChartProps {
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on dataSet; default = empty/all-empty-series. */
-  isNodata?:
-    | boolean
-    | ((dataSet: LineDataItem[] | null | undefined) => boolean);
+  isNodata?: boolean | ((dataSet: LineDataItem[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay (ignored when suppressed). */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
   suppressDefaultOverlay?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (
-    d: DataPoint,
-    series: DataPoint[],
-    dataSet: LineDataItem[],
-  ) => string;
+  tooltipFormatter?: (d: DataPoint, series: DataPoint[], dataSet: LineDataItem[]) => string;
   /** When true, hovering anywhere in the plot shows ONE tooltip listing every series'
    *  value at the nearest x (year) - the "shared"/crosshair tooltip - instead of the
    *  single nearest series. Pairs with the crosshair (enableMouseLine, on by default). */
@@ -617,11 +611,7 @@ export interface AreaChartProps {
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (
-    row: AreaDataRow,
-    series: AreaDataRow[],
-    key: string,
-  ) => string;
+  tooltipFormatter?: (row: AreaDataRow, series: AreaDataRow[], key: string) => string;
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on the data; default = empty data. */
@@ -763,9 +753,7 @@ export interface ScatterChartProps {
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on the data; default = empty data. */
-  isNodata?:
-    | boolean
-    | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean);
+  isNodata?: boolean | ((dataSet: ScatterDataPoint[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay (ignored when suppressed). */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
@@ -1000,9 +988,7 @@ export interface VerticalStackBarChartProps {
   /** Show the loading overlay and skip the no-data check. */
   isLoading?: boolean;
   /** No-data override: boolean or predicate; default = empty / all-empty-series. */
-  isNodata?:
-    | boolean
-    | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean);
+  isNodata?: boolean | ((dataSet: VerticalStackBarDataSet[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay. */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node. */
@@ -1213,9 +1199,7 @@ export interface ComparableBarChartProps {
   /** Loading overlay (stale bars hidden while true) */
   isLoading?: boolean;
   /** No-data predicate/flag; default = empty dataSet */
-  isNodata?:
-    | boolean
-    | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
+  isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
   /** Text for the built-in no-data overlay */
   noDataLabel?: string;
   /** Set by a framework wrapper passing its own overlay node - suppresses the default overlay */
@@ -1365,9 +1349,7 @@ export interface ComparableVerticalBarChartProps {
   /** Loading overlay (stale bars hidden while true) */
   isLoading?: boolean;
   /** No-data predicate/flag; default = empty dataSet */
-  isNodata?:
-    | boolean
-    | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
+  isNodata?: boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean);
   /** Text for the built-in no-data overlay */
   noDataLabel?: string;
   /** Set by a framework wrapper passing its own overlay node - suppresses the default overlay */
@@ -1619,17 +1601,11 @@ export interface BarBellChartProps {
   /** Animate updates with CSS transitions (default true) */
   enableTransitions?: boolean;
   /** Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted) */
-  tooltipFormatter?: (
-    row: BarBellDataRow,
-    key: string,
-    value: number,
-  ) => string;
+  tooltipFormatter?: (row: BarBellDataRow, key: string, value: number) => string;
   /** Show the loading overlay and skip the no-data check (legacy michi-vz parity). */
   isLoading?: boolean;
   /** No-data override: boolean, or a predicate on the data; default = empty data. */
-  isNodata?:
-    | boolean
-    | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
+  isNodata?: boolean | ((dataSet: BarBellDataRow[] | null | undefined) => boolean);
   /** Text for the vanilla default no-data overlay (ignored when suppressed). */
   noDataLabel?: string;
   /** A framework wrapper sets this to render its OWN loading/no-data node instead. */

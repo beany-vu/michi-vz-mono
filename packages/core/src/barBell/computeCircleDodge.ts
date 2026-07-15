@@ -18,7 +18,7 @@
 export function computeCircleDodgeOffsets(
   cxs: number[],
   radius: number,
-  boxHeight?: number
+  boxHeight?: number,
 ): number[] {
   const n = cxs.length;
   const offsets = new Array<number>(n).fill(0);

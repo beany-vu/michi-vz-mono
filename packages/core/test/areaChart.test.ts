@@ -35,7 +35,11 @@ describe("processAreaChartData (stack)", () => {
     expect(veg.values[0][0]).toBe(10);
     expect(veg.values[0][1]).toBe(15);
 
-    const r2 = processAreaChartData(series, { keys, disabledItems: ["Veg"], xAxisDataType: "number" });
+    const r2 = processAreaChartData(series, {
+      keys,
+      disabledItems: ["Veg"],
+      xAxisDataType: "number",
+    });
     expect(r2.activeKeys).toEqual(["Fruit Sales", "Dairy"]);
     // Dairy now stacks directly on Fruit Sales (10): [10, 13]
     const dairy = r2.stacked.find((s) => s.key === "Dairy")!;
@@ -126,7 +130,13 @@ describe("mountAreaChart (jsdom)", () => {
 
   it("update() re-renders and destroy() cleans up", () => {
     const { host, chart } = mount();
-    chart.update({ series, keys: ["Fruit Sales"], width: 600, height: 300, xAxisDataType: "number" });
+    chart.update({
+      series,
+      keys: ["Fruit Sales"],
+      width: 600,
+      height: 300,
+      xAxisDataType: "number",
+    });
     expect(host.querySelectorAll("path.area").length).toBe(1);
     chart.destroy();
     expect(host.querySelectorAll("svg").length).toBe(0);
@@ -218,7 +228,7 @@ describe("mountAreaChart stackOffset expand (jsdom)", () => {
   it("formats y-axis ticks as percentages by default", () => {
     const { host, chart } = mount({ series: twoSeries, keys: ["A", "B"], stackOffset: "expand" });
     const labels = Array.from(host.querySelectorAll(".mv-y-axis .mv-axis-label")).map(
-      (n) => n.textContent
+      (n) => n.textContent,
     );
     expect(labels.some((l) => l?.includes("%"))).toBe(true);
     chart.destroy();
@@ -233,7 +243,7 @@ describe("mountAreaChart stackOffset expand (jsdom)", () => {
       yAxisFormat: (d) => `custom:${d}`,
     });
     const labels = Array.from(host.querySelectorAll(".mv-y-axis .mv-axis-label")).map(
-      (n) => n.textContent
+      (n) => n.textContent,
     );
     expect(labels.every((l) => l?.startsWith("custom:"))).toBe(true);
     expect(labels.some((l) => l?.includes("%"))).toBe(false);
@@ -242,8 +252,18 @@ describe("mountAreaChart stackOffset expand (jsdom)", () => {
   });
 
   it("exposes an identical expand-mode context across SVG and canvas renderers", () => {
-    const a = mount({ series: twoSeries, keys: ["A", "B"], stackOffset: "expand", renderer: "svg" });
-    const b = mount({ series: twoSeries, keys: ["A", "B"], stackOffset: "expand", renderer: "canvas" });
+    const a = mount({
+      series: twoSeries,
+      keys: ["A", "B"],
+      stackOffset: "expand",
+      renderer: "svg",
+    });
+    const b = mount({
+      series: twoSeries,
+      keys: ["A", "B"],
+      stackOffset: "expand",
+      renderer: "canvas",
+    });
     const ca = a.chart.getContext()!;
     const cb = b.chart.getContext()!;
     const strip = (c: typeof ca) => ({ ...c, renderer: undefined });
@@ -272,7 +292,9 @@ describe("mountAreaChart fillPeriodTicks (Layer 2)", () => {
       xAxisFormat: (d) => String(new Date(Number(d)).getUTCFullYear()),
       fillPeriodTicks: true,
     });
-    const faded = Array.from(host.querySelectorAll("text.mv-tick-nodata")).map((l) => l.textContent);
+    const faded = Array.from(host.querySelectorAll("text.mv-tick-nodata")).map(
+      (l) => l.textContent,
+    );
     expect(faded).toContain("2022");
     chart.destroy();
     host.remove();
@@ -298,7 +320,17 @@ describe("mountAreaChart fillPeriodTicks (Layer 2)", () => {
     const faded = host.querySelector<SVGTextElement>("text.mv-tick-nodata")!;
     // jsdom returns a zero rect; give the faded label a real box to hit-test against.
     faded.getBoundingClientRect = () =>
-      ({ left: 100, right: 140, top: 400, bottom: 420, width: 40, height: 20, x: 100, y: 400, toJSON() {} }) as DOMRect;
+      ({
+        left: 100,
+        right: 140,
+        top: 400,
+        bottom: 420,
+        width: 40,
+        height: 20,
+        x: 100,
+        y: 400,
+        toJSON() {},
+      }) as DOMRect;
     const overlay = host.querySelector<SVGRectElement>(".tpRef")!;
     const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
     // The overlay (topmost) captures the move; onOverlayMove must detect the faded label.

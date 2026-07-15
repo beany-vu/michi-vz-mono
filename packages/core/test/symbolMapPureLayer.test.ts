@@ -33,7 +33,9 @@ describe("symbolMap/data - processSymbolMapData", () => {
   });
 
   it("clamps negative value/valueSecond to 0", () => {
-    const dataSet: SymbolMapDataItem[] = [{ id: "a", label: "A", lng: 0, lat: 0, value: -5, valueSecond: -1 }];
+    const dataSet: SymbolMapDataItem[] = [
+      { id: "a", label: "A", lng: 0, lat: 0, value: -5, valueSecond: -1 },
+    ];
     const p = processSymbolMapData(dataSet);
     expect(p.located[0].value).toBe(0);
     expect(p.located[0].valueSecond).toBe(0);
@@ -122,7 +124,9 @@ describe("symbolMap/scales - projectSymbolMapPoints (dot-only mode)", () => {
   });
 
   it("does not throw and returns points for a single item (degenerate extent)", () => {
-    const nodes = processSymbolMapData([{ id: "a", label: "A", lng: 10, lat: 20, value: 1 }]).located;
+    const nodes = processSymbolMapData([
+      { id: "a", label: "A", lng: 10, lat: 20, value: 1 },
+    ]).located;
     const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, 400, 300);
     expect(points.length).toBe(1);
     expect(Number.isFinite(points[0].x)).toBe(true);
@@ -137,9 +141,21 @@ describe("symbolMap/scales - projectSymbolMapPoints (dot-only mode)", () => {
 
 describe("symbolMap/scales - projectSymbolMapPoints (backdrop mode)", () => {
   it("uses the SAME tuned projection formula as ChoroplethMapChart", () => {
-    const nodes = processSymbolMapData([{ id: "a", label: "A", lng: 10, lat: 20, value: 1 }]).located;
-    const { points, projection } = projectSymbolMapPoints(nodes, "geoMercator", true, undefined, 400, 300);
-    const expected = createTunedProjection("geoMercator", undefined, 400, 300, { rotate: [-18, 0], center: [0, 10] });
+    const nodes = processSymbolMapData([
+      { id: "a", label: "A", lng: 10, lat: 20, value: 1 },
+    ]).located;
+    const { points, projection } = projectSymbolMapPoints(
+      nodes,
+      "geoMercator",
+      true,
+      undefined,
+      400,
+      300,
+    );
+    const expected = createTunedProjection("geoMercator", undefined, 400, 300, {
+      rotate: [-18, 0],
+      center: [0, 10],
+    });
     const expectedP = expected([10, 20])!;
     expect(points[0].x).toBeCloseTo(expectedP[0], 5);
     expect(points[0].y).toBeCloseTo(expectedP[1], 5);
@@ -230,7 +246,15 @@ describe("symbolMap/scales + layout - B3.6 edge-clipping fix", () => {
     const { radiusOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
     const effectiveRadiusOf = (n: (typeof nodes)[number]) =>
       Math.max(radiusOf(n.value), n.valueSecond != null ? radiusOf(n.valueSecond) : 0);
-    const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, width, height, effectiveRadiusOf);
+    const { points } = projectSymbolMapPoints(
+      nodes,
+      "geoMercator",
+      false,
+      undefined,
+      width,
+      height,
+      effectiveRadiusOf,
+    );
     const laidOut = layoutSymbolMap(points, (p) => radiusOf(p.node.value), {
       width,
       height,
@@ -256,7 +280,14 @@ describe("symbolMap/scales + layout - B3.6 edge-clipping fix", () => {
     // fixture is a real regression test, not a false positive.
     const nodes = processSymbolMapData(edgeDataSet).located;
     const { radiusOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
-    const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, WIDTH, HEIGHT); // no radiusOf
+    const { points } = projectSymbolMapPoints(
+      nodes,
+      "geoMercator",
+      false,
+      undefined,
+      WIDTH,
+      HEIGHT,
+    ); // no radiusOf
     const west = points.find((p) => p.node.id === "west")!;
     const westRadius = radiusOf(west.node.value);
     // The raw fit (no inset) puts the extreme-x point AT the edge (0 or width);
@@ -277,8 +308,14 @@ describe("symbolMap/scales + layout - B3.6 edge-clipping fix", () => {
     ];
     const nodes = processSymbolMapData(smallDataSet).located;
     const { radiusOf } = buildSymbolMapRadiusScale(nodes, [2, 4], undefined);
-    const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, WIDTH, HEIGHT, (n) =>
-      radiusOf(n.value)
+    const { points } = projectSymbolMapPoints(
+      nodes,
+      "geoMercator",
+      false,
+      undefined,
+      WIDTH,
+      HEIGHT,
+      (n) => radiusOf(n.value),
     );
     const xs = points.map((p) => p.x);
     const maxRadius = Math.max(...nodes.map((n) => radiusOf(n.value)));
@@ -292,10 +329,12 @@ describe("symbolMap/scales + layout - B3.6 edge-clipping fix", () => {
   });
 
   it("degenerate canvas (radius > half width/height) clamps to centre instead of inverting the range", () => {
-    const nodes = processSymbolMapData([{ id: "a", label: "A", lng: 0, lat: 0, value: 100 }]).located;
+    const nodes = processSymbolMapData([
+      { id: "a", label: "A", lng: 0, lat: 0, value: 100 },
+    ]).located;
     const { radiusOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
     const { points } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, 20, 20, (n) =>
-      radiusOf(n.value)
+      radiusOf(n.value),
     );
     const laidOut = layoutSymbolMap(points, (p) => radiusOf(p.node.value), {
       width: 20,
@@ -323,7 +362,7 @@ describe("symbolMap/layout - layoutSymbolMap (deterministic de-overlap)", () => 
     const run2 = layoutSymbolMap(project().points, (p) => radiusOf(p.node.value));
 
     expect(run1.map((n) => ({ id: n.point.node.id, x: n.x, y: n.y }))).toEqual(
-      run2.map((n) => ({ id: n.point.node.id, x: n.x, y: n.y }))
+      run2.map((n) => ({ id: n.point.node.id, x: n.x, y: n.y })),
     );
   });
 
@@ -352,12 +391,28 @@ describe("symbolMap/layout - layoutSymbolMap (deterministic de-overlap)", () => 
 
 describe("symbolMap/renderModel", () => {
   it("builds concentric-ring opacity: opacitySecond = opacity - 0.3, clamped to >= 0", () => {
-    const nodes = processSymbolMapData([{ id: "a", label: "A", lng: 0, lat: 0, value: 10, valueSecond: 5 }]).located;
-    const { points, projection } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, 400, 300);
+    const nodes = processSymbolMapData([
+      { id: "a", label: "A", lng: 0, lat: 0, value: 10, valueSecond: 5 },
+    ]).located;
+    const { points, projection } = projectSymbolMapPoints(
+      nodes,
+      "geoMercator",
+      false,
+      undefined,
+      400,
+      300,
+    );
     const { radiusOf, opacityOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
     const laidOut = layoutSymbolMap(points, (p) => radiusOf(p.node.value));
     const colors = buildSymbolMapColors(["A"], ["#123456"]);
-    const model = buildSymbolMapRenderModel(laidOut, colors, radiusOf, opacityOf, { highlightItems: [] }, projection);
+    const model = buildSymbolMapRenderModel(
+      laidOut,
+      colors,
+      radiusOf,
+      opacityOf,
+      { highlightItems: [] },
+      projection,
+    );
     const mark = model.symbols[0];
     expect(mark.radiusSecond).not.toBeNull();
     expect(mark.opacitySecond).toBeCloseTo(Math.max(0, mark.opacity - 0.3), 10);
@@ -369,7 +424,14 @@ describe("symbolMap/renderModel", () => {
       { id: "a", label: "A", lng: 0, lat: 0, value: 10 },
       { id: "b", label: "B", lng: 1, lat: 1, value: 10 },
     ]).located;
-    const { points, projection } = projectSymbolMapPoints(nodes, "geoMercator", false, undefined, 400, 300);
+    const { points, projection } = projectSymbolMapPoints(
+      nodes,
+      "geoMercator",
+      false,
+      undefined,
+      400,
+      300,
+    );
     const { radiusOf, opacityOf } = buildSymbolMapRadiusScale(nodes, [3, 70], undefined);
     const laidOut = layoutSymbolMap(points, (p) => radiusOf(p.node.value));
     const colors = buildSymbolMapColors(["A", "B"], ["#123456", "#654321"]);
@@ -379,7 +441,7 @@ describe("symbolMap/renderModel", () => {
       radiusOf,
       opacityOf,
       { highlightItems: ["A"] },
-      projection
+      projection,
     );
     const a = model.symbols.find((s) => s.label === "A")!;
     const b = model.symbols.find((s) => s.label === "B")!;
@@ -406,7 +468,10 @@ describe("symbolMap/renderModel", () => {
         },
       },
     ];
-    const projection = createTunedProjection("geoMercator", undefined, 400, 300, { rotate: [-18, 0], center: [0, 10] });
+    const projection = createTunedProjection("geoMercator", undefined, 400, 300, {
+      rotate: [-18, 0],
+      center: [0, 10],
+    });
     const backdrop = buildSymbolMapBackdrop(normalizeGeography(geography), projection);
     expect(backdrop.length).toBe(1);
     expect(backdrop[0].id).toBe("A");
@@ -470,7 +535,9 @@ describe("validate/symbolMapWarnings - checkSymbolMapData", () => {
     ];
     const warnings = checkSymbolMapData(dataSet);
     expect(warnings.some((w) => w.type === "invalid-geometry")).toBe(true);
-    expect(warnings.some((w) => w.type === "non-finite-value" && w.message.includes("negative"))).toBe(true);
+    expect(
+      warnings.some((w) => w.type === "non-finite-value" && w.message.includes("negative")),
+    ).toBe(true);
     expect(warnings.some((w) => w.type === "duplicate-label")).toBe(true);
   });
 });

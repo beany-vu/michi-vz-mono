@@ -57,7 +57,7 @@ export interface BuildRadarModelOptions {
 export function buildRadarRenderModel(
   items: RadarDataItem[],
   colors: RadarColorResolver,
-  o: BuildRadarModelOptions
+  o: BuildRadarModelOptions,
 ): RadarRenderModel {
   const plotW = o.width - o.margin.left - o.margin.right;
   const plotH = o.height - o.margin.top - o.margin.bottom;

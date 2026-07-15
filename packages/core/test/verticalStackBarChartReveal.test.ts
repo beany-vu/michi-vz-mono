@@ -5,10 +5,22 @@ import type { MotionPreference } from "../src/animation/reducedMotion";
 import type { VerticalStackBarChartProps, VerticalStackBarDataSet } from "../src/types";
 
 const sample: VerticalStackBarDataSet[] = [
-  { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: [
-    { date: "2001", Africa: "10" }, { date: "2002", Africa: "12" }] },
-  { seriesKey: "Non-LDC", seriesKeyAbbreviation: "NL", series: [
-    { date: "2001", "Non-LDC": "20" }, { date: "2002", "Non-LDC": "18" }] },
+  {
+    seriesKey: "Africa",
+    seriesKeyAbbreviation: "AF",
+    series: [
+      { date: "2001", Africa: "10" },
+      { date: "2002", Africa: "12" },
+    ],
+  },
+  {
+    seriesKey: "Non-LDC",
+    seriesKeyAbbreviation: "NL",
+    series: [
+      { date: "2001", "Non-LDC": "20" },
+      { date: "2002", "Non-LDC": "18" },
+    ],
+  },
 ];
 
 // Default margin left is 60; chart width below is 600, so a reveal animation
@@ -19,14 +31,14 @@ const PLOT_LEFT = 60;
 function mount(
   extra: Partial<VerticalStackBarChartProps> = {},
   ticker?: ManualTicker,
-  motion?: MotionPreference
+  motion?: MotionPreference,
 ) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountVerticalStackBarChart(
     host,
     { dataSet: sample, width: WIDTH, height: 360, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -60,7 +72,10 @@ describe("VerticalStackBarChart progressiveDraw SVG reveal", () => {
 
   it("grows the clip monotonically and reaches full width at durationMs", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount({ progressiveDraw: { durationMs: 1000, easing: "linear" } }, ticker);
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear" } },
+      ticker,
+    );
     let prev = rectWidth(host);
     for (let i = 0; i < 10; i++) {
       ticker.tick(100);
@@ -84,7 +99,10 @@ describe("VerticalStackBarChart progressiveDraw SVG reveal", () => {
 
   it("replay() resets the clip and re-grows it", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount({ progressiveDraw: { durationMs: 1000, easing: "linear" } }, ticker);
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear" } },
+      ticker,
+    );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);
     chart.replay!();

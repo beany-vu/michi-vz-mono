@@ -25,7 +25,7 @@ const entries = [
 describe("computeTipLabels", () => {
   it("emits one target per series whose first point is revealed", () => {
     const targets = computeTipLabels(entries, colors, 150, {});
-    expect(targets.map(t => t.label)).toEqual(["Alpha"]); // Beta starts at 200
+    expect(targets.map((t) => t.label)).toEqual(["Alpha"]); // Beta starts at 200
   });
 
   it("places the tip at revealX with y interpolated between surrounding points", () => {
@@ -36,14 +36,14 @@ describe("computeTipLabels", () => {
 
   it("clamps to the series' last point once revealX passes it", () => {
     const targets = computeTipLabels(entries, colors, 500, {});
-    const alpha = targets.find(t => t.label === "Alpha")!;
+    const alpha = targets.find((t) => t.label === "Alpha")!;
     expect(alpha.x).toBe(300);
     expect(alpha.y).toBe(150);
   });
 
   it("shows name and value by default ('both')", () => {
     const targets = computeTipLabels(entries, colors, 500, {});
-    expect(targets.find(t => t.label === "Alpha")!.text).toBe("Alpha 15");
+    expect(targets.find((t) => t.label === "Alpha")!.text).toBe("Alpha 15");
   });
 
   it("content 'name' and 'value' narrow the text", () => {
@@ -53,30 +53,25 @@ describe("computeTipLabels", () => {
 
   it("uses the LAST REVEALED point's value, not an interpolated one", () => {
     const targets = computeTipLabels(entries, colors, 250, { content: "value" });
-    expect(targets.find(t => t.label === "Alpha")!.text).toBe("20"); // point at 200
+    expect(targets.find((t) => t.label === "Alpha")!.text).toBe("20"); // point at 200
   });
 
   it("format() overrides the default text", () => {
     const targets = computeTipLabels(entries, colors, 500, {
       format: (v, label) => `${label}: ${v.toFixed(1)}`,
     });
-    expect(targets.find(t => t.label === "Beta")!.text).toBe("Beta: 8.0");
+    expect(targets.find((t) => t.label === "Beta")!.text).toBe("Beta: 8.0");
   });
 
   it("carries the series colour and a class-safe label", () => {
     const targets = computeTipLabels(entries, colors, 500, {});
-    const alpha = targets.find(t => t.label === "Alpha")!;
+    const alpha = targets.find((t) => t.label === "Alpha")!;
     expect(alpha.color).toBe("#f00");
     expect(alpha.safe).toBe("Alpha");
   });
 
   it("skips series with no points", () => {
-    const targets = computeTipLabels(
-      [{ label: "Empty", points: [] }],
-      () => "#000",
-      500,
-      {}
-    );
+    const targets = computeTipLabels([{ label: "Empty", points: [] }], () => "#000", 500, {});
     expect(targets).toEqual([]);
   });
 });

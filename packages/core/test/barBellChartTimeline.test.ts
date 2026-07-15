@@ -18,7 +18,7 @@ function mount(extra: Partial<BarBellChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountBarBellChart(
     host,
     { dataSet, keys, width: 600, height: 300, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
@@ -26,8 +26,8 @@ function mount(extra: Partial<BarBellChartProps> = {}, ticker?: ManualTicker) {
 const bandLabels = (host: HTMLElement): Set<string> =>
   new Set(
     Array.from(host.querySelectorAll<HTMLElement>(".mv-y-axis .mv-ylabel span")).map(
-      (t) => t.textContent ?? ""
-    )
+      (t) => t.textContent ?? "",
+    ),
   );
 
 describe("bar-bell chart timeline (off by default)", () => {

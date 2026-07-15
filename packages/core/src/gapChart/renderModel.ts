@@ -36,7 +36,7 @@ export function buildGapRenderModel(
   colorMode: "label" | "shape",
   highlightItems: string[],
   shapeValue1: Shape,
-  shapeValue2: Shape
+  shapeValue2: Shape,
 ): GapRenderModel {
   const { xScale, yScale } = scales;
   const { getColor, getShapeColor } = colors;

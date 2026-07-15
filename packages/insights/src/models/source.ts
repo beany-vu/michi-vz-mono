@@ -46,7 +46,7 @@ export interface ModelSourceInfo {
 export function describeModelSource(
   backend: string,
   model: string | undefined,
-  source: ModelSource = {}
+  source: ModelSource = {},
 ): ModelSourceInfo {
   if (backend === "transformers") {
     if (source.allowRemoteModels === false) {
@@ -54,7 +54,9 @@ export function describeModelSource(
         backend,
         model,
         host: "(self-hosted)",
-        url: source.localModelPath ? `${source.localModelPath.replace(/\/$/, "")}/${model ?? ""}` : undefined,
+        url: source.localModelPath
+          ? `${source.localModelPath.replace(/\/$/, "")}/${model ?? ""}`
+          : undefined,
         downloads: true,
         note: "Model files are served from your own origin (localModelPath); no remote download happens. Files are cached by the browser after first load.",
       };

@@ -18,14 +18,14 @@ function mount(extra: Partial<GapChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountGapChart(
     host,
     { dataSet: years, width: 600, height: 300, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
 
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("[data-label]")).map(e => e.getAttribute("data-label")!)
+    Array.from(host.querySelectorAll("[data-label]")).map((e) => e.getAttribute("data-label")!),
   );
 
 describe("enumerateDatePeriods", () => {
@@ -35,7 +35,7 @@ describe("enumerateDatePeriods", () => {
 
   it("sorts numerically when all values are numeric", () => {
     expect(
-      enumerateDatePeriods([{ date: 2020 }, { date: 2016 }, { date: 2020 }, { date: 2018 }])
+      enumerateDatePeriods([{ date: 2020 }, { date: 2016 }, { date: 2020 }, { date: 2018 }]),
     ).toEqual([2016, 2018, 2020]);
   });
 
@@ -183,7 +183,7 @@ describe("gap chart timeline control UI", () => {
   });
 
   it("formatPeriod customizes the period label", () => {
-    const { host, chart } = mount({ timeline: { formatPeriod: p => `Year ${p}` } });
+    const { host, chart } = mount({ timeline: { formatPeriod: (p) => `Year ${p}` } });
     expect(host.querySelector(".mv-timeline-period")!.textContent).toBe("Year 2018");
     chart.destroy();
     host.remove();

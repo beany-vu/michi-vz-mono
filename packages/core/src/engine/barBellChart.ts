@@ -95,7 +95,7 @@ function checkData(dataSet: BarBellDataRow[], keys: string[]): DataWarning[] {
 export function mountBarBellChart(
   host: HTMLElement,
   initial: BarBellChartProps,
-  opts?: MountOptions<BarBellChartProps>
+  opts?: MountOptions<BarBellChartProps>,
 ): ChartInstance<BarBellChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-bar-bell-chart");
@@ -253,14 +253,14 @@ export function mountBarBellChart(
       timelineRows,
       props.keys,
       props.disabledItems,
-      props.yAxisDomain
+      props.yAxisDomain,
     );
 
     const colors = buildBarBellColors(
       props.keys,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -329,7 +329,7 @@ export function mountBarBellChart(
             tooltip.classList.add("sticky");
             showTooltip(seg, ev);
           },
-        }
+        },
       );
     }
 
@@ -372,7 +372,12 @@ export function mountBarBellChart(
         endPx: r.width,
         canvasRedraw:
           r.renderer === "canvas"
-            ? (x) => drawBarBellCanvas(canvas, svg, model!, { width: r.width, height: r.height, revealX: x })
+            ? (x) =>
+                drawBarBellCanvas(canvas, svg, model!, {
+                  width: r.width,
+                  height: r.height,
+                  revealX: x,
+                })
             : undefined,
       });
     }

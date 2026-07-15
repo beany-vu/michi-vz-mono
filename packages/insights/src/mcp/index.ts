@@ -36,7 +36,7 @@ export interface McpServer {
 export function createMcpServer(
   registry: AgentRegistry,
   transport: McpTransport,
-  opts: McpServerOptions = {}
+  opts: McpServerOptions = {},
 ): McpServer {
   const name = opts.name ?? "michi-vz";
   const version = opts.version ?? "0.1.0";
@@ -83,7 +83,10 @@ export function createMcpServer(
         case "tools/list":
           return reply({ tools: toolDefs() });
         case "tools/call": {
-          const result = registry.call(String(params?.name), (params?.arguments as Record<string, unknown>) ?? {});
+          const result = registry.call(
+            String(params?.name),
+            (params?.arguments as Record<string, unknown>) ?? {},
+          );
           return reply({ content: [{ type: "text", text: JSON.stringify(result) }] });
         }
         case "resources/list":
@@ -93,7 +96,9 @@ export function createMcpServer(
           if (!uri.startsWith(RESOURCE_PREFIX)) return fail(-32602, `Unknown resource: ${uri}`);
           const chart = uri.slice(RESOURCE_PREFIX.length);
           const ctx = registry.call("get_chart_context", { chart });
-          return reply({ contents: [{ uri, mimeType: "application/json", text: JSON.stringify(ctx) }] });
+          return reply({
+            contents: [{ uri, mimeType: "application/json", text: JSON.stringify(ctx) }],
+          });
         }
         default:
           return isNotification ? null : fail(-32601, `Method not found: ${String(method)}`);
@@ -142,7 +147,10 @@ export function stdioTransport(): McpTransport {
 }
 
 interface NodeProcess {
-  stdin?: { setEncoding?: (e: string) => void; on?: (ev: string, cb: (chunk: string) => void) => void };
+  stdin?: {
+    setEncoding?: (e: string) => void;
+    on?: (ev: string, cb: (chunk: string) => void) => void;
+  };
   stdout?: { write?: (s: string) => void };
 }
 

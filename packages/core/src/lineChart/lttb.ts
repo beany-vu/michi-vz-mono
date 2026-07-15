@@ -10,7 +10,7 @@ export function lttb(
   points: DataPoint[],
   threshold: number,
   getX: (d: DataPoint) => number,
-  getY: (d: DataPoint) => number
+  getY: (d: DataPoint) => number,
 ): DataPoint[] {
   // Nothing to gain: the series already fits, or the threshold is too small to
   // form even one middle bucket. Return the input untouched (same reference).
@@ -50,7 +50,7 @@ export function lttb(
     for (; rangeOffset < rangeTo; rangeOffset++) {
       const area = Math.abs(
         (pointAX - avgX) * (getY(points[rangeOffset]) - pointAY) -
-          (pointAX - getX(points[rangeOffset])) * (avgY - pointAY)
+          (pointAX - getX(points[rangeOffset])) * (avgY - pointAY),
       );
       if (area > maxArea) {
         maxArea = area;

@@ -4,7 +4,13 @@
 // DataWarning `type` members from core (a fixed union there); all the specifics go in
 // `message`. No DOM, no deps - easy to test and to fold into the plugin `validate()`
 // hook (which is merged into the engine's onDataWarning path).
-import type { Annotation, DataPoint, DataWarning, LineChartProps, MichiVzPlugin } from "@michi-vz/core";
+import type {
+  Annotation,
+  DataPoint,
+  DataWarning,
+  LineChartProps,
+  MichiVzPlugin,
+} from "@michi-vz/core";
 
 /** Parse a DataPoint.date to a number if it is numeric (a real number, or a numeric string). */
 function numericDate(date: number | string): number | null {
@@ -95,7 +101,8 @@ export function invalidPoints(series: DataPoint[]): InvalidPoint[] {
   const seen = new Set<string>();
   for (let i = 0; i < series.length; i++) {
     const d = series[i];
-    if (!Number.isFinite(d.value)) out.push({ index: i, date: d.date, value: d.value, kind: "non-finite" });
+    if (!Number.isFinite(d.value))
+      out.push({ index: i, date: d.date, value: d.value, kind: "non-finite" });
     const key = String(d.date);
     if (seen.has(key)) out.push({ index: i, date: d.date, value: d.value, kind: "duplicate-date" });
     seen.add(key);
@@ -128,7 +135,7 @@ export function validate(options: ValidatePluginOptions = {}): MichiVzPlugin<Lin
           ...w,
           label: item.label,
           message: `${item.label}: ${w.message}`,
-        }))
+        })),
       );
     },
 
@@ -140,7 +147,7 @@ export function validate(options: ValidatePluginOptions = {}): MichiVzPlugin<Lin
           anns.push(
             Number.isFinite(p.value)
               ? { type: "point", at: p.date, value: p.value, label: "invalid", color: "#d4351c" }
-              : { type: "vline", at: p.date, label: "invalid", color: "#d4351c", dashed: true }
+              : { type: "vline", at: p.date, label: "invalid", color: "#d4351c", dashed: true },
           );
         }
       }

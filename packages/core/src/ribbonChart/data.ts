@@ -11,7 +11,7 @@ export function processRibbonData(
   series: RibbonDataRow[],
   keys: string[],
   disabledItems?: string[],
-  yAxisDomain?: [number, number]
+  yAxisDomain?: [number, number],
 ): ProcessedRibbon {
   const disabled = new Set(disabledItems ?? []);
   const activeKeys = keys.filter((k) => !disabled.has(k));

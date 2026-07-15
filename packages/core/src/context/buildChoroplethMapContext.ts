@@ -3,7 +3,11 @@
 // and an a11yTable listing every region + its value (doubles as the vision-free
 // alt text / screen-reader mirror, same convention as every other chart).
 import { buildLegendData } from "./legend";
-import type { ChoroplethMapChartContext, ChoroplethRegionContext, ChoroplethDataItem } from "../types";
+import type {
+  ChoroplethMapChartContext,
+  ChoroplethRegionContext,
+  ChoroplethDataItem,
+} from "../types";
 import type { NormalizedGeoFeature } from "../choroplethMap/data";
 
 export interface BuildChoroplethMapContextInput {
@@ -18,7 +22,9 @@ export interface BuildChoroplethMapContextInput {
   noDataColor: string;
 }
 
-export function buildChoroplethMapContext(input: BuildChoroplethMapContextInput): ChoroplethMapChartContext {
+export function buildChoroplethMapContext(
+  input: BuildChoroplethMapContextInput,
+): ChoroplethMapChartContext {
   const regions: ChoroplethRegionContext[] = input.features.map((f) => {
     const matched = input.matchFor(f);
     return {

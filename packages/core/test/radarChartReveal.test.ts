@@ -13,13 +13,17 @@ const series: RadarDataItem[] = [
   { label: "Model B", color: "#00f", values: [5, 9, 6, 4, 8] },
 ];
 
-function mount(extra: Partial<RadarChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<RadarChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountRadarChart(
     host,
     { series, axes, title: "Demo", width: WIDTH, height: HEIGHT, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -59,7 +63,7 @@ describe("RadarChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(rectWidth(host)).toBe(0);
     let prev = rectWidth(host);
@@ -87,7 +91,7 @@ describe("RadarChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);

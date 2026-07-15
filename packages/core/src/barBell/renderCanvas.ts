@@ -16,7 +16,7 @@ export function drawBarBellCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: BarBellRenderModel,
-  o: BarBellCanvasOptions
+  o: BarBellCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -36,7 +36,7 @@ export function drawBarBellCanvas(
     keys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
 
   // Pass 1: bars. Pass 2: end-cap circles on top (segments are adjacent, so a

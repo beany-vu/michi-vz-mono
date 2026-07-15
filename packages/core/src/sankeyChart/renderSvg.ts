@@ -7,8 +7,7 @@ import { svgEl } from "../dom";
 import type { SankeyNodeMark, SankeyLinkMark, SankeyRenderModel } from "./renderModel";
 
 export type SankeyHoverTarget =
-  | { kind: "node"; node: SankeyNodeMark }
-  | { kind: "link"; link: SankeyLinkMark };
+  { kind: "node"; node: SankeyNodeMark } | { kind: "link"; link: SankeyLinkMark };
 
 export interface SankeySvgOptions {
   enableTransitions: boolean;
@@ -24,7 +23,7 @@ export function renderSankeySvg(
   parent: SVGElement,
   model: SankeyRenderModel,
   o: SankeySvgOptions,
-  ia: SankeyInteractions
+  ia: SankeyInteractions,
 ): void {
   // Single wrapping group so the engine's opt-in progressive-draw reveal has one
   // <g> to clip (links + nodes together, never the title which lives outside it).
@@ -76,7 +75,7 @@ export function renderSankeySvg(
         fill: n.fill,
         rx: radius,
         ry: radius,
-      })
+      }),
     );
     if (model.showLabels && n.h >= 6) {
       const label = svgEl("text", {

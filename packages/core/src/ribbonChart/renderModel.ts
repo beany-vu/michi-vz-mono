@@ -51,7 +51,7 @@ export function buildRibbonRenderModel(
   series: RibbonDataRow[],
   scales: RibbonScales,
   colors: RibbonColorResolver,
-  o: BuildRibbonModelOptions
+  o: BuildRibbonModelOptions,
 ): RibbonRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
@@ -73,7 +73,7 @@ export function buildRibbonRenderModel(
     // its rank and the connecting ribbons cross when ranks swap. activeKeys itself
     // stays untouched - context/a11y key order is the caller's.
     const rankedKeys = [...o.activeKeys].sort(
-      (a, b) => (Number(row[a]) || 0) - (Number(row[b]) || 0)
+      (a, b) => (Number(row[a]) || 0) - (Number(row[b]) || 0),
     );
     for (const key of rankedKeys) {
       const value = Number(row[key]) || 0;

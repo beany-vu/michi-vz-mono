@@ -24,7 +24,7 @@ export function renderFountainSvg(
   parent: SVGElement,
   model: FountainRenderModel,
   o: FountainSvgOptions,
-  ia: FountainInteractions
+  ia: FountainInteractions,
 ): void {
   const root = svgEl("g", { class: "fountain-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
@@ -38,7 +38,7 @@ export function renderFountainSvg(
         stroke: INK,
         "stroke-width": 1.5,
         opacity: 0.45,
-      })
+      }),
     );
   }
 
@@ -86,7 +86,7 @@ export function renderFountainSvg(
           "stroke-width": 1,
           "stroke-dasharray": "4,4",
           opacity: jet.dimmed ? 0.3 : 0.8,
-        })
+        }),
       );
     }
     for (const dp of jet.dropletPaths) {
@@ -99,7 +99,7 @@ export function renderFountainSvg(
           "stroke-width": 1.2,
           "stroke-linecap": "round",
           opacity: (jet.dimmed ? 0.3 : 1) * 0.45,
-        })
+        }),
       );
     }
 

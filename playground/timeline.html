@@ -1,188 +1,320 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>@michi-vz/wc - "Play through the years" timeline: svg / canvas / webgpu</title>
-<style>
-  body { font-family: system-ui, sans-serif; margin: 24px; color: #2a1c15; background: #f6f1e7; }
-  h1 { font-size: 22px; margin-bottom: 4px; }
-  h2 { font-size: 16px; margin: 32px 0 8px; border-top: 1px solid #e1d6c3; padding-top: 20px; }
-  .lede { color: #6b5a48; max-width: 70ch; }
-  .row { display: flex; flex-wrap: wrap; gap: 24px; }
-  .card { background: #fffdf8; border: 1px solid #e1d6c3; border-radius: 6px; padding: 12px; }
-  .card h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
-  .readout { margin-top: 6px; font: 12px ui-monospace, monospace; color: #6b5a48; white-space: pre; }
-  .readout b { color: #2a1c15; }
-</style>
-</head>
-<body>
-<h1>"Play through the years" (cumulative timeline) - renderer check</h1>
-<p class="lede">
-  Manual visual QA for the opt-in <code>timeline</code> prop across the SVG, canvas, and
-  WebGPU renderers (not part of the automated <code>verify-playground</code> self-test, and
-  NOT published docs - this loads the freshly built <code>packages/wc/dist</code> bundle
-  directly). Every chart below has <code>timeline: {"{ autoplay: true, loop: true }"}</code>
-  set, so each card sweeps through its years on its own as soon as it mounts (properties are
-  assigned BEFORE the element is appended to the DOM, same as the docs' own
-  <code>TimelinePlayDemo.vue</code> - assigning them after connecting a Lit element can race
-  its first render and miss the config).
-  SVG and canvas should visibly reveal marks year by year; WebGPU (real GPU when your
-  browser supports it, else it silently falls back to the canvas-2D stopgap) is EXPECTED
-  to show the full frame immediately with no sweep and no play/scrubber control underneath
-  - that is by design (mirrors <code>progressiveDraw</code>'s existing "no reveal on webgpu"
-  behaviour), not a bug. The readout under each card prints the EFFECTIVE renderer
-  (<code>getContext().renderer</code>) and the headless timeline controller's state
-  (<code>getTimeline()</code>).
-</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@michi-vz/wc - "Play through the years" timeline: svg / canvas / webgpu</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 24px;
+        color: #2a1c15;
+        background: #f6f1e7;
+      }
+      h1 {
+        font-size: 22px;
+        margin-bottom: 4px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 32px 0 8px;
+        border-top: 1px solid #e1d6c3;
+        padding-top: 20px;
+      }
+      .lede {
+        color: #6b5a48;
+        max-width: 70ch;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+      }
+      .card {
+        background: #fffdf8;
+        border: 1px solid #e1d6c3;
+        border-radius: 6px;
+        padding: 12px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .readout {
+        margin-top: 6px;
+        font:
+          12px ui-monospace,
+          monospace;
+        color: #6b5a48;
+        white-space: pre;
+      }
+      .readout b {
+        color: #2a1c15;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>"Play through the years" (cumulative timeline) - renderer check</h1>
+    <p class="lede">
+      Manual visual QA for the opt-in <code>timeline</code> prop across the SVG, canvas, and WebGPU
+      renderers (not part of the automated <code>verify-playground</code> self-test, and NOT
+      published docs - this loads the freshly built <code>packages/wc/dist</code> bundle directly).
+      Every chart below has <code>timeline: {"{ autoplay: true, loop: true }"}</code>
+      set, so each card sweeps through its years on its own as soon as it mounts (properties are
+      assigned BEFORE the element is appended to the DOM, same as the docs' own
+      <code>TimelinePlayDemo.vue</code> - assigning them after connecting a Lit element can race its
+      first render and miss the config). SVG and canvas should visibly reveal marks year by year;
+      WebGPU (real GPU when your browser supports it, else it silently falls back to the canvas-2D
+      stopgap) is EXPECTED to show the full frame immediately with no sweep and no play/scrubber
+      control underneath - that is by design (mirrors <code>progressiveDraw</code>'s existing "no
+      reveal on webgpu" behaviour), not a bug. The readout under each card prints the EFFECTIVE
+      renderer (<code>getContext().renderer</code>) and the headless timeline controller's state
+      (<code>getTimeline()</code>).
+    </p>
 
-<h2>AreaChart</h2>
-<div class="row" id="areaRow"></div>
+    <h2>AreaChart</h2>
+    <div class="row" id="areaRow"></div>
 
-<h2>RangeChart</h2>
-<div class="row" id="rangeRow"></div>
+    <h2>RangeChart</h2>
+    <div class="row" id="rangeRow"></div>
 
-<h2>FanChart</h2>
-<div class="row" id="fanRow"></div>
+    <h2>FanChart</h2>
+    <div class="row" id="fanRow"></div>
 
-<h2>VerticalStackBarChart</h2>
-<div class="row" id="stackRow"></div>
+    <h2>VerticalStackBarChart</h2>
+    <div class="row" id="stackRow"></div>
 
-<h2>RibbonChart</h2>
-<div class="row" id="ribbonRow"></div>
+    <h2>RibbonChart</h2>
+    <div class="row" id="ribbonRow"></div>
 
-<h2>FountainChart (trend mode - snapshot mode has no time periods, so no timeline)</h2>
-<div class="row" id="fountainRow"></div>
+    <h2>FountainChart (trend mode - snapshot mode has no time periods, so no timeline)</h2>
+    <div class="row" id="fountainRow"></div>
 
-<script type="module">
-await import("../packages/wc/dist/michi-vz-wc.bundle.js");
+    <script type="module">
+      await import("../packages/wc/dist/michi-vz-wc.bundle.js");
 
-const YEARS = [2018, 2019, 2020, 2021, 2022];
-const WIDTH = 340;
-const HEIGHT = 260;
-const TIMELINE = { autoplay: true, loop: true, speedMs: 900 };
-const RENDERERS = [
-  ["svg", "SVG"],
-  ["canvas", "Canvas"],
-  ["webgpu", "WebGPU"],
-];
+      const YEARS = [2018, 2019, 2020, 2021, 2022];
+      const WIDTH = 340;
+      const HEIGHT = 260;
+      const TIMELINE = { autoplay: true, loop: true, speedMs: 900 };
+      const RENDERERS = [
+        ["svg", "SVG"],
+        ["canvas", "Canvas"],
+        ["webgpu", "WebGPU"],
+      ];
 
-// Mounts one card: creates the element, assigns props (incl. `renderer` and
-// `timeline`) BEFORE appending it to the DOM (the correct order for a Lit
-// element - firstUpdated() must see the real config, not the field defaults),
-// then prints a readout once mount settles.
-function mountCard(rowId, tag, label, props, elId) {
-  const row = document.getElementById(rowId);
-  const card = document.createElement("div");
-  card.className = "card";
-  const h3 = document.createElement("h3");
-  h3.textContent = label;
-  const readout = document.createElement("div");
-  readout.className = "readout";
-  const el = document.createElement(tag);
-  if (elId) el.id = elId;
-  Object.assign(el, props);
-  card.append(h3, el, readout);
-  row.append(card);
+      // Mounts one card: creates the element, assigns props (incl. `renderer` and
+      // `timeline`) BEFORE appending it to the DOM (the correct order for a Lit
+      // element - firstUpdated() must see the real config, not the field defaults),
+      // then prints a readout once mount settles.
+      function mountCard(rowId, tag, label, props, elId) {
+        const row = document.getElementById(rowId);
+        const card = document.createElement("div");
+        card.className = "card";
+        const h3 = document.createElement("h3");
+        h3.textContent = label;
+        const readout = document.createElement("div");
+        readout.className = "readout";
+        const el = document.createElement(tag);
+        if (elId) el.id = elId;
+        Object.assign(el, props);
+        card.append(h3, el, readout);
+        row.append(card);
 
-  setTimeout(() => {
-    const ctx = el.getContext?.();
-    const tl = el.getTimeline?.();
-    readout.innerHTML =
-      `effective renderer: <b>${ctx?.renderer ?? "?"}</b>\n` +
-      `getTimeline(): <b>${
-        tl
-          ? `periods=${tl.getState().periods.length} playing=${tl.getState().playing}`
-          : "null"
-      }</b>\n` +
-      `control in DOM: <b>${!!el.querySelector(".mv-timeline")}</b>  ` +
-      `clip in DOM: <b>${!!el.querySelector("clipPath")}</b>`;
-  }, 300);
-}
+        setTimeout(() => {
+          const ctx = el.getContext?.();
+          const tl = el.getTimeline?.();
+          readout.innerHTML =
+            `effective renderer: <b>${ctx?.renderer ?? "?"}</b>\n` +
+            `getTimeline(): <b>${
+              tl
+                ? `periods=${tl.getState().periods.length} playing=${tl.getState().playing}`
+                : "null"
+            }</b>\n` +
+            `control in DOM: <b>${!!el.querySelector(".mv-timeline")}</b>  ` +
+            `clip in DOM: <b>${!!el.querySelector("clipPath")}</b>`;
+        }, 300);
+      }
 
-// ---- AreaChart (stacked bands over years) ----
-const areaSeries = YEARS.map((date, i) => ({
-  date,
-  "Fruit Sales": 10 + i * 2,
-  Veg: 5 + i,
-  Dairy: 3 + Math.round(i * 1.5),
-}));
-const areaKeys = ["Fruit Sales", "Veg", "Dairy"];
-for (const [renderer, label] of RENDERERS) {
-  mountCard("areaRow", "michi-vz-area-chart", label, {
-    series: areaSeries, keys: areaKeys, width: WIDTH, height: HEIGHT,
-    xAxisDataType: "number", renderer, timeline: TIMELINE,
-  }, "area" + renderer[0].toUpperCase() + renderer.slice(1));
-}
+      // ---- AreaChart (stacked bands over years) ----
+      const areaSeries = YEARS.map((date, i) => ({
+        date,
+        "Fruit Sales": 10 + i * 2,
+        Veg: 5 + i,
+        Dairy: 3 + Math.round(i * 1.5),
+      }));
+      const areaKeys = ["Fruit Sales", "Veg", "Dairy"];
+      for (const [renderer, label] of RENDERERS) {
+        mountCard(
+          "areaRow",
+          "michi-vz-area-chart",
+          label,
+          {
+            series: areaSeries,
+            keys: areaKeys,
+            width: WIDTH,
+            height: HEIGHT,
+            xAxisDataType: "number",
+            renderer,
+            timeline: TIMELINE,
+          },
+          "area" + renderer[0].toUpperCase() + renderer.slice(1),
+        );
+      }
 
-// ---- RangeChart (min/max bands over years) ----
-const rangeDataSet = [
-  {
-    label: "Region A", color: "#f00",
-    series: YEARS.map((date, i) => ({ date, valueMin: 5 + i, valueMax: 12 + i * 2, certainty: true })),
-  },
-  {
-    label: "Region B", color: "#0a0",
-    series: YEARS.map((date, i) => ({ date, valueMin: 2 + i, valueMax: 6 + i, certainty: true })),
-  },
-];
-for (const [renderer, label] of RENDERERS) {
-  mountCard("rangeRow", "michi-vz-range-chart", label, {
-    dataSet: rangeDataSet, width: WIDTH, height: HEIGHT,
-    xAxisDataType: "date_annual", renderer, timeline: TIMELINE,
-  }, "range" + renderer[0].toUpperCase() + renderer.slice(1));
-}
+      // ---- RangeChart (min/max bands over years) ----
+      const rangeDataSet = [
+        {
+          label: "Region A",
+          color: "#f00",
+          series: YEARS.map((date, i) => ({
+            date,
+            valueMin: 5 + i,
+            valueMax: 12 + i * 2,
+            certainty: true,
+          })),
+        },
+        {
+          label: "Region B",
+          color: "#0a0",
+          series: YEARS.map((date, i) => ({
+            date,
+            valueMin: 2 + i,
+            valueMax: 6 + i,
+            certainty: true,
+          })),
+        },
+      ];
+      for (const [renderer, label] of RENDERERS) {
+        mountCard(
+          "rangeRow",
+          "michi-vz-range-chart",
+          label,
+          {
+            dataSet: rangeDataSet,
+            width: WIDTH,
+            height: HEIGHT,
+            xAxisDataType: "date_annual",
+            renderer,
+            timeline: TIMELINE,
+          },
+          "range" + renderer[0].toUpperCase() + renderer.slice(1),
+        );
+      }
 
-// ---- FanChart (history + forecast bands) ----
-const fanDataSet = [
-  {
-    label: "Flow",
-    series: YEARS.map((date, i) => ({ date, value: 10 + i * 10, certainty: i < 3 })),
-    bands: [
-      {
-        level: 0.9,
-        series: YEARS.slice(2).map((date, i) => ({
-          date, valueMin: 25 + i * 8, valueMax: 35 + i * 12, valueMedium: 30 + i * 10,
-        })),
-      },
-    ],
-  },
-];
-for (const [renderer, label] of RENDERERS) {
-  mountCard("fanRow", "michi-vz-fan-chart", label, {
-    dataSet: fanDataSet, width: WIDTH, height: HEIGHT,
-    xAxisDataType: "number", renderer, timeline: TIMELINE,
-  }, "fan" + renderer[0].toUpperCase() + renderer.slice(1));
-}
+      // ---- FanChart (history + forecast bands) ----
+      const fanDataSet = [
+        {
+          label: "Flow",
+          series: YEARS.map((date, i) => ({ date, value: 10 + i * 10, certainty: i < 3 })),
+          bands: [
+            {
+              level: 0.9,
+              series: YEARS.slice(2).map((date, i) => ({
+                date,
+                valueMin: 25 + i * 8,
+                valueMax: 35 + i * 12,
+                valueMedium: 30 + i * 10,
+              })),
+            },
+          ],
+        },
+      ];
+      for (const [renderer, label] of RENDERERS) {
+        mountCard(
+          "fanRow",
+          "michi-vz-fan-chart",
+          label,
+          {
+            dataSet: fanDataSet,
+            width: WIDTH,
+            height: HEIGHT,
+            xAxisDataType: "number",
+            renderer,
+            timeline: TIMELINE,
+          },
+          "fan" + renderer[0].toUpperCase() + renderer.slice(1),
+        );
+      }
 
-// ---- VerticalStackBarChart (stacked bars, one band per year) ----
-const stackDataSet = [
-  { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: YEARS.map((y, i) => ({ date: String(y), Africa: String(10 + i * 2) })) },
-  { seriesKey: "Non-LDC", seriesKeyAbbreviation: "NL", series: YEARS.map((y, i) => ({ date: String(y), "Non-LDC": String(20 - i) })) },
-];
-for (const [renderer, label] of RENDERERS) {
-  mountCard("stackRow", "michi-vz-vertical-stack-bar-chart", label, {
-    dataSet: stackDataSet, width: WIDTH, height: HEIGHT, renderer, timeline: TIMELINE,
-  }, "stack" + renderer[0].toUpperCase() + renderer.slice(1));
-}
+      // ---- VerticalStackBarChart (stacked bars, one band per year) ----
+      const stackDataSet = [
+        {
+          seriesKey: "Africa",
+          seriesKeyAbbreviation: "AF",
+          series: YEARS.map((y, i) => ({ date: String(y), Africa: String(10 + i * 2) })),
+        },
+        {
+          seriesKey: "Non-LDC",
+          seriesKeyAbbreviation: "NL",
+          series: YEARS.map((y, i) => ({ date: String(y), "Non-LDC": String(20 - i) })),
+        },
+      ];
+      for (const [renderer, label] of RENDERERS) {
+        mountCard(
+          "stackRow",
+          "michi-vz-vertical-stack-bar-chart",
+          label,
+          {
+            dataSet: stackDataSet,
+            width: WIDTH,
+            height: HEIGHT,
+            renderer,
+            timeline: TIMELINE,
+          },
+          "stack" + renderer[0].toUpperCase() + renderer.slice(1),
+        );
+      }
 
-// ---- RibbonChart (stacked columns + connectors, one column per year) ----
-const ribbonSeries = YEARS.map((y, i) => ({ date: String(y), "Fruit Sales": 10 + i * 2, Veg: 5 + i }));
-const ribbonKeys = ["Fruit Sales", "Veg"];
-for (const [renderer, label] of RENDERERS) {
-  mountCard("ribbonRow", "michi-vz-ribbon-chart", label, {
-    series: ribbonSeries, keys: ribbonKeys, width: WIDTH, height: HEIGHT, renderer, timeline: TIMELINE,
-  }, "ribbon" + renderer[0].toUpperCase() + renderer.slice(1));
-}
+      // ---- RibbonChart (stacked columns + connectors, one column per year) ----
+      const ribbonSeries = YEARS.map((y, i) => ({
+        date: String(y),
+        "Fruit Sales": 10 + i * 2,
+        Veg: 5 + i,
+      }));
+      const ribbonKeys = ["Fruit Sales", "Veg"];
+      for (const [renderer, label] of RENDERERS) {
+        mountCard(
+          "ribbonRow",
+          "michi-vz-ribbon-chart",
+          label,
+          {
+            series: ribbonSeries,
+            keys: ribbonKeys,
+            width: WIDTH,
+            height: HEIGHT,
+            renderer,
+            timeline: TIMELINE,
+          },
+          "ribbon" + renderer[0].toUpperCase() + renderer.slice(1),
+        );
+      }
 
-// ---- FountainChart (trend mode only - snapshot/categorical has no periods) ----
-const fountainDataSet = YEARS.map((date, i) => ({ label: "Flow", value: 50 + i * 15, spread: 8 + i * 2, date }));
-for (const [renderer, label] of RENDERERS) {
-  mountCard("fountainRow", "michi-vz-fountain-chart", label, {
-    dataSet: fountainDataSet, title: "Demo", width: WIDTH, height: HEIGHT,
-    xAxisDataType: "number", renderer, timeline: TIMELINE,
-  }, "fountain" + renderer[0].toUpperCase() + renderer.slice(1));
-}
-</script>
-</body>
+      // ---- FountainChart (trend mode only - snapshot/categorical has no periods) ----
+      const fountainDataSet = YEARS.map((date, i) => ({
+        label: "Flow",
+        value: 50 + i * 15,
+        spread: 8 + i * 2,
+        date,
+      }));
+      for (const [renderer, label] of RENDERERS) {
+        mountCard(
+          "fountainRow",
+          "michi-vz-fountain-chart",
+          label,
+          {
+            dataSet: fountainDataSet,
+            title: "Demo",
+            width: WIDTH,
+            height: HEIGHT,
+            xAxisDataType: "number",
+            renderer,
+            timeline: TIMELINE,
+          },
+          "fountain" + renderer[0].toUpperCase() + renderer.slice(1),
+        );
+      }
+    </script>
+  </body>
 </html>

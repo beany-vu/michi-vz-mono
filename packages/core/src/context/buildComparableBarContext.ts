@@ -18,7 +18,7 @@ export interface BuildComparableContextInput {
 }
 
 export function buildComparableBarContext(
-  input: BuildComparableContextInput
+  input: BuildComparableContextInput,
 ): ComparableBarChartContext {
   const series: ComparableBarSeriesContext[] = input.points.map((d) => ({
     label: d.label,

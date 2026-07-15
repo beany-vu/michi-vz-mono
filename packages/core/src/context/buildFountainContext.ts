@@ -50,7 +50,10 @@ export function buildFountainContext(input: BuildFountainContextInput): Fountain
   // In trend mode, order jets by their parsed date so trendSlope and the a11y
   // table match the rendered left-to-right axis even for unsorted input.
   const items =
-    input.mode === "trend" && (input.xAxisType === "number" || input.xAxisType === "date_annual" || input.xAxisType === "date_monthly")
+    input.mode === "trend" &&
+    (input.xAxisType === "number" ||
+      input.xAxisType === "date_annual" ||
+      input.xAxisType === "date_monthly")
       ? [...input.items].sort((a, b) => {
           const pa = parseXValue(a.date ?? 0, input.xAxisType as XaxisDataType);
           const pb = parseXValue(b.date ?? 0, input.xAxisType as XaxisDataType);
@@ -100,12 +103,19 @@ export function buildFountainContext(input: BuildFountainContextInput): Fountain
   if (jets.length === 0) {
     summary = `Fountain chart ${titlePart}with no jets.`;
   } else if (input.mode === "trend") {
-    const dir = trendSlope === null || Math.abs(trendSlope) < 1e-9 ? "flat" : trendSlope > 0 ? "rising" : "falling";
+    const dir =
+      trendSlope === null || Math.abs(trendSlope) < 1e-9
+        ? "flat"
+        : trendSlope > 0
+          ? "rising"
+          : "falling";
     const peak = tallest ? `${tallest.value} (${tallest.label})` : "n/a";
     summary =
       `Fountain chart ${titlePart}over ${jets.length} period${jets.length === 1 ? "" : "s"}: ` +
       `${dir} trend (slope ${trendSlope}). Peak ${peak}.` +
-      (frothiest ? ` Most uncertain: ${frothiest.label} (spread ratio ${frothiest.spreadRatio}).` : "");
+      (frothiest
+        ? ` Most uncertain: ${frothiest.label} (spread ratio ${frothiest.spreadRatio}).`
+        : "");
   } else if (jets.length === 1) {
     const j = jets[0];
     const pct = Math.round(j.spreadRatio * 100);
@@ -114,7 +124,9 @@ export function buildFountainContext(input: BuildFountainContextInput): Fountain
     summary =
       `Fountain chart ${titlePart}with ${jets.length} jets.` +
       (tallest ? ` Tallest: ${tallest.label} at ${tallest.value}.` : "") +
-      (frothiest ? ` Most uncertain: ${frothiest.label} (spread ratio ${frothiest.spreadRatio}).` : "");
+      (frothiest
+        ? ` Most uncertain: ${frothiest.label} (spread ratio ${frothiest.spreadRatio}).`
+        : "");
   }
 
   const headers =

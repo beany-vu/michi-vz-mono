@@ -53,7 +53,7 @@ function mount(extra: Partial<ChoroplethMapChartProps> = {}, ticker?: ManualTick
   const chart = mountChoroplethMapChart(
     host,
     { geography, dataSet: years, width: 600, height: 400, noDataColor: "#abcdef", ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }

@@ -9,7 +9,10 @@ import type { DataWarning, RadialTreeNode } from "../types";
 export function checkRadialTreeData(dataSet: RadialTreeNode[]): DataWarning[] {
   const warnings: DataWarning[] = [];
   if (!dataSet || dataSet.length === 0) {
-    warnings.push({ type: "empty-dataset", message: "RadialTree chart received an empty dataSet." });
+    warnings.push({
+      type: "empty-dataset",
+      message: "RadialTree chart received an empty dataSet.",
+    });
     return warnings;
   }
 

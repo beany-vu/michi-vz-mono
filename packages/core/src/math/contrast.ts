@@ -8,11 +8,7 @@ function parseColor(input: string): [number, number, number] | null {
   let m = /^#([0-9a-f]{3})$/.exec(s);
   if (m) {
     const h = m[1];
-    return [
-      parseInt(h[0] + h[0], 16),
-      parseInt(h[1] + h[1], 16),
-      parseInt(h[2] + h[2], 16),
-    ];
+    return [parseInt(h[0] + h[0], 16), parseInt(h[1] + h[1], 16), parseInt(h[2] + h[2], 16)];
   }
   m = /^#([0-9a-f]{6})$/.exec(s);
   if (m) {

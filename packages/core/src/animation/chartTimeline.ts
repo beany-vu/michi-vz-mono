@@ -30,7 +30,7 @@ export interface ResolvedTimeline {
 }
 
 export function resolveTimeline(
-  v: boolean | TimelinePeriodConfig | undefined
+  v: boolean | TimelinePeriodConfig | undefined,
 ): ResolvedTimeline | null {
   if (!v) return null;
   const cfg = v === true ? {} : v;
@@ -55,7 +55,7 @@ export function resolveTimeline(
  *  working; sorting is numeric when every value coerces to a number. */
 export function enumerateDatePeriods(
   rows: readonly object[],
-  key = "date"
+  key = "date",
 ): Array<number | string> {
   const seen = new Map<string, number | string>();
   for (const row of rows) {
@@ -65,9 +65,9 @@ export function enumerateDatePeriods(
     if (!seen.has(k)) seen.set(k, v);
   }
   const values = Array.from(seen.values());
-  const allNumeric = values.every(v => Number.isFinite(Number(v)));
+  const allNumeric = values.every((v) => Number.isFinite(Number(v)));
   return values.sort((a, b) =>
-    allNumeric ? Number(a) - Number(b) : String(a).localeCompare(String(b))
+    allNumeric ? Number(a) - Number(b) : String(a).localeCompare(String(b)),
   );
 }
 
@@ -75,9 +75,9 @@ export function enumerateDatePeriods(
 export function filterRowsToPeriod<T extends object>(
   rows: T[],
   period: number | string,
-  key = "date"
+  key = "date",
 ): T[] {
-  return rows.filter(row => {
+  return rows.filter((row) => {
     const v = (row as Record<string, unknown>)[key] as number | string | undefined | null;
     return v === undefined || v === null || String(v) === String(period);
   });
@@ -90,11 +90,11 @@ export function filterRowsToPeriod<T extends object>(
 export function interpolateRows<T extends { label?: string; date?: number | string }>(
   from: T[],
   to: T[],
-  t: number
+  t: number,
 ): T[] {
   if (t >= 1) return to;
-  const byLabel = new Map(from.map(r => [r.label, r]));
-  return to.map(row => {
+  const byLabel = new Map(from.map((r) => [r.label, r]));
+  return to.map((row) => {
     const prev = row.label !== undefined ? byLabel.get(row.label) : undefined;
     if (!prev) return row;
     const out: Record<string, unknown> = { ...row };
@@ -114,20 +114,20 @@ export function interpolateRows<T extends { label?: string; date?: number | stri
       } else if (
         Array.isArray(a) &&
         Array.isArray(b) &&
-        b.every(v => typeof v === "object" && v !== null && "label" in (v as object))
+        b.every((v) => typeof v === "object" && v !== null && "label" in (v as object))
       ) {
         // Hierarchies (treemap/radial-tree children, sankey links): recurse,
         // matching nested nodes by label - the whole tree tweens.
         out[key] = interpolateRows(
           a as Array<{ label?: string }>,
           b as Array<{ label?: string }>,
-          t
+          t,
         );
       } else if (
         Array.isArray(a) &&
         Array.isArray(b) &&
         a.length === b.length &&
-        b.every(v => typeof v === "number" || v === null)
+        b.every((v) => typeof v === "number" || v === null)
       ) {
         // Radar-style per-axis value arrays: lerp elementwise where both sides
         // are finite numbers, otherwise keep the target element (null poles).
@@ -156,7 +156,7 @@ export interface EngineTimeline {
   beforeRender<T extends object>(
     cfg: ResolvedTimeline | null,
     dataSet: T[],
-    filter: Filter | undefined
+    filter: Filter | undefined,
   ): { dataSet: T[]; filter: Filter | undefined };
   /** Call at the end of render(): mounts/updates or removes the built-in control. */
   afterRender(host: HTMLElement, cfg: ResolvedTimeline | null): void;
@@ -203,7 +203,7 @@ export function createEngineTimeline(deps: {
       easing: cfg.easing,
       from: 0,
       to: 1,
-      onFrame: v => {
+      onFrame: (v) => {
         if (!tween) return;
         tween.t = v;
         deps.requestRender();
@@ -241,7 +241,7 @@ export function createEngineTimeline(deps: {
         // (data updates) keep the current position, clamped.
         let startIndex = Math.min(index, periods.length - 1);
         if (firstCreation && filter?.date !== undefined && filter.date !== "") {
-          const fromFilter = periods.findIndex(p => String(p) === String(filter.date));
+          const fromFilter = periods.findIndex((p) => String(p) === String(filter.date));
           if (fromFilter >= 0) startIndex = fromFilter;
         }
         index = startIndex;

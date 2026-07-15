@@ -27,21 +27,35 @@ export function renderComparableVerticalSvg(
   parent: SVGElement,
   model: ComparableVerticalRenderModel,
   o: ComparableVerticalSvgOptions,
-  ia: ComparableVerticalInteractions
+  ia: ComparableVerticalInteractions,
 ): void {
   const root = svgEl("g", { class: "comparable-vertical-bar-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
 
   for (const bar of model.bars) {
-    const g = svgEl("g", { class: "data-group", "data-label": bar.label, "data-label-safe": bar.safe });
+    const g = svgEl("g", {
+      class: "data-group",
+      "data-label": bar.label,
+      "data-label-safe": bar.safe,
+    });
     g.style.opacity = bar.dimmed ? "0.3" : "1";
     g.style.transition = transition;
 
     for (const type of comparableVerticalDrawOrder(bar)) {
       const part =
         type === "based"
-          ? { seg: bar.based, opacity: o.valueBasedOpacity, cls: "value-based", fill: bar.basedColor }
-          : { seg: bar.compared, opacity: o.valueComparedOpacity, cls: "value-compared", fill: bar.color };
+          ? {
+              seg: bar.based,
+              opacity: o.valueBasedOpacity,
+              cls: "value-based",
+              fill: bar.basedColor,
+            }
+          : {
+              seg: bar.compared,
+              opacity: o.valueComparedOpacity,
+              cls: "value-compared",
+              fill: bar.color,
+            };
       const patternId = type === "based" ? o.patternIdFor?.(bar.label, bar.safe) : undefined;
       const rect = svgEl("rect", {
         class: `bar ${part.cls}`,

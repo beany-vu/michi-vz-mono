@@ -26,17 +26,18 @@ export function drawTreemapWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: TreemapRenderModel,
-  o: TreemapWebgpuOptions
+  o: TreemapWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME probe canvas mode uses (rect.tile, fill).
   const fallback = new Map<string, string>();
-  for (const leaf of model.leaves) if (!fallback.has(leaf.colorKey)) fallback.set(leaf.colorKey, leaf.fill);
+  for (const leaf of model.leaves)
+    if (!fallback.has(leaf.colorKey)) fallback.set(leaf.colorKey, leaf.fill);
   const fillColors = resolveMarkColors(
     svg,
     model.groupKeys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "tile", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;
@@ -57,7 +58,7 @@ export function drawTreemapWebgpu(
         d.y,
         d.w - d.realizedWidth,
         d.h,
-        markColor("#ffffff", groupOpacity * veil)
+        markColor("#ffffff", groupOpacity * veil),
       );
     }
   }

@@ -17,9 +17,24 @@ export interface LlmModel {
 // Small only. Qwen first: smallest that still knows multilingual country names
 // (Deutschland, Nippon). Phi-3.5 (3.7 GB) and DeepSeek-7B (5.1 GB) are intentionally absent.
 export const LLM_CATALOG: LlmModel[] = [
-  { id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", name: "Qwen2.5 (0.5B)", sizeMB: 945, note: "smallest, multilingual" },
-  { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", name: "Llama 3.2 (1B)", sizeMB: 879, note: "small, general" },
-  { id: "gemma-2-2b-it-q4f16_1-MLC", name: "Gemma 2 (2B)", sizeMB: 1895, note: "most reliable, larger" },
+  {
+    id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+    name: "Qwen2.5 (0.5B)",
+    sizeMB: 945,
+    note: "smallest, multilingual",
+  },
+  {
+    id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
+    name: "Llama 3.2 (1B)",
+    sizeMB: 879,
+    note: "small, general",
+  },
+  {
+    id: "gemma-2-2b-it-q4f16_1-MLC",
+    name: "Gemma 2 (2B)",
+    sizeMB: 1895,
+    note: "most reliable, larger",
+  },
 ];
 
 type Status = "" | "loading" | "ready" | "error";
@@ -47,11 +62,15 @@ async function load(model: LlmModel) {
   engine = null;
   try {
     const mod = await ensureWebllm();
-    const known = (mod.prebuiltAppConfig?.model_list ?? []).some((m: { model_id: string }) => m.model_id === model.id);
+    const known = (mod.prebuiltAppConfig?.model_list ?? []).some(
+      (m: { model_id: string }) => m.model_id === model.id,
+    );
     if (!known) throw new Error(`"${model.id}" isn't in this WebLLM build's catalog.`);
     engine = await mod.CreateMLCEngine(model.id, {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      initProgressCallback: (p: any) => { if (typeof p?.progress === "number") pct.value = Math.round(p.progress * 100); },
+      initProgressCallback: (p: any) => {
+        if (typeof p?.progress === "number") pct.value = Math.round(p.progress * 100);
+      },
     });
     loadedId.value = model.id;
     status.value = "ready";

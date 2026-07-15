@@ -27,14 +27,15 @@ export function processFountainData(
   dataSet: FountainDataItem[],
   xAxisDataType: FountainXAxisType | undefined,
   disabledItems?: string[],
-  yAxisDomain?: [number, number]
+  yAxisDomain?: [number, number],
 ): ProcessedFountain {
   const disabled = new Set(disabledItems ?? []);
   const items = (dataSet ?? []).filter((d) => !disabled.has(d.label));
 
   const temporalType = isTemporal(xAxisDataType) ? xAxisDataType : null;
   const allHaveDate =
-    items.length > 0 && items.every((d) => d.date !== undefined && d.date !== null && d.date !== "");
+    items.length > 0 &&
+    items.every((d) => d.date !== undefined && d.date !== null && d.date !== "");
   const mode: "snapshot" | "trend" = temporalType && allHaveDate ? "trend" : "snapshot";
 
   const labels: string[] = [];

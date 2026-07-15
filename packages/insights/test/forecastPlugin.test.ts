@@ -64,17 +64,21 @@ describe("forecast plugin (engine integration)", () => {
   });
 
   it("leaves non-numeric x-axis series untouched (MVP limitation)", () => {
-    const chart = mountLineChart(host(), {
-      dataSet: [
-        {
-          label: "B",
-          series: [
-            { date: "Jan", value: 1, certainty: true },
-            { date: "Feb", value: 2, certainty: true },
-          ],
-        },
-      ],
-    }, { plugins: [forecast({ horizon: 3 })] });
+    const chart = mountLineChart(
+      host(),
+      {
+        dataSet: [
+          {
+            label: "B",
+            series: [
+              { date: "Jan", value: 1, certainty: true },
+              { date: "Feb", value: 2, certainty: true },
+            ],
+          },
+        ],
+      },
+      { plugins: [forecast({ horizon: 3 })] },
+    );
     expect((chart.getContext() as LineChartContext).series[0].pointCount).toBe(2);
     chart.destroy();
   });
@@ -92,7 +96,9 @@ describe("forecast plugin (engine integration)", () => {
 
   it("shades the forecast region with a zone rect (even without a threshold)", () => {
     const h = host();
-    const chart = mountLineChart(h, baseProps, { plugins: [forecast({ method: "linear", horizon: 3 })] });
+    const chart = mountLineChart(h, baseProps, {
+      plugins: [forecast({ method: "linear", horizon: 3 })],
+    });
     const zone = h.querySelector(".mv-annotation-zone");
     expect(zone).toBeTruthy();
     // the zone has positive width (spans the predicted x-range)

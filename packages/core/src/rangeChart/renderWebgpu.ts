@@ -30,7 +30,10 @@ export interface RangeWebgpuOptions {
 // through the points and the bottom ring runs backward, closing the band. Sampling
 // the full closed path and splitting it at its midpoint recovers both polylines in
 // the SAME point order the SVG/canvas renderers draw (curve included).
-function flattenAreaPath(d: string, samplesPerHalf = 24): { top: Array<[number, number]>; bottom: Array<[number, number]> } | null {
+function flattenAreaPath(
+  d: string,
+  samplesPerHalf = 24,
+): { top: Array<[number, number]>; bottom: Array<[number, number]> } | null {
   if (!d) return null;
   const path = svgEl("path", { d }) as SVGPathElement;
   if (typeof path.getTotalLength !== "function") return null;
@@ -80,7 +83,7 @@ export function drawRangeWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: RangeRenderModel,
-  o: RangeWebgpuOptions
+  o: RangeWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME probe canvas mode uses (path.area, fill).
   const labels = model.series.map((s) => s.label);
@@ -90,7 +93,7 @@ export function drawRangeWebgpu(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("path", "area", "fill"),
-    "fill"
+    "fill",
   );
 
   const batch: MarkBatch = emptyBatch();

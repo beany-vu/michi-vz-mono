@@ -14,10 +14,41 @@ const lineCtx: LineChartContext = {
   xAxis: { type: "number", domain: [0, 3] },
   yAxis: { domain: [0, 50] },
   series: [
-    { label: "A", color: "", pointCount: 4, first: { x: 0, y: 10 }, last: { x: 3, y: 40 }, min: 10, max: 40, mean: 25, change: 30, changePct: 300, trend: "up", gaps: 0 },
-    { label: "B", color: "", pointCount: 4, first: { x: 0, y: 20 }, last: { x: 3, y: 8 }, min: 8, max: 20, mean: 14, change: -12, changePct: -60, trend: "down", gaps: 0 },
+    {
+      label: "A",
+      color: "",
+      pointCount: 4,
+      first: { x: 0, y: 10 },
+      last: { x: 3, y: 40 },
+      min: 10,
+      max: 40,
+      mean: 25,
+      change: 30,
+      changePct: 300,
+      trend: "up",
+      gaps: 0,
+    },
+    {
+      label: "B",
+      color: "",
+      pointCount: 4,
+      first: { x: 0, y: 20 },
+      last: { x: 3, y: 8 },
+      min: 8,
+      max: 20,
+      mean: 14,
+      change: -12,
+      changePct: -60,
+      trend: "down",
+      gaps: 0,
+    },
   ],
-  stats: { seriesCount: 2, pointCount: 8, largestMover: { label: "A", change: 30 }, valueRange: [0, 50] },
+  stats: {
+    seriesCount: 2,
+    pointCount: 8,
+    largestMover: { label: "A", change: 30 },
+    valueRange: [0, 50],
+  },
   colorsMapping: {},
   summary: "Line chart with 2 series.",
   a11yTable: { headers: [], rows: [] },
@@ -36,16 +67,16 @@ describe("narrate", () => {
   });
 
   it("remote backend uses the caller and falls back on failure", async () => {
-    expect(await explainChart(lineCtx, { backend: "remote", caller: async () => "Custom explanation." })).toBe(
-      "Custom explanation."
-    );
+    expect(
+      await explainChart(lineCtx, { backend: "remote", caller: async () => "Custom explanation." }),
+    ).toBe("Custom explanation.");
     expect(
       await explainChart(lineCtx, {
         backend: "remote",
         caller: async () => {
           throw new Error("backend down");
         },
-      })
+      }),
     ).toBe(narrateRules(lineCtx));
     expect(await explainChart(lineCtx, { backend: "remote" })).toBe(narrateRules(lineCtx)); // no caller
   });
@@ -96,7 +127,11 @@ describe("narrate", () => {
       mode: "donut",
       innerRadiusRatio: 0.6,
       slices: [],
-      stats: { sliceCount: 5, total: 899, largestSlice: { label: "Agri-food", value: 381, share: 0.42 } },
+      stats: {
+        sliceCount: 5,
+        total: 899,
+        largestSlice: { label: "Agri-food", value: 381, share: 0.42 },
+      },
       colorsMapping: {},
       summary: "Donut chart with 5 slices totalling 899. Largest: Agri-food (42%).",
       a11yTable: { headers: ["Label", "Value", "Share"], rows: [] },

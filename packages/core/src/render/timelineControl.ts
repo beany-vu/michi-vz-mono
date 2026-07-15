@@ -25,7 +25,7 @@ export function applyTimelineControl(
   host: HTMLElement,
   refs: TimelineControlRefs,
   getController: () => TimelineController | null,
-  show: boolean
+  show: boolean,
 ): void {
   if (!show) {
     refs.root?.remove();
@@ -77,7 +77,7 @@ export function applyTimelineControl(
 export function syncTimelineControl(
   refs: TimelineControlRefs,
   state: TimelineState | null,
-  formatPeriod?: ((period: number | string) => string) | null
+  formatPeriod?: ((period: number | string) => string) | null,
 ): void {
   if (!refs.root || !state) return;
   if (refs.range) {

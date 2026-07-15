@@ -4,7 +4,10 @@ import { createManualTicker, type ManualTicker } from "../src/animation/ticker";
 import type { MotionPreference } from "../src/animation/reducedMotion";
 import type { LineChartProps, LineDataItem } from "../src/types";
 
-const annual = (vals: number[], start = 2016): { date: number; value: number; certainty: boolean }[] =>
+const annual = (
+  vals: number[],
+  start = 2016,
+): { date: number; value: number; certainty: boolean }[] =>
   vals.map((value, i) => ({ date: start + i, value, certainty: true }));
 
 const sample: LineDataItem[] = [
@@ -17,7 +20,11 @@ const sample: LineDataItem[] = [
 const WIDTH = 600;
 const PLOT_LEFT = 60;
 
-function mount(extra: Partial<LineChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<LineChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountLineChart(
@@ -29,7 +36,7 @@ function mount(extra: Partial<LineChartProps> = {}, ticker?: ManualTicker, motio
       xAxisDataType: "date_annual",
       ...extra,
     },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -65,7 +72,7 @@ describe("progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     let prev = rectWidth(host);
     for (let i = 0; i < 10; i++) {
@@ -83,7 +90,7 @@ describe("progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(500);
     expect(rectWidth(host)).toBeCloseTo(PLOT_LEFT + (WIDTH - PLOT_LEFT) / 2, 6);
@@ -104,7 +111,7 @@ describe("progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);
@@ -126,7 +133,7 @@ describe("progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(400);
     const before = rectWidth(host);
@@ -154,7 +161,7 @@ describe("progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear", autoplay: false } },
-      ticker
+      ticker,
     );
     expect(rectWidth(host)).toBe(WIDTH);
     chart.replay!();
@@ -169,7 +176,7 @@ describe("progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);
@@ -196,18 +203,19 @@ describe("progressiveDraw tip labels (SVG)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear", tipLabel: true } },
-      ticker
+      ticker,
     );
     const tips = () => Array.from(host.querySelectorAll<SVGTextElement>("text.mv-progressive-tip"));
     expect(tips().length).toBe(2);
-    const xOf = (t: SVGTextElement) => Number(/translate\(([-\d.]+)/.exec(t.getAttribute("transform") ?? "")?.[1]);
+    const xOf = (t: SVGTextElement) =>
+      Number(/translate\(([-\d.]+)/.exec(t.getAttribute("transform") ?? "")?.[1]);
     const before = xOf(tips()[0]);
     ticker.tick(500);
     const mid = xOf(tips()[0]);
     expect(mid).toBeGreaterThan(before);
     ticker.tick(500);
     // Settled: labels show the series name and the final value.
-    const texts = tips().map(t => t.textContent);
+    const texts = tips().map((t) => t.textContent);
     expect(texts).toContain("Alpha 30");
     expect(texts).toContain("Beta 6");
     chart.destroy();
@@ -218,7 +226,7 @@ describe("progressiveDraw tip labels (SVG)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear", tipLabel: true } },
-      ticker
+      ticker,
     );
     const tip = host.querySelector("text.mv-progressive-tip")!;
     // Walk up: no ancestor of the tip label carries the clip-path.
@@ -235,11 +243,11 @@ describe("progressiveDraw tip labels (SVG)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, tipLabel: { content: "name" } } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     const texts = Array.from(host.querySelectorAll("text.mv-progressive-tip")).map(
-      t => t.textContent
+      (t) => t.textContent,
     );
     expect(texts).toContain("Alpha");
     expect(texts).toContain("Beta");
@@ -264,7 +272,7 @@ describe("progressiveDraw hover gating (canvas mode)", () => {
     const chart = mountLineChart(
       host,
       { dataSet: sample, width: WIDTH, height: 300, xAxisDataType: "date_annual", ...extra },
-      { ticker }
+      { ticker },
     );
     return { host, chart, ticker };
   }
@@ -318,7 +326,7 @@ describe("progressiveDraw replayOnUpdate", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear", replayOnUpdate: true } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);

@@ -13,7 +13,11 @@ export interface ChartHandle<P = unknown> {
 }
 
 /** Wrap a mounted chart into a handle that tracks props and re-renders on patch. */
-export function chartHandle<P>(name: string, instance: ChartInstance<P>, initialProps: P): ChartHandle<P> {
+export function chartHandle<P>(
+  name: string,
+  instance: ChartInstance<P>,
+  initialProps: P,
+): ChartHandle<P> {
   let props = initialProps;
   return {
     name,
@@ -48,7 +52,7 @@ export function createAgentRegistry(): AgentRegistry {
     const h = charts.get(String(name));
     if (!h) {
       throw new Error(
-        `Unknown chart "${String(name)}". Registered: ${[...charts.keys()].join(", ") || "(none)"}`
+        `Unknown chart "${String(name)}". Registered: ${[...charts.keys()].join(", ") || "(none)"}`,
       );
     }
     return h;
@@ -94,7 +98,10 @@ export function createAgentRegistry(): AgentRegistry {
         description: "Highlight series by label.",
         inputSchema: { chart: "string", labels: "string[]" },
         run: (a) => {
-          need(arg(a, "chart")).setProps({ highlightItems: arg(a, "labels") ?? [] } as Record<string, unknown>);
+          need(arg(a, "chart")).setProps({ highlightItems: arg(a, "labels") ?? [] } as Record<
+            string,
+            unknown
+          >);
           return { ok: true };
         },
       },
@@ -103,7 +110,10 @@ export function createAgentRegistry(): AgentRegistry {
         description: "Disable (hide) series by label.",
         inputSchema: { chart: "string", labels: "string[]" },
         run: (a) => {
-          need(arg(a, "chart")).setProps({ disabledItems: arg(a, "labels") ?? [] } as Record<string, unknown>);
+          need(arg(a, "chart")).setProps({ disabledItems: arg(a, "labels") ?? [] } as Record<
+            string,
+            unknown
+          >);
           return { ok: true };
         },
       },

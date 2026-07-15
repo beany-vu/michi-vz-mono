@@ -11,7 +11,15 @@ function ctx(headers: string[], rows: Array<Array<string | number>>): ChartConte
 
 describe("chartContextToCsv", () => {
   it("emits a header row + one line per data row", () => {
-    const csv = chartContextToCsv(ctx(["Label", "Value"], [["A", 1], ["B", 2]]));
+    const csv = chartContextToCsv(
+      ctx(
+        ["Label", "Value"],
+        [
+          ["A", 1],
+          ["B", 2],
+        ],
+      ),
+    );
     expect(csv).toBe("Label,Value\r\nA,1\r\nB,2");
   });
 
@@ -22,11 +30,15 @@ describe("chartContextToCsv", () => {
 
   it("quotes fields containing the delimiter, quotes or newlines (RFC 4180)", () => {
     const csv = chartContextToCsv(
-      ctx(["Name", "Note"], [["Doe, John", 'He said "hi"'], ["multi\nline", "ok"]])
+      ctx(
+        ["Name", "Note"],
+        [
+          ["Doe, John", 'He said "hi"'],
+          ["multi\nline", "ok"],
+        ],
+      ),
     );
-    expect(csv).toBe(
-      'Name,Note\r\n"Doe, John","He said ""hi"""\r\n"multi\nline",ok'
-    );
+    expect(csv).toBe('Name,Note\r\n"Doe, John","He said ""hi"""\r\n"multi\nline",ok');
   });
 
   it("returns '' for null/undefined context or a context without an a11yTable", () => {

@@ -62,7 +62,7 @@ export interface BuildPieModelOptions {
 export function buildPieRenderModel(
   arcs: PieArc[],
   colors: PieColorResolver,
-  o: BuildPieModelOptions
+  o: BuildPieModelOptions,
 ): PieRenderModel {
   const innerRadius = Math.max(0, Math.min(0.95, o.innerRadiusRatio)) * o.radius;
   const slices: PieSliceMark[] = arcs.map((a) => {

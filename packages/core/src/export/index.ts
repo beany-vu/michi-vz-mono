@@ -4,9 +4,5 @@
 // own download trigger (file-saver, an <a download>, etc.).
 export { chartContextToCsv } from "./csv";
 export type { CsvOptions } from "./csv";
-export {
-  chartToStyledSvgString,
-  chartToStyledSvgDataUri,
-  chartToPngDataUrl,
-} from "./image";
+export { chartToStyledSvgString, chartToStyledSvgDataUri, chartToPngDataUrl } from "./image";
 export type { StyledSvgOptions, PngOptions } from "./image";

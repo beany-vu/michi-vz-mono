@@ -63,9 +63,9 @@ async function search() {
   const cos = lib.cosineSimilarity;
   const [q] = await embed([query.value || " "], backend.value);
   const vecs = await seriesVecs();
-  ranked.value = SERIES
-    .map((label, i) => ({ label, score: cos(q, vecs[i]) }))
-    .sort((a, b) => b.score - a.score);
+  ranked.value = SERIES.map((label, i) => ({ label, score: cos(q, vecs[i]) })).sort(
+    (a, b) => b.score - a.score,
+  );
   render();
 }
 
@@ -81,20 +81,42 @@ function render() {
   }));
   const margin = { top: 12, right: 36, bottom: 30, left: 156 };
   const h = margin.top + margin.bottom + ds.length * 30;
-  chart = lib.mountComparableHorizontalBarChart(host.value, { dataSet: ds, renderer: "canvas", width: w, height: h, margin });
+  chart = lib.mountComparableHorizontalBarChart(host.value, {
+    dataSet: ds,
+    renderer: "canvas",
+    width: w,
+    height: h,
+    margin,
+  });
 }
 
-function pick(c: string) { query.value = c; search(); }
-async function onLoaded() { labelVecs = null; await search(); }
+function pick(c: string) {
+  query.value = c;
+  search();
+}
+async function onLoaded() {
+  labelVecs = null;
+  await search();
+}
 
 onMounted(async () => {
   const { core, ins } = await ensureLib();
-  lib = { mountComparableHorizontalBarChart: core.mountComparableHorizontalBarChart, cosineSimilarity: ins.cosineSimilarity };
+  lib = {
+    mountComparableHorizontalBarChart: core.mountComparableHorizontalBarChart,
+    cosineSimilarity: ins.cosineSimilarity,
+  };
   await search();
-  ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => render()); });
+  ro = new ResizeObserver(() => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => render());
+  });
   if (host.value) ro.observe(host.value);
 });
-onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.destroy(); });
+onBeforeUnmount(() => {
+  ro?.disconnect();
+  cancelAnimationFrame(raf);
+  chart?.destroy();
+});
 </script>
 
 <template>
@@ -102,36 +124,58 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
     <div class="elab-bar">
       <div class="elab-search">
         <span class="elab-mag">⌕</span>
-        <input v-model="query" @keyup.enter="search" placeholder="describe a metric…" aria-label="search query" />
+        <input
+          v-model="query"
+          @keyup.enter="search"
+          placeholder="describe a metric…"
+          aria-label="search query"
+        />
         <button class="elab-go" @click="search">Search</button>
       </div>
       <EmbedPicker @loaded="onLoaded" />
     </div>
 
     <div class="elab-content">
-    <p class="elab-scenario">
-      A dashboard with <strong>8 KPIs</strong>. Don't remember the exact name? Ask in plain English -
-      embeddings rank every series by what your words <em>mean</em>, then highlight the best match.
-    </p>
+      <p class="elab-scenario">
+        A dashboard with <strong>8 KPIs</strong>. Don't remember the exact name? Ask in plain
+        English - embeddings rank every series by what your words <em>mean</em>, then highlight the
+        best match.
+      </p>
 
-    <div class="elab-chips">
-      <button v-for="c in CHIPS" :key="c" class="elab-chip" :class="{ on: query === c }" @click="pick(c)">{{ c }}</button>
-    </div>
+      <div class="elab-chips">
+        <button
+          v-for="c in CHIPS"
+          :key="c"
+          class="elab-chip"
+          :class="{ on: query === c }"
+          @click="pick(c)"
+        >
+          {{ c }}
+        </button>
+      </div>
 
-    <p class="elab-result" v-if="top">
-      Best match: <strong class="elab-hit">{{ top.label }}</strong>
-      <span class="elab-mem">· {{ Math.round(top.score * 100) }}% similar · ranked by {{ backend === "bert" ? "meaning (BERT)" : "shared words (model-free)" }}</span>
-    </p>
+      <p class="elab-result" v-if="top">
+        Best match: <strong class="elab-hit">{{ top.label }}</strong>
+        <span class="elab-mem"
+          >· {{ Math.round(top.score * 100) }}% similar · ranked by
+          {{ backend === "bert" ? "meaning (BERT)" : "shared words (model-free)" }}</span
+        >
+      </p>
 
-    <div class="elab-stage" ref="host"></div>
+      <div class="elab-stage" ref="host"></div>
 
-    <p class="elab-legend">
-      <span v-if="backend === 'hash'">Model-free ranks by <em>shared letters</em>, so <code>customer</code> finds the
-        customer KPIs - but <code>money coming in</code> can't reach <code>Revenue</code> (no letters in common).
-        <strong>Load a model</strong> (top-right) to search by <em>meaning</em>.</span>
-      <span v-else>The model ranks by <em>meaning</em>: <code>money coming in</code> → Revenue, <code>people leaving us</code> →
-        Customer churn, <code>cost of ads</code> → Marketing spend - none of which share a word with the match.</span>
-    </p>
+      <p class="elab-legend">
+        <span v-if="backend === 'hash'"
+          >Model-free ranks by <em>shared letters</em>, so <code>customer</code> finds the customer
+          KPIs - but <code>money coming in</code> can't reach <code>Revenue</code> (no letters in
+          common). <strong>Load a model</strong> (top-right) to search by <em>meaning</em>.</span
+        >
+        <span v-else
+          >The model ranks by <em>meaning</em>: <code>money coming in</code> → Revenue,
+          <code>people leaving us</code> → Customer churn, <code>cost of ads</code> → Marketing
+          spend - none of which share a word with the match.</span
+        >
+      </p>
     </div>
   </div>
 </template>

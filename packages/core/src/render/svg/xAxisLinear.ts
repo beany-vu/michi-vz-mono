@@ -11,9 +11,7 @@ import { measureLabelWidth } from "./measureLabelWidth";
 import type { ScaleLinear, ScaleTime } from "d3-scale";
 import type { Margin, XaxisDataType } from "../../types";
 
-export type LinearOrTimeScale =
-  | ScaleLinear<number, number>
-  | ScaleTime<number, number>;
+export type LinearOrTimeScale = ScaleLinear<number, number> | ScaleTime<number, number>;
 
 export interface XAxisLinearOptions {
   width: number;
@@ -67,15 +65,8 @@ function sampleEvenlyIdx<T>(arr: T[], maxCount: number): T[] {
 }
 
 // Numeric values handed to the formatter (the number itself, or epoch ms for dates).
-function numericTickValues(
-  scale: LinearOrTimeScale,
-  o: XAxisLinearOptions,
-): number[] {
-  if (
-    o.enableExplicitTickValues !== false &&
-    o.tickValues &&
-    o.tickValues.length > 0
-  ) {
+function numericTickValues(scale: LinearOrTimeScale, o: XAxisLinearOptions): number[] {
+  if (o.enableExplicitTickValues !== false && o.tickValues && o.tickValues.length > 0) {
     // Explicit ticks come from chart consumers, so sanitize them before labels,
     // grid lines, and first/last tick classes are calculated. Sorting + de-duping
     // prevents duplicate labels and reversed "first/last" visual state.
@@ -83,17 +74,13 @@ function numericTickValues(
       new Set(
         o.tickValues
           .map((v) => (v instanceof Date ? v.valueOf() : v))
-          .filter(
-            (v): v is number => typeof v === "number" && Number.isFinite(v),
-          ),
+          .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
       ),
     ).sort((a, b) => a - b);
   }
   const target = Math.min(5, o.ticks ?? 5);
   if (o.xAxisDataType !== "number") {
-    return (scale as ScaleTime<number, number>)
-      .ticks(target)
-      .map((d) => d.valueOf());
+    return (scale as ScaleTime<number, number>).ticks(target).map((d) => d.valueOf());
   }
   const [first, last] = scale.domain() as [number, number];
   if (target <= 2) return [first, last];
@@ -131,10 +118,7 @@ export function renderXAxisLinear(
   let pts = numericTickValues(scale, o)
     .map((v) => ({
       v,
-      px:
-        o.xAxisDataType === "number"
-          ? (scale(v) as number)
-          : (scale(new Date(v)) as number),
+      px: o.xAxisDataType === "number" ? (scale(v) as number) : (scale(new Date(v)) as number),
       label: o.format(v),
     }))
     .filter((p) => Number.isFinite(p.px));
@@ -156,8 +140,7 @@ export function renderXAxisLinear(
       let minGap = Infinity;
       for (let i = 0; i < pts.length; i++) {
         maxW = Math.max(maxW, measureLabelWidth(pts[i].label));
-        if (i > 0)
-          minGap = Math.min(minGap, Math.abs(pts[i].px - pts[i - 1].px));
+        if (i > 0) minGap = Math.min(minGap, Math.abs(pts[i].px - pts[i - 1].px));
       }
       return { maxW, minGap };
     };

@@ -43,10 +43,15 @@ export interface OpenAICompatCallerOptions {
 }
 
 /** Caller for any OpenAI-compatible /v1/chat/completions server (LM Studio, llama.cpp, vLLM, LocalAI, hosted APIs). */
-export function openaiCompatCaller(options: OpenAICompatCallerOptions): (prompt: string) => Promise<string> {
+export function openaiCompatCaller(
+  options: OpenAICompatCallerOptions,
+): (prompt: string) => Promise<string> {
   const base = options.url.replace(/\/$/, "");
   return async (prompt: string): Promise<string> => {
-    const headers: Record<string, string> = { "Content-Type": "application/json", ...options.headers };
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    };
     if (options.apiKey) headers.Authorization = `Bearer ${options.apiKey}`;
     const res = await fetch(`${base}/v1/chat/completions`, {
       method: "POST",

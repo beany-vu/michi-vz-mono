@@ -62,7 +62,7 @@ export interface BuildComparableVerticalModelOptions {
 // The colour/pattern ASSIGNMENT is unchanged (based keeps its hatch-eligible
 // fill, compared its solid one) - only which one paints on top varies per row.
 export function comparableVerticalDrawOrder(
-  bar: ComparableVerticalBarModel
+  bar: ComparableVerticalBarModel,
 ): ["based" | "compared", "based" | "compared"] {
   return bar.based.height < bar.compared.height ? ["compared", "based"] : ["based", "compared"];
 }
@@ -71,7 +71,7 @@ export function buildComparableVerticalRenderModel(
   points: ComparableBarDataPoint[],
   scales: ComparableVerticalScales,
   colors: ComparableColorResolver,
-  o: BuildComparableVerticalModelOptions
+  o: BuildComparableVerticalModelOptions,
 ): ComparableVerticalRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
@@ -84,7 +84,12 @@ export function buildComparableVerticalRenderModel(
     const height = Math.abs(py - zero);
     // Floor non-zero heights so a near-zero value isn't a sub-pixel invisible
     // bar; a literal zero stays zero (no phantom bar at the baseline).
-    return { x, width: bandwidth, y: Math.min(zero, py), height: height === 0 ? 0 : Math.max(height, minH) };
+    return {
+      x,
+      width: bandwidth,
+      y: Math.min(zero, py),
+      height: height === 0 ? 0 : Math.max(height, minH),
+    };
   };
 
   const bars: ComparableVerticalBarModel[] = points.map((d) => {

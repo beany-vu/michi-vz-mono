@@ -61,7 +61,11 @@ const sorted = computed(() => preview.value || backend.value === "bert");
 
 async function categorize() {
   if (preview.value) {
-    tagged.value = COMMENTS.map((text, i) => ({ text, theme: THEMES[PREVIEW_IDX[i]], themeIdx: PREVIEW_IDX[i] }));
+    tagged.value = COMMENTS.map((text, i) => ({
+      text,
+      theme: THEMES[PREVIEW_IDX[i]],
+      themeIdx: PREVIEW_IDX[i],
+    }));
     render();
     return;
   }
@@ -78,7 +82,10 @@ async function categorize() {
     let bs = -Infinity;
     for (let t = 0; t < THEMES.length; t++) {
       const s = cos(cVecs[i], themeVecs[t]);
-      if (s > bs) { bs = s; bi = t; }
+      if (s > bs) {
+        bs = s;
+        bi = t;
+      }
     }
     return { text, theme: THEMES[bi], themeIdx: bi };
   });
@@ -90,11 +97,22 @@ function render() {
   chart?.destroy();
   const w = width();
   const ds = sorted.value
-    ? counts.value.map((c, i) => ({ label: c.theme, valueBased: c.n, valueCompared: 0, color: PALETTE[i % PALETTE.length] }))
+    ? counts.value.map((c, i) => ({
+        label: c.theme,
+        valueBased: c.n,
+        valueCompared: 0,
+        color: PALETTE[i % PALETTE.length],
+      }))
     : [{ label: "Uncategorized", valueBased: COMMENTS.length, valueCompared: 0, color: GREY }];
   const margin = { top: 12, right: 28, bottom: 30, left: 190 };
   const h = margin.top + margin.bottom + Math.max(ds.length, 5) * 30;
-  chart = lib.mountComparableHorizontalBarChart(host.value, { dataSet: ds, renderer: "canvas", width: w, height: h, margin });
+  chart = lib.mountComparableHorizontalBarChart(host.value, {
+    dataSet: ds,
+    renderer: "canvas",
+    width: w,
+    height: h,
+    margin,
+  });
 }
 
 async function setPreview(v: boolean) {
@@ -102,16 +120,28 @@ async function setPreview(v: boolean) {
   preview.value = v;
   await categorize();
 }
-async function onLoaded() { await categorize(); }
+async function onLoaded() {
+  await categorize();
+}
 
 onMounted(async () => {
   const { core, ins } = await ensureLib();
-  lib = { mountComparableHorizontalBarChart: core.mountComparableHorizontalBarChart, cosineSimilarity: ins.cosineSimilarity };
+  lib = {
+    mountComparableHorizontalBarChart: core.mountComparableHorizontalBarChart,
+    cosineSimilarity: ins.cosineSimilarity,
+  };
   await categorize();
-  ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => render()); });
+  ro = new ResizeObserver(() => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => render());
+  });
   if (host.value) ro.observe(host.value);
 });
-onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.destroy(); });
+onBeforeUnmount(() => {
+  ro?.disconnect();
+  cancelAnimationFrame(raf);
+  chart?.destroy();
+});
 </script>
 
 <template>
@@ -119,50 +149,86 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
     <div class="elab-bar">
       <div class="elab-themes">
         <span class="elab-themes-lbl">Themes:</span>
-        <span v-for="(t, i) in THEMES" :key="t" class="elab-theme" :style="{ color: PALETTE[i % PALETTE.length] }">{{ t }}</span>
+        <span
+          v-for="(t, i) in THEMES"
+          :key="t"
+          class="elab-theme"
+          :style="{ color: PALETTE[i % PALETTE.length] }"
+          >{{ t }}</span
+        >
       </div>
       <div class="elab-ctrls">
         <div class="elab-modes" role="group" aria-label="Result mode">
-          <button :class="{ on: preview }" @click="setPreview(true)"
-            title="Instant: the result a model would produce, precomputed - shown immediately, no download.">⚡ Instant</button>
-          <button :class="{ on: !preview }" @click="setPreview(false)"
-            title="Real model: download MiniLM (~23 MB) and run the embedding match live in your browser (WebGPU); nothing is sent to a server.">Real model</button>
+          <button
+            :class="{ on: preview }"
+            @click="setPreview(true)"
+            title="Instant: the result a model would produce, precomputed - shown immediately, no download."
+          >
+            ⚡ Instant
+          </button>
+          <button
+            :class="{ on: !preview }"
+            @click="setPreview(false)"
+            title="Real model: download MiniLM (~23 MB) and run the embedding match live in your browser (WebGPU); nothing is sent to a server."
+          >
+            Real model
+          </button>
         </div>
         <EmbedPicker v-if="!preview" @loaded="onLoaded" />
       </div>
     </div>
 
     <div class="elab-content">
-    <p class="elab-scenario">
-      <strong>{{ COMMENTS.length }}</strong> raw comments, no tags. Give embeddings just the
-      <strong>theme names</strong> (no keyword rules) and each comment drops into its nearest theme - so
-      unstructured text becomes a chart you can act on.
-    </p>
+      <p class="elab-scenario">
+        <strong>{{ COMMENTS.length }}</strong> raw comments, no tags. Give embeddings just the
+        <strong>theme names</strong> (no keyword rules) and each comment drops into its nearest
+        theme - so unstructured text becomes a chart you can act on.
+      </p>
 
-    <p class="elab-result">
-      <template v-if="sorted"><strong>{{ COMMENTS.length }}</strong> comments → sorted into
-        <strong class="elab-hit">{{ THEMES.length }}</strong> themes by meaning{{ preview ? " (instant preview)" : "" }}</template>
-      <template v-else><strong>{{ COMMENTS.length }}</strong> comments - <strong>one untagged pile</strong>;
-        load a model to sort them</template>
-    </p>
+      <p class="elab-result">
+        <template v-if="sorted"
+          ><strong>{{ COMMENTS.length }}</strong> comments → sorted into
+          <strong class="elab-hit">{{ THEMES.length }}</strong> themes by meaning{{
+            preview ? " (instant preview)" : ""
+          }}</template
+        >
+        <template v-else
+          ><strong>{{ COMMENTS.length }}</strong> comments - <strong>one untagged pile</strong>;
+          load a model to sort them</template
+        >
+      </p>
 
-    <div class="elab-stage" ref="host"></div>
+      <div class="elab-stage" ref="host"></div>
 
-    <p class="elab-pills">
-      <span v-for="(t, i) in tagged" :key="i" class="elab-pill"
-        :style="{ borderColor: t.themeIdx < 0 ? GREY : PALETTE[t.themeIdx % PALETTE.length], color: t.themeIdx < 0 ? 'var(--vp-c-text-3)' : PALETTE[t.themeIdx % PALETTE.length] }">
-        {{ t.text }}
-      </span>
-    </p>
-    <p class="elab-legend">
-      <span v-if="sorted">Each comment dropped into its nearest theme <em>by meaning</em> - even
-        <code>keeps freezing</code> → Performance and <code>too expensive</code> → Pricing, which share no
-        letters with their theme.<template v-if="preview"> <strong>Shown instantly</strong>; switch to
-        <strong>Real model</strong> to download MiniLM (~23 MB) and run it.</template></span>
-      <span v-else>Sorting by <em>meaning</em> needs a model - model-free cannot tell <code>keeps freezing</code>
-        is a Performance issue (no shared letters), so all {{ COMMENTS.length }} stay one untagged pile.
-        <strong>Load a model</strong> (top-right) to drop each comment into its theme.</span>
-    </p>
+      <p class="elab-pills">
+        <span
+          v-for="(t, i) in tagged"
+          :key="i"
+          class="elab-pill"
+          :style="{
+            borderColor: t.themeIdx < 0 ? GREY : PALETTE[t.themeIdx % PALETTE.length],
+            color: t.themeIdx < 0 ? 'var(--vp-c-text-3)' : PALETTE[t.themeIdx % PALETTE.length],
+          }"
+        >
+          {{ t.text }}
+        </span>
+      </p>
+      <p class="elab-legend">
+        <span v-if="sorted"
+          >Each comment dropped into its nearest theme <em>by meaning</em> - even
+          <code>keeps freezing</code> → Performance and <code>too expensive</code> → Pricing, which
+          share no letters with their theme.<template v-if="preview">
+            <strong>Shown instantly</strong>; switch to <strong>Real model</strong> to download
+            MiniLM (~23 MB) and run it.</template
+          ></span
+        >
+        <span v-else
+          >Sorting by <em>meaning</em> needs a model - model-free cannot tell
+          <code>keeps freezing</code> is a Performance issue (no shared letters), so all
+          {{ COMMENTS.length }} stay one untagged pile. <strong>Load a model</strong> (top-right) to
+          drop each comment into its theme.</span
+        >
+      </p>
     </div>
   </div>
 </template>

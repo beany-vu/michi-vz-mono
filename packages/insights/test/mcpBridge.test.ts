@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { createMcpServer, messagePortTransport, type JsonRpcMessage, type MessageLike } from "../src/mcp";
+import {
+  createMcpServer,
+  messagePortTransport,
+  type JsonRpcMessage,
+  type MessageLike,
+} from "../src/mcp";
 import { createAgentRegistry } from "../src/agent";
 
 // A synchronous in-memory MessagePort pair (mimics worker/iframe postMessage).
@@ -7,8 +12,14 @@ function portPair(): { a: MessageLike; b: MessageLike } {
   const aL: Array<(ev: { data: unknown }) => void> = [];
   const bL: Array<(ev: { data: unknown }) => void> = [];
   return {
-    a: { postMessage: (d) => bL.forEach((f) => f({ data: d })), addEventListener: (_t, cb) => aL.push(cb) },
-    b: { postMessage: (d) => aL.forEach((f) => f({ data: d })), addEventListener: (_t, cb) => bL.push(cb) },
+    a: {
+      postMessage: (d) => bL.forEach((f) => f({ data: d })),
+      addEventListener: (_t, cb) => aL.push(cb),
+    },
+    b: {
+      postMessage: (d) => aL.forEach((f) => f({ data: d })),
+      addEventListener: (_t, cb) => bL.push(cb),
+    },
   };
 }
 

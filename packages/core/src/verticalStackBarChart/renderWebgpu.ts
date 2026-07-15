@@ -24,17 +24,19 @@ export function drawVerticalStackBarWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: StackRenderModel,
-  o: StackWebgpuOptions
+  o: StackWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME probe canvas mode uses.
   const labels = model.keys;
-  const fallback = new Map(model.keys.map((k) => [k, model.stackedRectData[k]?.[0]?.fill ?? "transparent"]));
+  const fallback = new Map(
+    model.keys.map((k) => [k, model.stackedRectData[k]?.[0]?.fill ?? "transparent"]),
+  );
   const fillColors = resolveMarkColors(
     svg,
     labels,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
 
   const hl = model.highlightSet;

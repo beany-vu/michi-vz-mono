@@ -33,7 +33,11 @@ export function checkSymbolMapData(dataSet: SymbolMapDataItem[]): DataWarning[] 
         label: d.label,
       });
     }
-    if (d.valueSecond !== undefined && Number.isFinite(Number(d.valueSecond)) && Number(d.valueSecond) < 0) {
+    if (
+      d.valueSecond !== undefined &&
+      Number.isFinite(Number(d.valueSecond)) &&
+      Number(d.valueSecond) < 0
+    ) {
       warnings.push({
         type: "non-finite-value",
         message: `Symbol "${d.label}" has a negative valueSecond (${d.valueSecond}); it is clamped to 0.`,

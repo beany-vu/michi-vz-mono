@@ -93,7 +93,7 @@ function checkData(dataSet: RangeDataItem[]): DataWarning[] {
 export function mountRangeChart(
   host: HTMLElement,
   initial: RangeChartProps,
-  opts?: MountOptions<RangeChartProps>
+  opts?: MountOptions<RangeChartProps>,
 ): ChartInstance<RangeChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-range-chart");
@@ -166,7 +166,8 @@ export function mountRangeChart(
     const htmlStr =
       baseProps.tooltipFormatter && item && mid
         ? baseProps.tooltipFormatter(mid, item)
-        : `<strong>${label}</strong>` + (mid ? `<br/>${String(mid.date)}: ${mid.valueMin}-${mid.valueMax}` : "");
+        : `<strong>${label}</strong>` +
+          (mid ? `<br/>${String(mid.date)}: ${mid.valueMin}-${mid.valueMax}` : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
   };
@@ -201,7 +202,7 @@ export function mountRangeChart(
       props.dataSet,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -212,7 +213,14 @@ export function mountRangeChart(
       }
     }
 
-    const scales = createLineScales(xAxisDomain, yAxisDomain, r.width, r.height, r.margin, xAxisDataType);
+    const scales = createLineScales(
+      xAxisDomain,
+      yAxisDomain,
+      r.width,
+      r.height,
+      r.margin,
+      xAxisDataType,
+    );
     const model = buildRangeRenderModel(items, scales, colors, {
       xAxisDataType,
       curve: props.curve,
@@ -262,7 +270,7 @@ export function mountRangeChart(
             tooltip.classList.add("sticky");
             showTooltip(s.label, ev);
           },
-        }
+        },
       );
     }
 
@@ -282,12 +290,20 @@ export function mountRangeChart(
         // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
         // so the chart is never blank; the onReady re-render swaps in the GPU layer.
         if (!canvas) canvas = makeLayerCanvas("range-chart-canvas");
-        drawRangeCanvas(canvas, svg, model, { width: r.width, height: r.height, fillOpacity: r.fillOpacity });
+        drawRangeCanvas(canvas, svg, model, {
+          width: r.width,
+          height: r.height,
+          fillOpacity: r.fillOpacity,
+        });
       }
     } else if (r.renderer === "canvas") {
       removeWebgpuCanvas();
       if (!canvas) canvas = makeLayerCanvas("range-chart-canvas");
-      drawRangeCanvas(canvas, svg, model, { width: r.width, height: r.height, fillOpacity: r.fillOpacity });
+      drawRangeCanvas(canvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        fillOpacity: r.fillOpacity,
+      });
     } else {
       removeCanvas();
       removeWebgpuCanvas();
@@ -325,7 +341,7 @@ export function mountRangeChart(
         for (const p of it.series) {
           const key = String(p.date);
           const px = (scales.xScale as (x: number | Date) => number)(
-            parseXValue(p.date, xAxisDataType)
+            parseXValue(p.date, xAxisDataType),
           );
           const existing = periodMap.get(key);
           if (!existing || px > existing.px) periodMap.set(key, { period: p.date, px });

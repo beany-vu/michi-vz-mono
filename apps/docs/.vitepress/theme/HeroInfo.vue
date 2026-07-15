@@ -14,7 +14,12 @@ const { frontmatter } = useData();
     <p v-if="frontmatter.hero?.eyebrow" class="mv-eyebrow">{{ frontmatter.hero.eyebrow }}</p>
     <!-- headLead + accent kept on ONE line so the inter-word space survives Vue's
          whitespace condensing (the source of the earlier "enjoydebugging" bug). -->
-    <h1 class="mv-headline">{{ frontmatter.hero?.headLead }} <span v-if="frontmatter.hero?.headAccent" class="mv-head-accent">{{ frontmatter.hero.headAccent }}</span></h1>
+    <h1 class="mv-headline">
+      {{ frontmatter.hero?.headLead }}
+      <span v-if="frontmatter.hero?.headAccent" class="mv-head-accent">{{
+        frontmatter.hero.headAccent
+      }}</span>
+    </h1>
     <p v-if="frontmatter.hero?.tagline" class="mv-hero-sub">{{ frontmatter.hero.tagline }}</p>
   </div>
 </template>

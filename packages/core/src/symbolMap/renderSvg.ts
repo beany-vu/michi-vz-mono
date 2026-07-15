@@ -38,7 +38,7 @@ export function renderSymbolMapSvg(
   parent: SVGElement,
   model: SymbolMapRenderModel,
   o: SymbolMapSvgOptions,
-  ia: SymbolMapInteractions
+  ia: SymbolMapInteractions,
 ): void {
   const root = svgEl("g", { class: "symbol-map-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
@@ -55,7 +55,7 @@ export function renderSymbolMapSvg(
           fill: o.geographyColor,
           stroke: o.strokeColor,
           "stroke-width": o.strokeWidth,
-        })
+        }),
       );
     }
     root.appendChild(backdropG);
@@ -88,7 +88,7 @@ export function renderSymbolMapSvg(
         r: m.radius,
         fill: m.fill,
         opacity: m.opacity,
-      })
+      }),
     );
 
     if (m.radiusSecond != null) {
@@ -99,12 +99,13 @@ export function renderSymbolMapSvg(
           r: m.radiusSecond,
           fill: m.fill,
           opacity: m.opacitySecond ?? m.opacity,
-        })
+        }),
       );
     }
 
     if (o.showLabels) {
-      const radiusThreshold = m.radiusSecond != null ? Math.max(m.radius, m.radiusSecond) : m.radius;
+      const radiusThreshold =
+        m.radiusSecond != null ? Math.max(m.radius, m.radiusSecond) : m.radius;
       if (radiusThreshold >= 16) {
         const label = svgEl("text", {
           class: "symbol-label",
@@ -129,7 +130,7 @@ export function renderSymbolMapSvg(
         class: "symbol-hit",
         r: symbolEffectiveHitRadius(m),
         fill: "transparent",
-      })
+      }),
     );
 
     g.style.cursor = "pointer";

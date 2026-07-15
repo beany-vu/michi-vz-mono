@@ -12,7 +12,14 @@ const series: RadarDataItem[] = [
 function mount(extra: Partial<RadarChartProps> = {}) {
   const host = document.createElement("div");
   document.body.appendChild(host);
-  const chart = mountRadarChart(host, { series, axes, title: "Demo", width: 500, height: 500, ...extra });
+  const chart = mountRadarChart(host, {
+    series,
+    axes,
+    title: "Demo",
+    width: 500,
+    height: 500,
+    ...extra,
+  });
   return { host, chart };
 }
 
@@ -38,8 +45,8 @@ describe("mountRadarChart (jsdom)", () => {
     const topLabelY = (host: HTMLElement) =>
       Math.min(
         ...Array.from(host.querySelectorAll<SVGTextElement>(".pole-label")).map((t) =>
-          Number(t.getAttribute("y"))
-        )
+          Number(t.getAttribute("y")),
+        ),
       );
     // With a title (baseline at margin.top/2) the top label may not climb into it.
     expect(topLabelY(titled.host)).toBeGreaterThanOrEqual(margin.top / 2 + 18);
@@ -71,7 +78,9 @@ describe("mountRadarChart (jsdom)", () => {
   it("builds an a11y mirror with one row per series + axis columns", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(2);
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Series", ...axes]);
     chart.destroy();
     host.remove();
@@ -100,7 +109,13 @@ describe("mountRadarChart (jsdom)", () => {
     const host = document.createElement("div");
     document.body.appendChild(host);
     let warned: unknown[] = [];
-    mountRadarChart(host, { series, axes: ["A", "B"], width: 400, height: 400, onDataWarning: (w) => (warned = w) });
+    mountRadarChart(host, {
+      series,
+      axes: ["A", "B"],
+      width: 400,
+      height: 400,
+      onDataWarning: (w) => (warned = w),
+    });
     expect(warned.some((w) => (w as { type: string }).type === "empty-dataset")).toBe(true);
     host.remove();
 
@@ -164,7 +179,7 @@ describe("mountRadarChart - drop-in features (data shape, colours, hover)", () =
     const { host, chart } = mount({ colorsMapping: { "Model A": "#f00", "Model B": "#00f" } });
     const ctx = chart.getContext()!;
     expect(ctx.legendData!.map((l) => l.label)).toEqual(
-      expect.arrayContaining(["Model A", "Model B"])
+      expect.arrayContaining(["Model A", "Model B"]),
     );
     chart.destroy();
     host.remove();
@@ -204,7 +219,15 @@ describe("mountRadarChart - drop-in features (data shape, colours, hover)", () =
     const onEnter = vi.fn();
     const onLeave = vi.fn();
     const model = {
-      grid: { cx: 175, cy: 175, radius: 100, rings: [], spokes: [], axisLabels: [], radialLabels: [] },
+      grid: {
+        cx: 175,
+        cy: 175,
+        radius: 100,
+        rings: [],
+        spokes: [],
+        axisLabels: [],
+        radialLabels: [],
+      },
       series: [
         {
           label: "Active",
@@ -232,7 +255,11 @@ describe("mountRadarChart - drop-in features (data shape, colours, hover)", () =
         },
       ],
     };
-    const teardown = setupRadarCanvasHover(svg, model as never, { onEnter, onLeave, onClick: vi.fn() });
+    const teardown = setupRadarCanvasHover(svg, model as never, {
+      onEnter,
+      onLeave,
+      onClick: vi.fn(),
+    });
     // Exactly on the Active series' top vertex (175,75).
     svg.dispatchEvent(new MouseEvent("mousemove", { clientX: 175, clientY: 75, bubbles: true }));
     expect(onEnter).toHaveBeenCalledWith("Active", 0, expect.any(MouseEvent));

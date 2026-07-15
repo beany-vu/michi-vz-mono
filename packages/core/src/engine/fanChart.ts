@@ -11,7 +11,12 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { sanitizeForClassName } from "../math/sanitize";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
-import { renderTitle, renderXAxisLinear, renderYAxisLinear, renderAnnotationsSvg } from "../render/svg";
+import {
+  renderTitle,
+  renderXAxisLinear,
+  renderYAxisLinear,
+  renderAnnotationsSvg,
+} from "../render/svg";
 import { createLineScales } from "../lineChart/scales";
 import { processLineChartData } from "../lineChart/data";
 import { buildLineColors } from "../lineChart/colors";
@@ -109,7 +114,7 @@ function checkData(dataSet: FanDataItem[]): DataWarning[] {
 export function mountFanChart(
   host: HTMLElement,
   initial: FanChartProps,
-  opts?: MountOptions<FanChartProps>
+  opts?: MountOptions<FanChartProps>,
 ): ChartInstance<FanChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-fan-chart");
@@ -238,7 +243,11 @@ export function mountFanChart(
       color: d.color,
       series: d.series,
     }));
-    const { processedDataSet, xAxisDomain, yAxisDomain: lineY } = processLineChartData(lineItems, {
+    const {
+      processedDataSet,
+      xAxisDomain,
+      yAxisDomain: lineY,
+    } = processLineChartData(lineItems, {
       disabledItems: props.disabledItems,
       xAxisDataType,
     });
@@ -261,7 +270,7 @@ export function mountFanChart(
       lineItems,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -271,12 +280,24 @@ export function mountFanChart(
       }
     }
 
-    const scales = createLineScales(xAxisDomain, yAxisDomain, r.width, r.height, r.margin, xAxisDataType);
+    const scales = createLineScales(
+      xAxisDomain,
+      yAxisDomain,
+      r.width,
+      r.height,
+      r.margin,
+      xAxisDataType,
+    );
     const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
     const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
 
     // ----- ONE render model: band area paths (graduated opacity) + the line model -----
-    const areaGen = makeRangeAreaGenerator(scales.xScale, scales.yScale, xAxisDataType, props.curve);
+    const areaGen = makeRangeAreaGenerator(
+      scales.xScale,
+      scales.yScale,
+      xAxisDataType,
+      props.curve,
+    );
     const bandPaths: FanBandPath[] = [];
     for (const it of props.dataSet) {
       if (disabled.has(it.label)) continue;
@@ -294,8 +315,14 @@ export function mountFanChart(
         // alone is an SVG/canvas path string, not usable as GPU geometry).
         const bandX = (p: (typeof band.series)[number]) =>
           (scales.xScale as (x: number | Date) => number)(parseXValue(p.date, xAxisDataType));
-        const top: Array<[number, number]> = band.series.map((p) => [bandX(p), scales.yScale(p.valueMax)]);
-        const bottom: Array<[number, number]> = band.series.map((p) => [bandX(p), scales.yScale(p.valueMin)]);
+        const top: Array<[number, number]> = band.series.map((p) => [
+          bandX(p),
+          scales.yScale(p.valueMax),
+        ]);
+        const bottom: Array<[number, number]> = band.series.map((p) => [
+          bandX(p),
+          scales.yScale(p.valueMin),
+        ]);
         bandPaths.push({
           label: it.label,
           safe,
@@ -359,7 +386,7 @@ export function mountFanChart(
             fill: b.color,
             stroke: "none",
             opacity: b.opacity,
-          })
+          }),
         );
       }
       marksRoot.appendChild(bandsLayer);
@@ -388,7 +415,7 @@ export function mountFanChart(
             tooltip.classList.add("sticky");
             showTooltip(label, ev);
           },
-        }
+        },
       );
       svg.appendChild(marksRoot);
       if (canvas) {
@@ -418,7 +445,7 @@ export function mountFanChart(
           height: r.height,
           // Re-render once the async GPU device resolves, upgrading canvas → GPU.
           onReady: render,
-        }
+        },
       );
       if (painted) {
         // GPU painted - drop any first-frame 2D fallback canvas.
@@ -437,7 +464,12 @@ export function mountFanChart(
           canvas.style.pointerEvents = "none";
           host.insertBefore(canvas, tooltip);
         }
-        drawFanCanvas(canvas, svg, { bands: bandPaths, lineModel }, { width: r.width, height: r.height });
+        drawFanCanvas(
+          canvas,
+          svg,
+          { bands: bandPaths, lineModel },
+          { width: r.width, height: r.height },
+        );
       }
     } else {
       // ----- Canvas layer (bands + line drawn from the same model) -----
@@ -449,7 +481,12 @@ export function mountFanChart(
         canvas.style.pointerEvents = "none";
         host.insertBefore(canvas, tooltip);
       }
-      drawFanCanvas(canvas, svg, { bands: bandPaths, lineModel }, { width: r.width, height: r.height });
+      drawFanCanvas(
+        canvas,
+        svg,
+        { bands: bandPaths, lineModel },
+        { width: r.width, height: r.height },
+      );
       if (webgpuCanvas) {
         webgpuCanvas.remove();
         webgpuCanvas = null;
@@ -474,7 +511,7 @@ export function mountFanChart(
               canvasLayer,
               svg,
               { bands: bandPaths, lineModel },
-              { width: r.width, height: r.height, revealX: x }
+              { width: r.width, height: r.height, revealX: x },
             )
         : undefined,
     });
@@ -507,7 +544,7 @@ export function mountFanChart(
                 canvasLayer,
                 svg,
                 { bands: bandPaths, lineModel },
-                { width: r.width, height: r.height, revealX: x }
+                { width: r.width, height: r.height, revealX: x },
               )
           : undefined,
       });
@@ -554,14 +591,22 @@ export function mountFanChart(
         }
       }
       if (Number.isFinite(boundary) && end > boundary) {
-        annotations.push({ type: "xband", at: boundary, at2: end, label: "forecast", color: "#64748b", opacity: 0.1 });
+        annotations.push({
+          type: "xband",
+          at: boundary,
+          at2: end,
+          label: "forecast",
+          color: "#64748b",
+          opacity: 0.1,
+        });
       }
     }
 
     if (annotations.length > 0) {
       renderAnnotationsSvg(svg, annotations, {
         yPx: (v) => scales.yScale(v),
-        xPx: (at) => (scales.xScale as (x: number | Date) => number)(parseXValue(at, xAxisDataType)),
+        xPx: (at) =>
+          (scales.xScale as (x: number | Date) => number)(parseXValue(at, xAxisDataType)),
         plot: {
           left: r.margin.left,
           right: r.width - r.margin.right,
@@ -575,7 +620,10 @@ export function mountFanChart(
     props.onChartDataProcessed?.(context);
 
     if (baseProps.onDataWarning) {
-      const warnings = [...checkData(baseProps.dataSet), ...collectValidate(pluginList, baseProps, pc)];
+      const warnings = [
+        ...checkData(baseProps.dataSet),
+        ...collectValidate(pluginList, baseProps, pc),
+      ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }

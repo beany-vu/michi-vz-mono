@@ -82,14 +82,16 @@ export function narrateRules(ctx: ChartContext, strings?: NarrateStrings): strin
     if (movers.length > 0) {
       const top = movers[0];
       const dir = top.change > 0 ? "rose" : top.change < 0 ? "fell" : "flat";
-      const pct = top.changePct != null ? ` (${top.changePct > 0 ? "+" : ""}${round(top.changePct)}%)` : "";
+      const pct =
+        top.changePct != null ? ` (${top.changePct > 0 ? "+" : ""}${round(top.changePct)}%)` : "";
       sentences.push(s.topMover(top.label, dir, pct));
       const up = series.filter((m) => m.trend === "up").length;
       const down = series.filter((m) => m.trend === "down").length;
       if (series.length > 1) sentences.push(s.trendSplit(up, down));
     }
   } else {
-    const series = (ctx as { series?: Array<{ label?: string; key?: string; total?: number }> }).series;
+    const series = (ctx as { series?: Array<{ label?: string; key?: string; total?: number }> })
+      .series;
     if (Array.isArray(series) && series.length > 0 && typeof series[0]?.total === "number") {
       const top = series.slice().sort((a, b) => (b.total ?? 0) - (a.total ?? 0))[0];
       sentences.push(s.largestTotal(top.label ?? top.key ?? "", round(top.total ?? 0)));
@@ -122,7 +124,10 @@ export const SLM_PRESETS = {
  * failure (model can't load, remote rejects) falls back to the rule-based text
  * (which honours `render` / `strings`). Prefer a small local model (SLM).
  */
-export async function explainChart(ctx: ChartContext, options: NarrateOptions = {}): Promise<string> {
+export async function explainChart(
+  ctx: ChartContext,
+  options: NarrateOptions = {},
+): Promise<string> {
   const backend = options.backend ?? "rules";
   if (backend === "rules") return ruleText(ctx, options);
 
@@ -134,24 +139,44 @@ export async function explainChart(ctx: ChartContext, options: NarrateOptions = 
     }
     if (backend === "transformers") {
       // lazy, optional dep - never bundled unless this path runs
-      const mod = await optionalImport<{ pipeline?: (task: string, model?: string, opts?: { progress_callback?: unknown }) => Promise<(text: string) => Promise<unknown>> }>(
-        "@huggingface/transformers"
-      );
+      const mod = await optionalImport<{
+        pipeline?: (
+          task: string,
+          model?: string,
+          opts?: { progress_callback?: unknown },
+        ) => Promise<(text: string) => Promise<unknown>>;
+      }>("@huggingface/transformers");
       const pipeline = mod?.pipeline;
       if (!pipeline) return ruleText(ctx, options);
       // Redirect model downloads (mirror / self-hosted / offline) BEFORE loading.
       applyModelSource(mod, options.modelSource);
-      const gen = await pipeline("text-generation", options.model ?? SLM_PRESETS.transformers.phi3, {
-        progress_callback: options.onProgress,
-      });
-      const res = (await gen(prompt(ctx))) as Array<{ generated_text?: string }> | { generated_text?: string };
+      const gen = await pipeline(
+        "text-generation",
+        options.model ?? SLM_PRESETS.transformers.phi3,
+        {
+          progress_callback: options.onProgress,
+        },
+      );
+      const res = (await gen(prompt(ctx))) as
+        Array<{ generated_text?: string }> | { generated_text?: string };
       const text = Array.isArray(res) ? res[0]?.generated_text : res?.generated_text;
       return text?.trim() || ruleText(ctx, options);
     }
     if (backend === "webllm") {
-      const mod = await optionalImport<{ CreateMLCEngine?: (model: string, opts?: { initProgressCallback?: unknown; appConfig?: unknown }) => Promise<{ chat: { completions: { create: (o: unknown) => Promise<{ choices: Array<{ message: { content?: string } }> }> } } }> }>(
-        "@mlc-ai/web-llm"
-      );
+      const mod = await optionalImport<{
+        CreateMLCEngine?: (
+          model: string,
+          opts?: { initProgressCallback?: unknown; appConfig?: unknown },
+        ) => Promise<{
+          chat: {
+            completions: {
+              create: (
+                o: unknown,
+              ) => Promise<{ choices: Array<{ message: { content?: string } }> }>;
+            };
+          };
+        }>;
+      }>("@mlc-ai/web-llm");
       const create = mod?.CreateMLCEngine;
       if (!create) return ruleText(ctx, options);
       const engine = await create(options.model ?? SLM_PRESETS.webllm.phi3, {
@@ -159,7 +184,9 @@ export async function explainChart(ctx: ChartContext, options: NarrateOptions = 
         // Self-hosted weights: a custom registry replaces the default HF-hosted one.
         appConfig: options.webllmAppConfig,
       });
-      const res = await engine.chat.completions.create({ messages: [{ role: "user", content: prompt(ctx) }] });
+      const res = await engine.chat.completions.create({
+        messages: [{ role: "user", content: prompt(ctx) }],
+      });
       return res.choices[0]?.message?.content?.trim() || ruleText(ctx, options);
     }
   } catch {

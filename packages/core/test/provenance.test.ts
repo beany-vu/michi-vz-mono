@@ -24,7 +24,11 @@ describe("provenance helpers", () => {
       { date: 2021, predicted: true },
       { date: 2022, predicted: true },
     ];
-    expect(provenanceCounts(pts)).toEqual({ actualCount: 2, predictedCount: 2, forecastStart: 2021 });
+    expect(provenanceCounts(pts)).toEqual({
+      actualCount: 2,
+      predictedCount: 2,
+      forecastStart: 2021,
+    });
   });
 
   it("reports null forecastStart when nothing is predicted", () => {
@@ -91,7 +95,10 @@ describe("AreaChartContext provenance (row-level)", () => {
       xAxisDataType: "number",
       xAxisDomain: [2020, 2021],
       yAxisDomain: [0, 30],
-      series: [{ date: 2020, a: 10 }, { date: 2021, a: 12 }],
+      series: [
+        { date: 2020, a: 10 },
+        { date: 2021, a: 12 },
+      ],
       activeKeys: ["a"],
       colorsMapping: {},
     });

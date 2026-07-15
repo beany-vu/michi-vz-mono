@@ -8,7 +8,7 @@ import type { DataWarning, LineDataItem, XaxisDataType } from "../types";
 export function checkLineData(
   dataSet: LineDataItem[],
   xAxisDataType: XaxisDataType,
-  yAxisScale?: "linear" | "log"
+  yAxisScale?: "linear" | "log",
 ): DataWarning[] {
   const warnings: DataWarning[] = [];
   if (!dataSet || dataSet.length === 0) {

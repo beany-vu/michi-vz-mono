@@ -13,7 +13,14 @@ const keys = ["Fruit Sales", "Veg"];
 function mount(extra: Partial<RibbonChartProps> = {}) {
   const host = document.createElement("div");
   document.body.appendChild(host);
-  const chart = mountRibbonChart(host, { series, keys, title: "Demo", width: 600, height: 300, ...extra });
+  const chart = mountRibbonChart(host, {
+    series,
+    keys,
+    title: "Demo",
+    width: 600,
+    height: 300,
+    ...extra,
+  });
   return { host, chart };
 }
 
@@ -47,7 +54,9 @@ describe("mountRibbonChart (jsdom)", () => {
   it("builds an a11y mirror with one row per date + a Total column", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(3);
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Date", "Fruit Sales", "Veg", "Total"]);
     chart.destroy();
     host.remove();
@@ -93,7 +102,13 @@ describe("mountRibbonChart (jsdom)", () => {
     const host = document.createElement("div");
     document.body.appendChild(host);
     let warned: unknown[] = [];
-    mountRibbonChart(host, { series: [], keys: [], width: 400, height: 200, onDataWarning: (w) => (warned = w) });
+    mountRibbonChart(host, {
+      series: [],
+      keys: [],
+      width: 400,
+      height: 200,
+      onDataWarning: (w) => (warned = w),
+    });
     expect(warned.some((w) => (w as { type: string }).type === "empty-dataset")).toBe(true);
     host.remove();
 

@@ -126,7 +126,11 @@ describe("FanChart mouse interaction (canvas hit-testing)", () => {
   it("highlights the nearest series on canvas hover", () => {
     const highlights: string[][] = [];
     const h = host();
-    const chart = mountFanChart(h, { ...hoverProps, renderer: "canvas", onHighlightItem: (l) => highlights.push(l) });
+    const chart = mountFanChart(h, {
+      ...hoverProps,
+      renderer: "canvas",
+      onHighlightItem: (l) => highlights.push(l),
+    });
     h.dispatchEvent(new MouseEvent("mousemove", { clientX: 594, clientY: 250, bubbles: true }));
     expect(highlights.at(-1)).toEqual(["Revenue"]);
     chart.destroy();
@@ -135,7 +139,11 @@ describe("FanChart mouse interaction (canvas hit-testing)", () => {
   it("clears the highlight when the cursor leaves the line", () => {
     const highlights: string[][] = [];
     const h = host();
-    const chart = mountFanChart(h, { ...hoverProps, renderer: "canvas", onHighlightItem: (l) => highlights.push(l) });
+    const chart = mountFanChart(h, {
+      ...hoverProps,
+      renderer: "canvas",
+      onHighlightItem: (l) => highlights.push(l),
+    });
     h.dispatchEvent(new MouseEvent("mousemove", { clientX: 594, clientY: 250, bubbles: true })); // on the line
     h.dispatchEvent(new MouseEvent("mousemove", { clientX: 594, clientY: 60, bubbles: true })); // far above
     expect(highlights.at(-1)).toEqual([]);
@@ -145,7 +153,11 @@ describe("FanChart mouse interaction (canvas hit-testing)", () => {
   it("does not hit-test in SVG mode (SVG uses per-path hover)", () => {
     const highlights: string[][] = [];
     const h = host();
-    const chart = mountFanChart(h, { ...hoverProps, renderer: "svg", onHighlightItem: (l) => highlights.push(l) });
+    const chart = mountFanChart(h, {
+      ...hoverProps,
+      renderer: "svg",
+      onHighlightItem: (l) => highlights.push(l),
+    });
     h.dispatchEvent(new MouseEvent("mousemove", { clientX: 594, clientY: 250, bubbles: true }));
     expect(highlights).toHaveLength(0); // the host mousemove handler is a no-op in SVG mode
     chart.destroy();

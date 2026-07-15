@@ -54,8 +54,12 @@ type Mode = "raw" | "matched";
 const mode = ref<Mode>("raw");
 const preview = ref(true); // ⚡ instant by default; real model on demand
 const matches = ref<Array<{ source: string; target: string; similarity: number }>>([]);
-const unmatchedSource = ref<Array<{ label: string; closest: string | null; similarity: number }>>([]);
-const unmatchedTarget = ref<Array<{ label: string; closest: string | null; similarity: number }>>([]);
+const unmatchedSource = ref<Array<{ label: string; closest: string | null; similarity: number }>>(
+  [],
+);
+const unmatchedTarget = ref<Array<{ label: string; closest: string | null; similarity: number }>>(
+  [],
+);
 const unmatched = computed(() => [
   ...unmatchedSource.value.map((u) => ({ ...u, side: "CRM" })),
   ...unmatchedTarget.value.map((u) => ({ ...u, side: "ERP" })),
@@ -104,20 +108,37 @@ function render() {
   if (!lib || !host.value) return;
   chart?.destroy();
   const w = width();
-  const ds = mode.value === "raw"
-    ? [
-        ...CRM.map((r) => ({ label: r.label, valueBased: r.value, valueCompared: 0, color: GREY })),
-        ...ERP.map((r) => ({ label: r.label, valueBased: 0, valueCompared: r.value, color: GREY })),
-      ]
-    : matches.value.map((m, i) => ({
-        label: m.target,
-        valueBased: crmValue.get(m.source) ?? 0,
-        valueCompared: erpValue.get(m.target) ?? 0,
-        color: PALETTE[i % PALETTE.length],
-      }));
+  const ds =
+    mode.value === "raw"
+      ? [
+          ...CRM.map((r) => ({
+            label: r.label,
+            valueBased: r.value,
+            valueCompared: 0,
+            color: GREY,
+          })),
+          ...ERP.map((r) => ({
+            label: r.label,
+            valueBased: 0,
+            valueCompared: r.value,
+            color: GREY,
+          })),
+        ]
+      : matches.value.map((m, i) => ({
+          label: m.target,
+          valueBased: crmValue.get(m.source) ?? 0,
+          valueCompared: erpValue.get(m.target) ?? 0,
+          color: PALETTE[i % PALETTE.length],
+        }));
   const margin = { top: 12, right: 30, bottom: 30, left: 140 };
   const h = margin.top + margin.bottom + Math.max(ds.length, 3) * 34;
-  chart = lib.mountComparableHorizontalBarChart(host.value, { dataSet: ds, renderer: "canvas", width: w, height: h, margin });
+  chart = lib.mountComparableHorizontalBarChart(host.value, {
+    dataSet: ds,
+    renderer: "canvas",
+    width: w,
+    height: h,
+    margin,
+  });
 }
 
 async function setMode(m: Mode) {
@@ -144,12 +165,22 @@ async function onLoaded() {
 
 onMounted(async () => {
   const { core, ins } = await ensureLib();
-  lib = { mountComparableHorizontalBarChart: core.mountComparableHorizontalBarChart, matchLabels: ins.matchLabels };
+  lib = {
+    mountComparableHorizontalBarChart: core.mountComparableHorizontalBarChart,
+    matchLabels: ins.matchLabels,
+  };
   render();
-  ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => render()); });
+  ro = new ResizeObserver(() => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => render());
+  });
   if (host.value) ro.observe(host.value);
 });
-onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.destroy(); });
+onBeforeUnmount(() => {
+  ro?.disconnect();
+  cancelAnimationFrame(raf);
+  chart?.destroy();
+});
 </script>
 
 <template>
@@ -157,76 +188,121 @@ onBeforeUnmount(() => { ro?.disconnect(); cancelAnimationFrame(raf); chart?.dest
     <div class="elab-bar">
       <ol class="elab-steps">
         <li :class="{ on: mode === 'raw', done: mode !== 'raw' }">
-          <button class="elab-step" @click="setMode('raw')"><span class="n">{{ mode !== 'raw' ? '✓' : '1' }}</span> Raw</button>
+          <button class="elab-step" @click="setMode('raw')">
+            <span class="n">{{ mode !== "raw" ? "✓" : "1" }}</span> Raw
+          </button>
         </li>
         <li :class="{ on: mode === 'matched' }">
-          <button class="elab-step" @click="setMode('matched')"><span class="n">2</span> Match</button>
+          <button class="elab-step" @click="setMode('matched')">
+            <span class="n">2</span> Match
+          </button>
         </li>
       </ol>
       <div class="elab-ctrls">
         <div class="elab-modes" role="group" aria-label="Result mode">
-          <button :class="{ on: preview }" @click="setPreview(true)"
-            title="Instant: the result a model would produce, precomputed - shown immediately, no download.">⚡ Instant</button>
-          <button :class="{ on: !preview }" @click="setPreview(false)"
-            title="Real model: download the actual model (MiniLM ~23 MB) and run it live in your browser - WebGPU, nothing sent to a server.">Real model</button>
+          <button
+            :class="{ on: preview }"
+            @click="setPreview(true)"
+            title="Instant: the result a model would produce, precomputed - shown immediately, no download."
+          >
+            ⚡ Instant
+          </button>
+          <button
+            :class="{ on: !preview }"
+            @click="setPreview(false)"
+            title="Real model: download the actual model (MiniLM ~23 MB) and run it live in your browser - WebGPU, nothing sent to a server."
+          >
+            Real model
+          </button>
         </div>
         <EmbedPicker v-if="!preview" @loaded="onLoaded" />
       </div>
     </div>
 
     <div class="elab-content">
-    <p class="elab-scenario">
-      A <strong>CRM</strong> export and an <strong>ERP</strong> export list the same four countries - spelled
-      differently, each with one country the other side lacks. <strong>matchLabels</strong> links each CRM row to
-      its ERP row by meaning, and honestly reports anything it cannot confidently pair, so two different
-      countries are never silently merged.
-      <template v-if="preview">The result below is shown <strong>instantly</strong>; switch to <strong>Real model</strong>
-        to download the model and run it yourself.</template>
-    </p>
-
-    <p class="elab-result">
-      <strong>{{ CRM.length }}</strong> CRM rows, <strong>{{ ERP.length }}</strong> ERP rows
-      <template v-if="mode === 'matched'">→ <strong class="elab-hit">{{ matches.length }}</strong>
-        confident {{ matches.length === 1 ? "pair" : "pairs" }}{{ preview ? " (instant preview)" : (backend === "bert" ? ` (by ${embName})` : " (fuzzy match, offline)") }}</template>
-      <template v-else>- two systems, two spellings each, not yet linked</template>
-    </p>
-
-    <div class="elab-stage" ref="host"></div>
-
-    <p class="elab-cap" v-if="mode === 'matched' && matches.length">
-      <span v-for="(m, i) in matches" :key="m.source" class="elab-group">
-        <b :style="{ color: PALETTE[i % PALETTE.length] }">{{ m.source }} → {{ m.target }}</b>
-        <span class="elab-mem">({{ m.similarity.toFixed(2) }})</span>
-      </span>
-    </p>
-
-    <template v-if="mode === 'matched' && unmatched.length">
-      <p class="elab-result"><strong>Left honestly unmatched</strong>
-        <span class="elab-mem">- no confident pair on the other side; shown with its closest miss</span>
+      <p class="elab-scenario">
+        A <strong>CRM</strong> export and an <strong>ERP</strong> export list the same four
+        countries - spelled differently, each with one country the other side lacks.
+        <strong>matchLabels</strong> links each CRM row to its ERP row by meaning, and honestly
+        reports anything it cannot confidently pair, so two different countries are never silently
+        merged.
+        <template v-if="preview"
+          >The result below is shown <strong>instantly</strong>; switch to
+          <strong>Real model</strong> to download the model and run it yourself.</template
+        >
       </p>
-      <p class="elab-pills">
-        <span v-for="u in unmatched" :key="u.side + ':' + u.label" class="elab-pill"
-          :style="{ borderColor: GREY, color: 'var(--vp-c-text-3)' }">
-          {{ u.label }} <span class="elab-mem">({{ u.side }}) closest {{ closestHint(u) }}</span>
+
+      <p class="elab-result">
+        <strong>{{ CRM.length }}</strong> CRM rows, <strong>{{ ERP.length }}</strong> ERP rows
+        <template v-if="mode === 'matched'"
+          >→ <strong class="elab-hit">{{ matches.length }}</strong> confident
+          {{ matches.length === 1 ? "pair" : "pairs"
+          }}{{
+            preview
+              ? " (instant preview)"
+              : backend === "bert"
+                ? ` (by ${embName})`
+                : " (fuzzy match, offline)"
+          }}</template
+        >
+        <template v-else>- two systems, two spellings each, not yet linked</template>
+      </p>
+
+      <div class="elab-stage" ref="host"></div>
+
+      <p class="elab-cap" v-if="mode === 'matched' && matches.length">
+        <span v-for="(m, i) in matches" :key="m.source" class="elab-group">
+          <b :style="{ color: PALETTE[i % PALETTE.length] }">{{ m.source }} → {{ m.target }}</b>
+          <span class="elab-mem">({{ m.similarity.toFixed(2) }})</span>
         </span>
       </p>
-    </template>
 
-    <p class="elab-legend">
-      <template v-if="mode === 'matched'">
-        <span v-if="preview">An embedding model pairs each CRM row with its ERP row <em>by meaning</em> - even
-          <code>USA</code> → United States and <code>Nippon</code> → Japan, which share no letters.
-          <code>Eire</code> and <code>France</code> stay unmatched, correctly: they are not the same country.
-          <strong>Shown instantly</strong>; switch to <strong>Real model</strong> to download MiniLM (~23 MB) and run it.</span>
-        <span v-else-if="backend === 'hash'">Model-free links <em>spelling</em> (case, typos) offline, so
-          <code>germany</code> → Germany pairs - but <code>USA</code> and <code>Nippon</code> stay unmatched (no
-          shared letters with their real pair). <strong>Load {{ embName }}</strong> (top-right) to match by meaning.</span>
-        <span v-else><strong>{{ embName }}</strong> matched the abbreviation and the translation too, down to the
-          real 3 pairs. <code>Eire</code> and <code>France</code> still correctly stay apart.</span>
+      <template v-if="mode === 'matched' && unmatched.length">
+        <p class="elab-result">
+          <strong>Left honestly unmatched</strong>
+          <span class="elab-mem"
+            >- no confident pair on the other side; shown with its closest miss</span
+          >
+        </p>
+        <p class="elab-pills">
+          <span
+            v-for="u in unmatched"
+            :key="u.side + ':' + u.label"
+            class="elab-pill"
+            :style="{ borderColor: GREY, color: 'var(--vp-c-text-3)' }"
+          >
+            {{ u.label }} <span class="elab-mem">({{ u.side }}) closest {{ closestHint(u) }}</span>
+          </span>
+        </p>
       </template>
-      <template v-else>Charted raw, all {{ CRM.length + ERP.length }} rows sit as unrelated bars from two systems
-        that know nothing about each other. Step to <strong>Match</strong> to link them.</template>
-    </p>
+
+      <p class="elab-legend">
+        <template v-if="mode === 'matched'">
+          <span v-if="preview"
+            >An embedding model pairs each CRM row with its ERP row <em>by meaning</em> - even
+            <code>USA</code> → United States and <code>Nippon</code> → Japan, which share no
+            letters. <code>Eire</code> and <code>France</code> stay unmatched, correctly: they are
+            not the same country. <strong>Shown instantly</strong>; switch to
+            <strong>Real model</strong> to download MiniLM (~23 MB) and run it.</span
+          >
+          <span v-else-if="backend === 'hash'"
+            >Model-free links <em>spelling</em> (case, typos) offline, so <code>germany</code> →
+            Germany pairs - but <code>USA</code> and <code>Nippon</code> stay unmatched (no shared
+            letters with their real pair). <strong>Load {{ embName }}</strong> (top-right) to match
+            by meaning.</span
+          >
+          <span v-else
+            ><strong>{{ embName }}</strong> matched the abbreviation and the translation too, down
+            to the real 3 pairs. <code>Eire</code> and <code>France</code> still correctly stay
+            apart.</span
+          >
+        </template>
+        <template v-else
+          >Charted raw, all {{ CRM.length + ERP.length }} rows sit as unrelated bars from two
+          systems that know nothing about each other. Step to <strong>Match</strong> to link
+          them.</template
+        >
+      </p>
     </div>
   </div>
 </template>

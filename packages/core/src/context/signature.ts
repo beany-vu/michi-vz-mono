@@ -52,7 +52,13 @@ export function contextSignature(context: BaseChartContext): string {
   const { a11yTable, legendData, ...rest } = context;
   const legendSig = legendData
     ? hashCells(
-        legendData.map((l) => [l.label, l.color, l.order, l.disabled ?? false, l.dataLabelSafe ?? ""])
+        legendData.map((l) => [
+          l.label,
+          l.color,
+          l.order,
+          l.disabled ?? false,
+          l.dataLabelSafe ?? "",
+        ]),
       )
     : "none";
   return (

@@ -29,7 +29,7 @@ export function renderTreemapSvg(
   parent: SVGElement,
   model: TreemapRenderModel,
   o: TreemapSvgOptions,
-  ia: TreemapInteractions
+  ia: TreemapInteractions,
 ): void {
   const root = svgEl("g", { class: "treemap-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";

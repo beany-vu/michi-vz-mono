@@ -15,7 +15,7 @@ export function makeRangeAreaGenerator(
   xScale: LineXScale,
   yScale: LineYScale,
   xAxisDataType: XaxisDataType,
-  curve?: CurveType
+  curve?: CurveType,
 ): (points: RangeDataPoint[]) => string | null {
   const gen = d3area<RangeDataPoint>()
     .x((d) => projectX(d, xScale, xAxisDataType))
@@ -29,7 +29,7 @@ export function makeRangeMedianGenerator(
   xScale: LineXScale,
   yScale: LineYScale,
   xAxisDataType: XaxisDataType,
-  curve?: CurveType
+  curve?: CurveType,
 ): (points: RangeDataPoint[]) => string | null {
   const gen = d3line<RangeDataPoint>()
     .x((d) => projectX(d, xScale, xAxisDataType))

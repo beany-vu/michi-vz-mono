@@ -14,7 +14,7 @@ export function wireNoDataTickTooltips(
   defaultLabel = "Data not available",
   // Notifies the engine while the cursor is over a no-data tick, so its host-level
   // `mousemove` hit-test (canvas mode) can stand down instead of hiding this tooltip.
-  onHoverChange?: (hovering: boolean) => void
+  onHoverChange?: (hovering: boolean) => void,
 ): void {
   const nodes = axisG.querySelectorAll<SVGTextElement>(".mv-tick-nodata");
   nodes.forEach((node) => {

@@ -58,7 +58,7 @@ export interface BuildBubbleModelOptions {
 export function buildBubbleRenderModel(
   packed: PackedBubble[],
   colors: BubbleColorResolver,
-  o: BuildBubbleModelOptions
+  o: BuildBubbleModelOptions,
 ): BubbleRenderModel {
   const ml = o.margin.left;
   const mt = o.margin.top;

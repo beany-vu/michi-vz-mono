@@ -107,7 +107,7 @@ describe("radialTree/scales - buildRadialTreeRadiusScale", () => {
   it("does not throw for a degenerate (all-equal) domain", () => {
     const radiusOf = buildRadialTreeRadiusScale(
       [{ label: "a", value: 10, groupLabel: "a", path: ["a"], isLeaf: true }],
-      [2, 32]
+      [2, 32],
     );
     expect(Number.isFinite(radiusOf(10))).toBe(true);
   });
@@ -140,7 +140,7 @@ describe("radialTree/layout - layoutRadialTree (cluster, not tree)", () => {
     const a = layoutRadialTree(p.root, { outerRadius: 100 });
     const b = layoutRadialTree(p.root, { outerRadius: 100 });
     expect(a.map((n) => ({ label: n.data.label, x: n.x, y: n.y }))).toEqual(
-      b.map((n) => ({ label: n.data.label, x: n.x, y: n.y }))
+      b.map((n) => ({ label: n.data.label, x: n.x, y: n.y })),
     );
   });
 
@@ -166,7 +166,9 @@ describe("radialTree/layout - layoutRadialTree (cluster, not tree)", () => {
     expect(group.link.end[0]).toBeCloseTo(0, 5);
     expect(group.link.end[1]).toBeCloseTo(0, 5);
     const leaf = laidOut.find((n) => n.isLeaf)!;
-    const parentGroup = laidOut.find((n) => n.depth === 1 && n.data.label === leaf.data.groupLabel)!;
+    const parentGroup = laidOut.find(
+      (n) => n.depth === 1 && n.data.label === leaf.data.groupLabel,
+    )!;
     expect(leaf.link.end[0]).toBeCloseTo(parentGroup.x, 5);
     expect(leaf.link.end[1]).toBeCloseTo(parentGroup.y, 5);
   });
@@ -186,7 +188,11 @@ describe("radialTree/renderModel - computeLabelDensity", () => {
 
 describe("radialTree/renderModel - wrapCenterLabel / centerLineOffsets", () => {
   it("wraps roughly every N characters, breaking on word boundaries", () => {
-    expect(wrapCenterLabel("Total Merchandise Trade", 10)).toEqual(["Total", "Merchandise", "Trade"]);
+    expect(wrapCenterLabel("Total Merchandise Trade", 10)).toEqual([
+      "Total",
+      "Merchandise",
+      "Trade",
+    ]);
   });
   it("returns a single line for short text", () => {
     expect(wrapCenterLabel("Trade", 10)).toEqual(["Trade"]);
@@ -387,7 +393,13 @@ describe("validate/radialTreeWarnings - checkRadialTreeData", () => {
 
   it("flags negative and non-finite leaf values", () => {
     const warnings = checkRadialTreeData([
-      { label: "G", children: [{ label: "Bad", value: -5 }, { label: "NaN", value: NaN }] },
+      {
+        label: "G",
+        children: [
+          { label: "Bad", value: -5 },
+          { label: "NaN", value: NaN },
+        ],
+      },
     ]);
     expect(warnings.filter((w) => w.type === "non-finite-value").length).toBe(2);
   });

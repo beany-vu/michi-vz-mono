@@ -72,7 +72,7 @@ function clamp(value: number, radius: number, extent: number): number {
 export function layoutSymbolMap(
   points: ProjectedPoint[],
   radiusOf: (point: ProjectedPoint) => number,
-  bounds?: SymbolMapLayoutBounds
+  bounds?: SymbolMapLayoutBounds,
 ): SymbolMapLayoutPoint[] {
   if (points.length === 0) return [];
 
@@ -86,18 +86,18 @@ export function layoutSymbolMap(
   const simulation = forceSimulation(nodes)
     .force(
       "x",
-      forceX<SimNode>((d) => d.x ?? d.point.x)
+      forceX<SimNode>((d) => d.x ?? d.point.x),
     )
     .force(
       "y",
-      forceY<SimNode>((d) => d.y ?? d.point.y)
+      forceY<SimNode>((d) => d.y ?? d.point.y),
     )
     .force("charge", forceManyBody<SimNode>())
     .force(
       "collide",
       forceCollide<SimNode>()
         .radius((d) => d.radius + 2)
-        .iterations(3)
+        .iterations(3),
     )
     .stop();
 

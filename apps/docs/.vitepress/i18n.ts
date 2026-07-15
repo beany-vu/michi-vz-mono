@@ -89,7 +89,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoExplainBusy: "Reading the chart...",
     demoDevtoolsMount: "🛠 Try DevTools on this chart",
     demoDevtoolsUnmount: "🛠 Remove DevTools",
-    demoDevtoolsHint: "DevTools is live: click the floating Michi shield (bottom right) or press Ctrl/Cmd+Shift+M, then pick this chart in the panel.",
+    demoDevtoolsHint:
+      "DevTools is live: click the floating Michi shield (bottom right) or press Ctrl/Cmd+Shift+M, then pick this chart in the panel.",
     demoLegendMeaning: "Meaning",
     demoLegendPairs: "Colour pairs",
     demoGoDeeper: "Go deeper:",
@@ -138,7 +139,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoExplainBusy: "Lecture du graphique...",
     demoDevtoolsMount: "🛠 Essayer les DevTools sur ce graphique",
     demoDevtoolsUnmount: "🛠 Retirer les DevTools",
-    demoDevtoolsHint: "Les DevTools sont actifs : cliquez sur le bouclier Michi flottant (en bas à droite) ou appuyez sur Ctrl/Cmd+Shift+M, puis choisissez ce graphique dans le panneau.",
+    demoDevtoolsHint:
+      "Les DevTools sont actifs : cliquez sur le bouclier Michi flottant (en bas à droite) ou appuyez sur Ctrl/Cmd+Shift+M, puis choisissez ce graphique dans le panneau.",
     demoLegendMeaning: "Signification",
     demoLegendPairs: "Paires de couleurs",
     demoGoDeeper: "Aller plus loin :",
@@ -187,7 +189,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoExplainBusy: "Grafiek wordt gelezen...",
     demoDevtoolsMount: "🛠 Probeer DevTools op deze grafiek",
     demoDevtoolsUnmount: "🛠 DevTools verwijderen",
-    demoDevtoolsHint: "DevTools is actief: klik op het zwevende Michi-schild (rechtsonder) of druk op Ctrl/Cmd+Shift+M, en kies deze grafiek in het paneel.",
+    demoDevtoolsHint:
+      "DevTools is actief: klik op het zwevende Michi-schild (rechtsonder) of druk op Ctrl/Cmd+Shift+M, en kies deze grafiek in het paneel.",
     demoLegendMeaning: "Betekenis",
     demoLegendPairs: "Kleurenparen",
     demoGoDeeper: "Ga dieper:",
@@ -236,7 +239,8 @@ export const ui: Record<LocaleKey, UiStrings> = {
     demoExplainBusy: "Đang đọc biểu đồ...",
     demoDevtoolsMount: "🛠 Thử DevTools với biểu đồ này",
     demoDevtoolsUnmount: "🛠 Gỡ DevTools",
-    demoDevtoolsHint: "DevTools đang chạy: bấm chiếc khiên Michi nổi ở góc dưới bên phải (hoặc Ctrl/Cmd+Shift+M), rồi chọn biểu đồ này trong bảng điều khiển.",
+    demoDevtoolsHint:
+      "DevTools đang chạy: bấm chiếc khiên Michi nổi ở góc dưới bên phải (hoặc Ctrl/Cmd+Shift+M), rồi chọn biểu đồ này trong bảng điều khiển.",
     demoLegendMeaning: "Ý nghĩa",
     demoLegendPairs: "Cặp màu",
     demoGoDeeper: "Tìm hiểu thêm:",
@@ -418,27 +422,107 @@ export interface FeatureTile {
 
 export const features: Record<LocaleKey, FeatureTile[]> = {
   root: [
-    { icon: "inspect", title: "Inspect everything", detail: "A real DevTools panel: live state, layout, render and hit-testing, render diffs, profiling, and accessibility audits." },
-    { icon: "ai", title: "Charts machines can read", detail: "Every chart emits a structured ChartContext - a plain-language summary an AI agent can read and drive over MCP." },
-    { icon: "a11y", title: "Accessible by default", detail: "That same context is a true text alternative for screen readers. Built in, not bolted on." },
-    { icon: "local", title: "Runs locally, yours to keep", detail: "Forecasting, anomaly detection, and narration run in the browser. No server, no upload. MIT-licensed." },
+    {
+      icon: "inspect",
+      title: "Inspect everything",
+      detail:
+        "A real DevTools panel: live state, layout, render and hit-testing, render diffs, profiling, and accessibility audits.",
+    },
+    {
+      icon: "ai",
+      title: "Charts machines can read",
+      detail:
+        "Every chart emits a structured ChartContext - a plain-language summary an AI agent can read and drive over MCP.",
+    },
+    {
+      icon: "a11y",
+      title: "Accessible by default",
+      detail:
+        "That same context is a true text alternative for screen readers. Built in, not bolted on.",
+    },
+    {
+      icon: "local",
+      title: "Runs locally, yours to keep",
+      detail:
+        "Forecasting, anomaly detection, and narration run in the browser. No server, no upload. MIT-licensed.",
+    },
   ],
   fr: [
-    { icon: "inspect", title: "Tout inspecter", detail: "Un vrai panneau DevTools : état en direct, mise en page, rendu et détection de survol, comparaison entre rendus, profilage et audits d'accessibilité." },
-    { icon: "ai", title: "Des graphiques que les machines lisent", detail: "Chaque graphique fournit un ChartContext structuré - un résumé en langage clair qu'un agent IA peut lire et piloter via MCP." },
-    { icon: "a11y", title: "Accessible par défaut", detail: "Ce même contexte est une véritable alternative textuelle pour les lecteurs d'écran. Intégré, pas ajouté après coup." },
-    { icon: "local", title: "Fonctionne en local, à vous de le garder", detail: "Prévision, détection d'anomalies et narration s'exécutent dans le navigateur. Aucun serveur, aucun envoi. Sous licence MIT." },
+    {
+      icon: "inspect",
+      title: "Tout inspecter",
+      detail:
+        "Un vrai panneau DevTools : état en direct, mise en page, rendu et détection de survol, comparaison entre rendus, profilage et audits d'accessibilité.",
+    },
+    {
+      icon: "ai",
+      title: "Des graphiques que les machines lisent",
+      detail:
+        "Chaque graphique fournit un ChartContext structuré - un résumé en langage clair qu'un agent IA peut lire et piloter via MCP.",
+    },
+    {
+      icon: "a11y",
+      title: "Accessible par défaut",
+      detail:
+        "Ce même contexte est une véritable alternative textuelle pour les lecteurs d'écran. Intégré, pas ajouté après coup.",
+    },
+    {
+      icon: "local",
+      title: "Fonctionne en local, à vous de le garder",
+      detail:
+        "Prévision, détection d'anomalies et narration s'exécutent dans le navigateur. Aucun serveur, aucun envoi. Sous licence MIT.",
+    },
   ],
   nl: [
-    { icon: "inspect", title: "Alles inspecteren", detail: "Een echt DevTools-paneel: live status, lay-out, rendering en hit-testing, verschillen tussen renders, profilering en toegankelijkheidsaudits." },
-    { icon: "ai", title: "Grafieken die machines kunnen lezen", detail: "Elke grafiek levert een gestructureerde ChartContext - een samenvatting in gewone taal die een AI-agent kan lezen en via MCP kan aansturen." },
-    { icon: "a11y", title: "Standaard toegankelijk", detail: "Diezelfde context is een echt tekstalternatief voor schermlezers. Ingebouwd, niet achteraf toegevoegd." },
-    { icon: "local", title: "Draait lokaal, van jou", detail: "Voorspelling, anomaliedetectie en narratie draaien in de browser. Geen server, geen upload. MIT-licentie." },
+    {
+      icon: "inspect",
+      title: "Alles inspecteren",
+      detail:
+        "Een echt DevTools-paneel: live status, lay-out, rendering en hit-testing, verschillen tussen renders, profilering en toegankelijkheidsaudits.",
+    },
+    {
+      icon: "ai",
+      title: "Grafieken die machines kunnen lezen",
+      detail:
+        "Elke grafiek levert een gestructureerde ChartContext - een samenvatting in gewone taal die een AI-agent kan lezen en via MCP kan aansturen.",
+    },
+    {
+      icon: "a11y",
+      title: "Standaard toegankelijk",
+      detail:
+        "Diezelfde context is een echt tekstalternatief voor schermlezers. Ingebouwd, niet achteraf toegevoegd.",
+    },
+    {
+      icon: "local",
+      title: "Draait lokaal, van jou",
+      detail:
+        "Voorspelling, anomaliedetectie en narratie draaien in de browser. Geen server, geen upload. MIT-licentie.",
+    },
   ],
   vi: [
-    { icon: "inspect", title: "Kiểm tra mọi thứ", detail: "Một bảng DevTools thực thụ: trạng thái trực tiếp, bố cục, kết xuất và kiểm tra vùng chạm, so sánh giữa các lần render, đo hiệu năng và kiểm toán khả năng truy cập." },
-    { icon: "ai", title: "Biểu đồ mà máy đọc được", detail: "Mỗi biểu đồ phát ra một ChartContext có cấu trúc - bản tóm tắt bằng ngôn ngữ tự nhiên mà một tác nhân AI có thể đọc và điều khiển qua MCP." },
-    { icon: "a11y", title: "Mặc định dễ tiếp cận", detail: "Chính ngữ cảnh đó là một phương án thay thế bằng văn bản thực sự cho trình đọc màn hình. Tích hợp sẵn, không phải chắp vá." },
-    { icon: "local", title: "Chạy cục bộ, thuộc về bạn", detail: "Dự báo, phát hiện bất thường và thuyết minh chạy ngay trong trình duyệt. Không máy chủ, không tải lên. Giấy phép MIT." },
+    {
+      icon: "inspect",
+      title: "Kiểm tra mọi thứ",
+      detail:
+        "Một bảng DevTools thực thụ: trạng thái trực tiếp, bố cục, kết xuất và kiểm tra vùng chạm, so sánh giữa các lần render, đo hiệu năng và kiểm toán khả năng truy cập.",
+    },
+    {
+      icon: "ai",
+      title: "Biểu đồ mà máy đọc được",
+      detail:
+        "Mỗi biểu đồ phát ra một ChartContext có cấu trúc - bản tóm tắt bằng ngôn ngữ tự nhiên mà một tác nhân AI có thể đọc và điều khiển qua MCP.",
+    },
+    {
+      icon: "a11y",
+      title: "Mặc định dễ tiếp cận",
+      detail:
+        "Chính ngữ cảnh đó là một phương án thay thế bằng văn bản thực sự cho trình đọc màn hình. Tích hợp sẵn, không phải chắp vá.",
+    },
+    {
+      icon: "local",
+      title: "Chạy cục bộ, thuộc về bạn",
+      detail:
+        "Dự báo, phát hiện bất thường và thuyết minh chạy ngay trong trình duyệt. Không máy chủ, không tải lên. Giấy phép MIT.",
+    },
   ],
 };

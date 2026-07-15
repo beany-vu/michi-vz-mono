@@ -13,8 +13,7 @@ export interface ProcessedGapData {
 function withDifference(dataSet: GapDataItem[]): GapDataItem[] {
   return dataSet.map((item) => ({
     ...item,
-    difference:
-      item.difference != null ? item.difference : item.value1 - item.value2,
+    difference: item.difference != null ? item.difference : item.value1 - item.value2,
   }));
 }
 
@@ -34,9 +33,7 @@ function normalizedNumberTicks(tickValues?: Array<number | Date>): number[] {
     new Set(
       (tickValues || [])
         .map((v) => (v instanceof Date ? v.valueOf() : v))
-        .filter(
-          (v): v is number => typeof v === "number" && Number.isFinite(v),
-        ),
+        .filter((v): v is number => typeof v === "number" && Number.isFinite(v)),
     ),
   ).sort((a, b) => a - b);
 }
@@ -86,9 +83,7 @@ export function processGapChartData(
   let allLabels: string[];
 
   if (!filter) {
-    processedDataSet = dataWithDifference.filter(
-      (d) => !disabledItems.includes(d.label),
-    );
+    processedDataSet = dataWithDifference.filter((d) => !disabledItems.includes(d.label));
     allLabels = dataWithDifference.map((d) => d.label);
   } else {
     const dateFiltered = filter.date
@@ -112,10 +107,7 @@ export function processGapChartData(
     if (normalizedTicks.length > 1) {
       // Explicit ticks intentionally define the visible numeric range, but only
       // after normalization proves they contain at least two distinct values.
-      xAxisDomain = [
-        normalizedTicks[0],
-        normalizedTicks[normalizedTicks.length - 1],
-      ];
+      xAxisDomain = [normalizedTicks[0], normalizedTicks[normalizedTicks.length - 1]];
     } else {
       // Degenerate/invalid explicit ticks are ignored. Falling back to finite
       // data values keeps the library resilient to a buggy consumer tick helper.

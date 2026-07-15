@@ -104,7 +104,7 @@ describe("mountRadarChart - webgpu renderer (capability gate + fallback)", () =>
     // Read a pole's pixel coords from an SVG mount (same scales/model as webgpu).
     const svgMount = mount({ renderer: "svg" });
     const poly = Array.from(
-      svgMount.host.querySelectorAll<SVGPolygonElement>("polygon.radar-area")
+      svgMount.host.querySelectorAll<SVGPolygonElement>("polygon.radar-area"),
     ).find((p) => p.getAttribute("data-label") === "Model A")!;
     const [x, y] = poly.getAttribute("points")!.trim().split(" ")[0].split(",").map(Number);
     svgMount.chart.destroy();

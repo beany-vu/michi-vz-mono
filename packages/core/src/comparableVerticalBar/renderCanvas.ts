@@ -46,12 +46,16 @@ function roundRectPath(
   y: number,
   w: number,
   h: number,
-  r: number
+  r: number,
 ): void {
   const rad = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2));
   ctx.beginPath();
   if (typeof (ctx as unknown as { roundRect?: unknown }).roundRect === "function") {
-    (ctx as CanvasRenderingContext2D & { roundRect: (x: number, y: number, w: number, h: number, r: number) => void }).roundRect(x, y, w, h, rad);
+    (
+      ctx as CanvasRenderingContext2D & {
+        roundRect: (x: number, y: number, w: number, h: number, r: number) => void;
+      }
+    ).roundRect(x, y, w, h, rad);
     return;
   }
   ctx.moveTo(x + rad, y);
@@ -67,7 +71,7 @@ export function drawComparableVerticalCanvas(
   svg: SVGSVGElement | null,
   model: ComparableVerticalRenderModel,
   o: ComparableVerticalCanvasOptions,
-  onPatternLoad?: () => void
+  onPatternLoad?: () => void,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -76,16 +80,32 @@ export function drawComparableVerticalCanvas(
   const labels = model.bars.map((b) => b.label);
   const fb = (l: string) => model.bars.find((b) => b.label === l)?.color || "transparent";
   const fbBased = (l: string) => model.bars.find((b) => b.label === l)?.basedColor || "transparent";
-  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), ["fill", "stroke"]);
-  const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), ["fill", "stroke"]);
+  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), [
+    "fill",
+    "stroke",
+  ]);
+  const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), [
+    "fill",
+    "stroke",
+  ]);
 
   for (const bar of model.bars) {
     const groupAlpha = bar.dimmed ? 0.3 : 1;
     const patSrc = o.patternsMapping?.[bar.label] ?? o.patternsMapping?.[bar.safe];
     const parts = comparableVerticalDrawOrder(bar).map((type) =>
       type === "based"
-        ? { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.basedColor, pattern: patSrc }
-        : { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color, pattern: undefined as string | undefined }
+        ? {
+            seg: bar.based,
+            opacity: o.valueBasedOpacity,
+            color: basedColors.get(bar.label) || bar.basedColor,
+            pattern: patSrc,
+          }
+        : {
+            seg: bar.compared,
+            opacity: o.valueComparedOpacity,
+            color: comparedColors.get(bar.label) || bar.color,
+            pattern: undefined as string | undefined,
+          },
     );
     for (const part of parts) {
       // transparent-skip: a consumer hides a sub-bar with fill:transparent - don't

@@ -14,7 +14,10 @@
 // DELTA_X_FRACTION below) reads better and is what every other delta-indicator
 // UI in this library does.
 import { DELTA_GOOD_COLOR, DELTA_BAD_COLOR, DELTA_NEUTRAL_COLOR } from "../comparableBar/delta";
-import type { ComparableDeltaDirection, ComparableDeltaGeometryOptions } from "../comparableBar/delta";
+import type {
+  ComparableDeltaDirection,
+  ComparableDeltaGeometryOptions,
+} from "../comparableBar/delta";
 import type { ComparableBarDataPoint } from "../types";
 import type { ComparableVerticalBarSegment } from "./renderModel";
 
@@ -51,7 +54,7 @@ export interface ComparableVerticalDeltaModel {
  * chart, this chart owns that use case) apply IDENTICAL logic. */
 export function resolveDeltaDirectionColor(
   diff: number,
-  o: ComparableDeltaGeometryOptions
+  o: ComparableDeltaGeometryOptions,
 ): { direction: ComparableDeltaDirection; color: string } {
   if (diff > 0) {
     return {
@@ -74,7 +77,7 @@ export function computeComparableVerticalDelta(
   compared: ComparableVerticalBarSegment,
   columnX: number,
   bandwidth: number,
-  o: ComparableDeltaGeometryOptions
+  o: ComparableDeltaGeometryOptions,
 ): ComparableVerticalDeltaModel {
   const diff = d.valueCompared - d.valueBased;
   const { direction, color } = resolveDeltaDirectionColor(diff, o);

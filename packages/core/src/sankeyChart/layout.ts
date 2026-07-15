@@ -53,7 +53,7 @@ export interface SankeyLayoutOptions {
 
 export function layoutSankey(
   graph: { nodes: SkNode[]; links: SkLink[] },
-  o: SankeyLayoutOptions
+  o: SankeyLayoutOptions,
 ): { nodes: SankeyLaidNode[]; links: SankeyLaidLink[] } {
   if (graph.nodes.length === 0 || o.x1 <= o.x0 || o.y1 <= o.y0) {
     return { nodes: [], links: [] };

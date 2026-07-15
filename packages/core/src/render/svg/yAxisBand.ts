@@ -40,16 +40,24 @@ export interface YAxisBandOptions {
     leaderToX: (label: string) => number;
     /** pointer = the live cursor position when scrubbing (absent on keyboard focus),
      * so the engine can pop the tooltip right where the user is looking. */
-    onEnter: (label: string, rowCenterY: number, pointer?: { clientX: number; clientY: number }) => void;
+    onEnter: (
+      label: string,
+      rowCenterY: number,
+      pointer?: { clientX: number; clientY: number },
+    ) => void;
     onLeave: () => void;
-    onClick?: (label: string, rowCenterY: number, pointer?: { clientX: number; clientY: number }) => void;
+    onClick?: (
+      label: string,
+      rowCenterY: number,
+      pointer?: { clientX: number; clientY: number },
+    ) => void;
   };
 }
 
 export function renderYAxisBand(
   parent: SVGElement,
   scale: ScaleBand<string>,
-  o: YAxisBandOptions
+  o: YAxisBandOptions,
 ): SVGGElement {
   const g = svgEl("g", { class: "mv-y-axis" });
   const format = o.format ?? ((l: string) => l);
@@ -69,7 +77,7 @@ export function renderYAxisBand(
   let visible: ReadonlySet<string> | null = null;
   if (bandwidth < MIN_LABEL_HEIGHT || (o.maxTicks != null && domain.length > o.maxTicks)) {
     visible = new Set(
-      sampleBandTicks(domain, bandwidth, MIN_LABEL_HEIGHT, o.maxTicks ?? DEFAULT_MAX_TICKS)
+      sampleBandTicks(domain, bandwidth, MIN_LABEL_HEIGHT, o.maxTicks ?? DEFAULT_MAX_TICKS),
     );
   }
 
@@ -128,7 +136,7 @@ export function renderYAxisBand(
           x2: gridRight,
           y1: center,
           y2: center,
-        })
+        }),
       );
     }
 
@@ -142,9 +150,7 @@ export function renderYAxisBand(
     // otherwise clip to its viewport, cutting off long labels (worst at the top band).
     // When thinning is active the band itself is shorter than a text line, so
     // centre a line-height box on the band instead of using the sliver-thin band box.
-    const foY = visible
-      ? center - MIN_LABEL_HEIGHT / 2
-      : (scale(label) ?? center - bandwidth / 2);
+    const foY = visible ? center - MIN_LABEL_HEIGHT / 2 : (scale(label) ?? center - bandwidth / 2);
     const fo = svgEl("foreignObject", {
       class: "mv-ylabel-fo",
       x: o.margin.left - tickHtmlWidth + (o.tickLabelOffset?.x ?? 0),

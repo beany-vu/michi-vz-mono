@@ -4,10 +4,22 @@ import { sanitizeForClassName } from "../src/math/sanitize";
 import type { VerticalStackBarChartProps, VerticalStackBarDataSet } from "../src/types";
 
 const sample: VerticalStackBarDataSet[] = [
-  { seriesKey: "Africa", seriesKeyAbbreviation: "AF", series: [
-    { date: "2001", Africa: "10" }, { date: "2002", Africa: "12" }] },
-  { seriesKey: "Non-LDC", seriesKeyAbbreviation: "NL", series: [
-    { date: "2001", "Non-LDC": "20" }, { date: "2002", "Non-LDC": "18" }] },
+  {
+    seriesKey: "Africa",
+    seriesKeyAbbreviation: "AF",
+    series: [
+      { date: "2001", Africa: "10" },
+      { date: "2002", Africa: "12" },
+    ],
+  },
+  {
+    seriesKey: "Non-LDC",
+    seriesKeyAbbreviation: "NL",
+    series: [
+      { date: "2001", "Non-LDC": "20" },
+      { date: "2002", "Non-LDC": "18" },
+    ],
+  },
 ];
 
 function mount(extra: Partial<VerticalStackBarChartProps> = {}) {
@@ -48,7 +60,13 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     expect(calls).toBe(1); // initial render
     chart.update({ dataSet: sample, title: "Demo", width: 600, height: 360, onChartDataProcessed });
     expect(calls).toBe(1); // unchanged context → NOT re-emitted
-    chart.update({ dataSet: sample.slice(0, 1), title: "Demo", width: 600, height: 360, onChartDataProcessed });
+    chart.update({
+      dataSet: sample.slice(0, 1),
+      title: "Demo",
+      width: 600,
+      height: 360,
+      onChartDataProcessed,
+    });
     expect(calls).toBe(2); // changed data → emitted once more
     chart.destroy();
     host.remove();
@@ -65,9 +83,13 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
   it("builds an a11y mirror with one row per date + a Total column", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(2); // 2 dates
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Date", "Africa", "Non-LDC", "Total"]);
-    expect(host.querySelector(".mv-a11y")!.getAttribute("aria-label")).toContain("Stacked bar chart");
+    expect(host.querySelector(".mv-a11y")!.getAttribute("aria-label")).toContain(
+      "Stacked bar chart",
+    );
     chart.destroy();
     host.remove();
   });
@@ -93,7 +115,8 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
   it("honors explicit key order", () => {
     const { host, chart } = mount({ keys: ["Non-LDC", "Africa"] });
     const ctx = chart.getContext()!;
-    if (ctx.chartType === "vertical-stack-bar-chart") expect(ctx.keys).toEqual(["Non-LDC", "Africa"]);
+    if (ctx.chartType === "vertical-stack-bar-chart")
+      expect(ctx.keys).toEqual(["Non-LDC", "Africa"]);
     chart.destroy();
     host.remove();
   });
@@ -108,7 +131,12 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     const host = document.createElement("div");
     document.body.appendChild(host);
     let warned: unknown[] = [];
-    mountVerticalStackBarChart(host, { dataSet: [], width: 400, height: 200, onDataWarning: (w) => (warned = w) });
+    mountVerticalStackBarChart(host, {
+      dataSet: [],
+      width: 400,
+      height: 200,
+      onDataWarning: (w) => (warned = w),
+    });
     expect(warned.some((w) => (w as { type: string }).type === "empty-dataset")).toBe(true);
     host.remove();
   });
@@ -159,7 +187,11 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     // Legacy colour parity: the consumer colour authority assigns colours by
     // appearance order in legendData, and the legacy reversed it for bottomToTop.
     const ds: VerticalStackBarDataSet[] = [
-      { seriesKey: "trade", seriesKeyAbbreviation: "T", series: [{ date: "2001", A: 5, B: 3, C: 1 }] },
+      {
+        seriesKey: "trade",
+        seriesKeyAbbreviation: "T",
+        series: [{ date: "2001", A: 5, B: 3, C: 1 }],
+      },
     ];
     const top = mount({ keys: ["A", "B", "C"], keysOrder: "topToBottom", dataSet: ds });
     const bot = mount({ keys: ["A", "B", "C"], keysOrder: "bottomToTop", dataSet: ds });
@@ -202,7 +234,7 @@ describe("mountVerticalStackBarChart (jsdom)", () => {
     const labels = host.querySelectorAll<SVGTextElement>(".mv-x-axis-band .mv-axis-label");
     expect(labels.length).toBeGreaterThan(0);
     const rotated = Array.from(labels).some((t) =>
-      (t.getAttribute("transform") || "").includes("rotate(-45)")
+      (t.getAttribute("transform") || "").includes("rotate(-45)"),
     );
     expect(rotated).toBe(true);
     chart.destroy();

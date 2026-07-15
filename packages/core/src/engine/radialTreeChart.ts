@@ -98,7 +98,7 @@ function resolve(p: RadialTreeChartProps): Resolved {
 export function mountRadialTreeChart(
   host: HTMLElement,
   initial: RadialTreeChartProps,
-  opts?: MountOptions<RadialTreeChartProps>
+  opts?: MountOptions<RadialTreeChartProps>,
 ): ChartInstance<RadialTreeChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-radial-tree-chart");
@@ -274,7 +274,7 @@ export function mountRadialTreeChart(
       processed.groupKeys,
       props.colors,
       seededMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -334,7 +334,7 @@ export function mountRadialTreeChart(
               tooltip.classList.add("sticky");
               showTooltip(mark, ev);
             },
-          }
+          },
         );
         removeCanvas();
         removeWebgpuCanvas();

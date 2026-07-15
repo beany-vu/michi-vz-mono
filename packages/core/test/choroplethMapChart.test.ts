@@ -285,7 +285,7 @@ describe("mountChoroplethMapChart (jsdom, canvas renderer)", () => {
     // legacy width/1.7/PI projection formula is covered by the dedicated
     // choroplethMap/hitTest.ts unit tests).
     expect(() =>
-      host.dispatchEvent(new MouseEvent("mousemove", { clientX: 50, clientY: 50, bubbles: true }))
+      host.dispatchEvent(new MouseEvent("mousemove", { clientX: 50, clientY: 50, bubbles: true })),
     ).not.toThrow();
     expect(highlighted.length).toBeGreaterThan(0);
     chart.destroy();
@@ -318,7 +318,9 @@ describe("mountChoroplethMapChart (jsdom, canvas renderer)", () => {
     // pre-existing d3-geo-projection quirk, orthogonal to this bug), which
     // would badly skew a naive whole-string centroid.
     const svgMount = mount({ renderer: "svg", margin });
-    const d = svgMount.host.querySelector<SVGPathElement>('path.region[data-label="A"]')!.getAttribute("d")!;
+    const d = svgMount.host
+      .querySelector<SVGPathElement>('path.region[data-label="A"]')!
+      .getAttribute("d")!;
     const firstRing = d.match(/^M[^Z]*Z/)![0];
     const nums = firstRing.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
     const xs: number[] = [];
@@ -343,7 +345,11 @@ describe("mountChoroplethMapChart (jsdom, canvas renderer)", () => {
     // margin.left/top + the plot-local centroid) is simulated by adding the
     // margin directly here.
     host.dispatchEvent(
-      new MouseEvent("mousemove", { clientX: cx + margin.left, clientY: cy + margin.top, bubbles: true })
+      new MouseEvent("mousemove", {
+        clientX: cx + margin.left,
+        clientY: cy + margin.top,
+        bubbles: true,
+      }),
     );
     expect(highlighted.some((h) => h.includes("Alpha"))).toBe(true);
     chart.destroy();

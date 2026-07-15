@@ -43,7 +43,7 @@ describe("devtools hit channel (canvas hit-test instrumentation)", () => {
     // Read the point's pixel coords from an SVG mount (same scales as canvas).
     const svgMount = mountScatter({ renderer: "svg" });
     const dot = Array.from(
-      svgMount.host.querySelectorAll<SVGCircleElement>("circle.scatter-point")
+      svgMount.host.querySelectorAll<SVGCircleElement>("circle.scatter-point"),
     ).find((c) => c.getAttribute("data-label") === "Point A")!;
     const cx = Number(dot.getAttribute("cx"));
     const cy = Number(dot.getAttribute("cy"));

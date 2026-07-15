@@ -28,11 +28,19 @@ export interface LegendInput {
 export function mixWithWhite(color: string, ratio: number): string | undefined {
   const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
   if (!m) return undefined;
-  const hex = m[1].length === 3 ? m[1].split("").map((c) => c + c).join("") : m[1];
+  const hex =
+    m[1].length === 3
+      ? m[1]
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : m[1];
   const r = Math.max(0, Math.min(1, ratio));
   const mix = (i: number) => {
     const c = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    return Math.round(c + (255 - c) * r).toString(16).padStart(2, "0");
+    return Math.round(c + (255 - c) * r)
+      .toString(16)
+      .padStart(2, "0");
   };
   return `#${mix(0)}${mix(1)}${mix(2)}`;
 }

@@ -120,9 +120,7 @@ describe("gapChart sticky tooltip dismiss (jsdom, svg renderer)", () => {
     mark.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(tooltip.classList.contains("sticky")).toBe(true);
     chart.destroy();
-    expect(() =>
-      outside.dispatchEvent(new MouseEvent("click", { bubbles: true }))
-    ).not.toThrow();
+    expect(() => outside.dispatchEvent(new MouseEvent("click", { bubbles: true }))).not.toThrow();
     host.remove();
     outside.remove();
   });

@@ -12,8 +12,20 @@ function host(): HTMLElement {
 const props: LineChartProps = {
   xAxisDataType: "number",
   dataSet: [
-    { label: "A", series: [{ date: 2018, value: 10, certainty: true }, { date: 2019, value: 30, certainty: true }] },
-    { label: "B", series: [{ date: 2018, value: 5, certainty: true }, { date: 2019, value: 8, certainty: true }] },
+    {
+      label: "A",
+      series: [
+        { date: 2018, value: 10, certainty: true },
+        { date: 2019, value: 30, certainty: true },
+      ],
+    },
+    {
+      label: "B",
+      series: [
+        { date: 2018, value: 5, certainty: true },
+        { date: 2019, value: 8, certainty: true },
+      ],
+    },
   ],
 };
 
@@ -34,7 +46,13 @@ describe("agent registry", () => {
     expect(registry.list()).toEqual(["revenue"]);
     const names = registry.tools().map((t) => t.name);
     expect(names).toEqual(
-      expect.arrayContaining(["list_charts", "get_chart_context", "set_filter", "highlight", "set_data"])
+      expect.arrayContaining([
+        "list_charts",
+        "get_chart_context",
+        "set_filter",
+        "highlight",
+        "set_data",
+      ]),
     );
     const ctx = registry.call("get_chart_context", { chart: "revenue" }) as LineChartContext;
     expect(ctx.chartType).toBe("line-chart");
@@ -45,7 +63,15 @@ describe("agent registry", () => {
     const { chart, registry } = setup();
     registry.call("set_data", {
       chart: "revenue",
-      dataSet: [{ label: "A", series: [{ date: 2018, value: 1, certainty: true }, { date: 2019, value: 2, certainty: true }] }],
+      dataSet: [
+        {
+          label: "A",
+          series: [
+            { date: 2018, value: 1, certainty: true },
+            { date: 2019, value: 2, certainty: true },
+          ],
+        },
+      ],
     });
     expect((chart.getContext() as LineChartContext).series.length).toBe(1);
   });
@@ -96,7 +122,9 @@ describe("MCP server", () => {
       method: "tools/call",
       params: { name: "summarize_chart", arguments: { chart: "revenue" } },
     }) as JsonRpcMessage;
-    expect((call.result as { content: Array<{ text: string }> }).content[0].text).toContain("Line chart");
+    expect((call.result as { content: Array<{ text: string }> }).content[0].text).toContain(
+      "Line chart",
+    );
 
     const read = server.handle({
       jsonrpc: "2.0",
@@ -114,7 +142,12 @@ describe("MCP server", () => {
     const { registry } = setup();
     let handler: (m: JsonRpcMessage) => void = () => {};
     const sent: JsonRpcMessage[] = [];
-    const transport: McpTransport = { send: (m) => sent.push(m), onMessage: (h) => { handler = h; } };
+    const transport: McpTransport = {
+      send: (m) => sent.push(m),
+      onMessage: (h) => {
+        handler = h;
+      },
+    };
     createMcpServer(registry, transport);
     handler({ jsonrpc: "2.0", id: 1, method: "tools/list" });
     expect(sent[0].result).toBeTruthy();

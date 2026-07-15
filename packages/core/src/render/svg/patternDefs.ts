@@ -28,7 +28,7 @@ let counter = 0;
 export function ensurePatternDefs(
   svg: SVGElement,
   patternsMapping: Record<string, string> | undefined,
-  o: PatternDefsOptions = {}
+  o: PatternDefsOptions = {},
 ): Map<string, string> {
   const ids = new Map<string, string>();
   if (!patternsMapping || Object.keys(patternsMapping).length === 0) return ids;
@@ -42,7 +42,12 @@ export function ensurePatternDefs(
 
   for (const [label, src] of Object.entries(patternsMapping)) {
     const id = `mv-pattern-${++counter}`;
-    const pattern = svgEl("pattern", { id, patternUnits: "userSpaceOnUse", width: size, height: size });
+    const pattern = svgEl("pattern", {
+      id,
+      patternUnits: "userSpaceOnUse",
+      width: size,
+      height: size,
+    });
     const image = svgEl("image", { href: src, width: size, height: size });
     pattern.appendChild(image);
     defs.appendChild(pattern);

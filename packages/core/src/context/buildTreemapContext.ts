@@ -42,16 +42,15 @@ export function buildTreemapContext(input: BuildTreemapContextInput): TreemapCha
 
   const hasPartial = leaves.some((l) => l.partial != null);
   const grandTotal = round(leaves.reduce((a, l) => a + l.value, 0));
-  const totalPartial = hasPartial
-    ? round(leaves.reduce((a, l) => a + (l.partial ?? 0), 0))
-    : null;
+  const totalPartial = hasPartial ? round(leaves.reduce((a, l) => a + (l.partial ?? 0), 0)) : null;
   const totalRemainder =
     hasPartial && totalPartial != null ? round(grandTotal - totalPartial) : null;
 
   let largestLeaf: { label: string; value: number } | null = null;
   let largestRemainder: { label: string; remainder: number } | null = null;
   for (const l of leaves) {
-    if (!largestLeaf || l.value > largestLeaf.value) largestLeaf = { label: l.label, value: round(l.value) };
+    if (!largestLeaf || l.value > largestLeaf.value)
+      largestLeaf = { label: l.label, value: round(l.value) };
     if (l.partial != null) {
       const rem = Math.max(0, l.value - l.partial);
       if (!largestRemainder || rem > largestRemainder.remainder) {
@@ -69,7 +68,8 @@ export function buildTreemapContext(input: BuildTreemapContextInput): TreemapCha
     const pct = grandTotal > 0 ? Math.round((totalPartial / grandTotal) * 100) : 0;
     summary += ` ${splitLabels[0]} ${totalPartial} of ${grandTotal} (${pct}%); ${splitLabels[1]} ${totalRemainder}.`;
   }
-  if (largestRemainder) summary += ` Biggest ${splitLabels[1].toLowerCase()}: ${largestRemainder.label} (${largestRemainder.remainder}).`;
+  if (largestRemainder)
+    summary += ` Biggest ${splitLabels[1].toLowerCase()}: ${largestRemainder.label} (${largestRemainder.remainder}).`;
 
   const headers = hasPartial
     ? ["Label", "Value", splitLabels[0], splitLabels[1], "%"]
@@ -80,7 +80,7 @@ export function buildTreemapContext(input: BuildTreemapContextInput): TreemapCha
       base.push(
         l.partial ?? "-",
         l.remainder ?? "-",
-        l.partialPct != null ? `${Math.round(l.partialPct * 100)}%` : "-"
+        l.partialPct != null ? `${Math.round(l.partialPct * 100)}%` : "-",
       );
     }
     return base;

@@ -69,7 +69,7 @@ export function createTunedProjection(
   config: GeoProjectionConfig | undefined,
   width: number,
   height: number,
-  defaults: TunedProjectionDefaults = { rotate: [-18, 0], center: [0, 10] }
+  defaults: TunedProjectionDefaults = { rotate: [-18, 0], center: [0, 10] },
 ): GeoProjection {
   const factory = PROJECTIONS[name ?? "geoRobinson"] ?? geoRobinson;
   let proj = factory()
@@ -103,6 +103,9 @@ export function createTunedProjection(
 
 /** geoPath(projection[, context]) - d3-geo renders natively to both SVG path
  * strings (context omitted) and Canvas 2D contexts (context supplied). */
-export function createGeoPathGenerator(projection: GeoProjection, context?: CanvasRenderingContext2D): GeoPath {
+export function createGeoPathGenerator(
+  projection: GeoProjection,
+  context?: CanvasRenderingContext2D,
+): GeoPath {
   return context ? geoPath(projection, context) : geoPath(projection);
 }

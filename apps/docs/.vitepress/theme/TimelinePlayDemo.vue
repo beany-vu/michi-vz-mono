@@ -39,7 +39,7 @@ function makeGapProps(): Record<string, unknown> {
       value1: Math.round(v1 + yi * (label.length % 3) * 1.6),
       value2: Math.round(v2 + yi * ((label.length + 1) % 4) * 2.1),
       date: String(year),
-    }))
+    })),
   );
   return { dataSet, timeline: { speedMs: 1200, loop: true }, showLegend: true };
 }
@@ -60,7 +60,7 @@ function makeScatterProps(): Record<string, unknown> {
       y: Math.round((life + yi * 0.7) * 10) / 10,
       d: pop + yi,
       date: String(year),
-    }))
+    })),
   );
   return {
     dataSet,
@@ -92,15 +92,15 @@ function driftRow(row: Record<string, unknown>, yi: number, ri: number): Record<
     if (FROZEN_KEYS.has(k)) continue;
     if (typeof v === "number" && Number.isFinite(v)) {
       // Deterministic per-row drift: each row rises or dips on its own cadence.
-      const drift = 1 + yi * (0.06 + ((ri % 4) * 0.045)) * (ri % 3 === 2 ? -0.6 : 1);
+      const drift = 1 + yi * (0.06 + (ri % 4) * 0.045) * (ri % 3 === 2 ? -0.6 : 1);
       out[k] = Math.round(v * drift * 100) / 100;
-    } else if (Array.isArray(v) && v.every(c => c && typeof c === "object")) {
+    } else if (Array.isArray(v) && v.every((c) => c && typeof c === "object")) {
       // Hierarchies (treemap/radial-tree children): drift the whole subtree.
       out[k] = (v as Array<Record<string, unknown>>).map((c, ci) => driftRow(c, yi, ri + ci + 1));
-    } else if (Array.isArray(v) && v.every(c => typeof c === "number" || c === null)) {
+    } else if (Array.isArray(v) && v.every((c) => typeof c === "number" || c === null)) {
       // Radar-style per-axis value arrays.
-      const drift = 1 + yi * (0.05 + ((ri % 3) * 0.05));
-      out[k] = v.map(c => (typeof c === "number" ? Math.round(c * drift * 100) / 100 : c));
+      const drift = 1 + yi * (0.05 + (ri % 3) * 0.05);
+      out[k] = v.map((c) => (typeof c === "number" ? Math.round(c * drift * 100) / 100 : c));
     }
   }
   return out;
@@ -115,7 +115,7 @@ function makeGenericProps(chartKey: string): Record<string, unknown> | null {
     // The data already spans years; the timeline draws up to the active one.
     // Some charts' FIRST example is categorical (fountain's snapshot mode has
     // no time axis at all), so pick the first TEMPORAL example instead.
-    const temporal = list.find(e => {
+    const temporal = list.find((e) => {
       const p = e.props as any;
       const rows = (p.dataSet ?? p.series ?? []) as Array<{ date?: unknown }>;
       return String(p.xAxisDataType ?? "").startsWith("date") || rows[0]?.date !== undefined;
@@ -142,7 +142,7 @@ function makeGenericProps(chartKey: string): Record<string, unknown> | null {
   if (!rowsKey) return null;
   const rows = base[rowsKey] as Array<Record<string, unknown>>;
   const cloned = YEARS.flatMap((year, yi) =>
-    rows.map((row, ri) => ({ ...driftRow(row, yi, ri), [periodField]: String(year) }))
+    rows.map((row, ri) => ({ ...driftRow(row, yi, ri), [periodField]: String(year) })),
   );
   return { ...rest, [rowsKey]: cloned, timeline: { speedMs: 1200, loop: true } };
 }
@@ -228,7 +228,9 @@ onBeforeUnmount(() => {
           {{ r }}
         </button>
       </div>
-      <span v-if="renderer === 'webgpu'" class="tld-note">webgpu paints the full frame instantly (no sweep)</span>
+      <span v-if="renderer === 'webgpu'" class="tld-note"
+        >webgpu paints the full frame instantly (no sweep)</span
+      >
     </div>
     <div class="tld-stage michi-vz-calm" ref="host"></div>
     <p class="tld-hint">

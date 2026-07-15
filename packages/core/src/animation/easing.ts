@@ -5,11 +5,11 @@ export type EasingFn = (t: number) => number;
 
 export type EasingName = "linear" | "easeOutQuad" | "easeInOutCubic";
 
-export const linear: EasingFn = t => t;
+export const linear: EasingFn = (t) => t;
 
-export const easeOutQuad: EasingFn = t => 1 - (1 - t) * (1 - t);
+export const easeOutQuad: EasingFn = (t) => 1 - (1 - t) * (1 - t);
 
-export const easeInOutCubic: EasingFn = t =>
+export const easeInOutCubic: EasingFn = (t) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 const byName: Record<EasingName, EasingFn> = {
@@ -20,7 +20,7 @@ const byName: Record<EasingName, EasingFn> = {
 
 export function resolveEasing(
   easing: EasingName | EasingFn | undefined,
-  fallback: EasingFn
+  fallback: EasingFn,
 ): EasingFn {
   if (typeof easing === "function") return easing;
   if (easing && easing in byName) return byName[easing];

@@ -70,7 +70,11 @@ describe("renderYAxisBand label thinning", () => {
   it("still renders nothing when hideTickLabels is set", () => {
     const labels = Array.from({ length: 120 }, (_, i) => `Row ${i + 1}`);
     const parent = svgParent();
-    renderYAxisBand(parent, bandScale(labels), { width: 700, margin: MARGIN, hideTickLabels: true });
+    renderYAxisBand(parent, bandScale(labels), {
+      width: 700,
+      margin: MARGIN,
+      hideTickLabels: true,
+    });
     expect(labelTexts(parent)).toEqual([]);
   });
 });

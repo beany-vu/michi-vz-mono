@@ -25,29 +25,74 @@ const trend: FountainDataItem[] = [
 function mount(data: FountainDataItem[], extra: Partial<FountainChartProps> = {}) {
   const host = document.createElement("div");
   document.body.appendChild(host);
-  const chart = mountFountainChart(host, { dataSet: data, title: "Demo", width: 600, height: 320, ...extra });
+  const chart = mountFountainChart(host, {
+    dataSet: data,
+    title: "Demo",
+    width: 600,
+    height: 320,
+    ...extra,
+  });
   return { host, chart };
 }
 
 function buildModel(
   data: FountainDataItem[],
-  opts: { style?: "jet" | "plume"; xAxisDataType?: "band" | "number" | "date_annual"; yAxisDomain?: [number, number]; width?: number; height?: number } = {}
+  opts: {
+    style?: "jet" | "plume";
+    xAxisDataType?: "band" | "number" | "date_annual";
+    yAxisDomain?: [number, number];
+    width?: number;
+    height?: number;
+  } = {},
 ) {
-  const processed = processFountainData(data, opts.xAxisDataType ?? "band", undefined, opts.yAxisDomain);
+  const processed = processFountainData(
+    data,
+    opts.xAxisDataType ?? "band",
+    undefined,
+    opts.yAxisDomain,
+  );
   const colors = buildFountainColors(processed.items);
   const scales = createFountainScales(
-    processed.mode, processed.labels, processed.items.length,
-    processed.xDomain, processed.yAxisDomain, opts.width ?? 600, opts.height ?? 320, MARGIN, processed.temporalType
+    processed.mode,
+    processed.labels,
+    processed.items.length,
+    processed.xDomain,
+    processed.yAxisDomain,
+    opts.width ?? 600,
+    opts.height ?? 320,
+    MARGIN,
+    processed.temporalType,
   );
-  const model = buildFountainRenderModel(processed.items, processed.mode, processed.temporalType, scales, colors, {
-    style: opts.style ?? "jet", frothLayers: 8, bloomExponent: 3, stemFraction: 0.08,
-    showDroplets: true, showMist: true, showTrendLine: true, highlightItems: [], maxDensity: processed.maxDensity,
-  });
+  const model = buildFountainRenderModel(
+    processed.items,
+    processed.mode,
+    processed.temporalType,
+    scales,
+    colors,
+    {
+      style: opts.style ?? "jet",
+      frothLayers: 8,
+      bloomExponent: 3,
+      stemFraction: 0.08,
+      showDroplets: true,
+      showMist: true,
+      showTrendLine: true,
+      highlightItems: [],
+      maxDensity: processed.maxDensity,
+    },
+  );
   return { processed, scales, model };
 }
 
 describe("fountain geometry (pure)", () => {
-  const plumeBase = { xCenter: 100, yApex: 50, yBase: 250, stemHalf: 6, crownDrift: 0, bloomExponent: 3 };
+  const plumeBase = {
+    xCenter: 100,
+    yApex: 50,
+    yBase: 250,
+    stemHalf: 6,
+    crownDrift: 0,
+    bloomExponent: 3,
+  };
 
   it("plume buildJetPath: valid finite path with an apex arc when blooming", () => {
     const d = buildJetPath({ ...plumeBase, bloomHalf: 40 });
@@ -114,7 +159,7 @@ describe("fountain render model", () => {
     ];
     const { model } = buildModel(data, { style: "jet" });
     const bias = (j: (typeof model.jets)[number]) =>
-      (j.hit.right - j.xCenter) - (j.xCenter - j.hit.left);
+      j.hit.right - j.xCenter - (j.xCenter - j.hit.left);
     const [wind, upright, right, left] = model.jets;
     expect(bias(upright)).toBeCloseTo(0, 5); // explicit 0 stands straight
     expect(bias(wind)).toBeGreaterThan(0); // no lean keeps the signature drift
@@ -126,7 +171,7 @@ describe("fountain render model", () => {
   it("plume stays upright when lean is absent", () => {
     const { model } = buildModel([{ label: "P", value: 100, spread: 20 }], { style: "plume" });
     const j = model.jets[0];
-    expect((j.hit.right - j.xCenter) - (j.xCenter - j.hit.left)).toBeCloseTo(0, 5);
+    expect(j.hit.right - j.xCenter - (j.xCenter - j.hit.left)).toBeCloseTo(0, 5);
   });
 
   it("trend slot width comes from the MIN date gap, so clustered dates do not collide", () => {
@@ -147,7 +192,9 @@ describe("mountFountainChart (jsdom)", () => {
   it("defaults to the jet style: a fraying froth column, no mist/droplets", () => {
     const { host, chart } = mount(snapshot);
     const safe = sanitizeForClassName("Jet d'Eau");
-    expect(host.querySelectorAll(`path.mv-fountain-jet[data-label-safe="${safe}"]`).length).toBeGreaterThan(1);
+    expect(
+      host.querySelectorAll(`path.mv-fountain-jet[data-label-safe="${safe}"]`).length,
+    ).toBeGreaterThan(1);
     expect(host.querySelectorAll("path.mv-fountain-mist").length).toBe(0);
     expect(host.querySelectorAll("path.mv-fountain-droplet").length).toBe(0);
     chart.destroy();
@@ -165,7 +212,11 @@ describe("mountFountainChart (jsdom)", () => {
   });
 
   it("can disable droplets and mist", () => {
-    const { host, chart } = mount(snapshot, { style: "plume", showDroplets: false, showMist: false });
+    const { host, chart } = mount(snapshot, {
+      style: "plume",
+      showDroplets: false,
+      showMist: false,
+    });
     expect(host.querySelectorAll("path.mv-fountain-droplet").length).toBe(0);
     expect(host.querySelectorAll("path.mv-fountain-mist").length).toBe(0);
     chart.destroy();
@@ -263,17 +314,31 @@ describe("mountFountainChart (jsdom)", () => {
     const h2 = document.createElement("div");
     document.body.appendChild(h2);
     mountFountainChart(h2, {
-      dataSet: [{ label: "A", value: 10, spread: 1 }, { label: "A", value: 20, spread: 2 }],
-      width: 600, height: 300, onDataWarning: (w) => (dup = w),
+      dataSet: [
+        { label: "A", value: 10, spread: 1 },
+        { label: "A", value: 20, spread: 2 },
+      ],
+      width: 600,
+      height: 300,
+      onDataWarning: (w) => (dup = w),
     });
     expect(dup.some((w) => w.type === "duplicate-label")).toBe(true);
     h2.remove();
 
     let crowd: Array<{ type: string }> = [];
-    const many: FountainDataItem[] = Array.from({ length: 12 }, (_, i) => ({ label: `c${i}`, value: 10 + i, spread: 2 }));
+    const many: FountainDataItem[] = Array.from({ length: 12 }, (_, i) => ({
+      label: `c${i}`,
+      value: 10 + i,
+      spread: 2,
+    }));
     const h3 = document.createElement("div");
     document.body.appendChild(h3);
-    mountFountainChart(h3, { dataSet: many, width: 600, height: 300, onDataWarning: (w) => (crowd = w) });
+    mountFountainChart(h3, {
+      dataSet: many,
+      width: 600,
+      height: 300,
+      onDataWarning: (w) => (crowd = w),
+    });
     expect(crowd.some((w) => w.type === "layout-overflow")).toBe(true);
     h3.remove();
   });
@@ -298,7 +363,7 @@ describe("snapshot-mode band axis thinning", () => {
     }));
     const { host, chart } = mount(many, { width: 700 });
     const texts = Array.from(host.querySelectorAll(".mv-x-axis-band text")).map(
-      (t) => t.textContent ?? ""
+      (t) => t.textContent ?? "",
     );
     expect(texts.length).toBeGreaterThanOrEqual(2);
     expect(texts.length).toBeLessThan(40);
@@ -316,7 +381,7 @@ describe("snapshot-mode band axis thinning", () => {
     }));
     const { host, chart } = mount(few, { width: 700 });
     const texts = Array.from(host.querySelectorAll(".mv-x-axis-band text")).map(
-      (t) => t.textContent ?? ""
+      (t) => t.textContent ?? "",
     );
     expect(texts).toEqual(["J1", "J2", "J3", "J4"]);
     chart.destroy();

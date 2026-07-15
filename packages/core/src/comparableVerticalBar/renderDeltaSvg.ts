@@ -28,7 +28,10 @@ function glyphPath(direction: ComparableDeltaDirection, cx: number, cy: number):
   return `M${cx - GLYPH_R},${cy - half} L${cx + GLYPH_R},${cy - half} L${cx + GLYPH_R},${cy + half} L${cx - GLYPH_R},${cy + half} Z`;
 }
 
-export function renderComparableVerticalDeltaSvg(svg: SVGElement, bars: ComparableVerticalBarModel[]): void {
+export function renderComparableVerticalDeltaSvg(
+  svg: SVGElement,
+  bars: ComparableVerticalBarModel[],
+): void {
   for (const bar of bars) {
     const { delta } = bar;
     if (!delta) continue;
@@ -42,7 +45,7 @@ export function renderComparableVerticalDeltaSvg(svg: SVGElement, bars: Comparab
         class: `mv-delta-arrow mv-delta-arrow--${delta.direction}`,
         d: glyphPath(delta.direction, delta.x, delta.y),
         fill: delta.color,
-      })
+      }),
     );
     const text = svgEl("text", {
       class: "mv-delta-label",

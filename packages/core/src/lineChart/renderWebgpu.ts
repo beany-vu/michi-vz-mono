@@ -31,7 +31,7 @@ export function drawLineWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: LineRenderModel,
-  o: LineWebgpuOptions
+  o: LineWebgpuOptions,
 ): boolean {
   const labels = model.series.map((s) => s.label);
   const fallback = new Map(model.series.map((s) => [s.label, s.color]));
@@ -40,7 +40,7 @@ export function drawLineWebgpu(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("path", "line", "stroke"),
-    "stroke"
+    "stroke",
   );
 
   const batch = emptyBatch();

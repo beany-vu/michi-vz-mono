@@ -59,7 +59,9 @@ async function loadBert(modelId?: string) {
   extractor = null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mod: any = await import(/* @vite-ignore */ "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3");
+    const mod: any = await import(
+      /* @vite-ignore */ "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3"
+    );
     mod.env.allowLocalModels = false;
     extractor = await mod.pipeline("feature-extraction", want, {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

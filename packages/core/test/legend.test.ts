@@ -63,7 +63,7 @@ describe("LineChart context.legendData (jsdom)", () => {
     expect(ctx?.legendData?.[0].dataLabelSafe).toBe(sanitizeForClassName("Alpha One"));
 
     const lineSafes = Array.from(host.querySelectorAll("path.line")).map((l) =>
-      l.getAttribute("data-label-safe")
+      l.getAttribute("data-label-safe"),
     );
     const legendSafes = ctx?.legendData?.map((i) => i.dataLabelSafe) ?? [];
     for (const s of lineSafes) expect(legendSafes).toContain(s);

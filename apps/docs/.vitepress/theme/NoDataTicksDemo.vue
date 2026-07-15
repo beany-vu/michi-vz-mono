@@ -81,8 +81,8 @@ onBeforeUnmount(() => {
     </label>
     <div class="nd-stage michi-vz-calm" ref="host"></div>
     <p class="nd-hint">
-      Toggle it on: the empty months appear as <em>faded</em> ticks. Hover one to see its
-      "no data" tooltip. First and last periods are always kept, either way.
+      Toggle it on: the empty months appear as <em>faded</em> ticks. Hover one to see its "no data"
+      tooltip. First and last periods are always kept, either way.
     </p>
   </div>
 </template>

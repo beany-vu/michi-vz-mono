@@ -23,7 +23,14 @@ export interface LineInteractions {
   onClick: (label: string, ev: MouseEvent) => void;
 }
 
-function pointMark(shape: Shape, x: number, y: number, color: string, safe: string, label: string): SVGElement {
+function pointMark(
+  shape: Shape,
+  x: number,
+  y: number,
+  color: string,
+  safe: string,
+  label: string,
+): SVGElement {
   if (shape === "square") {
     const dims = getSquareDimensions();
     return svgEl("rect", {
@@ -64,7 +71,12 @@ function pointMark(shape: Shape, x: number, y: number, color: string, safe: stri
   });
 }
 
-function renderSeries(g: SVGGElement, s: LineSeriesModel, o: LineSvgOptions, ia: LineInteractions): void {
+function renderSeries(
+  g: SVGGElement,
+  s: LineSeriesModel,
+  o: LineSvgOptions,
+  ia: LineInteractions,
+): void {
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
   g.style.opacity = s.dimmed ? "0.05" : "1";
   g.style.transition = transition;
@@ -102,7 +114,7 @@ function renderSeries(g: SVGGElement, s: LineSeriesModel, o: LineSvgOptions, ia:
         stroke: cfg.stroke ?? s.color,
         "stroke-width": cfg.strokeWidth ?? 2.5,
         "stroke-dasharray": cfg.strokeDasharray ?? "4,4",
-      })
+      }),
     );
   }
 
@@ -137,7 +149,7 @@ export function renderLineSvg(
   parent: SVGElement,
   model: LineRenderModel,
   o: LineSvgOptions,
-  ia: LineInteractions
+  ia: LineInteractions,
 ): void {
   const root = svgEl("g", { class: "line-chart-content" });
   for (const s of model.series) {

@@ -95,7 +95,7 @@ function resolve(p: ChoroplethMapChartProps): Resolved {
 export function mountChoroplethMapChart(
   host: HTMLElement,
   initial: ChoroplethMapChartProps,
-  opts?: MountOptions<ChoroplethMapChartProps>
+  opts?: MountOptions<ChoroplethMapChartProps>,
 ): ChartInstance<ChoroplethMapChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-choropleth-map-chart");
@@ -163,8 +163,10 @@ export function mountChoroplethMapChart(
   };
 
   const showTooltip = (mark: ChoroplethFeatureMark, ev: MouseEvent): void => {
-    const payload: ChoroplethDataItem | { id: string; name?: string } =
-      mark.matched ?? { id: mark.id, name: mark.name };
+    const payload: ChoroplethDataItem | { id: string; name?: string } = mark.matched ?? {
+      id: mark.id,
+      name: mark.name,
+    };
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(payload)
       : `<strong>${mark.name ?? mark.id}</strong><br/>${
@@ -280,7 +282,7 @@ export function mountChoroplethMapChart(
       props.colors,
       props.colorsMapping,
       props.colorScale,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -295,7 +297,7 @@ export function mountChoroplethMapChart(
       props.projection ?? DEFAULT_PROJECTION,
       props.projectionConfig,
       innerWidth,
-      innerHeight
+      innerHeight,
     );
 
     model = buildChoroplethRenderModel(features, matchFor, projection, colors, {
@@ -334,7 +336,7 @@ export function mountChoroplethMapChart(
               tooltip.classList.add("sticky");
               showTooltip(mark, ev);
             },
-          }
+          },
         );
         removeCanvas();
         removeWebgpuCanvas();

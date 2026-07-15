@@ -77,7 +77,7 @@ interface Resolved {
 }
 
 function defaultDeltaFormatter(
-  p: ComparableBarChartProps
+  p: ComparableBarChartProps,
 ): (diff: number, d: ComparableBarDataPoint) => string {
   const fmt = p.xAxisFormat ?? defaultNumberFormatter(p.locale);
   return (diff) => {
@@ -127,15 +127,27 @@ function resolve(p: ComparableBarChartProps): Resolved {
 function checkData(dataSet: ComparableBarDataPoint[]): DataWarning[] {
   const warnings: DataWarning[] = [];
   if (!dataSet || dataSet.length === 0) {
-    warnings.push({ type: "empty-dataset", message: "ComparableHorizontalBar received an empty dataSet." });
+    warnings.push({
+      type: "empty-dataset",
+      message: "ComparableHorizontalBar received an empty dataSet.",
+    });
     return warnings;
   }
   const seen = new Set<string>();
   for (const d of dataSet) {
     if (!Number.isFinite(d.valueBased) || !Number.isFinite(d.valueCompared)) {
-      warnings.push({ type: "non-finite-value", message: `"${d.label}" has a non-finite value.`, label: d.label });
+      warnings.push({
+        type: "non-finite-value",
+        message: `"${d.label}" has a non-finite value.`,
+        label: d.label,
+      });
     }
-    if (seen.has(d.label)) warnings.push({ type: "duplicate-label", message: `Duplicate label "${d.label}".`, label: d.label });
+    if (seen.has(d.label))
+      warnings.push({
+        type: "duplicate-label",
+        message: `Duplicate label "${d.label}".`,
+        label: d.label,
+      });
     seen.add(d.label);
   }
   return warnings;
@@ -144,7 +156,7 @@ function checkData(dataSet: ComparableBarDataPoint[]): DataWarning[] {
 export function mountComparableHorizontalBarChart(
   host: HTMLElement,
   initial: ComparableBarChartProps,
-  opts?: MountOptions<ComparableBarChartProps>
+  opts?: MountOptions<ComparableBarChartProps>,
 ): ChartInstance<ComparableBarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-comparable-bar-chart");
@@ -224,7 +236,7 @@ export function mountComparableHorizontalBarChart(
   const showTooltip = (
     d: ComparableBarDataPoint,
     ev: MouseEvent,
-    type?: "based" | "compared"
+    type?: "based" | "compared",
   ): void => {
     // Legacy 3-arg contract: (datum, dataSet, hovered sub-bar type).
     const htmlStr = baseProps.tooltipFormatter
@@ -241,7 +253,11 @@ export function mountComparableHorizontalBarChart(
     tooltip.style.left = `${x + tw + 10 > r.width ? Math.max(0, x - tw - 10) : x + 10}px`;
     tooltip.style.top = `${y - th - 10 < 0 ? y + 10 : y - th - 10}px`;
   };
-  const subBarTypeAt = (bar: ComparableBarModel, x: number, y: number): "based" | "compared" | undefined => {
+  const subBarTypeAt = (
+    bar: ComparableBarModel,
+    x: number,
+    y: number,
+  ): "based" | "compared" | undefined => {
     // compared is drawn in front; prefer it when the two overlap (overlay layout).
     // In grouped layout, based/compared occupy distinct y halves, so this also
     // naturally attributes a hover to the half the pointer is actually over.
@@ -346,7 +362,7 @@ export function mountComparableHorizontalBarChart(
       tlData.dataSet,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -373,7 +389,7 @@ export function mountComparableHorizontalBarChart(
     const widestLabel = labels.reduce((m, l) => Math.max(m, measureLabelWidth(yFormat(l))), 0);
     const autoLeft = Math.min(
       Math.round(r.width * MAX_LEFT_FRACTION),
-      Math.max(r.margin.left, Math.ceil(widestLabel + LEFT_LABEL_PAD))
+      Math.max(r.margin.left, Math.ceil(widestLabel + LEFT_LABEL_PAD)),
     );
     const effMargin: Margin =
       props.margin?.left != null || autoLeft === r.margin.left
@@ -390,7 +406,7 @@ export function mountComparableHorizontalBarChart(
       r.height,
       effMargin,
       r.padding,
-      r.maxBarHeight
+      r.maxBarHeight,
     );
     model = buildComparableRenderModel(points, scales, colors, {
       highlightItems: props.highlightItems ?? [],
@@ -449,7 +465,11 @@ export function mountComparableHorizontalBarChart(
               if (sticky) return;
               const b = rowByLabel.get(label);
               if (!b) return;
-              showTooltip(b.raw, (pointer as MouseEvent) ?? labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
+              showTooltip(
+                b.raw,
+                (pointer as MouseEvent) ?? labelTooltipEvent(rowStartX(label), rowCenterY),
+                "compared",
+              );
               props.onHighlightItem?.([label]);
             },
             onLeave: () => {
@@ -462,7 +482,11 @@ export function mountComparableHorizontalBarChart(
               if (!b) return;
               sticky = true;
               tooltip.classList.add("sticky");
-              showTooltip(b.raw, (pointer as MouseEvent) ?? labelTooltipEvent(rowStartX(label), rowCenterY), "compared");
+              showTooltip(
+                b.raw,
+                (pointer as MouseEvent) ?? labelTooltipEvent(rowStartX(label), rowCenterY),
+                "compared",
+              );
             },
           }
         : undefined,
@@ -473,7 +497,10 @@ export function mountComparableHorizontalBarChart(
     // Backported from ComparableVerticalBarChart's native implementation - this
     // SVG path previously ignored patternsMapping despite the prop's doc-comment
     // promising it (canvas mode already honoured it via drawComparableCanvas).
-    const patternIds = r.renderer === "svg" ? ensurePatternDefs(svg, props.patternsMapping) : new Map<string, string>();
+    const patternIds =
+      r.renderer === "svg"
+        ? ensurePatternDefs(svg, props.patternsMapping)
+        : new Map<string, string>();
 
     if (r.renderer === "svg") {
       renderComparableSvg(
@@ -500,12 +527,13 @@ export function mountComparableHorizontalBarChart(
             tooltip.classList.add("sticky");
             showTooltip(bar.raw, ev, type);
           },
-        }
+        },
       );
     }
 
     if (r.renderer === "webgpu") {
-      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("comparableHorizontalBarChart-webgpu-canvas");
+      if (!webgpuCanvas)
+        webgpuCanvas = makeLayerCanvas("comparableHorizontalBarChart-webgpu-canvas");
       const ready = drawComparableBarWebgpu(webgpuCanvas, svg, model, {
         width: r.width,
         height: r.height,
@@ -533,7 +561,7 @@ export function mountComparableHorizontalBarChart(
             patternsMapping: props.patternsMapping,
           },
           // Re-render once a hatch pattern image finishes loading so it paints.
-          () => render()
+          () => render(),
         );
       }
     } else if (r.renderer === "canvas") {
@@ -551,7 +579,7 @@ export function mountComparableHorizontalBarChart(
           patternsMapping: props.patternsMapping,
         },
         // Re-render once a hatch pattern image finishes loading so it paints.
-        () => render()
+        () => render(),
       );
     } else {
       removeCanvas();

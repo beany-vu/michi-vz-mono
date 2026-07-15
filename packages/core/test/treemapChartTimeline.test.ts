@@ -37,16 +37,16 @@ function mount(extra: Partial<TreemapChartProps> = {}, ticker?: ManualTicker) {
   const chart = mountTreemapChart(
     host,
     { dataSet: years, width: 600, height: 400, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
 
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("rect.tile[data-leaf]")).map(
-      (e) => e.getAttribute("data-leaf")!
-    )
+    Array.from(host.querySelectorAll("rect.tile[data-leaf]")).map((e) =>
+      e.getAttribute("data-leaf")!,
+    ),
   );
 
 describe("treemap chart timeline (off by default)", () => {
@@ -112,10 +112,7 @@ describe("treemap chart timeline control UI", () => {
 describe("treemap chart timeline value tweening (hierarchy recursion)", () => {
   it("mid-tween, the shared 'Coffee' leaf's value sits strictly between its two periods' values", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: { easing: "linear", tweenMs: 400 } },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: { easing: "linear", tweenMs: 400 } }, ticker);
     const tl = chart.timeline!()!;
     tl.stepForward(); // 2018 -> 2019, starts the tween from the on-screen 2018 frame
     ticker.tick(200); // halfway through the 400ms tween
@@ -129,10 +126,7 @@ describe("treemap chart timeline value tweening (hierarchy recursion)", () => {
 
   it("precedence: timeline wins over progressiveDraw when both are set (no reveal clip)", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: true, progressiveDraw: true },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: true, progressiveDraw: true }, ticker);
     expect(host.querySelector("clipPath rect")).toBeNull();
     chart.destroy();
     host.remove();

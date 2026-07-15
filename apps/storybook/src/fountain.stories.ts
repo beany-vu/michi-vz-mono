@@ -17,7 +17,10 @@ const meta: Meta = {
   render: (args) => renderElement("michi-vz-fountain-chart", args),
   argTypes: {
     renderer: { control: "inline-radio", options: ["svg", "canvas"] },
-    xAxisDataType: { control: "inline-radio", options: ["band", "date_annual", "date_monthly", "number"] },
+    xAxisDataType: {
+      control: "inline-radio",
+      options: ["band", "date_annual", "date_monthly", "number"],
+    },
     frothLayers: { control: { type: "range", min: 1, max: 20, step: 1 } },
     bloomExponent: { control: { type: "range", min: 1, max: 8, step: 0.5 } },
     showDroplets: { control: "boolean" },
@@ -53,7 +56,14 @@ export const TightColumn: Story = {
 
 /** No droplets, no mist - minimal look. */
 export const Minimal: Story = {
-  args: { ...snapshot, width: 820, height: 500, showDroplets: false, showMist: false, renderer: "svg" },
+  args: {
+    ...snapshot,
+    width: 820,
+    height: 500,
+    showDroplets: false,
+    showMist: false,
+    renderer: "svg",
+  },
 };
 
 /** Same apex, three plumes: the "same number, three certainties" field-guide read. */

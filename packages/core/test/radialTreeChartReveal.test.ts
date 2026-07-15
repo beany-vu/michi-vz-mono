@@ -24,13 +24,17 @@ const dataSet: RadialTreeNode[] = [
   },
 ];
 
-function mount(extra: Partial<RadialTreeChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<RadialTreeChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountRadialTreeChart(
     host,
     { dataSet, title: "Demo", width: WIDTH, height: HEIGHT, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -70,7 +74,7 @@ describe("RadialTreeChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(rectWidth(host)).toBe(0);
     let prev = rectWidth(host);
@@ -98,7 +102,7 @@ describe("RadialTreeChart progressiveDraw SVG reveal", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);

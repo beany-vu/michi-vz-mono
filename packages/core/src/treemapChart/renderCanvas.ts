@@ -26,7 +26,7 @@ export function drawTreemapCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: TreemapRenderModel,
-  o: TreemapCanvasOptions
+  o: TreemapCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -40,13 +40,14 @@ export function drawTreemapCanvas(
   }
 
   const fallback = new Map<string, string>();
-  for (const leaf of model.leaves) if (!fallback.has(leaf.colorKey)) fallback.set(leaf.colorKey, leaf.fill);
+  for (const leaf of model.leaves)
+    if (!fallback.has(leaf.colorKey)) fallback.set(leaf.colorKey, leaf.fill);
   const fillColors = resolveMarkColors(
     svg,
     model.groupKeys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "tile", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;
@@ -114,7 +115,7 @@ export function drawTreemapCanvas(
         ctx.fillText(
           fitText(model.tileValueLabelFormatter(d.value, fraction, d), d.w),
           d.x + 4,
-          secondLineY
+          secondLineY,
         );
       }
     }

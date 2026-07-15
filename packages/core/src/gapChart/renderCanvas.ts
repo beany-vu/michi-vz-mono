@@ -21,7 +21,7 @@ function roundRect(
   y: number,
   w: number,
   h: number,
-  r: number
+  r: number,
 ): void {
   if (typeof ctx.roundRect === "function") {
     ctx.beginPath();
@@ -44,7 +44,7 @@ function drawMarker(
   x: number,
   cy: number,
   color: string,
-  squareRadius: number
+  squareRadius: number,
 ): void {
   ctx.fillStyle = color;
   if (shape === "square") {
@@ -69,7 +69,7 @@ export function drawGapCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: GapRenderModel,
-  o: GapCanvasOptions
+  o: GapCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return; // jsdom / no 2D context
@@ -90,21 +90,29 @@ export function drawGapCanvas(
     labels,
     (l) => gapFallback.get(l) || "transparent",
     makeSimpleProbe("rect", "gap-bar", "fill"),
-    "fill"
+    "fill",
   );
   const v1Colors = resolveMarkColors(
     svg,
     labels,
     (l) => v1Fallback.get(l) || "transparent",
-    makeSimpleProbe(o.shapeValue1 === "square" ? "rect" : "path", "gap-marker value1-marker", "fill"),
-    "fill"
+    makeSimpleProbe(
+      o.shapeValue1 === "square" ? "rect" : "path",
+      "gap-marker value1-marker",
+      "fill",
+    ),
+    "fill",
   );
   const v2Colors = resolveMarkColors(
     svg,
     labels,
     (l) => v2Fallback.get(l) || "transparent",
-    makeSimpleProbe(o.shapeValue2 === "square" ? "rect" : "path", "gap-marker value2-marker", "fill"),
-    "fill"
+    makeSimpleProbe(
+      o.shapeValue2 === "square" ? "rect" : "path",
+      "gap-marker value2-marker",
+      "fill",
+    ),
+    "fill",
   );
 
   for (const el of model.elements) {
@@ -136,8 +144,22 @@ export function drawGapCanvas(
     // markers
     ctx.save();
     ctx.globalAlpha = markerOpacity;
-    drawMarker(ctx, o.shapeValue1, value1X, center, v1Colors.get(label) || el.value1Color, o.squareRadius);
-    drawMarker(ctx, o.shapeValue2, value2X, center, v2Colors.get(label) || el.value2Color, o.squareRadius);
+    drawMarker(
+      ctx,
+      o.shapeValue1,
+      value1X,
+      center,
+      v1Colors.get(label) || el.value1Color,
+      o.squareRadius,
+    );
+    drawMarker(
+      ctx,
+      o.shapeValue2,
+      value2X,
+      center,
+      v2Colors.get(label) || el.value2Color,
+      o.squareRadius,
+    );
     ctx.restore();
   }
 }

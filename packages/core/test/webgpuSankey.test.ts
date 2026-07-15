@@ -10,12 +10,7 @@ import type { SankeyChartProps, SankeyNodeItem, SankeyLinkItem } from "../src/ty
 // crucially the canvas-mode INTERACTION layer (host hit-test) is reused.
 // Real GPU pixel output is not testable headless; it is verified in-browser.
 
-const nodes: SankeyNodeItem[] = [
-  { id: "France" },
-  { id: "Germany" },
-  { id: "EU" },
-  { id: "Asia" },
-];
+const nodes: SankeyNodeItem[] = [{ id: "France" }, { id: "Germany" }, { id: "EU" }, { id: "Asia" }];
 const links: SankeyLinkItem[] = [
   { source: "France", target: "EU", value: 40 },
   { source: "France", target: "Asia", value: 20 },

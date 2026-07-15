@@ -17,7 +17,7 @@ describe("interpolateRows", () => {
 
   it("lerps numeric fields of matched rows at t", () => {
     const rows = interpolateRows(from, to, 0.5);
-    const alpha = rows.find(r => r.label === "Alpha")!;
+    const alpha = rows.find((r) => r.label === "Alpha")!;
     expect(alpha.x).toBeCloseTo(15, 6);
     expect(alpha.y).toBeCloseTo(150, 6);
     expect(alpha.d).toBeCloseTo(6, 6);
@@ -25,22 +25,22 @@ describe("interpolateRows", () => {
 
   it("never lerps the date field (keeps the target period)", () => {
     const rows = interpolateRows(from, to, 0.5);
-    expect(rows.find(r => r.label === "Alpha")!.date).toBe("2019");
+    expect(rows.find((r) => r.label === "Alpha")!.date).toBe("2019");
   });
 
   it("returns target rows untouched at t = 1", () => {
     const rows = interpolateRows(from, to, 1);
-    expect(rows.find(r => r.label === "Alpha")).toEqual(to[0]);
+    expect(rows.find((r) => r.label === "Alpha")).toEqual(to[0]);
   });
 
   it("includes entering rows at their target values", () => {
     const rows = interpolateRows(from, to, 0.25);
-    expect(rows.find(r => r.label === "New")).toEqual(to[1]);
+    expect(rows.find((r) => r.label === "New")).toEqual(to[1]);
   });
 
   it("drops exiting rows (present only in `from`)", () => {
     const rows = interpolateRows(from, to, 0.25);
-    expect(rows.find(r => r.label === "Gone")).toBeUndefined();
+    expect(rows.find((r) => r.label === "Gone")).toBeUndefined();
   });
 
   it("recurses into children arrays, matching nested nodes by label (treemap hierarchies)", () => {
@@ -69,10 +69,10 @@ describe("interpolateRows", () => {
     const rows = interpolateRows(fromTree, toTree, 0.5) as typeof toTree;
     const group = rows[0];
     expect(group.value).toBeCloseTo(150, 6);
-    const leafA = group.children.find(c => c.label === "Leaf A")!;
+    const leafA = group.children.find((c) => c.label === "Leaf A")!;
     expect(leafA.value).toBeCloseTo(90, 6); // 60 -> 120 midway
-    expect(group.children.find(c => c.label === "Leaf C")!.value).toBe(80); // entering: target values
-    expect(group.children.find(c => c.label === "Leaf B")).toBeUndefined(); // exiting: dropped
+    expect(group.children.find((c) => c.label === "Leaf C")!.value).toBe(80); // entering: target values
+    expect(group.children.find((c) => c.label === "Leaf B")).toBeUndefined(); // exiting: dropped
   });
 });
 
@@ -87,7 +87,7 @@ describe("scatter timeline interpolation (engine level)", () => {
   function mount(
     extra: Partial<ScatterChartProps> = {},
     ticker?: ManualTicker,
-    motion?: MotionPreference
+    motion?: MotionPreference,
   ) {
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -103,7 +103,7 @@ describe("scatter timeline interpolation (engine level)", () => {
         xAxisDomain: [0, 5],
         ...extra,
       },
-      { ticker, motion }
+      { ticker, motion },
     );
     return { host, chart };
   }
@@ -116,10 +116,7 @@ describe("scatter timeline interpolation (engine level)", () => {
 
   it("tweens between periods: mid-tween position is strictly between the endpoints", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: { tweenMs: 400, easing: "linear" } },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: { tweenMs: 400, easing: "linear" } }, ticker);
     const startCx = alphaCx(host);
     chart.timeline!()!.stepForward();
     // Tween begins at the old position.
@@ -162,10 +159,7 @@ describe("scatter timeline interpolation (engine level)", () => {
 
   it("a seek during a running tween lands on the sought period", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount(
-      { timeline: { tweenMs: 400, easing: "linear" } },
-      ticker
-    );
+    const { host, chart } = mount({ timeline: { tweenMs: 400, easing: "linear" } }, ticker);
     const tl = chart.timeline!()!;
     tl.stepForward();
     ticker.tick(100);

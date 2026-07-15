@@ -94,7 +94,7 @@ function resolve(p: VerticalStackBarChartProps): Resolved {
 export function mountVerticalStackBarChart(
   host: HTMLElement,
   initial: VerticalStackBarChartProps,
-  opts?: MountOptions<VerticalStackBarChartProps>
+  opts?: MountOptions<VerticalStackBarChartProps>,
 ): ChartInstance<VerticalStackBarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-vertical-stack-bar-chart");
@@ -209,7 +209,7 @@ export function mountVerticalStackBarChart(
         webgpuCanvas,
         svg,
         { ...model, highlightSet: new Set(keys) },
-        { width: rr.width, height: rr.height }
+        { width: rr.width, height: rr.height },
       );
     } else if (canvas) {
       drawStackCanvas(canvas, svg, model, {
@@ -316,7 +316,7 @@ export function mountVerticalStackBarChart(
       orderedKeys,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -353,7 +353,7 @@ export function mountVerticalStackBarChart(
     if (axis.mode === "rotated") {
       const maxLabelWidth = axis.tickValues.reduce(
         (m, v) => Math.max(m, measureLabelWidth(xFormat(v))),
-        0
+        0,
       );
       // 25 (axis offset) + 14 (label translate) + label·sin45 + 12 (descender pad)
       const required = Math.ceil(25 + 14 + maxLabelWidth * Math.SQRT1_2 + 12);
@@ -431,7 +431,7 @@ export function mountVerticalStackBarChart(
               tooltip.classList.add("sticky");
               showTooltip(rect, ev);
             },
-          }
+          },
         );
       }
 
@@ -527,7 +527,11 @@ export function mountVerticalStackBarChart(
       endPx: r.width,
       canvasRedraw: canvasLayer
         ? (x) =>
-            drawStackCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+            drawStackCanvas(canvasLayer, svg, model!, {
+              width: r.width,
+              height: r.height,
+              revealX: x,
+            })
         : undefined,
     });
 
@@ -536,7 +540,10 @@ export function mountVerticalStackBarChart(
     // same reveal clip progressiveDraw uses. Data + getContext() stay full.
     if (r.timeline && dataState !== "nodata" && r.renderer !== "webgpu") {
       const periods: CumulativePeriod[] = dates
-        .map((d) => ({ period: d, px: (scales.xScale(d) ?? margin.left) + scales.xScale.bandwidth() }))
+        .map((d) => ({
+          period: d,
+          px: (scales.xScale(d) ?? margin.left) + scales.xScale.bandwidth(),
+        }))
         .sort((a, b) => a.px - b.px);
       cumTl.afterRender(r.timeline, {
         host,
@@ -549,7 +556,11 @@ export function mountVerticalStackBarChart(
         endPx: r.width,
         canvasRedraw: canvasLayer
           ? (x) =>
-              drawStackCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+              drawStackCanvas(canvasLayer, svg, model!, {
+                width: r.width,
+                height: r.height,
+                revealX: x,
+              })
           : undefined,
       });
     } else {

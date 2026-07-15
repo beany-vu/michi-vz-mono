@@ -38,10 +38,7 @@ import {
 import { defaultTicker } from "../animation/ticker";
 import { defaultMotionPreference } from "../animation/reducedMotion";
 import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeline";
-import {
-  createCumulativeTimeline,
-  type CumulativePeriod,
-} from "../animation/cumulativeTimeline";
+import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
 import { drawLineWebgpu } from "../lineChart/renderWebgpu";
@@ -94,7 +91,9 @@ interface Resolved {
   timeline: ResolvedTimeline | null;
 }
 
-function resolveSinglePointLine(v: LineChartProps["singlePointLine"]): SinglePointLineConfig | null {
+function resolveSinglePointLine(
+  v: LineChartProps["singlePointLine"],
+): SinglePointLineConfig | null {
   if (!v) return null;
   return v === true ? {} : v;
 }
@@ -127,7 +126,7 @@ function resolve(p: LineChartProps): Resolved {
 export function mountLineChart(
   host: HTMLElement,
   initial: LineChartProps,
-  opts?: MountOptions<LineChartProps>
+  opts?: MountOptions<LineChartProps>,
 ): ChartInstance<LineChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-line-chart");
@@ -214,13 +213,13 @@ export function mountLineChart(
   const SHARED_X_TOL = 1; // px: a series' point must sit AT the hovered column to be listed
   const defaultSharedTooltip = (
     xLabel: string,
-    entries: Array<{ label: string; value: number; color: string }>
+    entries: Array<{ label: string; value: number; color: string }>,
   ): string => {
     const rows = entries
       .map(
         (e) =>
           `<div style="margin-top:2px"><span style="display:inline-block;width:8px;height:8px;` +
-          `margin-right:6px;border-radius:2px;background:${e.color}"></span>${e.label}: ${e.value}</div>`
+          `margin-right:6px;border-radius:2px;background:${e.color}"></span>${e.label}: ${e.value}</div>`,
       )
       .join("");
     return `<strong>${xLabel}</strong>${rows}`;
@@ -419,7 +418,7 @@ export function mountLineChart(
       host,
       logHasNoPositiveValues ? { ...props, isNodata: true } : props,
       props.dataSet,
-      chrome
+      chrome,
     );
 
     svg.setAttribute("width", String(r.width));
@@ -430,7 +429,7 @@ export function mountLineChart(
       props.dataSet,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -448,7 +447,7 @@ export function mountLineChart(
       r.height,
       r.margin,
       xAxisDataType,
-      r.yAxisScale
+      r.yAxisScale,
     );
 
     // Build hit-test data from the FULL (undecimated) processed points.
@@ -463,17 +462,16 @@ export function mountLineChart(
     currentColors = colors.generatedColorsMapping;
 
     // Canvas/webgpu mode: LTTB-decimate each series to ~2 points/px before drawing.
-    const drawDataSet: LineDataItem[] =
-      isPainted(r.renderer)
-        ? processedDataSet.map((item) => {
-            const pxX = (d: DataPoint) => projectX(d, scales.xScale, xAxisDataType);
-            const span = item.series.length
-              ? Math.abs(pxX(item.series[item.series.length - 1]) - pxX(item.series[0]))
-              : 0;
-            const threshold = Math.max(3, Math.min(item.series.length, Math.round(span * 2)));
-            return { ...item, series: lttb(item.series, threshold, pxX, (d) => d.value) };
-          })
-        : processedDataSet;
+    const drawDataSet: LineDataItem[] = isPainted(r.renderer)
+      ? processedDataSet.map((item) => {
+          const pxX = (d: DataPoint) => projectX(d, scales.xScale, xAxisDataType);
+          const span = item.series.length
+            ? Math.abs(pxX(item.series[item.series.length - 1]) - pxX(item.series[0]))
+            : 0;
+          const threshold = Math.max(3, Math.min(item.series.length, Math.round(span * 2)));
+          return { ...item, series: lttb(item.series, threshold, pxX, (d) => d.value) };
+        })
+      : processedDataSet;
 
     const model = buildLineRenderModel(drawDataSet, scales, colors, {
       xAxisDataType,
@@ -498,12 +496,12 @@ export function mountLineChart(
       const periodTicks =
         xAxisDataType === "date_annual" || xAxisDataType === "date_monthly"
           ? Array.from(
-              new Set(props.dataSet.flatMap((row) => row.series.map((p) => String(p.date))))
+              new Set(props.dataSet.flatMap((row) => row.series.map((p) => String(p.date)))),
             )
               .map((d) => parseXValue(d, xAxisDataType))
               .sort(
                 (a, b) =>
-                  (a instanceof Date ? a.valueOf() : a) - (b instanceof Date ? b.valueOf() : b)
+                  (a instanceof Date ? a.valueOf() : a) - (b instanceof Date ? b.valueOf() : b),
               )
           : undefined;
       const plotW = r.width - r.margin.left - r.margin.right;
@@ -570,7 +568,7 @@ export function mountLineChart(
       const childG = svgEl("g", { class: "mv-svg-children" });
       const clean = DOMPurify.sanitize(
         `<svg xmlns="http://www.w3.org/2000/svg">${props.svgChildren}</svg>`,
-        { USE_PROFILES: { svg: true } }
+        { USE_PROFILES: { svg: true } },
       );
       const tmp = svgEl("g");
       tmp.innerHTML = clean;
@@ -607,7 +605,7 @@ export function mountLineChart(
             tooltip.classList.add("sticky");
             showTooltip(label, ev);
           },
-        }
+        },
       );
     }
 
@@ -619,8 +617,7 @@ export function mountLineChart(
     if (r.mouseLine && dataState !== "nodata") {
       mouseLine = svgEl("line", { class: "mv-mouse-line" }) as SVGLineElement;
       const cfg = r.mouseLine;
-      if (cfg.stroke !== undefined)
-        mouseLine.style.setProperty("--michi-vz-crosshair", cfg.stroke);
+      if (cfg.stroke !== undefined) mouseLine.style.setProperty("--michi-vz-crosshair", cfg.stroke);
       if (cfg.strokeWidth !== undefined)
         mouseLine.style.setProperty("--michi-vz-crosshair-width", String(cfg.strokeWidth));
       if (cfg.strokeDasharray !== undefined)
@@ -788,12 +785,12 @@ export function mountLineChart(
       if (r.renderer === "svg") {
         const tipGroup = tlTip ? installTipLabels(svg) : null;
         if (tipGroup && tlTip) {
-          onReveal = x => setTipLabels(tipGroup, computeTipLabels(hitData, colorOfTl, x, tlTip));
+          onReveal = (x) => setTipLabels(tipGroup, computeTipLabels(hitData, colorOfTl, x, tlTip));
         }
       } else if (canvas) {
         const layer = canvas;
         const fontFamily = props.fontFamily ?? "sans-serif";
-        tlCanvasRedraw = x =>
+        tlCanvasRedraw = (x) =>
           drawLineCanvas(layer, svg, model, {
             width: r.width,
             height: r.height,
@@ -816,8 +813,7 @@ export function mountLineChart(
         endPx: r.width,
         canvasRedraw: tlCanvasRedraw,
         onReveal,
-        startPeriod:
-          props.filter && props.filter.date !== "" ? props.filter.date : undefined,
+        startPeriod: props.filter && props.filter.date !== "" ? props.filter.date : undefined,
       });
     } else {
       cumTl.afterRender(null, {
@@ -842,7 +838,7 @@ export function mountLineChart(
       : props.dataSet.filter((d) => (d.series?.length ?? 0) > 0).map((d) => d.label);
     const legendData = buildLegendData({
       labels: legendLabels,
-      colorsMapping: skipDispatch ? props.colorsMapping ?? {} : colors.generatedColorsMapping,
+      colorsMapping: skipDispatch ? (props.colorsMapping ?? {}) : colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
       palette: props.colors,
     });
@@ -870,7 +866,8 @@ export function mountLineChart(
     if (annotations.length > 0) {
       renderAnnotationsSvg(svg, annotations, {
         yPx: (v) => scales.yScale(v),
-        xPx: (at) => (scales.xScale as (x: number | Date) => number)(parseXValue(at, xAxisDataType)),
+        xPx: (at) =>
+          (scales.xScale as (x: number | Date) => number)(parseXValue(at, xAxisDataType)),
         plot: {
           left: r.margin.left,
           right: r.width - r.margin.right,

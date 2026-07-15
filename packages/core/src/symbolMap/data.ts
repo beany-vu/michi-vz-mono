@@ -46,7 +46,7 @@ export function isValidCoordinate(lng: unknown, lat: unknown): boolean {
 
 export function processSymbolMapData(
   dataSet: SymbolMapDataItem[],
-  opts: { disabledItems?: string[]; radiusVisibleMin?: number } = {}
+  opts: { disabledItems?: string[]; radiusVisibleMin?: number } = {},
 ): ProcessedSymbolMap {
   const disabled = new Set(opts.disabledItems ?? []);
   const min = opts.radiusVisibleMin;

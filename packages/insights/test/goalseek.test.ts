@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  requiredGrowth,
-  requiredRunRate,
-  pacingToGoal,
-} from "../src/forecast/goalseek";
+import { requiredGrowth, requiredRunRate, pacingToGoal } from "../src/forecast/goalseek";
 
 describe("requiredGrowth", () => {
   it("finds the per-period multiplicative growth to a target", () => {

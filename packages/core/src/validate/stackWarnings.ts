@@ -5,7 +5,10 @@ import type { DataWarning, VerticalStackBarDataSet } from "../types";
 export function checkStackData(dataSet: VerticalStackBarDataSet[]): DataWarning[] {
   const warnings: DataWarning[] = [];
   if (!dataSet || dataSet.length === 0) {
-    warnings.push({ type: "empty-dataset", message: "VerticalStackBar received an empty dataSet." });
+    warnings.push({
+      type: "empty-dataset",
+      message: "VerticalStackBar received an empty dataSet.",
+    });
     return warnings;
   }
   for (const ds of dataSet) {

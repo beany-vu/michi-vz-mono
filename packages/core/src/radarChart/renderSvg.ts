@@ -19,7 +19,7 @@ export function renderRadarSvg(
   parent: SVGElement,
   model: RadarRenderModel,
   o: RadarSvgOptions,
-  ia: RadarInteractions
+  ia: RadarInteractions,
 ): void {
   // The grid (rings/spokes/axis labels) is the polar equivalent of cartesian axes,
   // so it is appended directly to `parent` - a SIBLING of `root`, not nested inside
@@ -41,22 +41,41 @@ export function renderRadarSvg(
         stroke: "var(--michi-vz-grid, lightgray)",
         "stroke-width": 1,
         "stroke-dasharray": "2 2",
-      })
+      }),
     );
   }
   for (const sp of g.spokes) {
     grid.appendChild(
-      svgEl("line", { x1: g.cx, y1: g.cy, x2: sp.x, y2: sp.y, stroke: "var(--michi-vz-grid, lightgray)", "stroke-width": 1 })
+      svgEl("line", {
+        x1: g.cx,
+        y1: g.cy,
+        x2: sp.x,
+        y2: sp.y,
+        stroke: "var(--michi-vz-grid, lightgray)",
+        "stroke-width": 1,
+      }),
     );
   }
   for (const lbl of g.axisLabels) {
-    const t = svgEl("text", { class: "mv-axis-label pole-label", x: lbl.x, y: lbl.y, "text-anchor": lbl.anchor, "dominant-baseline": "middle" });
+    const t = svgEl("text", {
+      class: "mv-axis-label pole-label",
+      x: lbl.x,
+      y: lbl.y,
+      "text-anchor": lbl.anchor,
+      "dominant-baseline": "middle",
+    });
     t.textContent = lbl.text;
     grid.appendChild(t);
   }
   // Radial (ring-value) labels along the top spoke.
   for (const rl of g.radialLabels) {
-    const t = svgEl("text", { class: "radial-label", x: rl.x, y: rl.y, "text-anchor": "middle", "dominant-baseline": "middle" });
+    const t = svgEl("text", {
+      class: "radial-label",
+      x: rl.x,
+      y: rl.y,
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+    });
     t.textContent = rl.text;
     grid.appendChild(t);
   }
@@ -88,7 +107,15 @@ export function renderRadarSvg(
     if (!s.dimmed) {
       for (const p of s.poles) {
         sg.appendChild(
-          svgEl("circle", { class: "radar-pole", "data-label": s.label, "data-label-safe": s.safe, cx: p.x, cy: p.y, r: 3, fill: s.color })
+          svgEl("circle", {
+            class: "radar-pole",
+            "data-label": s.label,
+            "data-label-safe": s.safe,
+            cx: p.x,
+            cy: p.y,
+            r: 3,
+            fill: s.color,
+          }),
         );
       }
     }

@@ -13,7 +13,7 @@ export function createStackScales(
   yDomain: [number, number],
   width: number,
   height: number,
-  margin: Margin
+  margin: Margin,
 ): StackScales {
   const xScale = scaleBand<string>()
     .domain(dates)

@@ -94,7 +94,7 @@ function resolve(p: SankeyChartProps): Resolved {
 export function mountSankeyChart(
   host: HTMLElement,
   initial: SankeyChartProps,
-  opts?: MountOptions<SankeyChartProps>
+  opts?: MountOptions<SankeyChartProps>,
 ): ChartInstance<SankeyChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-sankey-chart");
@@ -291,7 +291,7 @@ export function mountSankeyChart(
       processed.nodeKeys,
       props.colors,
       seededMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -310,7 +310,7 @@ export function mountSankeyChart(
         y1: r.height - r.margin.bottom,
         nodeWidth: r.nodeWidth,
         nodePadding: r.nodePadding,
-      }
+      },
     );
 
     model = buildSankeyRenderModel(laid, colors, {
@@ -350,7 +350,7 @@ export function mountSankeyChart(
               tooltip.classList.add("sticky");
               showTooltip(target, ev);
             },
-          }
+          },
         );
       }
 
@@ -391,7 +391,12 @@ export function mountSankeyChart(
         endPx: r.width,
         canvasRedraw:
           r.renderer === "canvas"
-            ? (x) => drawSankeyCanvas(canvas, svg, model!, { width: r.width, height: r.height, revealX: x })
+            ? (x) =>
+                drawSankeyCanvas(canvas, svg, model!, {
+                  width: r.width,
+                  height: r.height,
+                  revealX: x,
+                })
             : undefined,
       });
     } else {

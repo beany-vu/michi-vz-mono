@@ -17,15 +17,15 @@ export function defaultTicker(): Ticker {
   const hasPerf = typeof performance !== "undefined" && typeof performance.now === "function";
   if (hasRaf) {
     return {
-      request: cb => requestAnimationFrame(cb),
-      cancel: id => cancelAnimationFrame(id),
+      request: (cb) => requestAnimationFrame(cb),
+      cancel: (id) => cancelAnimationFrame(id),
       now: () => (hasPerf ? performance.now() : Date.now()),
     };
   }
   return {
-    request: cb =>
+    request: (cb) =>
       setTimeout(() => cb(hasPerf ? performance.now() : Date.now()), 16) as unknown as number,
-    cancel: id => clearTimeout(id as unknown as ReturnType<typeof setTimeout>),
+    cancel: (id) => clearTimeout(id as unknown as ReturnType<typeof setTimeout>),
     now: () => (hasPerf ? performance.now() : Date.now()),
   };
 }
@@ -48,7 +48,7 @@ export function createManualTicker(): ManualTicker {
       return id;
     },
     cancel(id) {
-      queue = queue.filter(entry => entry.id !== id);
+      queue = queue.filter((entry) => entry.id !== id);
     },
     now: () => time,
     tick(ms) {

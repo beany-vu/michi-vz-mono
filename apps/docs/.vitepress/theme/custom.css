@@ -325,7 +325,10 @@
   background: transparent;
   color: var(--mv-ink-2);
   cursor: pointer;
-  transition: color 0.16s, border-color 0.16s, background 0.16s;
+  transition:
+    color 0.16s,
+    border-color 0.16s,
+    background 0.16s;
 }
 .mv-chip:hover {
   border-color: var(--mv-ink-3);
@@ -395,7 +398,9 @@
   box-shadow: var(--mvc-shadow);
   color: var(--mvc-ink);
   text-decoration: none;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 /* breathing gold gradient border ring */
 .mv-card::before {
@@ -404,9 +409,17 @@
   inset: 0;
   border-radius: inherit;
   padding: 1.5px;
-  background: linear-gradient(90deg, var(--mvc-brick) 0%, #f0c040 33%, var(--mvc-brick) 66%, #f0c040 100%);
+  background: linear-gradient(
+    90deg,
+    var(--mvc-brick) 0%,
+    #f0c040 33%,
+    var(--mvc-brick) 66%,
+    #f0c040 100%
+  );
   background-size: 300% 100%;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -428,17 +441,23 @@
   outline-offset: 2px;
 }
 @keyframes mv-card-breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(178, 58, 46, 0.3), 0 0 0 0 rgba(240, 192, 64, 0);
+    box-shadow:
+      0 8px 20px rgba(178, 58, 46, 0.3),
+      0 0 0 0 rgba(240, 192, 64, 0);
   }
   50% {
     transform: translateY(-4px);
-    box-shadow: 0 14px 32px rgba(178, 58, 46, 0.46), 0 0 0 4px rgba(240, 192, 64, 0.2);
+    box-shadow:
+      0 14px 32px rgba(178, 58, 46, 0.46),
+      0 0 0 4px rgba(240, 192, 64, 0.2);
   }
 }
 @keyframes mv-border-sweep {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 0;
   }
   50% {
@@ -462,7 +481,11 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 16px);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0 1px,
+    transparent 1px 16px
+  );
   pointer-events: none;
 }
 .mv-crest-mark {
@@ -471,7 +494,9 @@
   width: 24px;
   height: 40px;
   color: var(--mvc-gold-bright);
-  transition: color 0.35s ease, filter 0.35s ease;
+  transition:
+    color 0.35s ease,
+    filter 0.35s ease;
 }
 .mv-card:hover .mv-crest-mark {
   color: #f8d24b;
@@ -550,7 +575,12 @@
   position: absolute;
   inset: 12px 14px 2px;
   border-radius: 3px;
-  background: linear-gradient(100deg, var(--vp-c-bg-soft) 30%, var(--mvc-line) 50%, var(--vp-c-bg-soft) 70%);
+  background: linear-gradient(
+    100deg,
+    var(--vp-c-bg-soft) 30%,
+    var(--mvc-line) 50%,
+    var(--vp-c-bg-soft) 70%
+  );
   background-size: 200% 100%;
   animation: mv-shimmer 1.3s linear infinite;
 }

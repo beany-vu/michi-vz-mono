@@ -28,23 +28,37 @@ export function drawComparableBarWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: ComparableRenderModel,
-  o: ComparableWebgpuOptions
+  o: ComparableWebgpuOptions,
 ): boolean {
   // Resolve sub-bar fill colours through the SAME dual nested probes canvas
   // mode uses (descendant consumer CSS like `.bar[data-label-safe="X"] .value-based`).
   const labels = model.bars.map((b) => b.label);
   const fb = (l: string) => model.bars.find((b) => b.label === l)?.color || "transparent";
   const fbBased = (l: string) => model.bars.find((b) => b.label === l)?.basedColor || "transparent";
-  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), ["fill", "stroke"]);
-  const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), ["fill", "stroke"]);
+  const basedColors = resolveMarkColors(svg, labels, fbBased, makeSubBarProbe("value-based"), [
+    "fill",
+    "stroke",
+  ]);
+  const comparedColors = resolveMarkColors(svg, labels, fb, makeSubBarProbe("value-compared"), [
+    "fill",
+    "stroke",
+  ]);
 
   const batch = emptyBatch();
   for (const bar of model.bars) {
     const groupAlpha = bar.dimmed ? 0.3 : 1;
     const parts = comparableDrawOrder(bar).map((type) =>
       type === "based"
-        ? { seg: bar.based, opacity: o.valueBasedOpacity, color: basedColors.get(bar.label) || bar.basedColor }
-        : { seg: bar.compared, opacity: o.valueComparedOpacity, color: comparedColors.get(bar.label) || bar.color }
+        ? {
+            seg: bar.based,
+            opacity: o.valueBasedOpacity,
+            color: basedColors.get(bar.label) || bar.basedColor,
+          }
+        : {
+            seg: bar.compared,
+            opacity: o.valueComparedOpacity,
+            color: comparedColors.get(bar.label) || bar.color,
+          },
     );
     for (const part of parts) {
       // transparent-skip: a consumer hides a sub-bar with fill:transparent.
@@ -56,7 +70,7 @@ export function drawComparableBarWebgpu(
         part.seg.y,
         part.seg.width,
         part.seg.height,
-        markColor(part.color, groupAlpha * part.opacity)
+        markColor(part.color, groupAlpha * part.opacity),
       );
     }
   }

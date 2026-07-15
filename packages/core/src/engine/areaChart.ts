@@ -97,7 +97,7 @@ interface HitRow {
 export function mountAreaChart(
   host: HTMLElement,
   initial: AreaChartProps,
-  opts?: MountOptions<AreaChartProps>
+  opts?: MountOptions<AreaChartProps>,
 ): ChartInstance<AreaChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-area-chart");
@@ -164,7 +164,10 @@ export function mountAreaChart(
   };
 
   // Hit-test: nearest row by x, then the key whose [y1,y0] band contains y.
-  const hitTest = (x: number, y: number): { row: AreaDataRow; key: string; rowX: number } | null => {
+  const hitTest = (
+    x: number,
+    y: number,
+  ): { row: AreaDataRow; key: string; rowX: number } | null => {
     if (hitRows.length === 0) return null;
     let nearest = hitRows[0];
     for (const h of hitRows) if (Math.abs(h.x - x) < Math.abs(nearest.x - x)) nearest = h;
@@ -182,13 +185,16 @@ export function mountAreaChart(
       const overTick = noDataTickNodes.find((n) => {
         const b = n.getBoundingClientRect();
         return (
-          ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom
+          ev.clientX >= b.left &&
+          ev.clientX <= b.right &&
+          ev.clientY >= b.top &&
+          ev.clientY <= b.bottom
         );
       });
       if (overTick) {
         const v = Number(overTick.getAttribute("data-mv-value"));
         tooltip.innerHTML = DOMPurify.sanitize(
-          baseProps.noDataTickTooltip ? baseProps.noDataTickTooltip(v) : "Data not available"
+          baseProps.noDataTickTooltip ? baseProps.noDataTickTooltip(v) : "Data not available",
         );
         tooltip.style.visibility = "visible";
         placeTooltip(host, tooltip, ev);
@@ -249,7 +255,7 @@ export function mountAreaChart(
       props.keys,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -268,7 +274,7 @@ export function mountAreaChart(
       r.margin,
       xAxisDataType,
       r.forcePercentageScale,
-      r.stackOffset
+      r.stackOffset,
     );
 
     const model = buildAreaRenderModel(stacked, scales, colors, {
@@ -286,7 +292,11 @@ export function mountAreaChart(
           hr = { x: areaProjectX(p.data, scales.xScale, xAxisDataType), row: p.data, bands: [] };
           rowMap.set(p.data, hr);
         }
-        hr.bands.push({ key: layer.key, y0: scales.yScale(p[0] || 0), y1: scales.yScale(p[1] || 0) });
+        hr.bands.push({
+          key: layer.key,
+          y0: scales.yScale(p[0] || 0),
+          y1: scales.yScale(p[1] || 0),
+        });
       }
     }
     hitRows = [...rowMap.values()];
@@ -311,7 +321,7 @@ export function mountAreaChart(
     const periodTicks =
       xAxisDataType === "date_annual" || xAxisDataType === "date_monthly"
         ? Array.from(new Set(props.series.map((s) => String(s.date)))).map((d) =>
-            parseXValue(d, xAxisDataType)
+            parseXValue(d, xAxisDataType),
           )
         : undefined;
     const plotW = r.width - r.margin.left - r.margin.right;
@@ -464,7 +474,12 @@ export function mountAreaChart(
       startPx: r.margin.left,
       endPx: r.width,
       canvasRedraw: canvasLayer
-        ? (x) => drawAreaCanvas(canvasLayer, svg, model, { width: r.width, height: r.height, revealX: x })
+        ? (x) =>
+            drawAreaCanvas(canvasLayer, svg, model, {
+              width: r.width,
+              height: r.height,
+              revealX: x,
+            })
         : undefined,
     });
 
@@ -490,7 +505,12 @@ export function mountAreaChart(
         startPx: r.margin.left,
         endPx: r.width,
         canvasRedraw: canvasLayer
-          ? (x) => drawAreaCanvas(canvasLayer, svg, model, { width: r.width, height: r.height, revealX: x })
+          ? (x) =>
+              drawAreaCanvas(canvasLayer, svg, model, {
+                width: r.width,
+                height: r.height,
+                revealX: x,
+              })
           : undefined,
       });
     } else {

@@ -19,7 +19,7 @@ export function drawBarBellWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: BarBellRenderModel,
-  o: BarBellWebgpuOptions
+  o: BarBellWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME probe canvas mode uses.
   const keys = [...new Set(model.segments.map((s) => s.key))];
@@ -29,7 +29,7 @@ export function drawBarBellWebgpu(
     keys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
 
   const batch = emptyBatch();
@@ -46,7 +46,7 @@ export function drawBarBellWebgpu(
         [seg.x + seg.width, seg.cy],
       ],
       model.barHeight,
-      c
+      c,
     );
   }
   for (const seg of model.segments) {

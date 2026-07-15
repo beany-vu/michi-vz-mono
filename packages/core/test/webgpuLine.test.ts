@@ -10,7 +10,10 @@ import type { LineChartProps, LineDataItem } from "../src/types";
 // crucially the canvas-mode INTERACTION layer (host hit-test) is reused.
 // Real GPU pixel output is not testable headless; it is verified in-browser.
 
-const annual = (vals: number[], start = 2016): { date: number; value: number; certainty: boolean }[] =>
+const annual = (
+  vals: number[],
+  start = 2016,
+): { date: number; value: number; certainty: boolean }[] =>
   vals.map((value, i) => ({ date: start + i, value, certainty: true }));
 
 const sample: LineDataItem[] = [
@@ -103,7 +106,7 @@ describe("mountLineChart - webgpu renderer (capability gate + fallback)", () => 
     // Read a point's pixel coords from an SVG mount (same scales/model as webgpu).
     const svgMount = mount({ renderer: "svg", showDataPoints: true });
     const dot = svgMount.host.querySelector<SVGCircleElement>(
-      'circle.data-point[data-label="Alpha One"]'
+      'circle.data-point[data-label="Alpha One"]',
     )!;
     const cx = Number(dot.getAttribute("cx"));
     const cy = Number(dot.getAttribute("cy"));

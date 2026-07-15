@@ -14,7 +14,7 @@ export function buildGapColors(
   colorsMapping?: Record<string, string>,
   colorMode: "label" | "shape" = "label",
   shapeColorsMapping?: ShapeMapping,
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): GapColorResolver {
   const colorPalette = colors.length > 0 ? colors : DEFAULT_COLORS;
 

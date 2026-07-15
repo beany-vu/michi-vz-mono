@@ -21,9 +21,16 @@ async function go() {
 <template>
   <div class="ep">
     <select v-model="model" :disabled="status === 'loading'" aria-label="embedding model">
-      <option v-for="m in EMBED_CATALOG" :key="m.id" :value="m.id">{{ m.name }} · {{ fmtSize(m.sizeMB) }}</option>
+      <option v-for="m in EMBED_CATALOG" :key="m.id" :value="m.id">
+        {{ m.name }} · {{ fmtSize(m.sizeMB) }}
+      </option>
     </select>
-    <button class="ep-btn" :class="{ ready: status === 'ready' && loadedModel === model }" @click="go" :disabled="status === 'loading'">
+    <button
+      class="ep-btn"
+      :class="{ ready: status === 'ready' && loadedModel === model }"
+      @click="go"
+      :disabled="status === 'loading'"
+    >
       <span v-if="status === 'loading'">Loading {{ name }}… {{ pct }}%</span>
       <span v-else-if="status === 'ready' && loadedModel === model">✓ {{ name }}</span>
       <span v-else-if="status === 'error'">⚠ retry</span>

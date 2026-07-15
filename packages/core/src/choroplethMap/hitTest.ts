@@ -36,7 +36,7 @@ export function pointInGeometry(
   projection: GeoProjection,
   geometry: GeoJSON.Geometry | null | undefined,
   x: number,
-  y: number
+  y: number,
 ): boolean {
   if (!geometry) return false;
   switch (geometry.type) {
@@ -44,10 +44,16 @@ export function pointInGeometry(
       return pointInRings(
         geometry.coordinates.map((ring) => projectRing(projection, ring)),
         x,
-        y
+        y,
       );
     case "MultiPolygon":
-      return geometry.coordinates.some((poly) => pointInRings(poly.map((ring) => projectRing(projection, ring)), x, y));
+      return geometry.coordinates.some((poly) =>
+        pointInRings(
+          poly.map((ring) => projectRing(projection, ring)),
+          x,
+          y,
+        ),
+      );
     case "GeometryCollection":
       return geometry.geometries.some((g) => pointInGeometry(projection, g, x, y));
     default:

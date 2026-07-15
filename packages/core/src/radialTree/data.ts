@@ -60,13 +60,25 @@ function normalize(nodes: RadialTreeNode[], parentPath: string[], disabled: Set<
       });
     } else {
       const value = Math.max(0, finite(n.value) ? n.value : 0);
-      out.push({ label: n.label, code: n.code, value, color: n.color, groupLabel, path, isLeaf: true });
+      out.push({
+        label: n.label,
+        code: n.code,
+        value,
+        color: n.color,
+        groupLabel,
+        path,
+        isLeaf: true,
+      });
     }
   }
   return out;
 }
 
-function collect(node: RtNode, depth: number, acc: { nodes: RtNode[]; leaves: RtNode[]; maxDepth: number }): void {
+function collect(
+  node: RtNode,
+  depth: number,
+  acc: { nodes: RtNode[]; leaves: RtNode[]; maxDepth: number },
+): void {
   acc.nodes.push(node);
   acc.maxDepth = Math.max(acc.maxDepth, depth);
   if (node.isLeaf || !node.children || node.children.length === 0) {
@@ -78,7 +90,7 @@ function collect(node: RtNode, depth: number, acc: { nodes: RtNode[]; leaves: Rt
 
 export function processRadialTreeData(
   dataSet: RadialTreeNode[],
-  opts: { disabledItems?: string[] } = {}
+  opts: { disabledItems?: string[] } = {},
 ): ProcessedRadialTree {
   const disabled = new Set(opts.disabledItems ?? []);
   const groups = normalize(dataSet ?? [], [], disabled);

@@ -29,7 +29,7 @@ const finite = (v: unknown): v is number => typeof v === "number" && Number.isFi
 export function processSankeyData(
   nodesIn: SankeyNodeItem[],
   linksIn: SankeyLinkItem[],
-  opts: { disabledItems?: string[] } = {}
+  opts: { disabledItems?: string[] } = {},
 ): ProcessedSankey {
   const disabled = new Set(opts.disabledItems ?? []);
   const nodes: SkNode[] = (nodesIn ?? [])
@@ -44,9 +44,13 @@ export function processSankeyData(
         !disabled.has(l.target) &&
         known.has(l.source) &&
         known.has(l.target) &&
-        l.source !== l.target
+        l.source !== l.target,
     )
-    .map((l) => ({ source: l.source, target: l.target, value: finite(l.value) ? Math.max(0, l.value) : 0 }));
+    .map((l) => ({
+      source: l.source,
+      target: l.target,
+      value: finite(l.value) ? Math.max(0, l.value) : 0,
+    }));
 
   const nodeKeys = nodes.map((n) => n.id);
   const nodeColors: Record<string, string> = {};

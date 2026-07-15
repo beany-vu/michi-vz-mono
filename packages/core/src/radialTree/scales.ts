@@ -10,7 +10,10 @@ import type { RtNode } from "./data";
 
 export type RadiusOf = (value: number) => number;
 
-export function buildRadialTreeRadiusScale(nodes: RtNode[], radiusRange: [number, number]): RadiusOf {
+export function buildRadialTreeRadiusScale(
+  nodes: RtNode[],
+  radiusRange: [number, number],
+): RadiusOf {
   let min = Infinity;
   let max = -Infinity;
   for (const n of nodes) {

@@ -55,7 +55,7 @@ export function periodValue(d: Date, xAxisDataType: XaxisDataType): number {
 export function enumeratePeriods(
   minDate: Date,
   maxDate: Date,
-  xAxisDataType: XaxisDataType
+  xAxisDataType: XaxisDataType,
 ): number[] {
   const out: number[] = [];
   if (xAxisDataType === "date_annual") {
@@ -83,7 +83,7 @@ export function enumeratePeriods(
 // date types). Empty data falls back to [0, 1].
 export function getXScaleDomain(
   filteredDataSet: LineDataItem[],
-  xAxisDataType: XaxisDataType
+  xAxisDataType: XaxisDataType,
 ): [number, number] {
   let lo = Infinity;
   let hi = -Infinity;

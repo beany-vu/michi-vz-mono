@@ -22,7 +22,7 @@ export function drawDualBarWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: DualRenderModel,
-  o: DualWebgpuOptions
+  o: DualWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME nested probe canvas mode uses.
   const labels = model.bars.map((b) => b.label);
@@ -32,7 +32,7 @@ export function drawDualBarWebgpu(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
 
   const batch = emptyBatch();
@@ -46,7 +46,7 @@ export function drawDualBarWebgpu(
         bar.y,
         bar.bar1.width,
         bar.height,
-        markColor(css, groupAlpha * o.value1Opacity)
+        markColor(css, groupAlpha * o.value1Opacity),
       );
     }
     if (bar.bar2.width > 0) {
@@ -56,7 +56,7 @@ export function drawDualBarWebgpu(
         bar.y,
         bar.bar2.width,
         bar.height,
-        markColor(css, groupAlpha * o.value2Opacity)
+        markColor(css, groupAlpha * o.value2Opacity),
       );
     }
   }

@@ -13,7 +13,7 @@ export function createBarBellScales(
   xDomain: [number, number],
   width: number,
   height: number,
-  margin: Margin
+  margin: Margin,
 ): BarBellScales {
   const xScale = scaleLinear()
     .domain(xDomain)

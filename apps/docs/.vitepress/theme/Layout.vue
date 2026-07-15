@@ -10,11 +10,7 @@ import HomeFeatures from "./HomeFeatures.vue";
 const { Layout } = DefaultTheme;
 
 // Small, factual proof chips shown under the hero actions. No marketing fluff.
-const META = [
-  "SVG · canvas · WebGPU",
-  "getContext() on every chart",
-  "tree-shakeable",
-];
+const META = ["SVG · canvas · WebGPU", "getContext() on every chart", "tree-shakeable"];
 </script>
 
 <template>

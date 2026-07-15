@@ -100,8 +100,10 @@ describe("mountPieChart (jsdom)", () => {
     const keep = mount({ dataSet: unsorted, sortByValue: false });
     const cd = def.chart.getContext()!;
     const ck = keep.chart.getContext()!;
-    if (cd.chartType === "pie-chart") expect(cd.slices.map((s) => s.label)).toEqual(["B", "C", "A"]);
-    if (ck.chartType === "pie-chart") expect(ck.slices.map((s) => s.label)).toEqual(["A", "B", "C"]);
+    if (cd.chartType === "pie-chart")
+      expect(cd.slices.map((s) => s.label)).toEqual(["B", "C", "A"]);
+    if (ck.chartType === "pie-chart")
+      expect(ck.slices.map((s) => s.label)).toEqual(["A", "B", "C"]);
     def.chart.destroy();
     def.host.remove();
     keep.chart.destroy();
@@ -111,7 +113,8 @@ describe("mountPieChart (jsdom)", () => {
   it("disabledItems drops a slice; filter keeps the top-N", () => {
     const disabled = mount({ dataSet: data, disabledItems: ["Cocoa"] });
     const dctx = disabled.chart.getContext()!;
-    if (dctx.chartType === "pie-chart") expect(dctx.slices.map((s) => s.label)).toEqual(["Coffee", "Tea"]);
+    if (dctx.chartType === "pie-chart")
+      expect(dctx.slices.map((s) => s.label)).toEqual(["Coffee", "Tea"]);
     disabled.chart.destroy();
     disabled.host.remove();
 

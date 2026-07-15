@@ -13,7 +13,14 @@ const keys = ["Fruit Sales", "Veg"];
 function mount(extra: Partial<BarBellChartProps> = {}) {
   const host = document.createElement("div");
   document.body.appendChild(host);
-  const chart = mountBarBellChart(host, { dataSet, keys, title: "Demo", width: 600, height: 300, ...extra });
+  const chart = mountBarBellChart(host, {
+    dataSet,
+    keys,
+    title: "Demo",
+    width: 600,
+    height: 300,
+    ...extra,
+  });
   return { host, chart };
 }
 
@@ -35,7 +42,7 @@ describe("mountBarBellChart (jsdom)", () => {
     const bottom = mount({ margin, xAxisPosition: "bottom" });
     const labelYs = (host: HTMLElement) =>
       Array.from(host.querySelectorAll<SVGTextElement>(".mv-x-axis text")).map((t) =>
-        Number(t.getAttribute("y"))
+        Number(t.getAttribute("y")),
       );
     // Default (legacy header look): labels sit in the top margin, above the rows.
     expect(labelYs(top.host).length).toBeGreaterThan(0);
@@ -57,8 +64,12 @@ describe("mountBarBellChart (jsdom)", () => {
       renderer: "svg",
     });
     const caps = Array.from(host.querySelectorAll<SVGCircleElement>(".bar-bell-cap"));
-    const aCapCy = Number(caps.find((c) => c.getAttribute("data-label") === "A")!.getAttribute("cy"));
-    const bCapCy = Number(caps.find((c) => c.getAttribute("data-label") === "B")!.getAttribute("cy"));
+    const aCapCy = Number(
+      caps.find((c) => c.getAttribute("data-label") === "A")!.getAttribute("cy"),
+    );
+    const bCapCy = Number(
+      caps.find((c) => c.getAttribute("data-label") === "B")!.getAttribute("cy"),
+    );
     expect(aCapCy).not.toBe(bCapCy); // caps fanned vertically
     // A's bar stays on the row line - which is the midpoint the caps fan around.
     const aBar = host.querySelector<SVGRectElement>('rect.bar[data-label="A"]')!;
@@ -80,7 +91,10 @@ describe("mountBarBellChart (jsdom)", () => {
 
   it("stacks segments cumulatively (Veg cap x > Fruit cap x in the same row)", () => {
     const { host, chart } = mount();
-    const row1Caps = Array.from(host.querySelectorAll<SVGCircleElement>(".bar-bell-cap")).slice(0, 2);
+    const row1Caps = Array.from(host.querySelectorAll<SVGCircleElement>(".bar-bell-cap")).slice(
+      0,
+      2,
+    );
     const fruitX = Number(row1Caps[0].getAttribute("cx"));
     const vegX = Number(row1Caps[1].getAttribute("cx"));
     expect(vegX).toBeGreaterThan(fruitX); // Veg sits to the right of Fruit (cumulative)
@@ -93,7 +107,9 @@ describe("mountBarBellChart (jsdom)", () => {
     const content = host.querySelector(".bar-bell-content")!;
     const kids = Array.from(content.children);
     const barIdx = kids.map((k, i) => (k.classList.contains("bar") ? i : -1)).filter((i) => i >= 0);
-    const capIdx = kids.map((k, i) => (k.classList.contains("bar-bell-cap") ? i : -1)).filter((i) => i >= 0);
+    const capIdx = kids
+      .map((k, i) => (k.classList.contains("bar-bell-cap") ? i : -1))
+      .filter((i) => i >= 0);
     expect(barIdx.length).toBe(6);
     expect(capIdx.length).toBe(6);
     // the last bar is earlier in the paint order than the first cap
@@ -123,7 +139,9 @@ describe("mountBarBellChart (jsdom)", () => {
   it("builds an a11y mirror with one row per date + a Total column", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(3);
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Date", "Fruit Sales", "Veg", "Total"]);
     chart.destroy();
     host.remove();
@@ -151,7 +169,13 @@ describe("mountBarBellChart (jsdom)", () => {
     const host = document.createElement("div");
     document.body.appendChild(host);
     let warned: unknown[] = [];
-    mountBarBellChart(host, { dataSet: [], keys: [], width: 400, height: 200, onDataWarning: (w) => (warned = w) });
+    mountBarBellChart(host, {
+      dataSet: [],
+      keys: [],
+      width: 400,
+      height: 200,
+      onDataWarning: (w) => (warned = w),
+    });
     expect(warned.some((w) => (w as { type: string }).type === "empty-dataset")).toBe(true);
     host.remove();
 

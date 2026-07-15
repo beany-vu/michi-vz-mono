@@ -34,8 +34,10 @@ const defaultStepFor = (xAxisDataType: XaxisDataType): number | null =>
 
 const isDev = (): boolean => {
   try {
-    return (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV !==
-      "production";
+    return (
+      (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV !==
+      "production"
+    );
   } catch {
     return true;
   }
@@ -52,7 +54,7 @@ const isDev = (): boolean => {
 export const applyGapDetection = (
   series: DataPoint[],
   xAxisDataType: XaxisDataType,
-  expectedStep?: number
+  expectedStep?: number,
 ): DataPoint[] => {
   if (!series || series.length === 0) return series ?? [];
 
@@ -64,7 +66,7 @@ export const applyGapDetection = (
         Number.isFinite(u) &&
         d.value !== null &&
         d.value !== undefined &&
-        !Number.isNaN(d.value as number)
+        !Number.isNaN(d.value as number),
     );
 
   parsed.sort((a, b) => a.u - b.u);
@@ -82,7 +84,7 @@ export const applyGapDetection = (
     // eslint-disable-next-line no-console
     console.warn(
       `[michi-vz] detectGaps normalized a series: dropped ${droppedCount} invalid point(s), ` +
-        `removed ${duplicateCount} duplicate(s); data was sorted by x.`
+        `removed ${duplicateCount} duplicate(s); data was sorted by x.`,
     );
   }
 
@@ -98,7 +100,7 @@ export const applyGapDetection = (
     if (isDev()) {
       // eslint-disable-next-line no-console
       console.warn(
-        `[michi-vz] detectGaps: xAxisDataType "number" requires an expectedStep; gap detection skipped.`
+        `[michi-vz] detectGaps: xAxisDataType "number" requires an expectedStep; gap detection skipped.`,
       );
     }
     return deduped.map((e) => e.d);

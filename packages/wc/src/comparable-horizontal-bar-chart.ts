@@ -201,5 +201,8 @@ if (
   typeof customElements !== "undefined" &&
   !customElements.get("michi-vz-comparable-horizontal-bar-chart")
 ) {
-  customElements.define("michi-vz-comparable-horizontal-bar-chart", ComparableHorizontalBarChartElement);
+  customElements.define(
+    "michi-vz-comparable-horizontal-bar-chart",
+    ComparableHorizontalBarChartElement,
+  );
 }

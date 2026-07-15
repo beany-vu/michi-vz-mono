@@ -88,21 +88,42 @@ export const previews: Record<string, Preview> = {
       xAxisDataType: "date_annual",
       curve: "curveMonotoneX",
       dataSet: [
-        { label: "Solar", color: GOLD, series: [
-          { date: 2018, value: 12, certainty: true }, { date: 2019, value: 17, certainty: true },
-          { date: 2020, value: 21, certainty: true }, { date: 2021, value: 30, certainty: true },
-          { date: 2022, value: 43, certainty: true }] },
+        {
+          label: "Solar",
+          color: GOLD,
+          series: [
+            { date: 2018, value: 12, certainty: true },
+            { date: 2019, value: 17, certainty: true },
+            { date: 2020, value: 21, certainty: true },
+            { date: 2021, value: 30, certainty: true },
+            { date: 2022, value: 43, certainty: true },
+          ],
+        },
         // One series mixes solid + dashed on a single line: the segments INTO the
         // certainty:false points (2020, 2021) render dashed, so the blue line reads
         // solid -> dashed gap -> solid (shows off detectGaps / certainty).
-        { label: "Wind", color: BLUE, series: [
-          { date: 2018, value: 18, certainty: true }, { date: 2019, value: 22, certainty: true },
-          { date: 2020, value: 27, certainty: false }, { date: 2021, value: 33, certainty: false },
-          { date: 2022, value: 39, certainty: true }] },
-        { label: "Hydro", color: GREEN, series: [
-          { date: 2018, value: 9, certainty: true }, { date: 2019, value: 11, certainty: true },
-          { date: 2020, value: 13, certainty: true }, { date: 2021, value: 15, certainty: true },
-          { date: 2022, value: 18, certainty: true }] },
+        {
+          label: "Wind",
+          color: BLUE,
+          series: [
+            { date: 2018, value: 18, certainty: true },
+            { date: 2019, value: 22, certainty: true },
+            { date: 2020, value: 27, certainty: false },
+            { date: 2021, value: 33, certainty: false },
+            { date: 2022, value: 39, certainty: true },
+          ],
+        },
+        {
+          label: "Hydro",
+          color: GREEN,
+          series: [
+            { date: 2018, value: 9, certainty: true },
+            { date: 2019, value: 11, certainty: true },
+            { date: 2020, value: 13, certainty: true },
+            { date: 2021, value: 15, certainty: true },
+            { date: 2022, value: 18, certainty: true },
+          ],
+        },
       ],
     } satisfies LineChartProps,
   },
@@ -144,16 +165,26 @@ export const previews: Record<string, Preview> = {
     props: {
       xAxisDataType: "date_annual",
       dataSet: [
-        { label: "High", color: RED, series: [
-          { date: 2019, valueMin: 6, valueMax: 12, certainty: true },
-          { date: 2020, valueMin: 7, valueMax: 14, certainty: true },
-          { date: 2021, valueMin: 8, valueMax: 17, certainty: true },
-          { date: 2022, valueMin: 9, valueMax: 20, certainty: true }] },
-        { label: "Low", color: BLUE, series: [
-          { date: 2019, valueMin: 2, valueMax: 5, certainty: true },
-          { date: 2020, valueMin: 2, valueMax: 6, certainty: true },
-          { date: 2021, valueMin: 3, valueMax: 7, certainty: true },
-          { date: 2022, valueMin: 3, valueMax: 8, certainty: true }] },
+        {
+          label: "High",
+          color: RED,
+          series: [
+            { date: 2019, valueMin: 6, valueMax: 12, certainty: true },
+            { date: 2020, valueMin: 7, valueMax: 14, certainty: true },
+            { date: 2021, valueMin: 8, valueMax: 17, certainty: true },
+            { date: 2022, valueMin: 9, valueMax: 20, certainty: true },
+          ],
+        },
+        {
+          label: "Low",
+          color: BLUE,
+          series: [
+            { date: 2019, valueMin: 2, valueMax: 5, certainty: true },
+            { date: 2020, valueMin: 2, valueMax: 6, certainty: true },
+            { date: 2021, valueMin: 3, valueMax: 7, certainty: true },
+            { date: 2022, valueMin: 3, valueMax: 8, certainty: true },
+          ],
+        },
       ],
     } satisfies RangeChartProps,
   },
@@ -199,12 +230,17 @@ export const previews: Record<string, Preview> = {
       yAxisDomain: [0, 100],
       colors: [BLUE, GOLD, GREEN],
       dataSet: [
-        { seriesKey: "W", seriesKeyAbbreviation: "", series: [
-          { date: "2018", Services: 42, Industry: 25, Farming: 33 },
-          { date: "2019", Services: 46, Industry: 25, Farming: 29 },
-          { date: "2020", Services: 50, Industry: 24, Farming: 26 },
-          { date: "2021", Services: 54, Industry: 24, Farming: 22 },
-          { date: "2022", Services: 58, Industry: 23, Farming: 19 }] },
+        {
+          seriesKey: "W",
+          seriesKeyAbbreviation: "",
+          series: [
+            { date: "2018", Services: 42, Industry: 25, Farming: 33 },
+            { date: "2019", Services: 46, Industry: 25, Farming: 29 },
+            { date: "2020", Services: 50, Industry: 24, Farming: 26 },
+            { date: "2021", Services: 54, Industry: 24, Farming: 22 },
+            { date: "2022", Services: 58, Industry: 23, Farming: 19 },
+          ],
+        },
       ],
     } satisfies VerticalStackBarChartProps,
   },
@@ -352,19 +388,30 @@ export const previews: Record<string, Preview> = {
           label: "Fc",
           color: BLUE,
           series: [
-            { date: 2019, value: 10, certainty: true }, { date: 2020, value: 14, certainty: true },
-            { date: 2021, value: 17, certainty: true }, { date: 2022, value: 21, certainty: true },
-            { date: 2023, value: 25, certainty: false }, { date: 2024, value: 29, certainty: false },
+            { date: 2019, value: 10, certainty: true },
+            { date: 2020, value: 14, certainty: true },
+            { date: 2021, value: 17, certainty: true },
+            { date: 2022, value: 21, certainty: true },
+            { date: 2023, value: 25, certainty: false },
+            { date: 2024, value: 29, certainty: false },
           ],
           bands: [
-            { level: 0.95, series: [
-              { date: 2022, valueMin: 21, valueMax: 21, valueMedium: 21 },
-              { date: 2023, valueMin: 22, valueMax: 28, valueMedium: 25 },
-              { date: 2024, valueMin: 23, valueMax: 35, valueMedium: 29 }] },
-            { level: 0.8, series: [
-              { date: 2022, valueMin: 21, valueMax: 21, valueMedium: 21 },
-              { date: 2023, valueMin: 23, valueMax: 27, valueMedium: 25 },
-              { date: 2024, valueMin: 26, valueMax: 32, valueMedium: 29 }] },
+            {
+              level: 0.95,
+              series: [
+                { date: 2022, valueMin: 21, valueMax: 21, valueMedium: 21 },
+                { date: 2023, valueMin: 22, valueMax: 28, valueMedium: 25 },
+                { date: 2024, valueMin: 23, valueMax: 35, valueMedium: 29 },
+              ],
+            },
+            {
+              level: 0.8,
+              series: [
+                { date: 2022, valueMin: 21, valueMax: 21, valueMedium: 21 },
+                { date: 2023, valueMin: 23, valueMax: 27, valueMedium: 25 },
+                { date: 2024, valueMin: 26, valueMax: 32, valueMedium: 29 },
+              ],
+            },
           ],
         },
       ],
@@ -477,15 +524,36 @@ export const previews: Record<string, Preview> = {
       // Labels off entirely: 12 leaves at 124px would be pure clutter.
       labelDensityThresholds: { hideAbove: 0 },
       dataSet: [
-        { label: "Alpha", color: GOLD, children: [
-          { label: "a1", value: 12, color: GOLD }, { label: "a2", value: 7, color: GOLD },
-          { label: "a3", value: 9, color: GOLD }, { label: "a4", value: 5, color: GOLD }] },
-        { label: "Beta", color: BLUE, children: [
-          { label: "b1", value: 15, color: BLUE }, { label: "b2", value: 6, color: BLUE },
-          { label: "b3", value: 11, color: BLUE }, { label: "b4", value: 8, color: BLUE }] },
-        { label: "Gamma", color: GREEN, children: [
-          { label: "g1", value: 10, color: GREEN }, { label: "g2", value: 13, color: GREEN },
-          { label: "g3", value: 4, color: GREEN }, { label: "g4", value: 7, color: GREEN }] },
+        {
+          label: "Alpha",
+          color: GOLD,
+          children: [
+            { label: "a1", value: 12, color: GOLD },
+            { label: "a2", value: 7, color: GOLD },
+            { label: "a3", value: 9, color: GOLD },
+            { label: "a4", value: 5, color: GOLD },
+          ],
+        },
+        {
+          label: "Beta",
+          color: BLUE,
+          children: [
+            { label: "b1", value: 15, color: BLUE },
+            { label: "b2", value: 6, color: BLUE },
+            { label: "b3", value: 11, color: BLUE },
+            { label: "b4", value: 8, color: BLUE },
+          ],
+        },
+        {
+          label: "Gamma",
+          color: GREEN,
+          children: [
+            { label: "g1", value: 10, color: GREEN },
+            { label: "g2", value: 13, color: GREEN },
+            { label: "g3", value: 4, color: GREEN },
+            { label: "g4", value: 7, color: GREEN },
+          ],
+        },
       ],
     } satisfies RadialTreeChartProps,
   },

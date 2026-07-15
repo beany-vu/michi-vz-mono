@@ -42,7 +42,9 @@ describe("mountBubbleChart (jsdom)", () => {
     // The realized core is smaller than the full bubble and is full-colour.
     for (const core of Array.from(cores)) {
       const safe = core.getAttribute("data-label-safe");
-      const base = host.querySelector<SVGCircleElement>(`circle.bubble[data-label-safe="${safe}"]`)!;
+      const base = host.querySelector<SVGCircleElement>(
+        `circle.bubble[data-label-safe="${safe}"]`,
+      )!;
       expect(Number(core.getAttribute("r"))).toBeLessThan(Number(base.getAttribute("r")));
     }
     for (const v of Array.from(veils)) expect(v.getAttribute("fill")).toBe("#ffffff");
@@ -72,7 +74,10 @@ describe("mountBubbleChart (jsdom)", () => {
   it("layoutMode:'async' settles without blocking: overlay while running, identical layout after", async () => {
     const syncMount = mount({ dataSet: data, showSplit: false });
     const syncR = Array.from(syncMount.host.querySelectorAll<SVGCircleElement>("circle.bubble"))
-      .map((c) => `${c.getAttribute("data-label")}:${c.getAttribute("cx")},${c.getAttribute("cy")},${c.getAttribute("r")}`)
+      .map(
+        (c) =>
+          `${c.getAttribute("data-label")}:${c.getAttribute("cx")},${c.getAttribute("cy")},${c.getAttribute("r")}`,
+      )
       .sort();
     syncMount.chart.destroy();
     syncMount.host.remove();
@@ -88,7 +93,10 @@ describe("mountBubbleChart (jsdom)", () => {
     expect(host.querySelector(".mv-loading")).toBeNull();
     // The chunked settle is the SAME deterministic simulation: identical layout.
     const asyncR = Array.from(host.querySelectorAll<SVGCircleElement>("circle.bubble"))
-      .map((c) => `${c.getAttribute("data-label")}:${c.getAttribute("cx")},${c.getAttribute("cy")},${c.getAttribute("r")}`)
+      .map(
+        (c) =>
+          `${c.getAttribute("data-label")}:${c.getAttribute("cx")},${c.getAttribute("cy")},${c.getAttribute("r")}`,
+      )
       .sort();
     expect(asyncR).toEqual(syncR);
     chart.destroy();
@@ -178,9 +186,15 @@ describe("mountBubbleChart (jsdom)", () => {
     split.chart.destroy();
     split.host.remove();
 
-    const plain = mount({ dataSet: [{ label: "A", value: 5 }, { label: "B", value: 3 }] });
+    const plain = mount({
+      dataSet: [
+        { label: "A", value: 5 },
+        { label: "B", value: 3 },
+      ],
+    });
     const pctx = plain.chart.getContext()!;
-    if (pctx.chartType === "bubble-chart") expect(pctx.a11yTable.headers).toEqual(["Label", "Value"]);
+    if (pctx.chartType === "bubble-chart")
+      expect(pctx.a11yTable.headers).toEqual(["Label", "Value"]);
     plain.chart.destroy();
     plain.host.remove();
   });
@@ -238,19 +252,26 @@ describe("mountBubbleChart (jsdom)", () => {
   it("packs bubbles with no overlap on several datasets", () => {
     const datasets: BubbleDataItem[][] = [
       data,
-      [{ label: "A", value: 100 }, { label: "B", value: 60 }, { label: "C", value: 40 }],
-      [{ label: "Big", value: 400 }, { label: "Tiny", value: 8 }],
+      [
+        { label: "A", value: 100 },
+        { label: "B", value: 60 },
+        { label: "C", value: 40 },
+      ],
+      [
+        { label: "Big", value: 400 },
+        { label: "Tiny", value: 8 },
+      ],
       Array.from({ length: 20 }, (_, i) => ({ label: `m${i}`, value: ((i * 37) % 140) + 12 })),
     ];
     for (const ds of datasets) {
       const { host, chart } = mount({ dataSet: ds, showSplit: false, width: 700, height: 520 });
-      const circles = Array.from(
-        host.querySelectorAll<SVGCircleElement>("circle.bubble")
-      ).map((c) => ({
-        x: Number(c.getAttribute("cx")),
-        y: Number(c.getAttribute("cy")),
-        r: Number(c.getAttribute("r")),
-      }));
+      const circles = Array.from(host.querySelectorAll<SVGCircleElement>("circle.bubble")).map(
+        (c) => ({
+          x: Number(c.getAttribute("cx")),
+          y: Number(c.getAttribute("cy")),
+          r: Number(c.getAttribute("r")),
+        }),
+      );
       expect(circles.length).toBe(ds.length);
       for (let i = 0; i < circles.length; i++) {
         for (let j = i + 1; j < circles.length; j++) {

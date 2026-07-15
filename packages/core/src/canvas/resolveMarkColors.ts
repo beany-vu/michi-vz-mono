@@ -22,7 +22,7 @@ export const resolveMarkColors = (
   labels: string[],
   fallbackFor: (label: string) => string,
   buildProbe: (label: string, labelSafe: string, fallback: string) => ColorProbe,
-  colorProp: ColorProp | ColorProp[]
+  colorProp: ColorProp | ColorProp[],
 ): Map<string, string> => {
   const resolved = new Map<string, string>();
 

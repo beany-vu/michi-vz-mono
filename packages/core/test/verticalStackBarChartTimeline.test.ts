@@ -39,14 +39,14 @@ const T2 = WIDTH;
 function mount(
   extra: Partial<VerticalStackBarChartProps> = {},
   ticker?: ManualTicker,
-  motion?: MotionPreference
+  motion?: MotionPreference,
 ) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountVerticalStackBarChart(
     host,
     { dataSet: sample, width: WIDTH, height: 360, ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -119,7 +119,7 @@ describe("VerticalStackBarChart timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: true, progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(clipWidth(host)).toBeCloseTo(T0, 6);
     ticker.tick(500);
@@ -156,7 +156,7 @@ describe("VerticalStackBarChart timeline canvas mode", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: { easing: "linear", tweenMs: 400 }, renderer: "canvas" },
-      ticker
+      ticker,
     );
     expect(host.querySelector(".mv-timeline")).not.toBeNull();
     expect(() => {

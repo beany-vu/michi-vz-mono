@@ -17,7 +17,7 @@ export interface ProcessedRange {
 
 export function processRangeData(
   dataSet: RangeDataItem[],
-  opts: ProcessRangeOptions
+  opts: ProcessRangeOptions,
 ): ProcessedRange {
   const disabled = new Set(opts.disabledItems ?? []);
   const items = dataSet.filter((it) => !disabled.has(it.label));

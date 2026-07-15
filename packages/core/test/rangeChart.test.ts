@@ -46,7 +46,9 @@ describe("mountRangeChart (jsdom)", () => {
   it("builds an a11y mirror with one row per band", () => {
     const { host, chart } = mount();
     expect(host.querySelectorAll(".mv-a11y table tbody tr").length).toBe(2);
-    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map((t) => t.textContent);
+    const headers = Array.from(host.querySelectorAll(".mv-a11y table thead th")).map(
+      (t) => t.textContent,
+    );
     expect(headers).toEqual(["Band", "Points", "Min", "Max", "Mean range"]);
     chart.destroy();
     host.remove();
@@ -83,14 +85,21 @@ describe("mountRangeChart (jsdom)", () => {
     document.body.appendChild(host);
     let warned: unknown[] = [];
     const chart = mountRangeChart(host, {
-      dataSet: [{ label: "Bad", series: [{ date: 2016, valueMin: NaN, valueMax: 1, certainty: true }] }],
+      dataSet: [
+        { label: "Bad", series: [{ date: 2016, valueMin: NaN, valueMax: 1, certainty: true }] },
+      ],
       width: 400,
       height: 200,
       xAxisDataType: "date_annual",
       onDataWarning: (w) => (warned = w),
     });
     expect(warned.some((w) => (w as { type: string }).type === "non-finite-value")).toBe(true);
-    chart.update({ dataSet: dataSet.slice(0, 1), width: 400, height: 200, xAxisDataType: "date_annual" });
+    chart.update({
+      dataSet: dataSet.slice(0, 1),
+      width: 400,
+      height: 200,
+      xAxisDataType: "date_annual",
+    });
     expect(host.querySelectorAll("path.area").length).toBe(1);
     chart.destroy();
     expect(host.querySelectorAll("svg").length).toBe(0);

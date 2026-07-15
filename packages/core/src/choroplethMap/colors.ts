@@ -19,17 +19,20 @@ export function buildChoroplethColors(
   colors: string[] = [],
   colorsMapping?: Record<string, string>,
   colorScaleConfig?: { domain: number[]; range: string[] },
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): ChoroplethColorResolver {
   const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
   const threshold =
     colorScaleConfig && colorScaleConfig.domain.length > 0 && colorScaleConfig.range.length > 0
-      ? scaleThreshold<number, string>().domain(colorScaleConfig.domain).range(colorScaleConfig.range)
+      ? scaleThreshold<number, string>()
+          .domain(colorScaleConfig.domain)
+          .range(colorScaleConfig.range)
       : undefined;
 
   const resolveForRow = (d: ChoroplethDataItem): string => {
     if (colorsMapping?.[d.label]) return colorsMapping[d.label];
-    if (threshold && typeof d.value === "number" && Number.isFinite(d.value)) return threshold(d.value);
+    if (threshold && typeof d.value === "number" && Number.isFinite(d.value))
+      return threshold(d.value);
     return d.color ?? "";
   };
 

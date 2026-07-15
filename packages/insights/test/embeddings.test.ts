@@ -23,7 +23,11 @@ describe("embeddings", () => {
   });
 
   it("findSimilar ranks by meaning (hash fallback) - revenue items beat churn", async () => {
-    const items = ["quarterly revenue forecast", "customer churn rate", "annual revenue growth projection"];
+    const items = [
+      "quarterly revenue forecast",
+      "customer churn rate",
+      "annual revenue growth projection",
+    ];
     const ranked = await findSimilar("revenue", items, (t) => t);
     expect(ranked).toHaveLength(3);
     // both revenue items outrank the churn item (which shares no tokens with "revenue")
@@ -65,7 +69,10 @@ describe("embeddings", () => {
     });
 
     it("a high threshold keeps everything separate", async () => {
-      const groups = await reconcileLabels(["alpha", "alphaa", "beta"], { threshold: 0.999, margin: 0 });
+      const groups = await reconcileLabels(["alpha", "alphaa", "beta"], {
+        threshold: 0.999,
+        margin: 0,
+      });
       expect(groups).toHaveLength(3);
     });
   });
@@ -154,8 +161,14 @@ describe("embeddings", () => {
       const target = ["Revenue", "Bazqux"];
       const r = await matchLabels(source, target);
       expect(r.matches.map((m) => m.source)).toEqual(["Revenue"]);
-      const allSource = [...r.matches.map((m) => m.source), ...r.unmatchedSource.map((u) => u.label)];
-      const allTarget = [...r.matches.map((m) => m.target), ...r.unmatchedTarget.map((u) => u.label)];
+      const allSource = [
+        ...r.matches.map((m) => m.source),
+        ...r.unmatchedSource.map((u) => u.label),
+      ];
+      const allTarget = [
+        ...r.matches.map((m) => m.target),
+        ...r.unmatchedTarget.map((u) => u.label),
+      ];
       expect(allSource.sort()).toEqual([...source].sort());
       expect(allTarget.sort()).toEqual([...target].sort());
     });
@@ -196,7 +209,11 @@ describe("embeddings", () => {
       const source = ["United States", "germany", "Nippon"];
       const target = ["united states", "Germany", "Japan"];
       const implicit = await matchLabels(source, target);
-      const explicit = await matchLabels(source, target, { threshold: 0.6, margin: 0.05, mutual: true });
+      const explicit = await matchLabels(source, target, {
+        threshold: 0.6,
+        margin: 0.05,
+        mutual: true,
+      });
       expect(implicit).toEqual(explicit);
     });
   });

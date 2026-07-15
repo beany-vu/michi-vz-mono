@@ -6,9 +6,7 @@ import type { ScaleBand, ScaleLinear, ScaleTime } from "d3-scale";
 import type { Margin, XaxisDataType } from "../types";
 
 export type FountainXScale =
-  | ScaleBand<string>
-  | ScaleLinear<number, number>
-  | ScaleTime<number, number>;
+  ScaleBand<string> | ScaleLinear<number, number> | ScaleTime<number, number>;
 
 export interface FountainScales {
   mode: "snapshot" | "trend";
@@ -30,7 +28,7 @@ export function createFountainScales(
   width: number,
   height: number,
   margin: Margin,
-  temporalType: XaxisDataType | null
+  temporalType: XaxisDataType | null,
 ): FountainScales {
   const plotWidth = Math.max(1, width - margin.left - margin.right);
   let xBand: ScaleBand<string> | null = null;

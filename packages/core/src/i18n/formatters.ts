@@ -25,7 +25,7 @@ export function defaultPercentFormatter(locale?: string): (d: number | string) =
 
 export function defaultXAxisFormatter(
   xAxisDataType: XaxisDataType,
-  locale?: string
+  locale?: string,
 ): (d: number | string) => string {
   if (xAxisDataType === "number") return defaultNumberFormatter(locale);
   const annual = new Intl.DateTimeFormat(locale, { year: "numeric" });

@@ -44,7 +44,10 @@ export function valuesToTones(values: number[], options: SonifyOptions = {}): To
 /** Play a series as sound via Web Audio. No-op when AudioContext is unavailable. */
 export async function sonify(values: number[], options: SonifyOptions = {}): Promise<void> {
   const tones = valuesToTones(values, options);
-  const g = globalThis as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
+  const g = globalThis as {
+    AudioContext?: typeof AudioContext;
+    webkitAudioContext?: typeof AudioContext;
+  };
   const AC = g.AudioContext ?? g.webkitAudioContext;
   if (!AC || tones.length === 0) return; // SSR / jsdom / no Web Audio
 

@@ -30,7 +30,7 @@ export function processPieData(
     disabledItems?: string[];
     filter?: { limit: number; sortingDir: "asc" | "desc" };
     sortByValue?: boolean;
-  } = {}
+  } = {},
 ): ProcessedPie {
   const disabled = new Set(opts.disabledItems ?? []);
   let nodes: PieNode[] = (dataSet ?? [])
@@ -45,9 +45,7 @@ export function processPieData(
   // Top-N filter over slices (independent of the display sort below).
   if (opts.filter && opts.filter.limit > 0) {
     const dir = opts.filter.sortingDir === "asc" ? 1 : -1;
-    nodes = [...nodes]
-      .sort((a, b) => dir * (a.value - b.value))
-      .slice(0, opts.filter.limit);
+    nodes = [...nodes].sort((a, b) => dir * (a.value - b.value)).slice(0, opts.filter.limit);
   }
 
   // Display order: value-descending by default, else preserve data order.

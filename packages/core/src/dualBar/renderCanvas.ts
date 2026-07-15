@@ -15,7 +15,7 @@ export function drawDualCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: DualRenderModel,
-  o: DualCanvasOptions
+  o: DualCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -28,7 +28,7 @@ export function drawDualCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("rect", "bar", "fill"),
-    "fill"
+    "fill",
   );
 
   for (const bar of model.bars) {

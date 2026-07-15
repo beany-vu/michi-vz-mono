@@ -27,7 +27,7 @@ function appendLabel(
   x: number,
   y: number,
   color: string,
-  anchor: "start" | "end"
+  anchor: "start" | "end",
 ): void {
   const t = svgEl("text", {
     class: "mv-annotation-label",
@@ -45,7 +45,7 @@ function appendLabel(
 export function renderAnnotationsSvg(
   parent: SVGElement,
   annotations: Annotation[],
-  ctx: AnnotationRenderContext
+  ctx: AnnotationRenderContext,
 ): void {
   if (annotations.length === 0) return;
   const g = svgEl("g", { class: "mv-annotations" }) as SVGGElement;
@@ -67,7 +67,7 @@ export function renderAnnotationsSvg(
           stroke: color,
           "stroke-width": 1.5,
           "stroke-dasharray": dash,
-        })
+        }),
       );
       if (a.label) appendLabel(g, a.label, right - 4, y - 4, color, "end");
     } else if (a.type === "vline" && a.at != null) {
@@ -82,7 +82,7 @@ export function renderAnnotationsSvg(
           stroke: color,
           "stroke-width": 1.5,
           "stroke-dasharray": dash,
-        })
+        }),
       );
       if (a.label) appendLabel(g, a.label, x + 4, top + 12, color, "start");
     } else if (a.type === "point" && a.at != null && a.value != null) {
@@ -97,7 +97,7 @@ export function renderAnnotationsSvg(
           fill: color,
           stroke: "#fff",
           "stroke-width": 1,
-        })
+        }),
       );
       if (a.label) appendLabel(g, a.label, x + 6, y - 6, color, "start");
     } else if (a.type === "band" && a.value != null && a.value2 != null) {
@@ -112,7 +112,7 @@ export function renderAnnotationsSvg(
           height: Math.abs(yb - ya),
           fill: color,
           opacity: 0.12,
-        })
+        }),
       );
       if (a.label) appendLabel(g, a.label, right - 4, Math.min(ya, yb) + 12, color, "end");
     } else if (a.type === "xband" && a.at != null && a.at2 != null) {
@@ -129,7 +129,7 @@ export function renderAnnotationsSvg(
           height: bottom - top,
           fill: color,
           opacity: a.opacity ?? 0.08,
-        })
+        }),
       );
       if (a.label) appendLabel(g, a.label, Math.min(x1, x2) + 6, top + 12, color, "start");
     }

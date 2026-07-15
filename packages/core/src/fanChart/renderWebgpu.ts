@@ -27,7 +27,7 @@ export function drawFanWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: FanCanvasArgs,
-  o: FanWebgpuOptions
+  o: FanWebgpuOptions,
 ): boolean {
   // ----- Bands: probe the SAME ".area" fill contract as canvas mode -----
   const bandLabels = [...new Set(model.bands.map((b) => b.label))];
@@ -37,7 +37,7 @@ export function drawFanWebgpu(
     bandLabels,
     (l) => bandFallback.get(l) || "transparent",
     makeSimpleProbe("path", "area", "fill"),
-    "fill"
+    "fill",
   );
 
   // ----- Line: probe the SAME ".line" stroke contract as canvas mode -----
@@ -48,7 +48,7 @@ export function drawFanWebgpu(
     lineLabels,
     (l) => lineFallback.get(l) || "transparent",
     makeSimpleProbe("path", "line", "stroke"),
-    "stroke"
+    "stroke",
   );
 
   const batch = emptyBatch();

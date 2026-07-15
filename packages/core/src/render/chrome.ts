@@ -33,7 +33,7 @@ export function applyChartChrome<T>(
   host: HTMLElement,
   props: ChromeProps<T>,
   dataSet: T[] | null | undefined,
-  refs: ChromeRefs
+  refs: ChromeRefs,
 ): DataState {
   const state = evaluateDataState({
     isLoading: props.isLoading,
@@ -49,7 +49,7 @@ export function applyChartChrome<T>(
     host,
     !suppress && state === "nodata",
     props.noDataLabel ?? "No data available",
-    refs.nodataEl
+    refs.nodataEl,
   );
   return state;
 }

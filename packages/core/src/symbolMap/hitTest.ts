@@ -37,7 +37,11 @@ export function symbolEffectiveHitRadius(m: HittableSymbol): number {
  * or null when no mark qualifies. Iteration order does not matter (every
  * candidate is scored, not first-match).
  */
-export function pickNearestSymbolHit<T extends HittableSymbol>(symbols: T[], mx: number, my: number): T | null {
+export function pickNearestSymbolHit<T extends HittableSymbol>(
+  symbols: T[],
+  mx: number,
+  my: number,
+): T | null {
   let best: T | null = null;
   let bestScore = Infinity;
   for (const m of symbols) {

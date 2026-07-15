@@ -9,7 +9,10 @@ const rows: Row[] = [
 
 describe("sql aggregate (pure fallback)", () => {
   it("group-by sum", () => {
-    const out = aggregate(rows, { groupBy: "region", measures: { total: { col: "sales", fn: "sum" } } });
+    const out = aggregate(rows, {
+      groupBy: "region",
+      measures: { total: { col: "sales", fn: "sum" } },
+    });
     expect(out.find((r) => r.region === "EU")!.total).toBe(30);
     expect(out.find((r) => r.region === "US")!.total).toBe(5);
   });

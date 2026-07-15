@@ -13,7 +13,7 @@ export function createRibbonScales(
   yDomain: [number, number],
   width: number,
   height: number,
-  margin: Margin
+  margin: Margin,
 ): RibbonScales {
   const xScale = scaleBand<string>()
     .domain(dates)

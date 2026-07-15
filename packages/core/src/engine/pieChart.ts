@@ -13,7 +13,11 @@ import { renderTitle } from "../render/svg";
 import { processPieData } from "../pieChart/data";
 import { buildPieColors } from "../pieChart/colors";
 import { layoutPie } from "../pieChart/geometry";
-import { buildPieRenderModel, type PieSliceMark, type PieRenderModel } from "../pieChart/renderModel";
+import {
+  buildPieRenderModel,
+  type PieSliceMark,
+  type PieRenderModel,
+} from "../pieChart/renderModel";
 import { renderPieSvg } from "../pieChart/renderSvg";
 import { drawPieCanvas } from "../pieChart/renderCanvas";
 import { drawPieWebgpu } from "../pieChart/renderWebgpu";
@@ -94,7 +98,7 @@ function angleInRange(a: number, start: number, end: number): boolean {
 export function mountPieChart(
   host: HTMLElement,
   initial: PieChartProps,
-  opts?: MountOptions<PieChartProps>
+  opts?: MountOptions<PieChartProps>,
 ): ChartInstance<PieChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-pie-chart");
@@ -252,7 +256,7 @@ export function mountPieChart(
           height: 12,
           rx: 2,
           fill: item.color,
-        })
+        }),
       );
       const text = svgEl("text", {
         class: "pie-legend-label",
@@ -289,7 +293,7 @@ export function mountPieChart(
       processed.groupKeys,
       props.colors,
       seededMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -348,7 +352,7 @@ export function mountPieChart(
             tooltip.classList.add("sticky");
             showTooltip(slice, ev);
           },
-        }
+        },
       );
     }
 

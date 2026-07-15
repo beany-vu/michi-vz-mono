@@ -18,7 +18,7 @@ export function renderRibbonSvg(
   parent: SVGElement,
   model: RibbonRenderModel,
   o: RibbonSvgOptions,
-  ia: RibbonInteractions
+  ia: RibbonInteractions,
 ): void {
   const root = svgEl("g", { class: "ribbon-chart-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";

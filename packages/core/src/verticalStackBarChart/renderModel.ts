@@ -42,7 +42,7 @@ export function buildStackRenderModel(
   effectiveKeys: string[],
   dates: string[],
   colors: StackColorResolver,
-  o: BuildStackModelOptions
+  o: BuildStackModelOptions,
 ): StackRenderModel {
   const { stackedData } = prepared;
 

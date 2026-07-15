@@ -38,7 +38,7 @@ export function drawChoroplethMapWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: ChoroplethMapRenderModel,
-  o: ChoroplethWebgpuOptions
+  o: ChoroplethWebgpuOptions,
 ): boolean {
   drawChoroplethMapCanvas(canvas, svg, model, {
     width: o.width,

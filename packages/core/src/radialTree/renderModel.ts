@@ -97,7 +97,11 @@ export interface LabelDensity {
   showLabels: boolean;
 }
 
-export function computeLabelDensity(leafCount: number, rotateAbove: number, hideAbove: number): LabelDensity {
+export function computeLabelDensity(
+  leafCount: number,
+  rotateAbove: number,
+  hideAbove: number,
+): LabelDensity {
   return { rotateText: leafCount > rotateAbove, showLabels: !(leafCount > hideAbove) };
 }
 
@@ -118,7 +122,7 @@ export function buildRadialTreeRenderModel(
   laidOut: RadialLayoutNode[],
   colors: RadialTreeColorResolver,
   radiusOf: RadiusOf,
-  o: BuildRadialTreeModelOptions
+  o: BuildRadialTreeModelOptions,
 ): RadialTreeRenderModel {
   const { rotateText, showLabels } = computeLabelDensity(o.leafCount, o.rotateAbove, o.hideAbove);
   const highlightSet = new Set(o.highlightItems);
@@ -127,7 +131,8 @@ export function buildRadialTreeRenderModel(
   const marks: RadialTreeMark[] = laidOut.map((node) => {
     const d = node.data;
     const angle = node.angle;
-    const nearPole = (angle < 180 + BUFFER && angle > 180 - BUFFER) || (angle < 360 && angle > 360 - BUFFER);
+    const nearPole =
+      (angle < 180 + BUFFER && angle > 180 - BUFFER) || (angle < 360 && angle > 360 - BUFFER);
 
     let labelText = "";
     let valueText = "";
@@ -153,7 +158,8 @@ export function buildRadialTreeRenderModel(
           ? "start"
           : "end";
 
-    const highlighted = !anyHighlight || highlightSet.has(d.label) || highlightSet.has(d.groupLabel);
+    const highlighted =
+      !anyHighlight || highlightSet.has(d.label) || highlightSet.has(d.groupLabel);
 
     return {
       label: d.label,

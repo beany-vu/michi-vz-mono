@@ -107,7 +107,11 @@ export function buildJetPath(g: JetGeometryInput): string {
  * the crown is fainter still. Modulates ALPHA of the consumer's single hue only
  * (hard rule #4) - never a hardcoded white.
  */
-export function buildFrothSlices(g: JetGeometryInput, layers: number, baseOpacity: number): FrothSlice[] {
+export function buildFrothSlices(
+  g: JetGeometryInput,
+  layers: number,
+  baseOpacity: number,
+): FrothSlice[] {
   const N = Math.max(1, Math.min(20, Math.round(layers)));
   const stemHalf = Math.max(0.5, g.stemHalf);
   const bloomHalf = Math.max(g.bloomHalf, stemHalf);

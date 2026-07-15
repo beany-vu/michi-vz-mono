@@ -22,7 +22,7 @@ function fillRoundedRect(
   y: number,
   w: number,
   h: number,
-  r: number
+  r: number,
 ): void {
   const cr = Math.min(r, Math.min(w, h) / 2);
   if (cr <= 0) {
@@ -47,7 +47,7 @@ export function drawSankeyCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: SankeyRenderModel,
-  o: SankeyCanvasOptions
+  o: SankeyCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -61,13 +61,14 @@ export function drawSankeyCanvas(
   }
 
   const nodeFallback = new Map<string, string>();
-  for (const n of model.nodes) if (!nodeFallback.has(n.colorKey)) nodeFallback.set(n.colorKey, n.fill);
+  for (const n of model.nodes)
+    if (!nodeFallback.has(n.colorKey)) nodeFallback.set(n.colorKey, n.fill);
   const nodeColors = resolveMarkColors(
     svg,
     model.nodeKeys,
     (k) => nodeFallback.get(k) || "transparent",
     makeSimpleProbe("rect", "node", "fill"),
-    "fill"
+    "fill",
   );
   // Links are filled ribbons → resolve their colour via `fill` (matches the SVG).
   const linkColors = resolveMarkColors(
@@ -75,7 +76,7 @@ export function drawSankeyCanvas(
     model.nodeKeys,
     (k) => nodeFallback.get(k) || "transparent",
     makeSimpleProbe("path", "link", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;

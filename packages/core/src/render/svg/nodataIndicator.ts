@@ -12,7 +12,7 @@ export function toggleNodataIndicator(
   host: HTMLElement,
   show: boolean,
   text: string,
-  existing: HTMLDivElement | null
+  existing: HTMLDivElement | null,
 ): HTMLDivElement | null {
   if (show) {
     const el = existing ?? htmlEl("div", { class: "mv-nodata" });

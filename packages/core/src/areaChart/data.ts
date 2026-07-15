@@ -37,7 +37,7 @@ export interface ProcessedArea {
 
 export function processAreaChartData(
   series: AreaDataRow[],
-  opts: ProcessAreaOptions
+  opts: ProcessAreaOptions,
 ): ProcessedArea {
   const disabled = new Set(opts.disabledItems ?? []);
   const activeKeys = opts.keys.filter((k) => !disabled.has(k));
@@ -82,7 +82,7 @@ export function processAreaChartData(
       ? [0, 1]
       : opts.forcePercentageScale
         ? [0, 100]
-        : opts.yAxisDomain ?? [0, Math.max(100, maxSum)];
+        : (opts.yAxisDomain ?? [0, Math.max(100, maxSum)]);
 
   return { activeKeys, stacked, xAxisDomain: [xlo, xhi], yAxisDomain };
 }

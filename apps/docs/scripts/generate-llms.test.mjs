@@ -31,18 +31,29 @@ test("every chart appears in llms-full.txt and llms.txt (count derived, never ha
 });
 
 test("copy rules: no en/em dashes, no first-person plural, no competitor names", () => {
-  for (const [name, text] of [["llms.txt", llms], ["llms-full.txt", llmsFull]]) {
+  for (const [name, text] of [
+    ["llms.txt", llms],
+    ["llms-full.txt", llmsFull],
+  ]) {
     assert.ok(!/[–—]/.test(text), `${name}: contains an en/em dash`);
     const we = text.match(/\b(we|our)\b/i);
-    assert.equal(we, null, `${name}: first-person plural "${we?.[0]}" near: ${text.slice(Math.max(0, (we?.index ?? 0) - 40), (we?.index ?? 0) + 40)}`);
-    const competitors = /\b(highcharts|echarts|recharts|chart\.js|chartjs|plotly|amcharts|nivo|victory|visx)\b/i;
+    assert.equal(
+      we,
+      null,
+      `${name}: first-person plural "${we?.[0]}" near: ${text.slice(Math.max(0, (we?.index ?? 0) - 40), (we?.index ?? 0) + 40)}`,
+    );
+    const competitors =
+      /\b(highcharts|echarts|recharts|chart\.js|chartjs|plotly|amcharts|nivo|victory|visx)\b/i;
     const hit = text.match(competitors);
     assert.equal(hit, null, `${name}: names another chart library ("${hit?.[0]}")`);
   }
 });
 
 test("no leftover template markers", () => {
-  for (const [name, text] of [["llms.txt", llms], ["llms-full.txt", llmsFull]]) {
+  for (const [name, text] of [
+    ["llms.txt", llms],
+    ["llms-full.txt", llmsFull],
+  ]) {
     assert.ok(!text.includes("{{"), `${name}: unresolved {{token}}`);
     assert.ok(!text.includes("<!-- llms:"), `${name}: unresolved block marker`);
   }
@@ -50,7 +61,10 @@ test("no leftover template markers", () => {
 
 test("every markdown link is absolute to the site (or on the allowlist)", () => {
   const allow = [REPO_URL, `${REPO_URL}/`, "https://www.npmjs.com/org/michi-vz"];
-  for (const [name, text] of [["llms.txt", llms], ["llms-full.txt", llmsFull]]) {
+  for (const [name, text] of [
+    ["llms.txt", llms],
+    ["llms-full.txt", llmsFull],
+  ]) {
     for (const m of text.matchAll(/\]\(([^)]+)\)/g)) {
       const url = m[1];
       const ok = url.startsWith(`${SITE}/`) || allow.includes(url);
@@ -61,7 +75,9 @@ test("every markdown link is absolute to the site (or on the allowlist)", () => 
 
 test("package versions are stamped from the workspace, not hardcoded", () => {
   for (const pkg of ["core", "react", "insights"]) {
-    const { version } = JSON.parse(readFileSync(resolve(REPO, `packages/${pkg}/package.json`), "utf8"));
+    const { version } = JSON.parse(
+      readFileSync(resolve(REPO, `packages/${pkg}/package.json`), "utf8"),
+    );
     assert.ok(llmsFull.includes(version), `full: @michi-vz/${pkg} version ${version}`);
     assert.ok(llms.includes(version), `index: @michi-vz/${pkg} version ${version}`);
   }
@@ -72,7 +88,13 @@ test("structure: llmstxt.org index shape and single shared-prop reference", () =
   assert.ok(/^> /m.test(llms), "index: blockquote summary");
   assert.ok(llms.includes("## Optional"), "index: Optional section");
   assert.ok(llms.includes(`${SITE}/llms-full.txt`), "index: links the full file");
-  for (const heading of ["## Shared props", "## Chart reference", "## ChartContext", "## Insights", "## Theming"]) {
+  for (const heading of [
+    "## Shared props",
+    "## Chart reference",
+    "## ChartContext",
+    "## Insights",
+    "## Theming",
+  ]) {
     assert.ok(llmsFull.includes(heading), `full: missing "${heading}"`);
   }
   // Shared props are documented once, not repeated under each of the 21 charts.

@@ -49,7 +49,8 @@ export function buildSankeyContext(input: BuildSankeyContextInput): SankeyChartC
   }
   let busiestNode: { id: string; value: number } | null = null;
   for (const n of nodes) {
-    if (!busiestNode || n.value > busiestNode.value) busiestNode = { id: n.id, value: round(n.value) };
+    if (!busiestNode || n.value > busiestNode.value)
+      busiestNode = { id: n.id, value: round(n.value) };
   }
 
   const titlePart = input.title ? `"${input.title}" ` : "";

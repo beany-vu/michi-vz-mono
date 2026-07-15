@@ -4,7 +4,10 @@ import { createManualTicker, type ManualTicker } from "../src/animation/ticker";
 import type { MotionPreference } from "../src/animation/reducedMotion";
 import type { LineChartProps, LineDataItem } from "../src/types";
 
-const annual = (vals: number[], start = 2016): { date: number; value: number; certainty: boolean }[] =>
+const annual = (
+  vals: number[],
+  start = 2016,
+): { date: number; value: number; certainty: boolean }[] =>
   vals.map((value, i) => ({ date: start + i, value, certainty: true }));
 
 const sample: LineDataItem[] = [
@@ -20,13 +23,17 @@ const T0 = 68;
 const T1 = 60 + 490 / 3 + 8;
 const T3 = WIDTH;
 
-function mount(extra: Partial<LineChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<LineChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountLineChart(
     host,
     { dataSet: sample, width: WIDTH, height: 300, xAxisDataType: "date_annual", ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -88,7 +95,7 @@ describe("line timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: { easing: "linear", speedMs: 800, tweenMs: 400 } },
-      ticker
+      ticker,
     );
     const tl = chart.timeline!()!;
     tl.play();
@@ -127,13 +134,13 @@ describe("line timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: { easing: "linear", tweenMs: 400, tipLabel: true } },
-      ticker
+      ticker,
     );
     const tips = () => Array.from(host.querySelectorAll("text.mv-progressive-tip"));
     expect(tips().length).toBe(2);
     chart.timeline!()!.stepForward();
     ticker.tick(400);
-    const texts = tips().map(t => t.textContent);
+    const texts = tips().map((t) => t.textContent);
     expect(texts).toContain("Alpha 20"); // Alpha's 2017 value
     chart.destroy();
     host.remove();
@@ -143,7 +150,7 @@ describe("line timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: true, renderer: "canvas", sharedTooltip: true },
-      ticker
+      ticker,
     );
     // Paused at the first year (reveal ~68px); hover far right.
     host.dispatchEvent(new MouseEvent("mousemove", { clientX: 500, clientY: 150, bubbles: true }));
@@ -160,7 +167,7 @@ describe("line timeline (cumulative)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       { timeline: true, progressiveDraw: { durationMs: 1000, easing: "linear" } },
-      ticker
+      ticker,
     );
     expect(clipWidth(host)).toBeCloseTo(T0, 3); // timeline position, not a pd sweep
     ticker.tick(500);

@@ -98,7 +98,7 @@ export function drawFountainWebgpu(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: FountainRenderModel,
-  o: FountainWebgpuOptions
+  o: FountainWebgpuOptions,
 ): boolean {
   // Resolve fill colours through the SAME probe canvas mode uses.
   const labels = [...new Set(model.jets.map((j) => j.label))];
@@ -108,7 +108,7 @@ export function drawFountainWebgpu(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeSimpleProbe("path", "mv-fountain-jet", "fill"),
-    "fill"
+    "fill",
   );
   const colorOf = (label: string, fb: string): string => fillColors.get(label) || fb;
 

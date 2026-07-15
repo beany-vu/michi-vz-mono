@@ -45,7 +45,7 @@ export function computeComparableDelta(
   compared: ComparableBarSegment,
   rowY: number,
   rowHeight: number,
-  o: ComparableDeltaGeometryOptions
+  o: ComparableDeltaGeometryOptions,
 ): ComparableDeltaModel {
   const diff = d.valueCompared - d.valueBased;
   let direction: ComparableDeltaDirection = "flat";

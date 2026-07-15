@@ -21,7 +21,7 @@ import type { ScatterPointModel, ScatterRenderModel } from "./renderModel";
 export const makeGroupedScatterProbe = (
   label: string,
   labelSafe: string,
-  fallback: string
+  fallback: string,
 ): ColorProbe => {
   const NS = "http://www.w3.org/2000/svg";
   const g = document.createElementNS(NS, "g") as SVGGElement;
@@ -67,7 +67,7 @@ export function drawScatterCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: ScatterRenderModel,
-  o: ScatterCanvasOptions
+  o: ScatterCanvasOptions,
 ): Map<string, string> {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return new Map();
@@ -80,7 +80,7 @@ export function drawScatterCanvas(
     labels,
     (l) => fallback.get(l) || "transparent",
     makeGroupedScatterProbe,
-    "fill"
+    "fill",
   );
 
   for (const p of model.points) {

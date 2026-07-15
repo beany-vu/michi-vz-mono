@@ -84,15 +84,27 @@ function resolve(p: DualBarChartProps): Resolved {
 function checkData(dataSet: DualBarDataPoint[]): DataWarning[] {
   const warnings: DataWarning[] = [];
   if (!dataSet || dataSet.length === 0) {
-    warnings.push({ type: "empty-dataset", message: "DualHorizontalBar received an empty dataSet." });
+    warnings.push({
+      type: "empty-dataset",
+      message: "DualHorizontalBar received an empty dataSet.",
+    });
     return warnings;
   }
   const seen = new Set<string>();
   for (const d of dataSet) {
     if (!Number.isFinite(d.value1) || !Number.isFinite(d.value2)) {
-      warnings.push({ type: "non-finite-value", message: `"${d.label}" has a non-finite value.`, label: d.label });
+      warnings.push({
+        type: "non-finite-value",
+        message: `"${d.label}" has a non-finite value.`,
+        label: d.label,
+      });
     }
-    if (seen.has(d.label)) warnings.push({ type: "duplicate-label", message: `Duplicate label "${d.label}".`, label: d.label });
+    if (seen.has(d.label))
+      warnings.push({
+        type: "duplicate-label",
+        message: `Duplicate label "${d.label}".`,
+        label: d.label,
+      });
     seen.add(d.label);
   }
   return warnings;
@@ -101,7 +113,7 @@ function checkData(dataSet: DualBarDataPoint[]): DataWarning[] {
 export function mountDualHorizontalBarChart(
   host: HTMLElement,
   initial: DualBarChartProps,
-  opts?: MountOptions<DualBarChartProps>
+  opts?: MountOptions<DualBarChartProps>,
 ): ChartInstance<DualBarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-dual-bar-chart");
@@ -249,7 +261,7 @@ export function mountDualHorizontalBarChart(
     const tlData = engineTl.beforeRender(
       r.timeline,
       props.dataSet,
-      props.filter as unknown as Filter | undefined
+      props.filter as unknown as Filter | undefined,
     );
     const { points, labels, xAxisDomain } = processDualBarData(tlData.dataSet, {
       disabledItems: props.disabledItems,
@@ -261,7 +273,7 @@ export function mountDualHorizontalBarChart(
       tlData.dataSet,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -334,7 +346,11 @@ export function mountDualHorizontalBarChart(
       renderDualSvg(
         svg,
         model,
-        { value1Opacity: r.value1Opacity, value2Opacity: r.value2Opacity, enableTransitions: r.enableTransitions },
+        {
+          value1Opacity: r.value1Opacity,
+          value2Opacity: r.value2Opacity,
+          enableTransitions: r.enableTransitions,
+        },
         {
           onEnter: (bar, ev) => {
             if (sticky) return;
@@ -350,7 +366,7 @@ export function mountDualHorizontalBarChart(
             tooltip.classList.add("sticky");
             showTooltip(bar.raw, ev);
           },
-        }
+        },
       );
     }
 

@@ -20,7 +20,7 @@ export interface ProcessedComparableVertical {
 
 export function processComparableVerticalBarData(
   dataSet: ComparableBarDataPoint[],
-  opts: ProcessComparableVerticalOptions
+  opts: ProcessComparableVerticalOptions,
 ): ProcessedComparableVertical {
   const disabled = new Set(opts.disabledItems ?? []);
   let points = dataSet.filter((d) => !disabled.has(d.label));

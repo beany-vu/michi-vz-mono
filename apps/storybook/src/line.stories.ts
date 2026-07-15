@@ -10,9 +10,25 @@ const gaps = reg["line-chart"][1].props; // two series with a reporting gap
 // Sparse monthly data (Jan 2022 - Dec 2023) with 2022-04/05/09 + 2023-02/03 MISSING,
 // so the fillPeriodTicks story has real gaps to reveal as faded no-data ticks.
 const monthsPresent = [
-  "2022-01", "2022-02", "2022-03", "2022-06", "2022-07", "2022-08",
-  "2022-10", "2022-11", "2022-12", "2023-01", "2023-04", "2023-05",
-  "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12",
+  "2022-01",
+  "2022-02",
+  "2022-03",
+  "2022-06",
+  "2022-07",
+  "2022-08",
+  "2022-10",
+  "2022-11",
+  "2022-12",
+  "2023-01",
+  "2023-04",
+  "2023-05",
+  "2023-06",
+  "2023-07",
+  "2023-08",
+  "2023-09",
+  "2023-10",
+  "2023-11",
+  "2023-12",
 ];
 const mkSeries = (base: number, amp: number) =>
   monthsPresent.map((date, i) => ({

@@ -19,16 +19,16 @@ function mount(extra: Partial<SymbolMapChartProps> = {}, ticker?: ManualTicker) 
   const chart = mountSymbolMapChart(
     host,
     { dataSet: years, width: 600, height: 400, ...extra },
-    ticker ? { ticker } : undefined
+    ticker ? { ticker } : undefined,
   );
   return { host, chart };
 }
 
 const visibleLabels = (host: HTMLElement): Set<string> =>
   new Set(
-    Array.from(host.querySelectorAll("circle.symbol[data-label]")).map(
-      e => e.getAttribute("data-label")!
-    )
+    Array.from(host.querySelectorAll("circle.symbol[data-label]")).map((e) =>
+      e.getAttribute("data-label")!,
+    ),
   );
 
 describe("symbol map chart timeline (off by default)", () => {

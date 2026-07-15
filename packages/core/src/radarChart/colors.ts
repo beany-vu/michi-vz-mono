@@ -15,7 +15,7 @@ export function buildRadarColors(
   items: RadarDataItem[],
   colors: string[] = [],
   colorsMapping?: Record<string, string>,
-  skipColorMappingDispatch = false
+  skipColorMappingDispatch = false,
 ): RadarColorResolver {
   const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
   const generated: Record<string, string> = { ...colorsMapping };
@@ -23,7 +23,9 @@ export function buildRadarColors(
   for (const it of items) {
     // Already coloured under the full label OR its year-stripped base → skip.
     if (generated[it.label] || generated[baseLabel(it.label)]) continue;
-    generated[it.label] = skipColorMappingDispatch ? "transparent" : it.color ?? palette[i % palette.length];
+    generated[it.label] = skipColorMappingDispatch
+      ? "transparent"
+      : (it.color ?? palette[i % palette.length]);
     i++;
   }
   return {

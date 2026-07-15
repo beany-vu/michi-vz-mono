@@ -17,13 +17,17 @@ const dataSet: RangeDataItem[] = [
 const WIDTH = 600;
 const PLOT_LEFT = 60;
 
-function mount(extra: Partial<RangeChartProps> = {}, ticker?: ManualTicker, motion?: MotionPreference) {
+function mount(
+  extra: Partial<RangeChartProps> = {},
+  ticker?: ManualTicker,
+  motion?: MotionPreference,
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const chart = mountRangeChart(
     host,
     { dataSet, width: WIDTH, height: 300, xAxisDataType: "date_annual", ...extra },
-    { ticker, motion }
+    { ticker, motion },
   );
   return { host, chart };
 }
@@ -57,7 +61,10 @@ describe("RangeChart progressiveDraw SVG reveal", () => {
 
   it("grows the clip monotonically and reaches full width at durationMs", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount({ progressiveDraw: { durationMs: 1000, easing: "linear" } }, ticker);
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear" } },
+      ticker,
+    );
     let prev = rectWidth(host);
     for (let i = 0; i < 10; i++) {
       ticker.tick(100);
@@ -81,7 +88,10 @@ describe("RangeChart progressiveDraw SVG reveal", () => {
 
   it("replay() resets the clip and re-grows it", () => {
     const ticker = createManualTicker();
-    const { host, chart } = mount({ progressiveDraw: { durationMs: 1000, easing: "linear" } }, ticker);
+    const { host, chart } = mount(
+      { progressiveDraw: { durationMs: 1000, easing: "linear" } },
+      ticker,
+    );
     ticker.tick(1000);
     expect(rectWidth(host)).toBe(WIDTH);
     chart.replay!();

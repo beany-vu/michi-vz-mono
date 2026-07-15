@@ -34,7 +34,7 @@ function marker(
   x: number,
   color: string,
   squareRadius: number,
-  cls: string
+  cls: string,
 ): SVGElement {
   const { d, y, barHeight, markerOpacity } = el;
   const center = y + barHeight / 2;
@@ -70,7 +70,7 @@ export function renderGapSvg(
   parent: SVGElement,
   model: GapRenderModel,
   o: GapSvgOptions,
-  ia: GapInteractions
+  ia: GapInteractions,
 ): void {
   const root = svgEl("g", { class: "gap-chart-content" });
   const transition = o.enableTransitions ? "all 0.1s ease-in-out" : "none";
@@ -152,7 +152,7 @@ export function buildGapLegendItems(
   shapeValue1: Shape,
   shapeValue2: Shape,
   colorMode: "label" | "shape",
-  shapeColorsMapping?: ShapeMapping
+  shapeColorsMapping?: ShapeMapping,
 ): GapLegendItem[] {
   if (!shapesLabelsMapping) return [];
   const items: GapLegendItem[] = [];
@@ -161,7 +161,8 @@ export function buildGapLegendItems(
       type: "value1",
       label: shapesLabelsMapping.value1,
       shape: shapeValue1,
-      color: colorMode === "shape" && shapeColorsMapping?.value1 ? shapeColorsMapping.value1 : "#666",
+      color:
+        colorMode === "shape" && shapeColorsMapping?.value1 ? shapeColorsMapping.value1 : "#666",
     });
   }
   if (shapesLabelsMapping.gap) {
@@ -176,7 +177,8 @@ export function buildGapLegendItems(
       type: "value2",
       label: shapesLabelsMapping.value2,
       shape: shapeValue2,
-      color: colorMode === "shape" && shapeColorsMapping?.value2 ? shapeColorsMapping.value2 : "#666",
+      color:
+        colorMode === "shape" && shapeColorsMapping?.value2 ? shapeColorsMapping.value2 : "#666",
     });
   }
   return items;
@@ -217,13 +219,17 @@ function legendLabel(text: string, color: string, x: number, foWidth: number): S
 export function renderGapLegend(
   parent: SVGElement,
   items: GapLegendItem[],
-  layout: GapLegendLayout
+  layout: GapLegendLayout,
 ): void {
   if (items.length === 0) return;
   const { width, height, margin, legendAlign } = layout;
 
   const groupX =
-    legendAlign === "left" ? margin.left : legendAlign === "right" ? width - margin.right : width / 2;
+    legendAlign === "left"
+      ? margin.left
+      : legendAlign === "right"
+        ? width - margin.right
+        : width / 2;
   const groupY = height - margin.bottom / 2 + 20;
   const g = svgEl("g", { class: "gap-legend", transform: `translate(${groupX}, ${groupY})` });
 
@@ -244,10 +250,15 @@ export function renderGapLegend(
           opacity: 0.7,
           rx: 2,
           ry: 2,
-        })
+        }),
       );
       itemG.appendChild(
-        legendLabel(item.label, item.color, LEGEND_SHAPE_OFFSET + 5, LEGEND_ITEM_WIDTH - LEGEND_SHAPE_OFFSET - 10)
+        legendLabel(
+          item.label,
+          item.color,
+          LEGEND_SHAPE_OFFSET + 5,
+          LEGEND_ITEM_WIDTH - LEGEND_SHAPE_OFFSET - 10,
+        ),
       );
     } else {
       const shape = item.shape || "circle";
@@ -262,13 +273,20 @@ export function renderGapLegend(
             fill: item.color || "#666",
             rx: 2,
             ry: 2,
-          })
+          }),
         );
       } else {
-        itemG.appendChild(svgEl("path", { d: getShapePath(shape, 12) || "", fill: item.color || "#666" }));
+        itemG.appendChild(
+          svgEl("path", { d: getShapePath(shape, 12) || "", fill: item.color || "#666" }),
+        );
       }
       itemG.appendChild(
-        legendLabel(item.label, item.color, LEGEND_SHAPE_OFFSET, LEGEND_ITEM_WIDTH - LEGEND_SHAPE_OFFSET - 5)
+        legendLabel(
+          item.label,
+          item.color,
+          LEGEND_SHAPE_OFFSET,
+          LEGEND_ITEM_WIDTH - LEGEND_SHAPE_OFFSET - 5,
+        ),
       );
     }
     g.appendChild(itemG);

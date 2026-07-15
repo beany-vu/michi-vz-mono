@@ -77,15 +77,17 @@ function resolve(p: RibbonChartProps): Resolved {
 
 function checkData(series: RibbonDataRow[], keys: string[]): DataWarning[] {
   const warnings: DataWarning[] = [];
-  if (!series || series.length === 0) warnings.push({ type: "empty-dataset", message: "RibbonChart received an empty series." });
-  if (!keys || keys.length === 0) warnings.push({ type: "empty-dataset", message: "RibbonChart received no keys." });
+  if (!series || series.length === 0)
+    warnings.push({ type: "empty-dataset", message: "RibbonChart received an empty series." });
+  if (!keys || keys.length === 0)
+    warnings.push({ type: "empty-dataset", message: "RibbonChart received no keys." });
   return warnings;
 }
 
 export function mountRibbonChart(
   host: HTMLElement,
   initial: RibbonChartProps,
-  opts?: MountOptions<RibbonChartProps>
+  opts?: MountOptions<RibbonChartProps>,
 ): ChartInstance<RibbonChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-ribbon-chart");
@@ -207,14 +209,14 @@ export function mountRibbonChart(
       props.series,
       props.keys,
       props.disabledItems,
-      props.yAxisDomain
+      props.yAxisDomain,
     );
 
     const colors = buildRibbonColors(
       props.keys,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -271,7 +273,7 @@ export function mountRibbonChart(
             tooltip.classList.add("sticky");
             showTooltip(col, ev);
           },
-        }
+        },
       );
     }
 
@@ -326,7 +328,12 @@ export function mountRibbonChart(
       startPx: r.margin.left,
       endPx: r.width,
       canvasRedraw: canvasLayer
-        ? (x) => drawRibbonCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+        ? (x) =>
+            drawRibbonCanvas(canvasLayer, svg, model!, {
+              width: r.width,
+              height: r.height,
+              revealX: x,
+            })
         : undefined,
     });
 
@@ -335,7 +342,10 @@ export function mountRibbonChart(
     // sweeps the same reveal clip progressiveDraw uses. Data + getContext() stay full.
     if (r.timeline && r.renderer !== "webgpu") {
       const periods: CumulativePeriod[] = dates
-        .map((d) => ({ period: d, px: (scales.xScale(d) ?? r.margin.left) + scales.xScale.bandwidth() }))
+        .map((d) => ({
+          period: d,
+          px: (scales.xScale(d) ?? r.margin.left) + scales.xScale.bandwidth(),
+        }))
         .sort((a, b) => a.px - b.px);
       cumTl.afterRender(r.timeline, {
         host,
@@ -348,7 +358,11 @@ export function mountRibbonChart(
         endPx: r.width,
         canvasRedraw: canvasLayer
           ? (x) =>
-              drawRibbonCanvas(canvasLayer, svg, model!, { width: r.width, height: r.height, revealX: x })
+              drawRibbonCanvas(canvasLayer, svg, model!, {
+                width: r.width,
+                height: r.height,
+                revealX: x,
+              })
           : undefined,
       });
     } else {

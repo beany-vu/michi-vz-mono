@@ -25,7 +25,7 @@ export function createGapScales(
   nice = true,
   // Caps each row's thickness so 1-2 rows don't stretch across the full plot
   // height; mirrors ComparableBarChart's createComparableBarScales verbatim.
-  maxBarHeight?: number
+  maxBarHeight?: number,
 ): GapScales {
   let xScale: GapXScale;
   if (xAxisDataType === "number") {
@@ -59,10 +59,7 @@ export function createGapScales(
     }
   }
 
-  const yScale = scaleBand<string>()
-    .domain(yAxisDomain)
-    .range(bandRange)
-    .padding(BAND_PADDING);
+  const yScale = scaleBand<string>().domain(yAxisDomain).range(bandRange).padding(BAND_PADDING);
 
   return { xScale, yScale };
 }

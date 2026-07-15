@@ -150,9 +150,11 @@ onBeforeUnmount(() => {
         {{ devtoolsMounted ? "Remove devtools" : "Mount devtools" }}
       </button>
       <span class="devtools-demo__hint">
-        {{ devtoolsMounted
-          ? "Now click the floating Michi shield (bottom right) or press Ctrl/Cmd+Shift+M. Drag it anywhere."
-          : "Mounts the real package: the floating Michi shield appears and toggles the panel." }}
+        {{
+          devtoolsMounted
+            ? "Now click the floating Michi shield (bottom right) or press Ctrl/Cmd+Shift+M. Drag it anywhere."
+            : "Mounts the real package: the floating Michi shield appears and toggles the panel."
+        }}
       </span>
     </div>
     <div ref="host" class="devtools-demo__chart"></div>

@@ -8,7 +8,10 @@ function svgRoot(): SVGSVGElement {
 }
 const MARGIN = { top: 10, right: 20, bottom: 30, left: 40 };
 
-function render(scale: LinearOrLogScale, extra: Partial<Parameters<typeof renderYAxisLinear>[2]> = {}) {
+function render(
+  scale: LinearOrLogScale,
+  extra: Partial<Parameters<typeof renderYAxisLinear>[2]> = {},
+) {
   const svg = svgRoot();
   renderYAxisLinear(svg, scale, {
     width: 400,
@@ -67,7 +70,9 @@ describe("renderYAxisLinear - log-mode label thinning (B3.5)", () => {
       .clamp(true);
     const { labels } = render(scale, { ticks: 3 });
     const values = labels.map((l) => Number(l.textContent)).sort((a, b) => a - b);
-    expect(values).toEqual([1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000]);
+    expect(values).toEqual([
+      1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000,
+    ]);
   });
 
   it("narrow log domain (~1 decade): keeps the existing per-tick label behavior (no thinning)", () => {
@@ -97,7 +102,10 @@ describe("renderYAxisLinear - log-mode label thinning (B3.5)", () => {
   });
 
   it("linear mode is byte-identical: every generated tick still gets a label", () => {
-    const scale = scaleLinear().domain([0, 1000]).range([300 - MARGIN.bottom, MARGIN.top]).nice();
+    const scale = scaleLinear()
+      .domain([0, 1000])
+      .range([300 - MARGIN.bottom, MARGIN.top])
+      .nice();
     const { labels, grid } = render(scale, { ticks: 10 });
     expect(labels.length).toBe(grid.length);
     expect(labels.length).toBeGreaterThan(0);

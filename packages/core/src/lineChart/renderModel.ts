@@ -48,13 +48,18 @@ export function buildLineRenderModel(
   dataSet: LineDataItem[],
   scales: LineScales,
   colors: LineColorResolver,
-  o: BuildLineModelOptions
+  o: BuildLineModelOptions,
 ): LineRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
 
   const series: LineSeriesModel[] = dataSet.map((item) => {
-    const gen = makeLineGenerator(scales.xScale, scales.yScale, o.xAxisDataType, item.curve ?? o.curve);
+    const gen = makeLineGenerator(
+      scales.xScale,
+      scales.yScale,
+      o.xAxisDataType,
+      item.curve ?? o.curve,
+    );
     const runs: LineRunModel[] = getRuns(item.series).map((run) => ({
       points: run.points,
       certain: run.certain,

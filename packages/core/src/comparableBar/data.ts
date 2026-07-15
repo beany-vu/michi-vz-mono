@@ -19,7 +19,7 @@ export interface ProcessedComparable {
 
 export function processComparableBarData(
   dataSet: ComparableBarDataPoint[],
-  opts: ProcessComparableOptions
+  opts: ProcessComparableOptions,
 ): ProcessedComparable {
   const disabled = new Set(opts.disabledItems ?? []);
   let points = dataSet.filter((d) => !disabled.has(d.label));

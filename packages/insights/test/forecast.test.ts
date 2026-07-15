@@ -38,7 +38,7 @@ describe("accuracy", () => {
     const acc = accuracyFrom([100, 200], [110, 180]);
     expect(acc.mae).toBeCloseTo(15, 6); // (10 + 20) / 2
     expect(acc.rmse).toBeCloseTo(Math.sqrt((100 + 400) / 2), 6);
-    expect(acc.mape).toBeCloseTo((0.1 + 0.1) / 2 * 100, 6); // 10%
+    expect(acc.mape).toBeCloseTo(((0.1 + 0.1) / 2) * 100, 6); // 10%
   });
 
   it("MAPE is null on all-zero actuals (falls back to RMSE/MAE)", () => {

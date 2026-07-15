@@ -18,7 +18,7 @@ export function drawPieCanvas(
   canvas: HTMLCanvasElement | null,
   svg: SVGSVGElement | null,
   model: PieRenderModel,
-  o: PieCanvasOptions
+  o: PieCanvasOptions,
 ): void {
   const setup = setupCanvas(canvas, o.width, o.height);
   if (!setup) return;
@@ -31,7 +31,7 @@ export function drawPieCanvas(
     model.groupKeys,
     (k) => fallback.get(k) || "transparent",
     makeSimpleProbe("path", "slice", "fill"),
-    "fill"
+    "fill",
   );
 
   const anyHighlight = model.highlightSet.size > 0;

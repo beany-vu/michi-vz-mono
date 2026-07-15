@@ -4,9 +4,7 @@ import type { ScaleLinear, ScaleTime, ScaleBand } from "d3-scale";
 import type { Margin, XaxisDataType } from "../types";
 
 export type ScatterXScale =
-  | ScaleLinear<number, number>
-  | ScaleTime<number, number>
-  | ScaleBand<string>;
+  ScaleLinear<number, number> | ScaleTime<number, number> | ScaleBand<string>;
 
 export interface ScatterScales {
   xScale: ScatterXScale;
@@ -23,7 +21,7 @@ export function createScatterScales(
   height: number,
   margin: Margin,
   xAxisDataType: XaxisDataType,
-  sizeRange: [number, number]
+  sizeRange: [number, number],
 ): ScatterScales {
   let xScale: ScatterXScale;
   if (xAxisDataType === "band") {

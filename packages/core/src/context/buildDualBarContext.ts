@@ -22,8 +22,12 @@ export function buildDualBarContext(input: BuildDualContextInput): DualBarChartC
   const total2 = round(series.reduce((a, s) => a + s.value2, 0));
 
   // The headline finding of a tornado is which row leans hardest to one side.
-  let largestImbalance: { label: string; value1: number; value2: number; difference: number } | null =
-    null;
+  let largestImbalance: {
+    label: string;
+    value1: number;
+    value2: number;
+    difference: number;
+  } | null = null;
   for (const s of series) {
     const difference = round(s.value1 - s.value2);
     if (!largestImbalance || Math.abs(difference) > Math.abs(largestImbalance.difference)) {

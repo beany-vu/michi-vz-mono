@@ -16,7 +16,7 @@ function ribbonPath(
   tx: number,
   ty: number,
   width: number,
-  radius: number
+  radius: number,
 ): string {
   const hw = width / 2;
   const r = Math.max(0, Math.min(radius, hw, Math.abs(tx - sx) / 2));
@@ -94,7 +94,7 @@ export interface BuildSankeyModelOptions {
 export function buildSankeyRenderModel(
   laid: { nodes: SankeyLaidNode[]; links: SankeyLaidLink[] },
   colors: SankeyColorResolver,
-  o: BuildSankeyModelOptions
+  o: BuildSankeyModelOptions,
 ): SankeyRenderModel {
   const nodes: SankeyNodeMark[] = laid.nodes.map((n) => ({
     id: n.id,

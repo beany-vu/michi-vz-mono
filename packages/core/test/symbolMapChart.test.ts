@@ -151,12 +151,17 @@ describe("mountSymbolMapChart (jsdom, svg renderer)", () => {
   });
 
   it("B3.7: a small (r=3) mark gets an invisible circle.symbol-hit floored to SYMBOL_MIN_HIT_RADIUS; a large (r=30) mark's is unchanged", () => {
-    const { host, chart } = mount({ dataSet: smallLargeDataSet, radiusRange: smallLargeRadiusRange });
+    const { host, chart } = mount({
+      dataSet: smallLargeDataSet,
+      radiusRange: smallLargeRadiusRange,
+    });
     const cells = Array.from(host.querySelectorAll<SVGGElement>("g.symbol-cell"));
     const tinyCell = cells.find((g) => g.querySelector('circle.symbol[data-label="Tiny"]'))!;
     const hugeCell = cells.find((g) => g.querySelector('circle.symbol[data-label="Huge"]'))!;
     expect(tinyCell.querySelector('circle.symbol[data-label="Tiny"]')!.getAttribute("r")).toBe("3");
-    expect(hugeCell.querySelector('circle.symbol[data-label="Huge"]')!.getAttribute("r")).toBe("30");
+    expect(hugeCell.querySelector('circle.symbol[data-label="Huge"]')!.getAttribute("r")).toBe(
+      "30",
+    );
     const tinyHit = tinyCell.querySelector("circle.symbol-hit")!;
     const hugeHit = hugeCell.querySelector("circle.symbol-hit")!;
     expect(Number(tinyHit.getAttribute("r"))).toBe(SYMBOL_MIN_HIT_RADIUS); // 3 floored up to 8
@@ -168,7 +173,11 @@ describe("mountSymbolMapChart (jsdom, svg renderer)", () => {
 
   it("B3.7: a small (r=3) SVG mark's native mouseenter still fires the tooltip formatter (repro/regression)", () => {
     const formatter = vi.fn((d: SymbolMapDataItem) => "tip");
-    const { host, chart } = mount({ dataSet: smallLargeDataSet, radiusRange: smallLargeRadiusRange, tooltipFormatter: formatter });
+    const { host, chart } = mount({
+      dataSet: smallLargeDataSet,
+      radiusRange: smallLargeRadiusRange,
+      tooltipFormatter: formatter,
+    });
     const tinyCircle = host.querySelector<SVGCircleElement>('circle.symbol[data-label="Tiny"]')!;
     tinyCircle.parentElement!.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     expect(formatter).toHaveBeenCalled();
@@ -306,8 +315,18 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
   it("host-level point-in-circle hit-test fires onHighlightItem", () => {
     // Read a symbol's pixel coords from an SVG mount (same layout/model as canvas).
     const svgMount = mount({ renderer: "svg" });
-    const cx = Number(svgMount.host.querySelector("circle.symbol")!.parentElement!.getAttribute("transform")!.match(/[\d.-]+/g)![0]);
-    const cy = Number(svgMount.host.querySelector("circle.symbol")!.parentElement!.getAttribute("transform")!.match(/[\d.-]+/g)![1]);
+    const cx = Number(
+      svgMount.host
+        .querySelector("circle.symbol")!
+        .parentElement!.getAttribute("transform")!
+        .match(/[\d.-]+/g)![0],
+    );
+    const cy = Number(
+      svgMount.host
+        .querySelector("circle.symbol")!
+        .parentElement!.getAttribute("transform")!
+        .match(/[\d.-]+/g)![1],
+    );
     svgMount.chart.destroy();
     svgMount.host.remove();
 
@@ -344,7 +363,12 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
   const zeroMargin = { top: 0, right: 0, bottom: 0, left: 0 };
 
   function tinyAndHugeCoords(margin = zeroMargin) {
-    const svgMount = mount({ renderer: "svg", dataSet: smallLargeDataSet, radiusRange: smallLargeRadiusRange, margin });
+    const svgMount = mount({
+      renderer: "svg",
+      dataSet: smallLargeDataSet,
+      radiusRange: smallLargeRadiusRange,
+      margin,
+    });
     const read = (label: string) => {
       const transform = svgMount.host
         .querySelector<SVGCircleElement>(`circle.symbol[data-label="${label}"]`)!
@@ -369,7 +393,9 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
       margin: zeroMargin,
       onHighlightItem: (labels) => highlighted.push(labels),
     });
-    host.dispatchEvent(new MouseEvent("mousemove", { clientX: tiny.x, clientY: tiny.y, bubbles: true }));
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: tiny.x, clientY: tiny.y, bubbles: true }),
+    );
     expect(highlighted.some((h) => h.includes("Tiny"))).toBe(true);
     chart.destroy();
     host.remove();
@@ -385,7 +411,9 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
       margin: zeroMargin,
       onHighlightItem: (labels) => highlighted.push(labels),
     });
-    host.dispatchEvent(new MouseEvent("mousemove", { clientX: tiny.x + 6, clientY: tiny.y, bubbles: true }));
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: tiny.x + 6, clientY: tiny.y, bubbles: true }),
+    );
     expect(highlighted.some((h) => h.includes("Tiny"))).toBe(true);
     chart.destroy();
     host.remove();
@@ -401,7 +429,9 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
       margin: zeroMargin,
       onHighlightItem: (labels) => highlighted.push(labels),
     });
-    host.dispatchEvent(new MouseEvent("mousemove", { clientX: tiny.x + 9, clientY: tiny.y, bubbles: true }));
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: tiny.x + 9, clientY: tiny.y, bubbles: true }),
+    );
     expect(highlighted.some((h) => h.includes("Tiny"))).toBe(false);
     chart.destroy();
     host.remove();
@@ -417,9 +447,13 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
       margin: zeroMargin,
       onHighlightItem: (labels) => highlighted.push(labels),
     });
-    host.dispatchEvent(new MouseEvent("mousemove", { clientX: huge.x + 20, clientY: huge.y, bubbles: true }));
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: huge.x + 20, clientY: huge.y, bubbles: true }),
+    );
     expect(highlighted.some((h) => h.includes("Huge"))).toBe(true);
-    host.dispatchEvent(new MouseEvent("mousemove", { clientX: huge.x + 31, clientY: huge.y, bubbles: true }));
+    host.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: huge.x + 31, clientY: huge.y, bubbles: true }),
+    );
     expect(highlighted[highlighted.length - 1]).toEqual([]);
     chart.destroy();
     host.remove();
@@ -443,7 +477,11 @@ describe("mountSymbolMapChart (jsdom, canvas renderer)", () => {
     // margin.left/top + the plot-local mark position) is simulated by adding
     // the margin directly here.
     host.dispatchEvent(
-      new MouseEvent("mousemove", { clientX: tiny.x + margin.left, clientY: tiny.y + margin.top, bubbles: true })
+      new MouseEvent("mousemove", {
+        clientX: tiny.x + margin.left,
+        clientY: tiny.y + margin.top,
+        bubbles: true,
+      }),
     );
     expect(highlighted.some((h) => h.includes("Tiny"))).toBe(true);
     chart.destroy();
@@ -486,7 +524,9 @@ describe("mountSymbolMapChart - svg vs canvas parity", () => {
   it("resolves the same colorsMapping in both renderers", () => {
     const svgMount = mount({ renderer: "svg" });
     const canvasMount = mount({ renderer: "canvas" });
-    expect(svgMount.chart.getContext()!.colorsMapping).toEqual(canvasMount.chart.getContext()!.colorsMapping);
+    expect(svgMount.chart.getContext()!.colorsMapping).toEqual(
+      canvasMount.chart.getContext()!.colorsMapping,
+    );
     svgMount.chart.destroy();
     svgMount.host.remove();
     canvasMount.chart.destroy();
@@ -537,7 +577,7 @@ describe("positionMode", () => {
   // not on the circle (which has no cx/cy) - parse the translate.
   function centreOf(host: HTMLElement, label: string): { x: number; y: number } {
     const c = host.querySelector<SVGCircleElement>(
-      `circle.symbol[data-label-safe="${sanitizeForClassName(label)}"]`
+      `circle.symbol[data-label-safe="${sanitizeForClassName(label)}"]`,
     );
     expect(c).not.toBeNull();
     const transform = (c!.closest("g.symbol-cell") as SVGGElement).getAttribute("transform")!;
@@ -568,7 +608,13 @@ describe("positionMode", () => {
   it('"precise" positions are stable across re-renders (no sim, pure projection)', () => {
     const { host, chart } = mount({ dataSet: coLocated, positionMode: "precise" });
     const before = centreOf(host, "Gamma");
-    chart.update({ dataSet: coLocated, positionMode: "precise", width: 600, height: 400, title: "Demo" });
+    chart.update({
+      dataSet: coLocated,
+      positionMode: "precise",
+      width: 600,
+      height: 400,
+      title: "Demo",
+    });
     const after = centreOf(host, "Gamma");
     expect(after).toEqual(before);
     chart.destroy();
