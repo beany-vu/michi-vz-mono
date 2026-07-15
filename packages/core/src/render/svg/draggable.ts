@@ -15,7 +15,7 @@ export interface DraggableOptions {
   onDragStateChange?: (dragging: boolean) => void;
 }
 
-export function makeSvgGroupDraggable(group: SVGGElement, o: DraggableOptions): void {
+export function makeSvgGroupDraggable(group: SVGGElement, o: DraggableOptions): () => void {
   let offset = { ...o.offset };
   const apply = (): void => {
     group.style.transform = `translate(${offset.x}px, ${offset.y}px)`;
@@ -54,16 +54,23 @@ export function makeSvgGroupDraggable(group: SVGGElement, o: DraggableOptions): 
     offset = { x: startOX + (ev.clientX - startX), y: startOY + (ev.clientY - startY) };
     apply();
   };
+  // Detach the document-level drag listeners. Safe to call when none are attached
+  // (removeEventListener is then a no-op), so it also serves the dispose() path for a
+  // chart destroyed or re-rendered MID-DRAG. Otherwise those listeners keep the
+  // now-detached group (and its closures) alive, leaking one pair per interrupted drag.
+  const detachDocListeners = (): void => {
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", onPointerUp);
+  };
   const onPointerUp = (): void => {
     if (!dragging) return;
     dragging = false;
     group.style.cursor = "grab";
-    document.removeEventListener("pointermove", onPointerMove);
-    document.removeEventListener("pointerup", onPointerUp);
+    detachDocListeners();
     o.onMove(offset);
     o.onDragStateChange?.(false);
   };
-  group.addEventListener("pointerdown", (ev: PointerEvent) => {
+  const onPointerDown = (ev: PointerEvent): void => {
     dragging = true;
     startX = ev.clientX;
     startY = ev.clientY;
@@ -75,5 +82,14 @@ export function makeSvgGroupDraggable(group: SVGGElement, o: DraggableOptions): 
     o.onDragStateChange?.(true);
     document.addEventListener("pointermove", onPointerMove);
     document.addEventListener("pointerup", onPointerUp);
-  });
+  };
+  group.addEventListener("pointerdown", onPointerDown);
+
+  // Dispose: MUST be called from the caller's destroy() and before re-wiring on a
+  // re-render. Removes the group's pointerdown listener and any in-flight drag's
+  // document listeners.
+  return () => {
+    group.removeEventListener("pointerdown", onPointerDown);
+    detachDocListeners();
+  };
 }

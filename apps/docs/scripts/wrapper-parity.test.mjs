@@ -37,7 +37,11 @@ function wcForwarded(wcFile) {
 
 // Angular: `props.X` references inside the applicator whose signature names this propsType.
 function angularForwarded(propsType) {
-  const re = new RegExp(`function\\s+apply\\w+\\(\\s*el:[^,]+,\\s*props:\\s*${propsType}\\s*\\)[^{]*\\{([\\s\\S]*?)\\n\\}`);
+  // Tolerate a trailing comma before ")": Prettier adds one when it wraps a long
+  // applicator signature across multiple lines (trailingComma: "all").
+  const re = new RegExp(
+    `function\\s+apply\\w+\\(\\s*el:[^,]+,\\s*props:\\s*${propsType}\\s*,?\\s*\\)[^{]*\\{([\\s\\S]*?)\\n\\}`,
+  );
   const m = ANGULAR.match(re);
   if (!m) return null;
   return new Set([...m[1].matchAll(/props\.([a-zA-Z0-9_]+)/g)].map((x) => x[1]));
@@ -93,7 +97,7 @@ function reactMissing(chartKey, reactName) {
   if (renamed.length) {
     throw new Error(
       `${reactName}: destructuring rename(s) [${renamed.join(", ")}] aren't understood by ` +
-        `this static check - update reactMissing() (wrapper-parity.test.mjs) to handle them`
+        `this static check - update reactMissing() (wrapper-parity.test.mjs) to handle them`,
     );
   }
   const named = rawNames;
@@ -103,7 +107,9 @@ function reactMissing(chartKey, reactName) {
   const restSpread = /\.\.\.(coreProps|resolveEffectiveProps\(coreProps)/.test(body);
   if (!restSpread) return all;
 
-  const afterDestructure = body.slice(body.indexOf(destructureMatch[0]) + destructureMatch[0].length);
+  const afterDestructure = body.slice(
+    body.indexOf(destructureMatch[0]) + destructureMatch[0].length,
+  );
   const atRisk = named.filter((n) => all.includes(n) && !REACT_ONLY_KEYS.has(n));
   return atRisk.filter((n) => !new RegExp(`\\b${n}\\s*:`).test(afterDestructure));
 }
@@ -113,7 +119,11 @@ for (const c of CHARTS) {
     const fwd = wcForwarded(c.wc);
     assert.ok(fwd, `chartProps getter not found in ${c.wc}`);
     const missing = coreProps(c.key).filter((n) => !fwd.has(n));
-    assert.deepEqual(missing, [], `${c.key} WC chartProps getter is missing: ${missing.join(", ")}`);
+    assert.deepEqual(
+      missing,
+      [],
+      `${c.key} WC chartProps getter is missing: ${missing.join(", ")}`,
+    );
   });
 
   test(`Angular ${c.key} forwards every core ${c.propsType} prop`, () => {
@@ -126,6 +136,10 @@ for (const c of CHARTS) {
   test(`React ${c.key} forwards every core ${c.propsType} prop`, () => {
     const reactName = c.mount.replace(/^mount/, "");
     const missing = reactMissing(c.key, reactName);
-    assert.deepEqual(missing, [], `${c.key} React component (${reactName}) is missing: ${missing.join(", ")}`);
+    assert.deepEqual(
+      missing,
+      [],
+      `${c.key} React component (${reactName}) is missing: ${missing.join(", ")}`,
+    );
   });
 }

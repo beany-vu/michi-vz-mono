@@ -29,14 +29,7 @@ const UNIT_QUAD = new Float32Array([-1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1]);
 // ---- geometry builders (pure; append premultiplied verts into a number[]) --------
 
 /** Two triangles for an axis-aligned rect. */
-export function pushRect(
-  out: number[],
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  c: RGBA
-): void {
+export function pushRect(out: number[], x: number, y: number, w: number, h: number, c: RGBA): void {
   const x2 = x + w;
   const y2 = y + h;
   pushTri(out, x, y, x2, y, x2, y2, c);
@@ -48,7 +41,7 @@ export function pushBandStrip(
   out: number[],
   top: Array<[number, number]>,
   bottom: Array<[number, number]>,
-  c: RGBA
+  c: RGBA,
 ): void {
   const n = Math.min(top.length, bottom.length);
   for (let i = 0; i < n - 1; i++) {
@@ -68,7 +61,7 @@ export function pushFan(
   cy: number,
   ring: Array<[number, number]>,
   c: RGBA,
-  close = true
+  close = true,
 ): void {
   const n = ring.length;
   const last = close ? n : n - 1;
@@ -84,14 +77,14 @@ export function pushStroke(
   out: number[],
   pts: Array<[number, number]>,
   width: number,
-  c: RGBA
+  c: RGBA,
 ): void {
   const hw = width / 2;
   for (let i = 0; i < pts.length - 1; i++) {
     const [x1, y1] = pts[i];
     const [x2, y2] = pts[i + 1];
-    let dx = x2 - x1;
-    let dy = y2 - y1;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
     const len = Math.hypot(dx, dy) || 1;
     // normal * half-width
     const nx = (-dy / len) * hw;
@@ -102,13 +95,7 @@ export function pushStroke(
 }
 
 /** One instanced circle. */
-export function pushCircle(
-  out: number[],
-  cx: number,
-  cy: number,
-  radius: number,
-  c: RGBA
-): void {
+export function pushCircle(out: number[], cx: number, cy: number, radius: number, c: RGBA): void {
   out.push(cx, cy, radius, c[0], c[1], c[2], c[3]);
 }
 
@@ -120,7 +107,7 @@ function pushTri(
   y2: number,
   x3: number,
   y3: number,
-  c: RGBA
+  c: RGBA,
 ): void {
   out.push(x1, y1, c[0], c[1], c[2], c[3]);
   out.push(x2, y2, c[0], c[1], c[2], c[3]);
@@ -215,7 +202,11 @@ function getPipelines(device: GPUDevice, format: GPUTextureFormat): Pipelines {
       module: circMod,
       entryPoint: "vs",
       buffers: [
-        { arrayStride: 8, stepMode: "vertex", attributes: [{ shaderLocation: 0, offset: 0, format: "float32x2" }] },
+        {
+          arrayStride: 8,
+          stepMode: "vertex",
+          attributes: [{ shaderLocation: 0, offset: 0, format: "float32x2" }],
+        },
         {
           arrayStride: CIRCLE_FLOATS * 4,
           stepMode: "instance",
@@ -231,9 +222,15 @@ function getPipelines(device: GPUDevice, format: GPUTextureFormat): Pipelines {
     primitive: { topology: "triangle-list" },
   });
 
-  const quad = device.createBuffer({ size: UNIT_QUAD.byteLength, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+  const quad = device.createBuffer({
+    size: UNIT_QUAD.byteLength,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
   device.queue.writeBuffer(quad, 0, UNIT_QUAD);
-  const uniform = device.createBuffer({ size: 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const uniform = device.createBuffer({
+    size: 16,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
   const triBind = device.createBindGroup({
     layout: tri.getBindGroupLayout(0),
     entries: [{ binding: 0, resource: { buffer: uniform } }],
@@ -273,7 +270,7 @@ export interface DrawMarksOptions {
 export function drawMarksWebgpu(
   canvas: HTMLCanvasElement | null,
   batch: MarkBatch,
-  o: DrawMarksOptions
+  o: DrawMarksOptions,
 ): boolean {
   const device = getGPUDeviceCached();
   if (!device) {
@@ -289,18 +286,27 @@ export function drawMarksWebgpu(
   const { ctx, format } = setup;
 
   const p = getPipelines(device, format);
-  device.queue.writeBuffer(p.uniform, 0, new Float32Array([o.width, o.height, 0, 0]) as Float32Array<ArrayBuffer>);
+  device.queue.writeBuffer(
+    p.uniform,
+    0,
+    new Float32Array([o.width, o.height, 0, 0]) as Float32Array<ArrayBuffer>,
+  );
 
   const encoder = device.createCommandEncoder();
   const view = ctx.getCurrentTexture().createView();
   const pass = encoder.beginRenderPass({
-    colorAttachments: [{ view, clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: "clear", storeOp: "store" }],
+    colorAttachments: [
+      { view, clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: "clear", storeOp: "store" },
+    ],
   });
 
   // Triangles first (fills/strokes), circles on top (points).
   if (batch.triangles.length >= TRI_FLOATS * 3) {
     const data = new Float32Array(batch.triangles) as Float32Array<ArrayBuffer>;
-    const buf = device.createBuffer({ size: data.byteLength, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+    const buf = device.createBuffer({
+      size: data.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
     device.queue.writeBuffer(buf, 0, data);
     pass.setPipeline(p.tri);
     pass.setBindGroup(0, p.triBind);
@@ -309,7 +315,10 @@ export function drawMarksWebgpu(
   }
   if (batch.circles.length >= CIRCLE_FLOATS) {
     const data = new Float32Array(batch.circles) as Float32Array<ArrayBuffer>;
-    const buf = device.createBuffer({ size: data.byteLength, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+    const buf = device.createBuffer({
+      size: data.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
     device.queue.writeBuffer(buf, 0, data);
     pass.setPipeline(p.circle);
     pass.setBindGroup(0, p.circleBind);

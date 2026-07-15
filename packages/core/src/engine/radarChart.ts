@@ -11,7 +11,6 @@ import { placeTooltip } from "../render/placeTooltip";
 import { processRadarData } from "../radarChart/data";
 import { buildRadarColors } from "../radarChart/colors";
 import { buildRadarRenderModel } from "../radarChart/renderModel";
-import type { RadarSeriesModel } from "../radarChart/renderModel";
 import { renderRadarSvg } from "../radarChart/renderSvg";
 import { drawRadarCanvas, setupRadarCanvasHover } from "../radarChart/renderCanvas";
 import { drawRadarWebgpu } from "../radarChart/renderWebgpu";
@@ -33,7 +32,15 @@ import {
   setupPlugins,
 } from "../plugins/runner";
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
-import type { ChartContext, ChartInstance, DataWarning, Margin, MountOptions, RadarChartProps, RadarDataItem } from "../types";
+import type {
+  ChartContext,
+  ChartInstance,
+  DataWarning,
+  Margin,
+  MountOptions,
+  RadarChartProps,
+  RadarDataItem,
+} from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 60, right: 80, bottom: 60, left: 80 };
 
@@ -98,11 +105,17 @@ function normalizeSeries(series: RadarDataItem[], axes: string[]): RadarDataItem
 
 function checkData(series: RadarDataItem[], axes: string[]): DataWarning[] {
   const warnings: DataWarning[] = [];
-  if (!series || series.length === 0) warnings.push({ type: "empty-dataset", message: "RadarChart received an empty series." });
-  if (!axes || axes.length < 3) warnings.push({ type: "empty-dataset", message: "RadarChart needs at least 3 axes." });
+  if (!series || series.length === 0)
+    warnings.push({ type: "empty-dataset", message: "RadarChart received an empty series." });
+  if (!axes || axes.length < 3)
+    warnings.push({ type: "empty-dataset", message: "RadarChart needs at least 3 axes." });
   for (const it of series) {
     if (it.values.length !== axes.length) {
-      warnings.push({ type: "non-finite-value", message: `Series "${it.label}" has ${it.values.length} values but ${axes.length} axes.`, label: it.label });
+      warnings.push({
+        type: "non-finite-value",
+        message: `Series "${it.label}" has ${it.values.length} values but ${axes.length} axes.`,
+        label: it.label,
+      });
     }
   }
   return warnings;
@@ -111,7 +124,7 @@ function checkData(series: RadarDataItem[], axes: string[]): DataWarning[] {
 export function mountRadarChart(
   host: HTMLElement,
   initial: RadarChartProps,
-  opts?: MountOptions<RadarChartProps>
+  opts?: MountOptions<RadarChartProps>,
 ): ChartInstance<RadarChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-radar-chart");
@@ -176,7 +189,9 @@ export function mountRadarChart(
       baseProps.tooltipFormatter && datum
         ? baseProps.tooltipFormatter(datum)
         : `<strong>${label}</strong>` +
-          (item ? `<br/>${resolvedAxes.map((a, i) => `${a}: ${item.values[i] ?? 0}`).join("<br/>")}` : "");
+          (item
+            ? `<br/>${resolvedAxes.map((a, i) => `${a}: ${item.values[i] ?? 0}`).join("<br/>")}`
+            : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
     placeTooltip(host, tooltip, ev);
@@ -220,12 +235,16 @@ export function mountRadarChart(
 
     if (props.tooltipContainerStyle) Object.assign(tooltip.style, props.tooltipContainerStyle);
 
-    const { items, maxValue } = processRadarData(normalizedSeries, props.disabledItems, props.maxValue);
+    const { items, maxValue } = processRadarData(
+      normalizedSeries,
+      props.disabledItems,
+      props.maxValue,
+    );
     const colors = buildRadarColors(
       normalizedSeries,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -277,7 +296,7 @@ export function mountRadarChart(
               tooltip.classList.add("sticky");
               showTooltip(s.label, ev);
             },
-          }
+          },
         );
       } else {
         // canvas/webgpu mode still renders the grid + axis labels in SVG for crisp
@@ -286,7 +305,7 @@ export function mountRadarChart(
           svg,
           { grid: model.grid, series: [] },
           { fillOpacity: r.fillOpacity, enableTransitions: r.enableTransitions },
-          { onEnter: () => {}, onLeave: () => {}, onClick: () => {} }
+          { onEnter: () => {}, onLeave: () => {}, onClick: () => {} },
         );
       }
 

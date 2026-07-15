@@ -143,11 +143,6 @@ export interface AnomalyPluginOptions {
   target?: string | string[];
 }
 
-function numericDates(series: DataPoint[]): number[] | null {
-  const xs = series.map((d) => (typeof d.date === "number" ? d.date : Number(d.date)));
-  return xs.every((x) => Number.isFinite(x)) ? xs : null;
-}
-
 interface SeriesAnomalies {
   result: AnomalyResult;
   series: DataPoint[];

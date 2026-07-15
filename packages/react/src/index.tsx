@@ -63,7 +63,6 @@ import type {
   SankeyChartProps,
   FountainChartProps,
   ChoroplethDataItem,
-  GeoFeatureItem,
   ChoroplethMapChartProps,
   SymbolMapDataItem,
   SymbolMapChartProps,
@@ -187,7 +186,9 @@ export function MichiVzProvider(props: MichiVzProviderProps) {
     props.dir,
   ]);
 
-  return <MichiVzContext.Provider value={storeRef.current}>{props.children}</MichiVzContext.Provider>;
+  return (
+    <MichiVzContext.Provider value={storeRef.current}>{props.children}</MichiVzContext.Provider>
+  );
 }
 
 /**
@@ -419,59 +420,63 @@ export type GapChartReactProps = GapChartProps & {
   isNodataComponent?: ReactNode;
 };
 
-export const GapChart = forwardRef<GapChartHandle, GapChartReactProps>(function GapChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<GapChartProps> | null>(null);
+export const GapChart = forwardRef<GapChartHandle, GapChartReactProps>(
+  function GapChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<GapChartProps> | null>(null);
 
-  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-  // The wrapper renders its OWN loading/no-data node below, so suppress the engine's vanilla overlay.
-  const engineProps: GapChartProps = { ...coreProps, suppressDefaultOverlay: true };
+    const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+    // The wrapper renders its OWN loading/no-data node below, so suppress the engine's vanilla overlay.
+    const engineProps: GapChartProps = { ...coreProps, suppressDefaultOverlay: true };
 
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountGapChart(hostRef.current, engineProps);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountGapChart(hostRef.current, engineProps);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useEffect(() => {
-    chartRef.current?.update(engineProps);
-  });
+    useEffect(() => {
+      chartRef.current?.update(engineProps);
+    });
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-    }),
-    []
-  );
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+      }),
+      [],
+    );
 
-  const dataState = evaluateDataState({
-    isLoading: coreProps.isLoading,
-    isNodata: coreProps.isNodata,
-    dataSet: coreProps.dataSet,
-  });
-  const overlay =
-    dataState === "loading"
-      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
-      : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
-        : null;
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.dataSet,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
+          : null;
 
-  const width = props.width ?? 1000;
-  const height = props.height ?? 500;
-  return (
-    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
-      <div ref={hostRef} style={{ width, height }} />
-      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
-    </div>
-  );
-});
+    const width = props.width ?? 1000;
+    const height = props.height ?? 500;
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
+  },
+);
 
 /** React-only overlay nodes layered over the chart when loading / no-data. */
 export type LineChartReactProps = LineChartProps & {
@@ -481,72 +486,76 @@ export type LineChartReactProps = LineChartProps & {
   children?: ReactNode;
 };
 
-export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(function LineChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<LineChartProps> | null>(null);
-  // Subscribe to shared state → re-render (and re-merge) when colours/highlight change.
-  const shared = useChartContext();
+export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(
+  function LineChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<LineChartProps> | null>(null);
+    // Subscribe to shared state → re-render (and re-merge) when colours/highlight change.
+    const shared = useChartContext();
 
-  const { isLoadingComponent, isNodataComponent, children, ...coreProps } = props;
-  // Merge shared state into props (faithful to the legacy context merge), then
-  // suppress the engine's vanilla overlay - React renders the overlay node below.
-  // Serialise JSX children → SVG markup so the engine can inject them into the <svg>
-  // without a React context (matches the legacy <LineChart>'s {children} slot).
-  const engineProps: LineChartProps = {
-    ...resolveEffectiveProps(coreProps, shared),
-    suppressDefaultOverlay: true,
-    svgChildren: children ? renderToStaticMarkup(<>{children}</>) : undefined,
-  };
-
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountLineChart(hostRef.current, engineProps);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
+    const { isLoadingComponent, isNodataComponent, children, ...coreProps } = props;
+    // Merge shared state into props (faithful to the legacy context merge), then
+    // suppress the engine's vanilla overlay - React renders the overlay node below.
+    // Serialise JSX children → SVG markup so the engine can inject them into the <svg>
+    // without a React context (matches the legacy <LineChart>'s {children} slot).
+    const engineProps: LineChartProps = {
+      ...resolveEffectiveProps(coreProps, shared),
+      suppressDefaultOverlay: true,
+      svgChildren: children ? renderToStaticMarkup(<>{children}</>) : undefined,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  useEffect(() => {
-    chartRef.current?.update(engineProps);
-  });
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountLineChart(hostRef.current, engineProps);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+    useEffect(() => {
+      chartRef.current?.update(engineProps);
+    });
 
-  // Same decision the engine makes (so they agree on skip-marks vs overlay).
-  const dataState = evaluateDataState({
-    isLoading: coreProps.isLoading,
-    isNodata: coreProps.isNodata,
-    dataSet: coreProps.dataSet,
-  });
-  const overlay =
-    dataState === "loading"
-      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
-      : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
-        : null;
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
-  const width = props.width ?? 1000;
-  const height = props.height ?? 500;
-  // Outer carries `michi-vz` so the default `.mv-loading` / `.mv-nodata` CSS reaches
-  // the overlay (the engine's own `.michi-vz` is on the inner host).
-  return (
-    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
-      <div ref={hostRef} style={{ width, height }} />
-      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
-    </div>
-  );
-});
+    // Same decision the engine makes (so they agree on skip-marks vs overlay).
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.dataSet,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
+          : null;
+
+    const width = props.width ?? 1000;
+    const height = props.height ?? 500;
+    // Outer carries `michi-vz` so the default `.mv-loading` / `.mv-nodata` CSS reaches
+    // the overlay (the engine's own `.michi-vz` is on the inner host).
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
+  },
+);
 
 export const FanChart = forwardRef<FanChartHandle, FanChartProps>(function FanChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -574,7 +583,7 @@ export const FanChart = forwardRef<FanChartHandle, FanChartProps>(function FanCh
       timeline: () => chartRef.current?.timeline?.() ?? null,
       replay: () => chartRef.current?.replay?.(),
     }),
-    []
+    [],
   );
 
   return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
@@ -585,147 +594,17 @@ export type AreaChartReactProps = AreaChartProps & {
   isNodataComponent?: ReactNode;
 };
 
-export const AreaChart = forwardRef<AreaChartHandle, AreaChartReactProps>(function AreaChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<AreaChartProps> | null>(null);
-
-  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-  const engineProps: AreaChartProps = { ...coreProps, suppressDefaultOverlay: true };
-
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountAreaChart(hostRef.current, engineProps);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    chartRef.current?.update(engineProps);
-  });
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
-
-  // Area's data prop is `series`, not `dataSet`.
-  const dataState = evaluateDataState({
-    isLoading: coreProps.isLoading,
-    isNodata: coreProps.isNodata,
-    dataSet: coreProps.series,
-  });
-  const overlay =
-    dataState === "loading"
-      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
-      : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
-        : null;
-
-  const width = props.width ?? 900;
-  const height = props.height ?? 480;
-  return (
-    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
-      <div ref={hostRef} style={{ width, height }} />
-      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
-    </div>
-  );
-});
-
-export type ScatterChartReactProps = ScatterChartProps & {
-  isLoadingComponent?: ReactNode;
-  isNodataComponent?: ReactNode;
-  /** SVG children (axis labels, reference lines) rendered inside the chart <svg>. */
-  children?: ReactNode;
-};
-
-export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartReactProps>(function ScatterChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<ScatterChartProps> | null>(null);
-
-  const { isLoadingComponent, isNodataComponent, children, ...coreProps } = props;
-  // Serialise JSX children → SVG markup so the engine can inject them into the <svg>
-  // without a React context (matches the legacy <ScatterPlotChart>'s {children} slot).
-  const engineProps: ScatterChartProps = {
-    ...coreProps,
-    suppressDefaultOverlay: true,
-    svgChildren: children ? renderToStaticMarkup(<>{children}</>) : undefined,
-  };
-
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountScatterChart(hostRef.current, engineProps);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    chartRef.current?.update(engineProps);
-  });
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-    }),
-    []
-  );
-
-  const dataState = evaluateDataState({
-    isLoading: coreProps.isLoading,
-    isNodata: coreProps.isNodata,
-    dataSet: coreProps.dataSet,
-  });
-  const overlay =
-    dataState === "loading"
-      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
-      : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
-        : null;
-
-  const width = props.width ?? 900;
-  const height = props.height ?? 480;
-  return (
-    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
-      <div ref={hostRef} style={{ width, height }} />
-      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
-    </div>
-  );
-});
-
-export type VerticalStackBarChartReactProps = VerticalStackBarChartProps & {
-  isLoadingComponent?: ReactNode;
-  isNodataComponent?: ReactNode;
-};
-
-export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, VerticalStackBarChartReactProps>(
-  function VerticalStackBarChart(props, ref) {
+export const AreaChart = forwardRef<AreaChartHandle, AreaChartReactProps>(
+  function AreaChart(props, ref) {
     const hostRef = useRef<HTMLDivElement | null>(null);
-    const chartRef = useRef<ChartInstance<VerticalStackBarChartProps> | null>(null);
-    const shared = useChartContext();
+    const chartRef = useRef<ChartInstance<AreaChartProps> | null>(null);
 
     const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-    const engineProps: VerticalStackBarChartProps = {
-      ...resolveEffectiveProps(coreProps, shared),
-      suppressDefaultOverlay: true,
-    };
+    const engineProps: AreaChartProps = { ...coreProps, suppressDefaultOverlay: true };
 
     useEffect(() => {
       if (!hostRef.current) return;
-      chartRef.current = mountVerticalStackBarChart(hostRef.current, engineProps);
+      chartRef.current = mountAreaChart(hostRef.current, engineProps);
       return () => {
         chartRef.current?.destroy();
         chartRef.current = null;
@@ -738,26 +617,29 @@ export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, Ver
     });
 
     useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
+    // Area's data prop is `series`, not `dataSet`.
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
       isNodata: coreProps.isNodata,
-      dataSet: coreProps.dataSet,
+      dataSet: coreProps.series,
     });
     const overlay =
       dataState === "loading"
         ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
         : dataState === "nodata"
-          ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
           : null;
 
     const width = props.width ?? 900;
@@ -768,17 +650,158 @@ export const VerticalStackBarChart = forwardRef<VerticalStackBarChartHandle, Ver
         {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
       </div>
     );
-  }
+  },
 );
 
-export type ComparableHorizontalBarChartReactProps = Omit<ComparableBarChartProps, "tooltipFormatter"> & {
+export type ScatterChartReactProps = ScatterChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+  /** SVG children (axis labels, reference lines) rendered inside the chart <svg>. */
+  children?: ReactNode;
+};
+
+export const ScatterChart = forwardRef<ScatterChartHandle, ScatterChartReactProps>(
+  function ScatterChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<ScatterChartProps> | null>(null);
+
+    const { isLoadingComponent, isNodataComponent, children, ...coreProps } = props;
+    // Serialise JSX children → SVG markup so the engine can inject them into the <svg>
+    // without a React context (matches the legacy <ScatterPlotChart>'s {children} slot).
+    const engineProps: ScatterChartProps = {
+      ...coreProps,
+      suppressDefaultOverlay: true,
+      svgChildren: children ? renderToStaticMarkup(<>{children}</>) : undefined,
+    };
+
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountScatterChart(hostRef.current, engineProps);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+      chartRef.current?.update(engineProps);
+    });
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+      }),
+      [],
+    );
+
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.dataSet,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
+          : null;
+
+    const width = props.width ?? 900;
+    const height = props.height ?? 480;
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
+  },
+);
+
+export type VerticalStackBarChartReactProps = VerticalStackBarChartProps & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+};
+
+export const VerticalStackBarChart = forwardRef<
+  VerticalStackBarChartHandle,
+  VerticalStackBarChartReactProps
+>(function VerticalStackBarChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<VerticalStackBarChartProps> | null>(null);
+  const shared = useChartContext();
+
+  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+  const engineProps: VerticalStackBarChartProps = {
+    ...resolveEffectiveProps(coreProps, shared),
+    suppressDefaultOverlay: true,
+  };
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    chartRef.current = mountVerticalStackBarChart(hostRef.current, engineProps);
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    chartRef.current?.update(engineProps);
+  });
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getContext: () => chartRef.current?.getContext() ?? null,
+      getElement: () => hostRef.current,
+      timeline: () => chartRef.current?.timeline?.() ?? null,
+      replay: () => chartRef.current?.replay?.(),
+    }),
+    [],
+  );
+
+  const dataState = evaluateDataState({
+    isLoading: coreProps.isLoading,
+    isNodata: coreProps.isNodata,
+    dataSet: coreProps.dataSet,
+  });
+  const overlay =
+    dataState === "loading"
+      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+      : dataState === "nodata"
+        ? (isNodataComponent ?? (
+            <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+          ))
+        : null;
+
+  const width = props.width ?? 900;
+  const height = props.height ?? 480;
+  return (
+    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+      <div ref={hostRef} style={{ width, height }} />
+      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+    </div>
+  );
+});
+
+export type ComparableHorizontalBarChartReactProps = Omit<
+  ComparableBarChartProps,
+  "tooltipFormatter"
+> & {
   isLoadingComponent?: ReactNode;
   isNodataComponent?: ReactNode;
   /** May return a string OR a React node (converted to static HTML for the canvas tooltip). */
   tooltipFormatter?: (
     d: ComparableBarDataPoint,
     dataSet?: ComparableBarDataPoint[],
-    type?: "based" | "compared"
+    type?: "based" | "compared",
   ) => string | ReactNode;
 };
 
@@ -795,7 +818,11 @@ export const ComparableHorizontalBarChart = forwardRef<
   // convert any React-node result to static HTML here (else it stringifies to
   // "[object Object]").
   const wrappedFormatter = tooltipFormatter
-    ? (d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: "based" | "compared") => {
+    ? (
+        d: ComparableBarDataPoint,
+        dataSet?: ComparableBarDataPoint[],
+        type?: "based" | "compared",
+      ) => {
         const out = tooltipFormatter(d, dataSet, type);
         return typeof out === "string" ? out : renderToStaticMarkup(out as ReactElement);
       }
@@ -827,7 +854,7 @@ export const ComparableHorizontalBarChart = forwardRef<
       getElement: () => hostRef.current,
       timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
-    []
+    [],
   );
 
   const dataState = evaluateDataState({
@@ -839,7 +866,9 @@ export const ComparableHorizontalBarChart = forwardRef<
     dataState === "loading"
       ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
       : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        ? (isNodataComponent ?? (
+            <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+          ))
         : null;
 
   const width = props.width ?? 900;
@@ -852,14 +881,17 @@ export const ComparableHorizontalBarChart = forwardRef<
   );
 });
 
-export type ComparableVerticalBarChartReactProps = Omit<ComparableVerticalBarChartProps, "tooltipFormatter"> & {
+export type ComparableVerticalBarChartReactProps = Omit<
+  ComparableVerticalBarChartProps,
+  "tooltipFormatter"
+> & {
   isLoadingComponent?: ReactNode;
   isNodataComponent?: ReactNode;
   /** May return a string OR a React node (converted to static HTML for the canvas tooltip). */
   tooltipFormatter?: (
     d: ComparableBarDataPoint,
     dataSet?: ComparableBarDataPoint[],
-    type?: "based" | "compared"
+    type?: "based" | "compared",
   ) => string | ReactNode;
 };
 
@@ -876,7 +908,11 @@ export const ComparableVerticalBarChart = forwardRef<
   // convert any React-node result to static HTML here (else it stringifies to
   // "[object Object]").
   const wrappedFormatter = tooltipFormatter
-    ? (d: ComparableBarDataPoint, dataSet?: ComparableBarDataPoint[], type?: "based" | "compared") => {
+    ? (
+        d: ComparableBarDataPoint,
+        dataSet?: ComparableBarDataPoint[],
+        type?: "based" | "compared",
+      ) => {
         const out = tooltipFormatter(d, dataSet, type);
         return typeof out === "string" ? out : renderToStaticMarkup(out as ReactElement);
       }
@@ -908,7 +944,7 @@ export const ComparableVerticalBarChart = forwardRef<
       getElement: () => hostRef.current,
       timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
-    []
+    [],
   );
 
   const dataState = evaluateDataState({
@@ -920,7 +956,9 @@ export const ComparableVerticalBarChart = forwardRef<
     dataState === "loading"
       ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
       : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        ? (isNodataComponent ?? (
+            <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+          ))
         : null;
 
   const width = props.width ?? 900;
@@ -953,17 +991,17 @@ export const DualHorizontalBarChart = forwardRef<DualHorizontalBarChartHandle, D
     });
 
     useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-    }),
-    []
-  );
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+      }),
+      [],
+    );
 
     return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
-  }
+  },
 );
 
 export type BarBellChartReactProps = BarBellChartProps & {
@@ -1000,15 +1038,15 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProp
     });
 
     useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
@@ -1019,7 +1057,9 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProp
       dataState === "loading"
         ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
         : dataState === "nodata"
-          ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
           : null;
 
     const width = props.width ?? 900;
@@ -1030,133 +1070,143 @@ export const BarBellChart = forwardRef<BarBellChartHandle, BarBellChartReactProp
         {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
       </div>
     );
-  }
+  },
 );
 
-export const RangeChart = forwardRef<RangeChartHandle, RangeChartProps>(function RangeChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<RangeChartProps> | null>(null);
+export const RangeChart = forwardRef<RangeChartHandle, RangeChartProps>(
+  function RangeChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<RangeChartProps> | null>(null);
 
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountRangeChart(hostRef.current, props);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountRangeChart(hostRef.current, props);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useEffect(() => {
-    chartRef.current?.update(props);
-  });
+    useEffect(() => {
+      chartRef.current?.update(props);
+    });
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
-  return <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />;
-});
+    return (
+      <div ref={hostRef} style={{ width: props.width ?? 1000, height: props.height ?? 500 }} />
+    );
+  },
+);
 
-export const RibbonChart = forwardRef<RibbonChartHandle, RibbonChartProps>(function RibbonChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<RibbonChartProps> | null>(null);
+export const RibbonChart = forwardRef<RibbonChartHandle, RibbonChartProps>(
+  function RibbonChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<RibbonChartProps> | null>(null);
 
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountRibbonChart(hostRef.current, props);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountRibbonChart(hostRef.current, props);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useEffect(() => {
-    chartRef.current?.update(props);
-  });
+    useEffect(() => {
+      chartRef.current?.update(props);
+    });
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
-  return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
-});
+    return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
+  },
+);
 
 export type RadarChartReactProps = RadarChartProps & {
   isLoadingComponent?: ReactNode;
   isNodataComponent?: ReactNode;
 };
 
-export const RadarChart = forwardRef<RadarChartHandle, RadarChartReactProps>(function RadarChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<RadarChartProps> | null>(null);
+export const RadarChart = forwardRef<RadarChartHandle, RadarChartReactProps>(
+  function RadarChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<RadarChartProps> | null>(null);
 
-  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-  // The wrapper renders its OWN loading/no-data node below, so suppress the engine's vanilla overlay.
-  const engineProps: RadarChartProps = { ...coreProps, suppressDefaultOverlay: true };
+    const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+    // The wrapper renders its OWN loading/no-data node below, so suppress the engine's vanilla overlay.
+    const engineProps: RadarChartProps = { ...coreProps, suppressDefaultOverlay: true };
 
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountRadarChart(hostRef.current, engineProps);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountRadarChart(hostRef.current, engineProps);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useEffect(() => {
-    chartRef.current?.update(engineProps);
-  });
+    useEffect(() => {
+      chartRef.current?.update(engineProps);
+    });
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
-  // Radar's data prop is `series`, not `dataSet`.
-  const dataState = evaluateDataState({
-    isLoading: coreProps.isLoading,
-    isNodata: coreProps.isNodata,
-    dataSet: coreProps.series,
-  });
-  const overlay =
-    dataState === "loading"
-      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
-      : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
-        : null;
+    // Radar's data prop is `series`, not `dataSet`.
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.series,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
+          : null;
 
-  const width = props.width ?? 600;
-  const height = props.height ?? 600;
-  return (
-    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
-      <div ref={hostRef} style={{ width, height }} />
-      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
-    </div>
-  );
-});
+    const width = props.width ?? 600;
+    const height = props.height ?? 600;
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
+  },
+);
 
 // ─── RadarChartSet ────────────────────────────────────────────────────────────
 // Orchestrates N independent RadarChart instances side-by-side and exposes a single
@@ -1182,7 +1232,7 @@ type LegendRows = NonNullable<ChartContext["legendData"]>;
 
 const buildMergedLegendData = (
   orderedKeys: string[],
-  byItem: Record<string, ChartContext>
+  byItem: Record<string, ChartContext>,
 ): LegendRows => {
   const map = new Map<string, LegendRows[number]>();
   let cursor = 0;
@@ -1204,7 +1254,7 @@ const buildMergedLegendData = (
 
 const mergeRadarMetadata = (
   orderedKeys: string[],
-  byItem: Record<string, ChartContext>
+  byItem: Record<string, ChartContext>,
 ): ChartContext | null => {
   if (orderedKeys.length === 0) return null;
   // Gate: fire only when EVERY current child has reported its context.
@@ -1266,7 +1316,8 @@ export function RadarChartSet({
             onChartDataProcessed={(ctx) => handleChild(item.key, ctx)}
           />
         );
-        if (renderItem) return <Fragment key={item.key}>{renderItem({ item, index, chart })}</Fragment>;
+        if (renderItem)
+          return <Fragment key={item.key}>{renderItem({ item, index, chart })}</Fragment>;
         return chart;
       })}
     </>
@@ -1278,59 +1329,63 @@ export type TreemapChartReactProps = TreemapChartProps & {
   isNodataComponent?: ReactNode;
 };
 
-export const TreemapChart = forwardRef<TreemapChartHandle, TreemapChartReactProps>(function TreemapChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<TreemapChartProps> | null>(null);
+export const TreemapChart = forwardRef<TreemapChartHandle, TreemapChartReactProps>(
+  function TreemapChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<TreemapChartProps> | null>(null);
 
-  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-  const engineProps: TreemapChartProps = { ...coreProps, suppressDefaultOverlay: true };
+    const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+    const engineProps: TreemapChartProps = { ...coreProps, suppressDefaultOverlay: true };
 
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountTreemapChart(hostRef.current, engineProps);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountTreemapChart(hostRef.current, engineProps);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useEffect(() => {
-    chartRef.current?.update(engineProps);
-  });
+    useEffect(() => {
+      chartRef.current?.update(engineProps);
+    });
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
-  const dataState = evaluateDataState({
-    isLoading: coreProps.isLoading,
-    isNodata: coreProps.isNodata,
-    dataSet: coreProps.dataSet,
-  });
-  const overlay =
-    dataState === "loading"
-      ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
-      : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
-        : null;
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.dataSet,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
+          : null;
 
-  const width = props.width ?? 900;
-  const height = props.height ?? 520;
-  return (
-    <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
-      <div ref={hostRef} style={{ width, height }} />
-      {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
-    </div>
-  );
-});
+    const width = props.width ?? 900;
+    const height = props.height ?? 520;
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
+  },
+);
 
 export const PieChart = forwardRef<PieChartHandle, PieChartProps>(function PieChart(props, ref) {
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -1357,58 +1412,177 @@ export const PieChart = forwardRef<PieChartHandle, PieChartProps>(function PieCh
       getElement: () => hostRef.current,
       timeline: () => chartRef.current?.timeline?.() ?? null,
     }),
-    []
+    [],
   );
 
   return <div ref={hostRef} style={{ width: props.width ?? 600, height: props.height ?? 420 }} />;
 });
 
-export const BubbleChart = forwardRef<BubbleChartHandle, BubbleChartProps>(function BubbleChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<BubbleChartProps> | null>(null);
+export const BubbleChart = forwardRef<BubbleChartHandle, BubbleChartProps>(
+  function BubbleChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<BubbleChartProps> | null>(null);
 
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountBubbleChart(hostRef.current, props);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountBubbleChart(hostRef.current, props);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  useEffect(() => {
-    chartRef.current?.update(props);
-  });
+    useEffect(() => {
+      chartRef.current?.update(props);
+    });
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-    }),
-    []
-  );
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+      }),
+      [],
+    );
 
-  return <div ref={hostRef} style={{ width: props.width ?? 700, height: props.height ?? 500 }} />;
-});
+    return <div ref={hostRef} style={{ width: props.width ?? 700, height: props.height ?? 500 }} />;
+  },
+);
 
 export type SankeyChartReactProps = SankeyChartProps & {
   isLoadingComponent?: ReactNode;
   isNodataComponent?: ReactNode;
 };
 
-export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartReactProps>(function SankeyChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<SankeyChartProps> | null>(null);
+export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartReactProps>(
+  function SankeyChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<SankeyChartProps> | null>(null);
 
-  const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
-  const engineProps: SankeyChartProps = { ...coreProps, suppressDefaultOverlay: true };
+    const { isLoadingComponent, isNodataComponent, ...coreProps } = props;
+    const engineProps: SankeyChartProps = { ...coreProps, suppressDefaultOverlay: true };
+
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountSankeyChart(hostRef.current, engineProps);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+      chartRef.current?.update(engineProps);
+    });
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
+
+    // Sankey's data prop is `nodes` (no unified dataSet); empty nodes → no data.
+    const dataState = evaluateDataState({
+      isLoading: coreProps.isLoading,
+      isNodata: coreProps.isNodata,
+      dataSet: coreProps.nodes,
+    });
+    const overlay =
+      dataState === "loading"
+        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
+        : dataState === "nodata"
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
+          : null;
+
+    const width = props.width ?? 800;
+    const height = props.height ?? 500;
+    return (
+      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
+        <div ref={hostRef} style={{ width, height }} />
+        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
+      </div>
+    );
+  },
+);
+
+export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>(
+  function FountainChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<FountainChartProps> | null>(null);
+
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountFountainChart(hostRef.current, props);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+      chartRef.current?.update(props);
+    });
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
+
+    return <div ref={hostRef} style={{ width: props.width ?? 800, height: props.height ?? 500 }} />;
+  },
+);
+
+export type ChoroplethMapChartReactProps = Omit<ChoroplethMapChartProps, "tooltipFormatter"> & {
+  isLoadingComponent?: ReactNode;
+  isNodataComponent?: ReactNode;
+  /** May return a string OR a React node (converted to static HTML for the canvas/webgpu tooltip). */
+  tooltipFormatter?: (d: ChoroplethDataItem | { id: string; name?: string }) => string | ReactNode;
+};
+
+export const ChoroplethMapChart = forwardRef<
+  ChoroplethMapChartHandle,
+  ChoroplethMapChartReactProps
+>(function ChoroplethMapChart(props, ref) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<ChartInstance<ChoroplethMapChartProps> | null>(null);
+  const shared = useChartContext();
+
+  const { isLoadingComponent, isNodataComponent, tooltipFormatter, ...coreProps } = props;
+  // Consumers return JSX from tooltipFormatter; the core sanitizes a STRING, so
+  // convert any React-node result to static HTML here (else it stringifies to
+  // "[object Object]").
+  const wrappedFormatter = tooltipFormatter
+    ? (d: ChoroplethDataItem | { id: string; name?: string }) => {
+        const out = tooltipFormatter(d);
+        return typeof out === "string" ? out : renderToStaticMarkup(out as ReactElement);
+      }
+    : undefined;
+  const engineProps: ChoroplethMapChartProps = {
+    ...resolveEffectiveProps(coreProps, shared),
+    tooltipFormatter: wrappedFormatter,
+    suppressDefaultOverlay: true,
+  };
 
   useEffect(() => {
     if (!hostRef.current) return;
-    chartRef.current = mountSankeyChart(hostRef.current, engineProps);
+    chartRef.current = mountChoroplethMapChart(hostRef.current, engineProps);
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
@@ -1426,26 +1600,26 @@ export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartReactProps>(
       getContext: () => chartRef.current?.getContext() ?? null,
       getElement: () => hostRef.current,
       timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
     }),
-    []
+    [],
   );
 
-  // Sankey's data prop is `nodes` (no unified dataSet); empty nodes → no data.
   const dataState = evaluateDataState({
     isLoading: coreProps.isLoading,
     isNodata: coreProps.isNodata,
-    dataSet: coreProps.nodes,
+    dataSet: coreProps.dataSet,
   });
   const overlay =
     dataState === "loading"
       ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
       : dataState === "nodata"
-        ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+        ? (isNodataComponent ?? (
+            <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+          ))
         : null;
 
-  const width = props.width ?? 800;
-  const height = props.height ?? 500;
+  const width = props.width ?? 900;
+  const height = props.height ?? 520;
   return (
     <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
       <div ref={hostRef} style={{ width, height }} />
@@ -1453,114 +1627,6 @@ export const SankeyChart = forwardRef<SankeyChartHandle, SankeyChartReactProps>(
     </div>
   );
 });
-
-export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>(function FountainChart(props, ref) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<ChartInstance<FountainChartProps> | null>(null);
-
-  useEffect(() => {
-    if (!hostRef.current) return;
-    chartRef.current = mountFountainChart(hostRef.current, props);
-    return () => {
-      chartRef.current?.destroy();
-      chartRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    chartRef.current?.update(props);
-  });
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
-
-  return <div ref={hostRef} style={{ width: props.width ?? 800, height: props.height ?? 500 }} />;
-});
-
-export type ChoroplethMapChartReactProps = Omit<ChoroplethMapChartProps, "tooltipFormatter"> & {
-  isLoadingComponent?: ReactNode;
-  isNodataComponent?: ReactNode;
-  /** May return a string OR a React node (converted to static HTML for the canvas/webgpu tooltip). */
-  tooltipFormatter?: (d: ChoroplethDataItem | { id: string; name?: string }) => string | ReactNode;
-};
-
-export const ChoroplethMapChart = forwardRef<ChoroplethMapChartHandle, ChoroplethMapChartReactProps>(
-  function ChoroplethMapChart(props, ref) {
-    const hostRef = useRef<HTMLDivElement | null>(null);
-    const chartRef = useRef<ChartInstance<ChoroplethMapChartProps> | null>(null);
-    const shared = useChartContext();
-
-    const { isLoadingComponent, isNodataComponent, tooltipFormatter, ...coreProps } = props;
-    // Consumers return JSX from tooltipFormatter; the core sanitizes a STRING, so
-    // convert any React-node result to static HTML here (else it stringifies to
-    // "[object Object]").
-    const wrappedFormatter = tooltipFormatter
-      ? (d: ChoroplethDataItem | { id: string; name?: string }) => {
-          const out = tooltipFormatter(d);
-          return typeof out === "string" ? out : renderToStaticMarkup(out as ReactElement);
-        }
-      : undefined;
-    const engineProps: ChoroplethMapChartProps = {
-      ...resolveEffectiveProps(coreProps, shared),
-      tooltipFormatter: wrappedFormatter,
-      suppressDefaultOverlay: true,
-    };
-
-    useEffect(() => {
-      if (!hostRef.current) return;
-      chartRef.current = mountChoroplethMapChart(hostRef.current, engineProps);
-      return () => {
-        chartRef.current?.destroy();
-        chartRef.current = null;
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-      chartRef.current?.update(engineProps);
-    });
-
-    useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-    }),
-    []
-  );
-
-    const dataState = evaluateDataState({
-      isLoading: coreProps.isLoading,
-      isNodata: coreProps.isNodata,
-      dataSet: coreProps.dataSet,
-    });
-    const overlay =
-      dataState === "loading"
-        ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
-        : dataState === "nodata"
-          ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
-          : null;
-
-    const width = props.width ?? 900;
-    const height = props.height ?? 520;
-    return (
-      <div className="michi-vz michi-vz-react-host" style={{ position: "relative", width, height }}>
-        <div ref={hostRef} style={{ width, height }} />
-        {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
-      </div>
-    );
-  }
-);
 
 export type SymbolMapChartReactProps = Omit<SymbolMapChartProps, "tooltipFormatter"> & {
   isLoadingComponent?: ReactNode;
@@ -1606,14 +1672,14 @@ export const SymbolMapChart = forwardRef<SymbolMapChartHandle, SymbolMapChartRea
     });
 
     useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-    }),
-    []
-  );
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+      }),
+      [],
+    );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
@@ -1624,7 +1690,9 @@ export const SymbolMapChart = forwardRef<SymbolMapChartHandle, SymbolMapChartRea
       dataState === "loading"
         ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
         : dataState === "nodata"
-          ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
           : null;
 
     const width = props.width ?? 900;
@@ -1635,7 +1703,7 @@ export const SymbolMapChart = forwardRef<SymbolMapChartHandle, SymbolMapChartRea
         {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
       </div>
     );
-  }
+  },
 );
 
 export type RadialTreeChartReactProps = Omit<RadialTreeChartProps, "tooltipFormatter"> & {
@@ -1682,15 +1750,15 @@ export const RadialTreeChart = forwardRef<RadialTreeChartHandle, RadialTreeChart
     });
 
     useImperativeHandle(
-    ref,
-    () => ({
-      getContext: () => chartRef.current?.getContext() ?? null,
-      getElement: () => hostRef.current,
-      timeline: () => chartRef.current?.timeline?.() ?? null,
-      replay: () => chartRef.current?.replay?.(),
-    }),
-    []
-  );
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+        timeline: () => chartRef.current?.timeline?.() ?? null,
+        replay: () => chartRef.current?.replay?.(),
+      }),
+      [],
+    );
 
     const dataState = evaluateDataState({
       isLoading: coreProps.isLoading,
@@ -1701,7 +1769,9 @@ export const RadialTreeChart = forwardRef<RadialTreeChartHandle, RadialTreeChart
       dataState === "loading"
         ? (isLoadingComponent ?? <div className="mv-loading" aria-hidden />)
         : dataState === "nodata"
-          ? (isNodataComponent ?? <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>)
+          ? (isNodataComponent ?? (
+              <div className="mv-nodata">{coreProps.noDataLabel ?? "No data available"}</div>
+            ))
           : null;
 
     const width = props.width ?? 900;
@@ -1712,7 +1782,7 @@ export const RadialTreeChart = forwardRef<RadialTreeChartHandle, RadialTreeChart
         {overlay !== null && <div style={{ position: "absolute", inset: 0 }}>{overlay}</div>}
       </div>
     );
-  }
+  },
 );
 
 // Legacy-name parity: thd imports `ScatterPlotChart` (renamed `ScatterChart` in the
@@ -1759,7 +1829,14 @@ export interface MichiVzDevtoolsProps {
  *
  *   {process.env.NODE_ENV !== "production" && <MichiVzDevtools />}
  */
-export function MichiVzDevtools({ forceMount, container, open, hotkey, theme, buttonPosition }: MichiVzDevtoolsProps = {}): null {
+export function MichiVzDevtools({
+  forceMount,
+  container,
+  open,
+  hotkey,
+  theme,
+  buttonPosition,
+}: MichiVzDevtoolsProps = {}): null {
   useEffect(() => {
     const isProd = typeof process !== "undefined" && process.env.NODE_ENV === "production";
     if (isProd && !forceMount) return;

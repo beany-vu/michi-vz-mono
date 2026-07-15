@@ -164,8 +164,10 @@ function greetOnce(): void {
   if (greeted) return;
   greeted = true;
   if (typeof window === "undefined") return; // browser-only (no SSR/Node log spam)
+  // eslint-disable-next-line no-console -- feature-detecting the console for the dev greeting below
   if (typeof console === "undefined" || typeof console.log !== "function") return;
   if ((globalThis as Record<string, unknown>).__MICHI_VZ_NO_GREETING__) return;
+  // eslint-disable-next-line no-console -- intentional dev-facing greeting; opt out via __MICHI_VZ_NO_GREETING__
   console.log(
     "%c📊 michi-vz%c  made with love 💛\n" +
       "%cThis chart is drawn with michi-vz.\n" +
@@ -174,7 +176,7 @@ function greetOnce(): void {
       "Spotted a bug, have an idea, or just curious? Issues & feedback are very welcome - come say hi! 🌻",
     "font-weight:700;font-size:13px;color:#fff;background:#2e7ebb;padding:2px 8px;border-radius:6px;",
     "font-weight:600;color:#e8833a;",
-    "color:#6b5b4f;line-height:1.6;"
+    "color:#6b5b4f;line-height:1.6;",
   );
 }
 

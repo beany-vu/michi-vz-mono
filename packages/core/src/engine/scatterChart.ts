@@ -122,7 +122,7 @@ function resolve(p: ScatterChartProps): Resolved {
 export function mountScatterChart(
   host: HTMLElement,
   initial: ScatterChartProps,
-  opts?: MountOptions<ScatterChartProps>
+  opts?: MountOptions<ScatterChartProps>,
 ): ChartInstance<ScatterChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-scatter-chart");
@@ -190,6 +190,10 @@ export function mountScatterChart(
   // the canvas hover hit-test while the legend is being dragged.
   let legendOffset = { x: 0, y: 0 };
   let legendDragging = false;
+  // Dispose for the current dScaleLegend draggable. Recreated each render and torn down
+  // in destroy(), so a drag interrupted by a re-render or unmount does not leak its
+  // document pointer listeners.
+  let disposeDraggable: (() => void) | null = null;
 
   // Lazily create an absolutely-positioned <canvas> behind the SVG, matching host
   // padding (shared by canvas mode + the webgpu fallback + the webgpu layer).
@@ -349,7 +353,7 @@ export function mountScatterChart(
       tlData.dataSet,
       props.colors,
       props.colorsMapping,
-      props.skipColorMappingDispatch ?? false
+      props.skipColorMappingDispatch ?? false,
     );
 
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
@@ -368,7 +372,7 @@ export function mountScatterChart(
       r.height,
       r.margin,
       xAxisDataType,
-      r.sizeRange
+      r.sizeRange,
     );
 
     model = buildScatterRenderModel(points, scales, colors, {
@@ -406,7 +410,7 @@ export function mountScatterChart(
           tickValues: props.tickValues,
           enableExplicitTickValues: true,
           showGrid: r.showGridX,
-        }
+        },
       );
     }
     renderYAxisLinear(svg, scales.yScale, {
@@ -427,7 +431,7 @@ export function mountScatterChart(
       const childG = svgEl("g", { class: "mv-svg-children" });
       const clean = DOMPurify.sanitize(
         `<svg xmlns="http://www.w3.org/2000/svg">${props.svgChildren}</svg>`,
-        { USE_PROFILES: { svg: true } }
+        { USE_PROFILES: { svg: true } },
       );
       const tmp = svgEl("g");
       tmp.innerHTML = clean;
@@ -440,12 +444,16 @@ export function mountScatterChart(
 
     // Bubble-size reference legend (top-right). Renders in both SVG and canvas modes.
     // Draggable so it can be moved off the bubbles; the offset persists across renders.
+    // The legend group is recreated every render, so dispose the previous draggable
+    // first (detaches any in-flight drag's document listeners; a no-op otherwise).
+    disposeDraggable?.();
+    disposeDraggable = null;
     if (props.dScaleLegend && points.length > 0 && !props.isLoading) {
       const legendG = renderDScaleLegend(svg, scales.sizeScale, r.sizeRange, props.dScaleLegend, {
         width: r.width,
         height: r.height,
       });
-      makeSvgGroupDraggable(legendG, {
+      disposeDraggable = makeSvgGroupDraggable(legendG, {
         offset: legendOffset,
         onMove: (o) => {
           legendOffset = o;
@@ -476,7 +484,7 @@ export function mountScatterChart(
             tooltip.classList.add("sticky");
             showTooltip(p.raw, ev);
           },
-        }
+        },
       );
     }
 
@@ -498,12 +506,18 @@ export function mountScatterChart(
           // Device not ready / unavailable: paint the canvas-2D stopgap so the chart
           // is never blank; the onReady re-render swaps in the GPU layer.
           if (!canvas) canvas = makeLayerCanvas("scatter-chart-canvas");
-          lastFillColors = drawScatterCanvas(canvas, svg, model, { width: r.width, height: r.height });
+          lastFillColors = drawScatterCanvas(canvas, svg, model, {
+            width: r.width,
+            height: r.height,
+          });
         }
       } else {
         removeWebgpuCanvas();
         if (!canvas) canvas = makeLayerCanvas("scatter-chart-canvas");
-        lastFillColors = drawScatterCanvas(canvas, svg, model, { width: r.width, height: r.height });
+        lastFillColors = drawScatterCanvas(canvas, svg, model, {
+          width: r.width,
+          height: r.height,
+        });
       }
       // Crosshair overlay <svg>, layered ABOVE the canvas so it sits on the bubbles.
       if (r.showCrosshair) {
@@ -543,7 +557,7 @@ export function mountScatterChart(
         buildScatterPointLabels(model.points, formatter, {
           plotLeft: r.margin.left,
           plotRight: r.width - r.margin.right,
-        })
+        }),
       );
     }
 
@@ -619,6 +633,8 @@ export function mountScatterChart(
     destroy() {
       engineTl.destroy();
       disposeStickyDismiss();
+      disposeDraggable?.();
+      disposeDraggable = null;
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
