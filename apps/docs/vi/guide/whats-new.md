@@ -10,6 +10,31 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.2
+
+Phiên bản các package: react, wc, angular **1.10.2** · core **1.12.0** · vue, svelte **1.6.4** ·
+devtools, insights **0.2.12**.
+
+- **Trục thời gian dày đặc giờ nghiêng nhãn thay vì bỏ bớt phần lớn.** Mọi biểu đồ dùng
+  trục dải ([Biểu đồ cột chồng dọc](/vi/charts/vertical-stack-bar),
+  [Biểu đồ cột dọc so sánh](/vi/charts/comparable-vertical-bar),
+  [Đài phun](/vi/charts/fountain), [Biểu đồ dải](/vi/charts/ribbon),
+  [Biểu đồ phân tán](/vi/charts/scatter)) trước đây bỏ hẳn việc xoay khi dải hẹp lại và
+  đặt nằm ngang một tập nhãn đã lược bớt. Nhãn nghiêng chỉ cần khoảng trống theo đường
+  chéo, khoảng một phần tư so với nhãn nằm ngang, nên giờ biểu đồ xoay một tập đã lược và
+  giữ được nhiều hơn khoảng ba lần số nhãn. Chỉ xoay khi việc đó thực sự giúp hiện thêm
+  nhãn. `xAxisMode: "horizontal"` vẫn buộc nhãn nằm ngang.
+- **Đã sửa: các nhãn sau khi lược có thể bị vẽ đè lên nhau.** Cơ chế lược chỉ bảo đảm giữ
+  BAO NHIÊU nhãn chứ không bảo đảm khoảng cách, nên có thể chọn hai dải liền kề. Giờ đây
+  độ chồng lấn được đo chính xác - theo bề rộng riêng của từng cặp khi nằm ngang, theo
+  khoảng cách vuông góc khi nghiêng - và nhãn bị va chạm sẽ được bỏ. Nhãn đầu và nhãn
+  cuối luôn được giữ lại để trục vẫn thể hiện đủ khoảng dữ liệu.
+- **Danh mục dạng `YYYYMM` bước theo lịch.** Trục theo tháng rơi vào các mốc thật (mỗi
+  tháng 1, hoặc 1/7, hoặc 1/4/7/10) thay vì rơi vào đâu tùy phép làm tròn thập phân.
+  Chính phép làm tròn đó gây ra lỗi chồng lấn ở trên: nó vô nghĩa với trường tháng theo hệ
+  cơ số 12 và đặt hai vạch ở hai bên mỗi lần chuyển năm. Năm bốn chữ số giữ nguyên vì các
+  mốc thập niên tròn vốn đã phù hợp.
+
 ## v1.10.1
 
 Phiên bản các package: react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·

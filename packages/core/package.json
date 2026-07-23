@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/core",
-  "version": "1.11.1",
+  "version": "1.12.0",
   "description": "Framework-agnostic chart engine - SVG, canvas & WebGPU renderers, accessible by default, emitting an LLM-ready ChartContext. No framework dependencies.",
   "type": "module",
   "sideEffects": [

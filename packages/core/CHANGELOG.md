@@ -1,5 +1,23 @@
 # @michi-vz/core
 
+## 1.12.0
+
+### Minor Changes
+
+- Band x-axis: stop thinned tick labels overlapping, and rotate-then-thin so a dense axis shows far more of them.
+
+  Two problems, one symptom. A monthly `YYYYMM` domain is made of finite numbers, so it was thinned with the base-10 "nice number" ladder - meaningless over a base-12 month field. On a 37-month axis a step of 50 put targets either side of every year boundary, and each pair snapped onto **adjacent** bands, so the chart drew "12-2021" on top of "01-2022" three times over. More generally, the thinner guaranteed a tick _count_ but never a tick _spacing_.
+
+  Three changes:
+
+  - **Overlap is now detected exactly, not estimated.** `labelsCollide` compares each pair using its own measured widths (horizontal) or the perpendicular gap `bandWidth · cos45` (rotated); `enforceNoOverlap` drops interior ticks until nothing collides. Both endpoints are always kept - they orient the axis. Sampling also strides by whole bands instead of rounding a fractional step, which is what let neighbouring ticks land one band apart in the first place.
+  - **`YYYYMM` domains step by calendar.** Ticks land on real anchors - every January, Jan/Jul, Jan/Apr/Jul/Oct - by choosing from a 1/2/3/6/12/24-month ladder. Four-digit years are untouched: base-10 nice steps genuinely are calendar-sensible for years.
+  - **A dense axis rotates a thinned subset** instead of falling back to horizontal thinning. A tilted label costs only its diagonal clearance (~23px) where a flat one costs its full width, so rotation typically fits three times more labels. It is chosen only when it keeps strictly more of them, so an axis that gains nothing does not rotate and burn bottom margin. `xAxisMode: "horizontal"` still forces flat thinning.
+
+  The horizontal thinner also now uses the measured label width instead of a fixed 80px estimate, which was both over-thinning short labels and under-protecting long ones.
+
+  Affects every band-axis chart (VerticalStackBar, ComparableVerticalBar, Fountain, Ribbon, Scatter) and the shared y-band axis, which picks up the same spacing guarantee. No API changed; the new helpers are internal to the axis module. On the reported 37-month axis: 12 quarterly labels, none overlapping, where it previously drew 7 with three overlapping pairs.
+
 ## 1.11.1
 
 ### Patch Changes

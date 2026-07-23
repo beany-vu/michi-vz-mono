@@ -12,6 +12,35 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.2
+
+Versions des paquets : react, wc, angular **1.10.2** · core **1.12.0** · vue, svelte **1.6.4** ·
+devtools, insights **0.2.12**.
+
+- **Un axe de dates chargé incline désormais ses étiquettes au lieu d'en supprimer la
+  plupart.** Tous les graphiques à axe de bandes
+  ([Barres empilées verticales](/fr/charts/vertical-stack-bar),
+  [Barres comparables verticales](/fr/charts/comparable-vertical-bar),
+  [Fontaine](/fr/charts/fountain), [Graphique en ruban](/fr/charts/ribbon),
+  [Nuage de points](/fr/charts/scatter)) renonçaient à la rotation dès que les bandes
+  devenaient étroites et affichaient à plat un sous-ensemble d'étiquettes. Une étiquette
+  inclinée n'a besoin que de son dégagement diagonal, environ un quart de ce qu'exige une
+  étiquette à plat : le graphique fait donc pivoter un sous-ensemble et conserve environ
+  trois fois plus d'étiquettes. La rotation n'est retenue que si elle apporte réellement
+  des étiquettes. `xAxisMode: "horizontal"` force toujours l'affichage à plat.
+- **Corrigé : les étiquettes conservées pouvaient se chevaucher.** L'algorithme
+  garantissait COMBIEN d'étiquettes conserver, jamais leur écartement, et pouvait donc
+  choisir deux bandes voisines. Le chevauchement est maintenant mesuré exactement - la
+  largeur propre de chaque paire à plat, l'écart perpendiculaire une fois incliné - et les
+  étiquettes en conflit sont retirées. La première et la dernière sont toujours
+  conservées, afin que l'axe montre toujours son étendue complète.
+- **Les catégories `YYYYMM` suivent le calendrier.** Un axe mensuel se cale sur de vrais
+  repères (chaque janvier, jan./juil., jan./avr./juil./oct.) au lieu de tomber là où
+  l'arrondi décimal le plaçait. Cet arrondi était aussi la cause du chevauchement
+  ci-dessus : il n'a aucun sens sur un champ de mois en base 12 et plaçait deux
+  graduations de part et d'autre de chaque changement d'année. Les années à quatre
+  chiffres sont inchangées, les décennies rondes leur convenant déjà.
+
 ## v1.10.1
 
 Versions des paquets : react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·

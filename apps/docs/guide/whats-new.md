@@ -10,6 +10,31 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.2
+
+Package versions: react, wc, angular **1.10.2** · core **1.12.0** · vue, svelte **1.6.4** ·
+devtools, insights **0.2.12**.
+
+- **A crowded date axis now tilts its labels instead of dropping most of them.** Every
+  band-axis chart ([Vertical stack bar](/charts/vertical-stack-bar),
+  [Comparable vertical bar](/charts/comparable-vertical-bar),
+  [Fountain](/charts/fountain), [Ribbon](/charts/ribbon), [Scatter](/charts/scatter))
+  used to give up on rotation once bands got narrow and lay a thinned set of labels flat.
+  A tilted label only needs its diagonal clearance, roughly a quarter of what a flat one
+  needs, so it now rotates a thinned subset and keeps about three times more labels. It
+  only rotates when that actually buys labels, so an axis that gains nothing stays flat.
+  `xAxisMode: "horizontal"` still forces flat labels.
+- **Fixed: thinned tick labels could be drawn on top of each other.** The thinner
+  guaranteed how MANY labels to keep but never how far apart, so it could pick two
+  neighbouring bands. Overlap is now measured exactly - each pair's own label widths when
+  flat, the perpendicular gap when tilted - and colliding labels are dropped. The first
+  and last labels are always kept, so the axis still shows its full range.
+- **`YYYYMM` categories step by calendar.** A monthly axis lands on real anchors (every
+  January, Jan/Jul, Jan/Apr/Jul/Oct) instead of wherever base-10 rounding fell. That
+  rounding was also the cause of the overlap above: it is meaningless over a base-12
+  month field, so it put two ticks either side of every year boundary. Four-digit years
+  are unchanged, since round decades already suit them.
+
 ## v1.10.1
 
 Package versions: react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·

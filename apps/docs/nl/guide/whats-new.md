@@ -10,6 +10,34 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.2
+
+Pakketversies: react, wc, angular **1.10.2** · core **1.12.0** · vue, svelte **1.6.4** ·
+devtools, insights **0.2.12**.
+
+- **Een drukke datumas kantelt zijn labels nu in plaats van de meeste weg te laten.** Alle
+  grafieken met een bandas ([Verticale gestapelde staven](/nl/charts/vertical-stack-bar),
+  [Vergelijkbare verticale staven](/nl/charts/comparable-vertical-bar),
+  [Fontein](/nl/charts/fountain), [Lintdiagram](/nl/charts/ribbon),
+  [Spreidingsdiagram](/nl/charts/scatter)) gaven de rotatie op zodra de banden smal
+  werden en legden een uitgedunde set labels plat neer. Een gekanteld label heeft alleen
+  zijn diagonale ruimte nodig, ongeveer een kwart van wat een plat label vraagt, dus
+  wordt nu een uitgedunde set gekanteld en blijven er ongeveer drie keer zoveel labels
+  over. Er wordt alleen gekanteld als dat werkelijk labels oplevert.
+  `xAxisMode: "horizontal"` dwingt nog steeds platte labels af.
+- **Opgelost: uitgedunde labels konden over elkaar heen worden getekend.** De uitdunning
+  garandeerde HOEVEEL labels bleven staan, maar nooit hoe ver ze uit elkaar lagen, en kon
+  dus twee naburige banden kiezen. Overlap wordt nu exact gemeten - de eigen breedte van
+  elk paar bij platte labels, de loodrechte afstand bij gekantelde - en botsende labels
+  vervallen. Het eerste en het laatste label blijven altijd staan, zodat de as zijn
+  volledige bereik toont.
+- **`YYYYMM`-categorieën volgen de kalender.** Een maandas landt op echte ankerpunten
+  (elke januari, jan/jul, jan/apr/jul/okt) in plaats van waar de decimale afronding
+  toevallig uitkwam. Diezelfde afronding veroorzaakte de overlap hierboven: ze is
+  betekenisloos over een maandveld in twaalftallen en zette twee ticks aan weerszijden
+  van elke jaarwisseling. Viercijferige jaren blijven ongewijzigd, ronde decennia passen
+  daar al bij.
+
 ## v1.10.1
 
 Pakketversies: react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·
