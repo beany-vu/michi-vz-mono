@@ -7,7 +7,12 @@ import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
-import { renderTitle, renderXAxisBand, renderYAxisLinear } from "../render/svg";
+import {
+  renderTitle,
+  renderXAxisBand,
+  renderYAxisLinear,
+  ROTATED_LABEL_OFFSET,
+} from "../render/svg";
 import { chooseAxisMode } from "../render/svg/chooseAxisMode";
 import { measureLabelWidth } from "../render/svg/measureLabelWidth";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
@@ -21,7 +26,7 @@ import {
 import { buildStackColors } from "../verticalStackBarChart/colors";
 import { createStackScales } from "../verticalStackBarChart/scales";
 import { prepareStackedData } from "../verticalStackBarChart/stack";
-import { buildStackRenderModel } from "../verticalStackBarChart/renderModel";
+import { ABBREV_LABEL_OFFSET, buildStackRenderModel } from "../verticalStackBarChart/renderModel";
 import { renderStackSvg } from "../verticalStackBarChart/renderSvg";
 import { drawStackCanvas } from "../verticalStackBarChart/renderCanvas";
 import { drawVerticalStackBarWebgpu } from "../verticalStackBarChart/renderWebgpu";
@@ -334,6 +339,19 @@ export function mountVerticalStackBarChart(
     // margin for rotated labels so they don't clip. bandWidth = xScale.step() is
     // independent of margin.bottom, so deciding the mode before the final scales
     // is safe (no feedback loop).
+    // The series-abbreviation letters (E / I …) are painted at ABBREV_LABEL_OFFSET below
+    // the axis line, which is the same row the x tick labels start in - a rotated
+    // "MM-YYYY" label runs straight through them. When any DataSet carries an
+    // abbreviation, drop the tick labels so their anchor lands below the abbreviation
+    // BASELINE: ABBREV_LABEL_OFFSET puts it level, and the gap covers the tick glyph's
+    // own ascent above its anchor (dy 0.32em) plus breathing room. Charts with no
+    // abbreviation drop by 0 and render exactly as before.
+    const ABBREV_ROW_GAP = 11;
+    const hasAbbrevRow = filteredDataSet.some((ds) => !!ds.seriesKeyAbbreviation);
+    const tickLabelDrop = hasAbbrevRow
+      ? ABBREV_LABEL_OFFSET - ROTATED_LABEL_OFFSET + ABBREV_ROW_GAP
+      : 0;
+
     let margin = r.margin;
     let scales = createStackScales(dates, yDomain, r.width, r.height, margin);
     const axis = chooseAxisMode({
@@ -355,8 +373,12 @@ export function mountVerticalStackBarChart(
         (m, v) => Math.max(m, measureLabelWidth(xFormat(v))),
         0,
       );
-      // 25 (axis offset) + 14 (label translate) + label·sin45 + 12 (descender pad)
-      const required = Math.ceil(25 + 14 + maxLabelWidth * Math.SQRT1_2 + 12);
+      // 25 (axis offset) + label translate + label·sin45 + 12 (descender pad). The
+      // translate has to include tickLabelDrop, otherwise pushing the labels past the
+      // abbreviation row spends the descender pad instead of reserving more margin.
+      const required = Math.ceil(
+        25 + ROTATED_LABEL_OFFSET + tickLabelDrop + maxLabelWidth * Math.SQRT1_2 + 12,
+      );
       if (required > margin.bottom) {
         margin = { ...margin, bottom: required };
         scales = createStackScales(dates, yDomain, r.width, r.height, margin);
@@ -400,6 +422,7 @@ export function mountVerticalStackBarChart(
         format: (label) => xFormat(label),
         mode: axis.mode,
         tickValues: axis.tickValues,
+        labelOffset: tickLabelDrop,
       });
       renderYAxisLinear(svg, scales.yScale, {
         width: r.width,

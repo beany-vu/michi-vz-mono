@@ -15,7 +15,7 @@ export type { YAxisBandOptions } from "./yAxisBand";
 export { renderYAxisLinear } from "./yAxisLinear";
 export type { YAxisLinearOptions, LinearOrLogScale } from "./yAxisLinear";
 
-export { renderXAxisBand } from "./xAxisBand";
+export { renderXAxisBand, ROTATED_LABEL_OFFSET, HORIZONTAL_LABEL_OFFSET } from "./xAxisBand";
 export type { XAxisBandOptions } from "./xAxisBand";
 
 export { renderLoadingIndicator, toggleLoadingIndicator } from "./loadingIndicator";

@@ -11,6 +11,11 @@ import type { ScaleBand } from "d3-scale";
 import type { Margin } from "../../types";
 import type { AxisMode } from "./chooseAxisMode";
 
+/** Distance (px) from the axis line to a rotated label's anchor point. */
+export const ROTATED_LABEL_OFFSET = 14;
+/** Baseline (px below the axis line) of a horizontal label. */
+export const HORIZONTAL_LABEL_OFFSET = 20;
+
 export interface XAxisBandOptions {
   width: number;
   height: number;
@@ -21,6 +26,13 @@ export interface XAxisBandOptions {
   mode?: AxisMode;
   /** Subset of bands to label (thinning). Omit to label every band. */
   tickValues?: string[];
+  /**
+   * Extra px to drop the labels by, in BOTH modes. Use it when the caller already draws
+   * something in the row directly under the axis line and the tick labels would land on
+   * top of it (VerticalStackBar's series-abbreviation letters). Default 0 = legacy
+   * spacing, so every other caller is unaffected.
+   */
+  labelOffset?: number;
 }
 
 export function renderXAxisBand(
@@ -35,6 +47,7 @@ export function renderXAxisBand(
   const format = o.format ?? ((l: string) => l);
   const rotated = o.mode === "rotated";
   const labelSet = o.tickValues ? new Set(o.tickValues) : null;
+  const drop = o.labelOffset ?? 0;
 
   for (const label of scale.domain()) {
     const cx = (scale(label) ?? 0) + bw / 2;
@@ -51,7 +64,7 @@ export function renderXAxisBand(
       const text = svgEl("text", {
         class: "mv-axis-label",
         y: 0,
-        transform: "translate(0, 14) rotate(-45)",
+        transform: `translate(0, ${ROTATED_LABEL_OFFSET + drop}) rotate(-45)`,
         "text-anchor": "end",
         dy: "0.32em",
       });
@@ -62,7 +75,7 @@ export function renderXAxisBand(
       const text = svgEl("text", {
         class: "mv-axis-label",
         x: cx,
-        y: bottom + 20,
+        y: bottom + HORIZONTAL_LABEL_OFFSET + drop,
         "text-anchor": "middle",
       });
       text.textContent = format(label);

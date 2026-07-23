@@ -6,6 +6,14 @@ import type { Margin, StackLegendItem, StackRectData } from "../types";
 import type { PreparedStack } from "./stack";
 import type { StackColorResolver } from "./colors";
 
+/**
+ * Baseline of the series-abbreviation row, px below the axis line. The x tick labels
+ * start in that same row, so the engine reserves room above them whenever a DataSet
+ * carries an abbreviation - otherwise a rotated "MM-YYYY" label runs straight through
+ * the letters.
+ */
+export const ABBREV_LABEL_OFFSET = 15;
+
 export interface StackAbbrevLabel {
   x: number;
   y: number;
@@ -46,7 +54,7 @@ export function buildStackRenderModel(
 ): StackRenderModel {
   const { stackedData } = prepared;
 
-  const labelY = o.height - o.margin.bottom + 15;
+  const labelY = o.height - o.margin.bottom + ABBREV_LABEL_OFFSET;
   const abbrevLabels: StackAbbrevLabel[] = [];
   const seenAbbrev = new Set<string>();
   const visibleItems: string[] = [];
