@@ -34,7 +34,10 @@ describe("chooseAxisMode", () => {
     expect(result.tickValues).toEqual(["01-2023", "02-2023", "03-2023"]);
   });
 
-  test("returns fallback with evenly-spaced sample when even rotation overflows", () => {
+  test("rotates a thinned subset when no orientation fits every label", () => {
+    // Too dense to rotate all 5 (20·cos45 ≈ 14px < 16px line-height), and a 98px label
+    // does not fit a 20px band flat either. Rotating every 2nd label gives 28px of
+    // perpendicular clearance, so it keeps 3 labels where thinning flat keeps 2.
     const result = chooseAxisMode({
       domain: [
         "pos-12-01-2023",
@@ -50,14 +53,14 @@ describe("chooseAxisMode", () => {
       maxTicks: 15,
     });
 
-    expect(result.mode).toBe("fallback");
-    expect(result.tickValues).toEqual(["pos-12-01-2023", "pos-12-05-2023"]);
+    expect(result.mode).toBe("rotated");
+    expect(result.tickValues).toEqual(["pos-12-01-2023", "pos-12-03-2023", "pos-12-05-2023"]);
   });
 
-  test("fallback samples evenly when more than 2 ticks fit", () => {
-    // 12 long labels at a 20px band: below the rotated-clearance threshold
-    // (20·cos45 ≈ 14px < 16px line-height), so it thins rather than rotates, and
-    // the band is wide enough to fit 3 evenly-spaced ticks (endpoints + midpoint).
+  test("rotated thinning keeps far more labels than flat thinning would", () => {
+    // 12 long (126px) labels at a 20px band. Flat, each label costs its full width, so
+    // only the two endpoints fit. Tilted, each costs ~23px of axis, so every 2nd label
+    // fits. Both endpoints are kept either way.
     const domain = Array.from(
       { length: 12 },
       (_, i) => `2023-long-month-${String(i).padStart(2, "0")}`,
@@ -71,8 +74,15 @@ describe("chooseAxisMode", () => {
       maxTicks: 15,
     });
 
-    expect(result.mode).toBe("fallback");
-    expect(result.tickValues).toEqual([domain[0], domain[6], domain[11]]);
+    expect(result.mode).toBe("rotated");
+    expect(result.tickValues).toEqual([
+      domain[0],
+      domain[2],
+      domain[4],
+      domain[6],
+      domain[8],
+      domain[11],
+    ]);
   });
 
   test("rotates a few long labels at wide bands instead of thinning them", () => {
