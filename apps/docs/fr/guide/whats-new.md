@@ -12,6 +12,21 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.1
+
+Versions des paquets : react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·
+devtools, insights **0.2.11**.
+
+- **Corrigé :** sur [Barres empilées verticales](/fr/charts/vertical-stack-bar), les
+  étiquettes de dates de l'axe des x ne se superposent plus aux abréviations de séries.
+  Lorsqu'un DataSet fournit `seriesKeyAbbreviation` - la lettre courte affichée sous
+  chaque colonne de groupe - les étiquettes de graduation commencent désormais sous cette
+  ligne au lieu de la partager. Le problème apparaissait sous forme de texte superposé dès
+  qu'un axe chargé inclinait ses étiquettes à -45°, en particulier avec des dates
+  mensuelles `MM-YYYY`. Le graphique réserve également la marge inférieure
+  supplémentaire correspondante, afin que les étiquettes inclinées restent visibles. Les
+  graphiques dont les DataSets ne portent aucune abréviation sont inchangés.
+
 ## v1.10.0
 
 Versions des paquets : react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·

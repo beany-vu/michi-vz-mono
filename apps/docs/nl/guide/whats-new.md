@@ -10,6 +10,19 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.1
+
+Pakketversies: react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·
+devtools, insights **0.2.11**.
+
+- **Opgelost:** in [Verticale gestapelde staven](/nl/charts/vertical-stack-bar) vallen de
+  datumlabels op de x-as niet langer boven op de serie-afkortingen. Wanneer een DataSet
+  `seriesKeyAbbreviation` meegeeft - de korte letter onder elke groepskolom - beginnen de
+  aslabels nu onder die rij in plaats van hem te delen. Het viel op als overlappende tekst
+  zodra een drukke as zijn labels -45° kantelde, vooral bij maandelijkse `MM-YYYY`-datums.
+  De grafiek reserveert ook de bijbehorende extra ondermarge, zodat de gekantelde labels
+  nog passen. Grafieken waarvan de DataSets geen afkorting dragen, blijven onveranderd.
+
 ## v1.10.0
 
 Pakketversies: react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·

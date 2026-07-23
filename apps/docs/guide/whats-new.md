@@ -10,6 +10,19 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.1
+
+Package versions: react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·
+devtools, insights **0.2.11**.
+
+- **Fixed:** on [Vertical stack bar](/charts/vertical-stack-bar), the x-axis date labels no
+  longer land on top of the series abbreviations. When a DataSet supplies
+  `seriesKeyAbbreviation` - the short letter drawn under each group column - the tick
+  labels now start below that row instead of sharing it. It showed as overlapping text
+  whenever a crowded axis tilted its labels -45°, monthly `MM-YYYY` dates especially. The
+  chart reserves the matching extra bottom margin too, so the tilted labels still fit.
+  Charts whose DataSets carry no abbreviation render exactly as before.
+
 ## v1.10.0
 
 Package versions: react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·

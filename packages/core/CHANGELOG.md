@@ -1,5 +1,26 @@
 # @michi-vz/core
 
+## 1.11.1
+
+### Patch Changes
+
+- VerticalStackBarChart: stop the x-axis tick labels landing on top of the series-abbreviation row.
+
+  The abbreviation letters a DataSet supplies via `seriesKeyAbbreviation` (e.g. `E` / `I`) are
+  painted 15px below the axis line, which is the same row the tick labels start in. With a
+  horizontal axis they merely crowded each other; once the axis tilted -45° (monthly
+  `MM-YYYY` labels, say) each rotated label ran straight through the letters.
+
+  The engine now detects an abbreviation on any DataSet and drops the tick labels below that
+  row, in both axis modes, and grows the rotated-label bottom-margin reservation by the same
+  amount so the labels are not pushed into the descender pad and clipped. Charts whose
+  DataSets carry no abbreviation, and every other consumer of the shared band axis
+  (ComparableVerticalBar, Fountain, Ribbon, Scatter), render exactly as before.
+
+  `renderXAxisBand` gained an internal `labelOffset` option (default `0`) plus the exported
+  `ROTATED_LABEL_OFFSET` / `HORIZONTAL_LABEL_OFFSET` constants it was hardcoding. No public
+  chart prop changed.
+
 ## 1.11.0
 
 ### Minor Changes

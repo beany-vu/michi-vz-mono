@@ -10,6 +10,19 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.1
+
+Phiên bản các package: react, wc, angular **1.10.1** · core **1.11.1** · vue, svelte **1.6.3** ·
+devtools, insights **0.2.11**.
+
+- **Đã sửa:** ở [Biểu đồ cột chồng dọc](/vi/charts/vertical-stack-bar), nhãn ngày trên
+  trục x không còn đè lên chữ viết tắt của các chuỗi dữ liệu. Khi một DataSet có
+  `seriesKeyAbbreviation` - chữ cái ngắn vẽ dưới mỗi cột nhóm - nhãn trục giờ bắt đầu bên
+  dưới hàng đó thay vì dùng chung. Lỗi lộ ra thành chữ chồng lên nhau mỗi khi trục quá dày
+  khiến nhãn phải nghiêng -45°, rõ nhất với ngày theo tháng `MM-YYYY`. Biểu đồ cũng chừa
+  thêm phần lề dưới tương ứng để nhãn nghiêng vẫn đủ chỗ. Các biểu đồ có DataSet không kèm
+  chữ viết tắt giữ nguyên như trước.
+
 ## v1.10.0
 
 Phiên bản các package: react, wc, angular **1.10.0** · core **1.11.0** · vue, svelte **1.6.2** ·
