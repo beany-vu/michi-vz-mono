@@ -1,5 +1,14 @@
 # @michi-vz/core
 
+## 1.12.1
+
+### Patch Changes
+
+- Two consumer-facing fixes:
+
+  - The svg `<title>` SEO element is now injected only when the consumer sets a `title` prop. The unconditional `"Chart"` fallback made browsers show a stray native tooltip on hover anywhere over any chart (in canvas mode the overlay svg catches every pointer event). The JSON-LD metadata keeps the name fallback; accessibility is unchanged (the svg stays `aria-hidden`, the `.mv-a11y` mirror remains the screen-reader representation).
+  - The LineChart engine again enriches the hovered point passed to `tooltipFormatter` with its series `label` (`{ ...point, label }`), restoring pre-mono parity. Consumer tooltips that render `point.label` as the series-name row (e.g. a legend-item label line) lost that row after the migration.
+
 ## 1.12.0
 
 ### Minor Changes

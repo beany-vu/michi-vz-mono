@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/devtools",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "Opt-in in-page developer devtools for michi-vz: inspect every chart's live ChartContext (incl. actual vs predicted), drive highlight/disable + agent tools, and edit data - no browser extension required.",
   "type": "module",
   "sideEffects": false,

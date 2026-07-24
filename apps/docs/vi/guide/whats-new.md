@@ -10,6 +10,22 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.3
+
+Phiên bản các package: react, wc, angular **1.10.3** · core **1.12.1** · vue, svelte **1.6.5** ·
+devtools, insights **0.2.13**.
+
+- **Không còn tooltip "Chart" lạc lõng.** Trước đây mọi biểu đồ đều chèn một thẻ svg
+  `<title>` với giá trị dự phòng "Chart" cho SEO, mà trình duyệt lại hiển thị `<title>`
+  svg ở cấp gốc như một tooltip native khi rê chuột - nên rê vào bất kỳ đâu trên bất kỳ
+  biểu đồ nào cũng bật lên nhãn "Chart" nhỏ. Giờ phần tử này chỉ được chèn khi bạn tự
+  đặt prop `title`; crawler vẫn giữ metadata JSON-LD, và trình đọc màn hình không bị
+  ảnh hưởng (svg vẫn `aria-hidden`, bảng a11y ẩn vẫn là đại diện của chúng).
+- **Tooltip của [Biểu đồ đường](/vi/charts/line) nhận lại tên chuỗi.** Điểm dữ liệu
+  truyền vào `tooltipFormatter` lại mang `label` của chuỗi (`{ ...point, label }`),
+  đúng như thư viện trước monorepo. Các tooltip in tên chuỗi từ `point.label` đã hiển
+  thị dòng đó trống rỗng kể từ đợt di trú.
+
 ## v1.10.2
 
 Phiên bản các package: react, wc, angular **1.10.2** · core **1.12.0** · vue, svelte **1.6.4** ·

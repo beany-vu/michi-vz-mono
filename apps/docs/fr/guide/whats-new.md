@@ -12,6 +12,24 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.3
+
+Versions des paquets : react, wc, angular **1.10.3** · core **1.12.1** · vue, svelte **1.6.5** ·
+devtools, insights **0.2.13**.
+
+- **Plus d'infobulle parasite « Chart ».** Chaque graphique injectait un `<title>` svg
+  avec « Chart » en valeur par défaut pour le SEO, et les navigateurs affichent un
+  `<title>` svg racine comme infobulle native au survol - survoler n'importe quel
+  graphique faisait donc apparaître une petite étiquette « Chart ». L'élément n'est
+  désormais injecté que si vous définissez la prop `title` ; les robots d'indexation
+  conservent les métadonnées JSON-LD, et les lecteurs d'écran ne sont pas concernés
+  (le svg est `aria-hidden`, la table a11y masquée reste leur représentation).
+- **Les infobulles du [Graphique en courbes](/fr/charts/line) retrouvent leur série.**
+  Le point transmis à `tooltipFormatter` porte de nouveau le `label` de sa série
+  (`{ ...point, label }`), comme dans la bibliothèque d'avant le monorepo. Les
+  infobulles qui affichent le nom de la série depuis `point.label` rendaient cette
+  ligne vide depuis la migration.
+
 ## v1.10.2
 
 Versions des paquets : react, wc, angular **1.10.2** · core **1.12.0** · vue, svelte **1.6.4** ·

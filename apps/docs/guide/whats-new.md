@@ -10,6 +10,22 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.3
+
+Package versions: react, wc, angular **1.10.3** · core **1.12.1** · vue, svelte **1.6.5** ·
+devtools, insights **0.2.13**.
+
+- **No more stray "Chart" tooltip.** Every chart used to inject an svg `<title>` with a
+  `"Chart"` fallback for SEO, and browsers render a root-level svg `<title>` as a native
+  hover tooltip - so hovering anywhere over any chart popped a little "Chart" label. The
+  element is now injected only when you set a `title` prop; crawlers keep the JSON-LD
+  metadata, and screen readers were never affected (the svg is `aria-hidden`, the hidden
+  a11y table remains their representation).
+- **[Line chart](/charts/line) tooltips know their series again.** The point handed to
+  `tooltipFormatter` carries its series `label` once more (`{ ...point, label }`), as in
+  the pre-monorepo library. Tooltips that print the series name from `point.label` had
+  been rendering that row empty since the migration.
+
 ## v1.10.2
 
 Package versions: react, wc, angular **1.10.2** · core **1.12.0** · vue, svelte **1.6.4** ·
