@@ -734,3 +734,28 @@ describe("mountLineChart sharedTooltip (all series at the hovered year)", () => 
     host.remove();
   });
 });
+
+describe("mountLineChart per-series tooltipFormatter", () => {
+  it("enriches the hovered point with its series label (pre-mono parity)", () => {
+    // The pre-mono library called tooltipFormatter({ ...point, label: item.label }, ...);
+    // consumers (e.g. thd's TooltipTrend) render point.label as the series-name row.
+    let received: { label?: string; date?: unknown; value?: number } | null = null;
+    const { host, chart } = mount({
+      renderer: "canvas",
+      tooltipFormatter: (d) => {
+        received = d as typeof received;
+        return `<b>${String((d as { label?: string }).label)}</b>`;
+      },
+    });
+    // The per-series hit-test needs the pointer within 24px (y) of a mark; sweep
+    // the column instead of hand-computing scale positions.
+    for (let y = 0; y <= 300 && received === null; y += 10) {
+      host.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: y, bubbles: true }));
+    }
+    expect(received).not.toBeNull();
+    expect(["Alpha One", "Beta"]).toContain(received!.label);
+    expect(received!.value).toBeDefined();
+    chart.destroy();
+    host.remove();
+  });
+});

@@ -260,6 +260,18 @@ describe("mountGapChart (jsdom)", () => {
     host.remove();
   });
 
+  it("injects NO <title> when the title prop is unset (an svg <title> renders as a native hover tooltip)", () => {
+    const { host, chart } = mount({ title: undefined });
+    const svg = host.querySelector("svg")!;
+    expect(svg.querySelector(":scope > title")).toBeNull();
+    // the rest of the SEO enrichment stays, with the JSON-LD keeping the name fallback
+    expect(svg.querySelector(":scope > desc.mv-desc")).not.toBeNull();
+    const meta = JSON.parse(svg.querySelector(":scope > metadata.mv-metadata")!.textContent!);
+    expect(meta.name).toBe("Chart");
+    chart.destroy();
+    host.remove();
+  });
+
   it("produces an identical ChartContext in SVG and canvas mode (renderer aside)", () => {
     const a = mount({ renderer: "svg" });
     const b = mount({ renderer: "canvas" });

@@ -193,11 +193,12 @@ export function mountLineChart(
     const svgRect = svg.getBoundingClientRect();
     const hit = findPoint(label, ev.clientX - svgRect.left);
     if (!hit) return;
-    const item = baseProps.dataSet.find((s) => s.label === label);
+    // Enrich the hovered point with its series label — the pre-mono library passed
+    // `{ ...point, label: item.label }` and consumer formatters (e.g. thd's
+    // TooltipTrend) render `item.label` as the series-name row.
     const htmlStr = baseProps.tooltipFormatter
-      ? baseProps.tooltipFormatter(hit.d, hit.series, baseProps.dataSet)
+      ? baseProps.tooltipFormatter({ ...hit.d, label }, hit.series, baseProps.dataSet)
       : `<strong>${label}</strong><br/>${String(hit.d.date)}: ${hit.d.value}`;
-    void item;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
     // Position AFTER content+visible so placeTooltip can measure offsetWidth/Height

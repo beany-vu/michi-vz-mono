@@ -16,18 +16,23 @@ export const MAX_A11Y_ROWS = 100;
 
 /**
  * Add machine-readable SEO/semantic nodes to the chart `<svg>`: a `<title>` (chart
- * title), `<desc>` (the deterministic summary), and a `<metadata>` block carrying
- * schema.org JSON-LD. The text lands in the DOM so crawlers index it; the SVG is also
- * marked `aria-hidden` because the visually-hidden `.mv-a11y` table is the screen-reader
- * representation (this avoids a double announcement). Called from renderA11yMirror, which
- * every engine already invokes with the context - so all charts get it from one place.
- * render() clears the <svg> each pass, so these nodes are re-added fresh (no duplicates).
+ * title, only when the consumer set one), `<desc>` (the deterministic summary), and a
+ * `<metadata>` block carrying schema.org JSON-LD. The text lands in the DOM so crawlers
+ * index it; the SVG is also marked `aria-hidden` because the visually-hidden `.mv-a11y`
+ * table is the screen-reader representation (this avoids a double announcement). Called
+ * from renderA11yMirror, which every engine already invokes with the context - so all
+ * charts get it from one place. render() clears the <svg> each pass, so these nodes are
+ * re-added fresh (no duplicates).
+ *
+ * ⚠️ The `<title>` element is browser-visible: an SVG root `<title>` renders as a NATIVE
+ * hover tooltip over the whole chart (in canvas mode the overlay <svg> catches every
+ * pointer event, so it fired everywhere). Injecting a "Chart" fallback gave every
+ * consumer a stray tooltip, so the element is now strictly opt-in via the `title` prop;
+ * the JSON-LD `name` keeps the fallback for crawlers (metadata is never rendered).
  */
 function applySvgSemantics(svg: SVGElement, ctx: BaseChartContext): void {
   const titleText = ctx.title || "Chart";
 
-  const title = svgEl("title", { class: "mv-title" });
-  title.textContent = titleText;
   const desc = svgEl("desc", { class: "mv-desc" });
   desc.textContent = ctx.summary;
   const metadata = svgEl("metadata", { class: "mv-metadata" });
@@ -47,7 +52,11 @@ function applySvgSemantics(svg: SVGElement, ctx: BaseChartContext): void {
   // Semantic order: title -> desc -> metadata at the top of the <svg>.
   svg.insertBefore(metadata, svg.firstChild);
   svg.insertBefore(desc, svg.firstChild);
-  svg.insertBefore(title, svg.firstChild);
+  if (ctx.title) {
+    const title = svgEl("title", { class: "mv-title" });
+    title.textContent = ctx.title;
+    svg.insertBefore(title, svg.firstChild);
+  }
   svg.setAttribute("aria-hidden", "true");
 }
 
