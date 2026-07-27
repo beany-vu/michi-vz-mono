@@ -517,6 +517,19 @@ export function mountComparableVerticalBarChart(
       removeWebgpuCanvas();
     }
 
+    // Legend keeps disabled labels (flagged) so a clicked pill dims in place
+    // instead of vanishing and getting re-appended by the consumer (the VSB
+    // 1.5.6 contract). Walk the pre-disable dataSet so a disabled label holds
+    // its original slot; identical to the points order when nothing is disabled.
+    const disabledSet = new Set(props.disabledItems ?? []);
+    const visibleLabels = new Set(labels);
+    const legendLabels =
+      disabledSet.size > 0
+        ? tlData.dataSet
+            .map((d) => d.label)
+            .filter((l) => visibleLabels.has(l) || disabledSet.has(l))
+        : undefined;
+
     context = buildComparableVerticalBarContext({
       title: props.title,
       renderer: r.renderer,
@@ -524,6 +537,7 @@ export function mountComparableVerticalBarChart(
       points,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
+      legendLabels,
       deltaIndicator: r.deltaIndicator,
     });
     // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the

@@ -165,6 +165,23 @@ describe("mountComparableVerticalBarChart (jsdom)", () => {
     host.remove();
   });
 
+  it("keeps a disabled label in legendData, flagged and in its original slot (no legend resort)", () => {
+    // The VSB 1.5.6 contract: clicking a legend pill must DIM it in place, not
+    // drop it from legendData - a dropped label gets re-appended (re-sorted,
+    // possibly recoloured) by consumer fallbacks (thd LegendGeneral).
+    const { host, chart } = mount({ disabledItems: ["Beta"] });
+    const ctx = chart.getContext()!;
+    expect(ctx.legendData!.map((l) => l.label)).toEqual(["Alpha One", "Beta", "Gamma"]);
+    expect(ctx.legendData!.map((l) => l.disabled)).toEqual([false, true, false]);
+    expect(ctx.series.map((s) => s.label)).toEqual(["Alpha One", "Gamma"]);
+    chart.update({ dataSet, title: "Demo", width: 600, height: 300, disabledItems: [] });
+    const ctx2 = chart.getContext()!;
+    expect(ctx2.legendData!.map((l) => l.label)).toEqual(["Alpha One", "Beta", "Gamma"]);
+    expect(ctx2.legendData!.map((l) => l.disabled)).toEqual([false, false, false]);
+    chart.destroy();
+    host.remove();
+  });
+
   it("onChartDataProcessed is idempotent - fires once per distinct context (no dispatch loop)", () => {
     let calls = 0;
     const onChartDataProcessed = () => {

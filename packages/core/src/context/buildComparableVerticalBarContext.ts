@@ -22,6 +22,13 @@ export interface BuildComparableVerticalContextInput {
   points: ComparableBarDataPoint[];
   colorsMapping: Record<string, string>;
   disabledItems?: string[];
+  /**
+   * Labels for the LEGEND, including disabled ones (flagged `disabled: true`),
+   * so a clicked pill dims in place instead of dropping out of legendData and
+   * being re-appended (re-sorted) by the consumer. Defaults to the visible
+   * points' labels for callers that don't thread it.
+   */
+  legendLabels?: string[];
   /** When set, the delta indicator is active for this render (undefined = prop
    * omitted / `show: false`, a provable no-op: no per-series delta fields, no
    * extra a11y column, no extra summary sentence). */
@@ -89,7 +96,7 @@ export function buildComparableVerticalBarContext(
   // onChartDataProcessed(ctx).legendData. Without it, thd's setMetadata
   // early-returns and colorsMapping stays {} -> every bar resolves transparent.
   const legendData = buildLegendData({
-    labels: input.points.map((p) => p.label),
+    labels: input.legendLabels ?? input.points.map((p) => p.label),
     colorsMapping: input.colorsMapping,
     disabledItems: input.disabledItems,
   });
