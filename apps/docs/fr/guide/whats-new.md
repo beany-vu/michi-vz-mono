@@ -12,6 +12,21 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.4
+
+Versions des paquets : react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·
+devtools, insights **0.2.14**.
+
+- **Les légendes des barres comparables ne se réorganisent plus quand on désactive un
+  élément.** Sur les graphiques [Barres comparables](/fr/charts/comparable) et
+  [Barres comparables verticales](/fr/charts/comparable-vertical-bar), un libellé listé
+  dans `disabledItems` disparaissait entièrement du `legendData` émis ; les légendes
+  construites dessus le rajoutaient ailleurs - un retri visible (et parfois un changement
+  de couleur) à chaque clic sur la légende. Un libellé désactivé reste désormais dans
+  `legendData`, marqué `disabled: true`, à sa place d'origine ; les barres, elles,
+  continuent de l'exclure. C'est le contrat que les barres empilées verticales ont depuis
+  core 1.5.6.
+
 ## v1.10.3
 
 Versions des paquets : react, wc, angular **1.10.3** · core **1.12.1** · vue, svelte **1.6.5** ·

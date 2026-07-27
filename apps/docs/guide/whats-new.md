@@ -10,6 +10,20 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.4
+
+Package versions: react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·
+devtools, insights **0.2.14**.
+
+- **Comparable-bar legends no longer reshuffle when you disable an item.** On the
+  [Comparable horizontal bar](/charts/comparable) and
+  [Comparable vertical bar](/charts/comparable-vertical-bar) charts, a label listed in
+  `disabledItems` used to disappear from the emitted `legendData` entirely, so legends
+  built from it re-appended the item elsewhere - a visible resort (and possible recolour)
+  on every legend click. A disabled label now stays in `legendData`, flagged
+  `disabled: true`, in its original slot; the bars themselves still drop it. This matches
+  the contract the vertical stack bar chart has had since core 1.5.6.
+
 ## v1.10.3
 
 Package versions: react, wc, angular **1.10.3** · core **1.12.1** · vue, svelte **1.6.5** ·

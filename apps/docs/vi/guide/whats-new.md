@@ -10,6 +10,20 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.4
+
+Phiên bản các package: react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·
+devtools, insights **0.2.14**.
+
+- **Chú giải của biểu đồ cột so sánh không còn bị xáo trộn khi tắt một mục.** Trên
+  [Biểu đồ cột so sánh](/vi/charts/comparable) và
+  [Biểu đồ cột dọc so sánh](/vi/charts/comparable-vertical-bar), một nhãn nằm trong
+  `disabledItems` trước đây biến mất hoàn toàn khỏi `legendData` được phát ra, nên các
+  chú giải dựng từ đó lại thêm mục ấy vào chỗ khác - gây xáo trộn thứ tự thấy rõ (và có
+  thể đổi màu) mỗi lần bấm vào chú giải. Giờ đây nhãn bị tắt vẫn nằm trong `legendData`,
+  được gắn cờ `disabled: true`, đúng vị trí ban đầu; bản thân các cột vẫn bị loại bỏ.
+  Điều này khớp với hợp đồng mà biểu đồ cột chồng dọc đã có từ core 1.5.6.
+
 ## v1.10.3
 
 Phiên bản các package: react, wc, angular **1.10.3** · core **1.12.1** · vue, svelte **1.6.5** ·

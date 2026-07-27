@@ -10,6 +10,21 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.10.4
+
+Pakketversies: react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·
+devtools, insights **0.2.14**.
+
+- **Legenda's van vergelijkbare staven schudden niet meer door elkaar bij het uitschakelen
+  van een item.** Op de [Vergelijkbare staven](/nl/charts/comparable) en
+  [Vergelijkbare verticale staven](/nl/charts/comparable-vertical-bar) verdween een label
+  uit `disabledItems` volledig uit de uitgezonden `legendData`, waardoor legenda's die
+  daarop bouwen het item elders opnieuw toevoegden - een zichtbare hersortering (en soms
+  een andere kleur) bij elke klik op de legenda. Een uitgeschakeld label blijft nu in
+  `legendData` staan, gemarkeerd als `disabled: true`, op zijn oorspronkelijke plek; de
+  staven zelf laten het nog steeds weg. Dit komt overeen met het contract dat de verticale
+  stapelstaaf sinds core 1.5.6 heeft.
+
 ## v1.10.3
 
 Pakketversies: react, wc, angular **1.10.3** · core **1.12.1** · vue, svelte **1.6.5** ·
