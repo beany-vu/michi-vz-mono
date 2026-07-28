@@ -10,6 +10,19 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.1
+
+Package versions: core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·
+examples **1.1.1** · devtools, insights **0.2.16**.
+
+- **[Vertical stack bar](/charts/vertical-stack-bar) goes sideways.** New additive
+  `layout: "horizontal"`: rows on a band y-axis (the shared ellipsizing HTML labels,
+  so long category names stay readable) with stacked segments growing rightward from
+  x(0). Data, colour-slot, legend, tooltip, hit-test, and missing-marker contracts are
+  identical to the vertical layout, and the `xAxis*` props keep formatting the category
+  axis (`yAxis*`/`yTicks` the value axis) in both orientations - flipping layout is one
+  prop. Series-abbreviation labels, `xAxisMode`, and `timeline` remain vertical-only.
+
 ## v1.11.0
 
 Package versions: react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·

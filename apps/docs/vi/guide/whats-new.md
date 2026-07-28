@@ -10,6 +10,19 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.1
+
+Phiên bản gói: core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·
+examples **1.1.1** · devtools, insights **0.2.16**.
+
+- **[Biểu đồ cột chồng](/vi/charts/vertical-stack-bar) nay có dạng ngang.** Prop bổ sung
+  `layout: "horizontal"`: các hàng trên trục y dạng dải (nhãn HTML dùng chung có
+  ellipsis nên tên danh mục dài vẫn đọc được) với các đoạn chồng lớn dần sang phải từ
+  x(0). Hợp đồng dữ liệu, khe màu, chú giải, tooltip và đánh dấu thiếu dữ liệu giống hệt
+  bố cục dọc, và các prop `xAxis*` vẫn định dạng trục danh mục (`yAxis*`/`yTicks` trục
+  giá trị) ở cả hai hướng. Nhãn viết tắt, `xAxisMode` và `timeline` vẫn chỉ dành cho
+  bố cục dọc.
+
 ## v1.11.0
 
 Phiên bản gói: react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·

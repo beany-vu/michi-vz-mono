@@ -10,6 +10,19 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.1
+
+Pakketversies: core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·
+examples **1.1.1** · devtools, insights **0.2.16**.
+
+- **De [verticale stapelbalk](/nl/charts/vertical-stack-bar) kan nu liggend.** Nieuwe
+  additieve `layout: "horizontal"`: rijen op een band-y-as (de gedeelde HTML-labels met
+  ellips, dus lange categorienamen blijven leesbaar) met gestapelde segmenten die vanaf
+  x(0) naar rechts groeien. Data-, kleurslot-, legenda-, tooltip- en missing-marker-
+  contracten zijn identiek aan de verticale lay-out, en de `xAxis*`-props blijven de
+  categorie-as formatteren (`yAxis*`/`yTicks` de waarde-as) in beide oriëntaties.
+  Afkortingslabels, `xAxisMode` en `timeline` blijven alleen verticaal.
+
 ## v1.11.0
 
 Pakketversies: react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·

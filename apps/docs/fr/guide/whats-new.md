@@ -12,6 +12,20 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.1
+
+Versions des paquets : core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·
+examples **1.1.1** · devtools, insights **0.2.16**.
+
+- **Les [barres empilées verticales](/fr/charts/vertical-stack-bar) passent à l'horizontale.**
+  Nouvelle propriété additive `layout: "horizontal"` : des lignes sur un axe y en bandes
+  (les libellés HTML partagés avec ellipse, donc les longs noms de catégories restent
+  lisibles) avec des segments empilés vers la droite depuis x(0). Les contrats de données,
+  d'attribution des couleurs, de légende, d'infobulle et de marqueur manquant sont
+  identiques à la disposition verticale, et les props `xAxis*` continuent de formater
+  l'axe des catégories (`yAxis*`/`yTicks` l'axe des valeurs) dans les deux orientations.
+  Les libellés d'abréviation de série, `xAxisMode` et `timeline` restent verticaux uniquement.
+
 ## v1.11.0
 
 Versions des paquets : react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·
