@@ -10,6 +10,26 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.0
+
+Package versions: react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·
+examples **1.1.0** · devtools, insights **0.2.15**.
+
+- **New chart: [Gauge (Rings)](/charts/gauge).** A concentric ring gauge - one ring per
+  item, outer to inner, each sweeping `value/max` of a full circle over a background
+  track. Hover activates a ring and drives the built-in centre readout; a `null` value
+  renders the track only. Ring thickness/gap, per-ring colours and opacities, start
+  angle, rounded caps, and the centre content are all configurable, with svg, canvas,
+  and webgpu renderers sharing the standard colour-probe contract.
+- **[Line chart](/charts/line) drag-to-zoom.** Opt in with the `zoom` prop: drag a
+  horizontal range inside the plot to zoom the x-domain (a selection rectangle previews
+  it), with a built-in "Reset zoom" chip, `minRange`, an `onZoomChange` callback, and
+  `resetZoom()` / `setZoomDomain()` for programmatic control. Marks clip to the plot
+  box; ticks, crosshair snapping, and tooltips follow the zoomed domain.
+- **PNG exports can carry a title and a source line.** `chartToPngDataUrl` accepts
+  `title` and `caption` text blocks (word-wrapped, alignment/size/colour configurable)
+  composited above and below the chart.
+
 ## v1.10.4
 
 Package versions: react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·

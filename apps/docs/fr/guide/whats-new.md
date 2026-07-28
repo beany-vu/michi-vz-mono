@@ -12,6 +12,28 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.0
+
+Versions des paquets : react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·
+examples **1.1.0** · devtools, insights **0.2.15**.
+
+- **Nouveau graphique : [Jauge (anneaux)](/fr/charts/gauge).** Une jauge à anneaux
+  concentriques - un anneau par élément, de l'extérieur vers l'intérieur, chacun
+  balayant `value/max` d'un cercle complet sur une piste de fond. Le survol active un
+  anneau et pilote l'affichage central intégré ; une valeur `null` ne dessine que la
+  piste. Épaisseur et espacement des anneaux, couleurs et opacités par anneau, angle de
+  départ, extrémités arrondies et contenu central sont configurables, avec les moteurs
+  svg, canvas et webgpu partageant le contrat de sonde de couleur standard.
+- **Zoom par glissement sur le [graphique en courbes](/fr/charts/line).** Activez la
+  propriété `zoom` : faites glisser une plage horizontale dans le tracé pour zoomer le
+  domaine x (un rectangle de sélection le prévisualise), avec un bouton « Reset zoom »
+  intégré, `minRange`, un rappel `onZoomChange` et `resetZoom()` / `setZoomDomain()`
+  pour le contrôle programmatique. Les marques sont rognées au tracé ; graduations,
+  réticule et infobulles suivent le domaine zoomé.
+- **Les exports PNG peuvent porter un titre et une ligne de source.** `chartToPngDataUrl`
+  accepte des blocs de texte `title` et `caption` (retour à la ligne automatique,
+  alignement/taille/couleur configurables) composés au-dessus et en dessous du graphique.
+
 ## v1.10.4
 
 Versions des paquets : react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·

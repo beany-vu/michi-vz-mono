@@ -1,5 +1,14 @@
 # @michi-vz/core
 
+## 1.13.0
+
+### Minor Changes
+
+- 486978e: New chart #22: GaugeChart - a concentric ring gauge (`mountGaugeChart` / `<GaugeChart>` / `<michi-vz-gauge-chart>`). One ring per dataSet item (outer to inner), each sweeping value/max of a full circle clockwise from `startAngle` over a background track; a null value renders the track only. Configurable ring thickness/gap, per-ring arc + track colours and opacities, rounded caps, `defaultActive` resting ring, hover activation with `onHighlightItem`, a built-in centre readout (`showCenterLabel` / `centerContent` / `valueFormatter` / `noValueLabel`), an opt-in `tooltipFormatter`, and svg / canvas / webgpu renderers sharing the standard colour-probe contract. Ships with ChartContext + legendData + a11y mirror, loading/no-data chrome, docs (4 locales), and examples.
+- 486978e: Export: `chartToPngDataUrl` gains `title` / `caption` text blocks (word-wrapped, alignment/size/colour configurable via `PngTextBlock`) composited above/below the chart, plus `textFontFamily`.
+
+  LineChart: opt-in x-axis drag-to-zoom. New `zoom` prop (`boolean | LineZoomConfig` with `minRange`, `resetButton`, `resetLabel`), `onZoomChange` callback (WC event `michi-vz:zoomchange`), and `resetZoom()` / `setZoomDomain()` instance + React handle methods. Dragging a horizontal range inside the plot zooms the x-domain: marks clip to the plot box (SVG clipPath wrapper / canvas ctx.clip), axis ticks, crosshair snapping, and tooltips follow the zoomed domain, and a built-in "Reset zoom" chip restores the full view. The y-domain intentionally stays full. The webgpu renderer falls back to canvas while zoomed (no clip support there).
+
 ## 1.12.2
 
 ### Patch Changes

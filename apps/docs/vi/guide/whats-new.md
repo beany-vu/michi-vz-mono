@@ -10,6 +10,26 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.0
+
+Phiên bản gói: react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·
+examples **1.1.0** · devtools, insights **0.2.15**.
+
+- **Biểu đồ mới: [Biểu đồ vòng cung](/vi/charts/gauge).** Biểu đồ vòng cung đồng tâm -
+  mỗi mục một vòng, từ ngoài vào trong, mỗi vòng quét `value/max` của một vòng tròn đầy
+  đủ trên rãnh nền. Di chuột kích hoạt một vòng và điều khiển phần hiển thị trung tâm
+  tích hợp; giá trị `null` chỉ vẽ rãnh nền. Độ dày/khoảng cách vòng, màu và độ mờ theo
+  từng vòng, góc bắt đầu, đầu bo tròn và nội dung trung tâm đều cấu hình được, với các
+  trình kết xuất svg, canvas và webgpu dùng chung hợp đồng đầu dò màu chuẩn.
+- **Kéo để phóng to trên [biểu đồ đường](/vi/charts/line).** Bật prop `zoom`: kéo một
+  vùng ngang trong biểu đồ để phóng to miền x (khung chọn hiển thị trước), kèm nút
+  "Reset zoom" tích hợp, `minRange`, callback `onZoomChange` và `resetZoom()` /
+  `setZoomDomain()` để điều khiển bằng mã. Các nét vẽ được cắt theo vùng biểu đồ; trục,
+  đường ngắm và tooltip theo miền đã phóng to.
+- **Xuất PNG có thể kèm tiêu đề và dòng nguồn.** `chartToPngDataUrl` nhận các khối chữ
+  `title` và `caption` (tự xuống dòng, căn chỉnh/cỡ/màu cấu hình được) ghép phía trên
+  và dưới biểu đồ.
+
 ## v1.10.4
 
 Phiên bản các package: react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·

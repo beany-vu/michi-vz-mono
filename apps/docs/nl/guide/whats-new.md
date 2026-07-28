@@ -10,6 +10,28 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.0
+
+Pakketversies: react, wc, angular **1.11.0** · core **1.13.0** · vue, svelte **1.7.0** ·
+examples **1.1.0** · devtools, insights **0.2.15**.
+
+- **Nieuwe grafiek: [Meter (ringen)](/nl/charts/gauge).** Een concentrische ringmeter -
+  één ring per item, van buiten naar binnen, die elk `value/max` van een volledige
+  cirkel over een achtergrondspoor bestrijkt. Aanwijzen activeert een ring en stuurt de
+  ingebouwde centrale aflezing; een `null`-waarde toont alleen het spoor. Ringdikte en
+  -afstand, kleuren en dekkingen per ring, beginhoek, afgeronde uiteinden en de centrale
+  inhoud zijn configureerbaar, met svg-, canvas- en webgpu-renderers die het standaard
+  kleurprobe-contract delen.
+- **Sleep-zoom op de [lijngrafiek](/nl/charts/line).** Zet de `zoom`-prop aan: sleep een
+  horizontaal bereik in het tekengebied om het x-domein te zoomen (een selectiekader
+  toont het vooraf), met een ingebouwde "Reset zoom"-knop, `minRange`, een
+  `onZoomChange`-callback en `resetZoom()` / `setZoomDomain()` voor programmatische
+  besturing. Markeringen worden op het tekengebied bijgesneden; ticks, dradenkruis en
+  tooltips volgen het gezoomde domein.
+- **PNG-exports kunnen een titel en een bronregel dragen.** `chartToPngDataUrl`
+  accepteert `title`- en `caption`-tekstblokken (automatische regelafbreking,
+  uitlijning/grootte/kleur configureerbaar) boven en onder de grafiek.
+
 ## v1.10.4
 
 Pakketversies: react, wc, angular **1.10.4** · core **1.12.2** · vue, svelte **1.6.6** ·
