@@ -17,6 +17,7 @@ export { mountRadarChart } from "./engine/radarChart";
 export { mountFanChart } from "./engine/fanChart";
 export { mountTreemapChart } from "./engine/treemapChart";
 export { mountPieChart } from "./engine/pieChart";
+export { mountGaugeChart } from "./engine/gaugeChart";
 export { mountBubbleChart } from "./engine/bubbleChart";
 export { mountSankeyChart } from "./engine/sankeyChart";
 export { mountFountainChart } from "./engine/fountainChart";
@@ -66,7 +67,7 @@ export {
   chartToStyledSvgDataUri,
   chartToPngDataUrl,
 } from "./export";
-export type { CsvOptions, StyledSvgOptions, PngOptions } from "./export";
+export type { CsvOptions, StyledSvgOptions, PngOptions, PngTextBlock } from "./export";
 
 // ---- Animation (tickers, easing, reduced-motion, timeline playback) ----
 export { defaultTicker, createManualTicker } from "./animation/ticker";
@@ -108,6 +109,11 @@ export { buildAreaColors } from "./areaChart/colors";
 export { makeAreaGenerator } from "./areaChart/geometry";
 export { buildAreaContext } from "./context/buildAreaContext";
 export { checkAreaData } from "./validate/areaWarnings";
+// GaugeChart pure layer
+export { processGaugeData } from "./gaugeChart/data";
+export { buildGaugeColors } from "./gaugeChart/colors";
+export { buildGaugeContext } from "./context/buildGaugeContext";
+export { checkGaugeData } from "./validate/gaugeWarnings";
 // ScatterPlot pure layer
 export { processScatterData } from "./scatterChart/data";
 export { buildScatterColors } from "./scatterChart/colors";
@@ -289,6 +295,7 @@ export type {
   LineDataItem,
   SinglePointLineConfig,
   MouseLineConfig,
+  LineZoomConfig,
   ProgressiveDrawConfig,
   ProgressiveDrawTipLabelConfig,
   TimelinePeriodConfig,
@@ -354,6 +361,11 @@ export type {
   PieChartProps,
   PieSliceContext,
   PieChartContext,
+  GaugeRingDatum,
+  GaugeActiveStyle,
+  GaugeChartProps,
+  GaugeRingContext,
+  GaugeChartContext,
   BubbleDataItem,
   BubbleChartProps,
   BubbleContext,

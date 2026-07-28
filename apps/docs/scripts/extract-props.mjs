@@ -19,6 +19,15 @@ const OUT = resolve(HERE, "../.vitepress/data/props.json");
 // chart key (= @michi-vz/examples key / element suffix) -> source locations.
 export const CHARTS = [
   {
+    key: "gauge-chart",
+    propsType: "GaugeChartProps",
+    element: "michi-vz-gauge-chart",
+    engine: "gaugeChart.ts",
+    wc: "gauge-chart.ts",
+    context: "GaugeChartContext",
+    mount: "mountGaugeChart",
+  },
+  {
     key: "line-chart",
     propsType: "LineChartProps",
     element: "michi-vz-line-chart",

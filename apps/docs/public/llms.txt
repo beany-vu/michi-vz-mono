@@ -2,7 +2,7 @@
 
 <!-- Generated file. Edit apps/docs/scripts/llms/llms.template.txt and run `npm run generate-llms`. -->
 
-> Framework-agnostic charting for the web: a plain TypeScript engine, light-DOM web components, and first-class React, Vue, Svelte, and Angular wrappers. 21 chart types, svg and canvas renderers, a structured ChartContext on every chart for accessibility and tool use, and an opt-in, local-first insights layer for forecasting, anomaly detection, narration, agents, and MCP.
+> Framework-agnostic charting for the web: a plain TypeScript engine, light-DOM web components, and first-class React, Vue, Svelte, and Angular wrappers. 22 chart types, svg and canvas renderers, a structured ChartContext on every chart for accessibility and tool use, and an opt-in, local-first insights layer for forecasting, anomaly detection, narration, agents, and MCP.
 
 Package versions: @michi-vz/core 1.12.2, wc 1.10.4, react 1.10.4, vue 1.6.6, svelte 1.6.6, angular 1.10.4, insights 0.2.14, devtools 0.2.14.
 
@@ -19,6 +19,7 @@ Package versions: @michi-vz/core 1.12.2, wc 1.10.4, react 1.10.4, vue 1.6.6, sve
 
 ## Charts
 
+- [Gauge (Rings)](https://michi-vz.netlify.app/charts/gauge): Concentric ring gauge: one ring per item sweeping value/max of a full circle over a background track, with hover-activated rings and a built-in centre readout.
 - [Line Chart](https://michi-vz.netlify.app/charts/line): Line chart for time series: one series or fifty, missing periods rendered as dashes, and an opt-in canvas renderer with LTTB decimation for thousands of points.
 - [Fan Chart](https://michi-vz.netlify.app/charts/fan): Fan chart for forecasts with uncertainty: solid history, a dashed most-likely path, and confidence bands that widen into the future.
 - [Area Chart](https://michi-vz.netlify.app/charts/area): Stacked area chart for composition over time: watch each category's share of the whole expand or shrink while the total rises.

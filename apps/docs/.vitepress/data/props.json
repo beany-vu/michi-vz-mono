@@ -17,13 +17,13 @@
       "name": "margin",
       "type": "Margin",
       "optional": true,
-      "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels"
+      "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)"
     },
     {
       "name": "colors",
       "type": "string[]",
       "optional": true,
-      "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry"
+      "description": "Categorical palette for rings without an explicit colour or colorsMapping entry"
     },
     {
       "name": "colorsMapping",
@@ -35,37 +35,37 @@
       "name": "renderer",
       "type": "\"svg\" | \"canvas\" | \"webgpu\"",
       "optional": true,
-      "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way"
+      "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way"
     },
     {
       "name": "highlightItems",
       "type": "string[]",
       "optional": true,
-      "description": "Labels to emphasise; all other marks dim"
+      "description": "Labels to emphasise (active styling); others keep their base opacity"
     },
     {
       "name": "disabledItems",
       "type": "string[]",
       "optional": true,
-      "description": "Labels to hide and exclude from scales/stacks"
+      "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)"
     },
     {
       "name": "locale",
       "type": "string",
       "optional": true,
-      "description": "BCP-47 locale used for number and date formatting"
+      "description": "BCP-47 locale used for number formatting"
     },
     {
       "name": "skipColorMappingDispatch",
       "type": "boolean",
       "optional": true,
-      "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract"
+      "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract"
     },
     {
       "name": "enableTransitions",
       "type": "boolean",
       "optional": true,
-      "description": "Animate updates with CSS transitions (default true)"
+      "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)"
     },
     {
       "name": "onColorMappingGenerated",
@@ -83,10 +83,322 @@
       "name": "onDataWarning",
       "type": "(warnings: DataWarning[]) => void",
       "optional": true,
-      "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)"
+      "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)"
     }
   ],
   "charts": {
+    "gauge-chart": {
+      "element": "michi-vz-gauge-chart",
+      "propsType": "GaugeChartProps",
+      "context": "GaugeChartContext",
+      "mount": "mountGaugeChart",
+      "props": [
+        {
+          "name": "dataSet",
+          "type": "GaugeRingDatum[]",
+          "optional": false,
+          "description": "Rings, OUTER to INNER; each sweeps value/max of the circle over a track",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "optional": true,
+          "description": "Optional chart title rendered above the plot",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "optional": true,
+          "description": "Chart width in pixels",
+          "default": "300",
+          "common": true
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "optional": true,
+          "description": "Chart height in pixels",
+          "default": "300",
+          "common": true
+        },
+        {
+          "name": "margin",
+          "type": "Margin",
+          "optional": true,
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
+          "default": "{ top: p.title ? 36 : 8, right: 8, bottom: 8, left: 8 }",
+          "common": true
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "optional": true,
+          "description": "Value corresponding to a full 360° sweep (default 100).",
+          "default": "100",
+          "common": false
+        },
+        {
+          "name": "ringThickness",
+          "type": "number",
+          "optional": true,
+          "description": "Ring stroke thickness in px (default 18).",
+          "default": "18",
+          "common": false
+        },
+        {
+          "name": "ringGap",
+          "type": "number",
+          "optional": true,
+          "description": "Gap between adjacent rings in px (default 2).",
+          "default": "2",
+          "common": false
+        },
+        {
+          "name": "outerRadius",
+          "type": "number",
+          "optional": true,
+          "description": "Outermost ring's outer edge radius in px; default fills the plot box.",
+          "default": "null",
+          "common": false
+        },
+        {
+          "name": "startAngle",
+          "type": "number",
+          "optional": true,
+          "description": "Arc start angle in degrees, 0 = 12 o'clock, positive clockwise (default 0).",
+          "default": "0",
+          "common": false
+        },
+        {
+          "name": "roundedCaps",
+          "type": "boolean",
+          "optional": true,
+          "description": "Round the arc ends (default false = square caps).",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "ringOpacity",
+          "type": "number | number[]",
+          "optional": true,
+          "description": "Arc opacity per ring, outer→inner; a single number applies to every ring (default 1).",
+          "default": "1",
+          "common": false
+        },
+        {
+          "name": "trackColor",
+          "type": "string | string[]",
+          "optional": true,
+          "description": "Track colour(s) behind the arcs, outer→inner; per-ring `trackColor` wins (default \"#00000014\").",
+          "default": "\"#00000014\"",
+          "common": false
+        },
+        {
+          "name": "trackOpacity",
+          "type": "number | number[]",
+          "optional": true,
+          "description": "Track opacity per ring, outer→inner (default 1).",
+          "default": "1",
+          "common": false
+        },
+        {
+          "name": "defaultActive",
+          "type": "number | \"inner\" | \"outer\" | null",
+          "optional": true,
+          "description": "The ring active when nothing is hovered: a dataSet index, \"inner\"/\"outer\", or null for none (default \"inner\").",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "activeStyle",
+          "type": "GaugeActiveStyle",
+          "optional": true,
+          "description": "Emphasis applied to the active ring (default { opacity: 1 }).",
+          "default": "{}",
+          "common": false
+        },
+        {
+          "name": "showCenterLabel",
+          "type": "boolean",
+          "optional": true,
+          "description": "Draw the built-in centre label: active ring's name + formatted value (default true). Turn off to render your own centre overlay (drive it via onHighlightItem).",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "centerContent",
+          "type": "(ring: GaugeRingContext | null) => string",
+          "optional": true,
+          "description": "Custom centre HTML for the active ring (sanitized before insertion); wins over the default label+value markup. Receives null when no ring is active.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "valueFormatter",
+          "type": "(v: number) => string",
+          "optional": true,
+          "description": "Formats a ring value for the centre label and tooltips (default `${v}%`).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noValueLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Centre value text for an active ring with no data (default \"n/a\").",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "colors",
+          "type": "string[]",
+          "optional": true,
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "colorsMapping",
+          "type": "Record<string, string>",
+          "optional": true,
+          "description": "Explicit label -> colour map; takes precedence over the palette and per-item colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "highlightItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "disabledItems",
+          "type": "string[]",
+          "optional": true,
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "renderer",
+          "type": "\"svg\" | \"canvas\" | \"webgpu\"",
+          "optional": true,
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
+          "default": "\"svg\"",
+          "common": true
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "optional": true,
+          "description": "BCP-47 locale used for number formatting",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "skipColorMappingDispatch",
+          "type": "boolean",
+          "optional": true,
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
+          "default": "false",
+          "common": true
+        },
+        {
+          "name": "enableTransitions",
+          "type": "boolean",
+          "optional": true,
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
+          "default": "true",
+          "common": true
+        },
+        {
+          "name": "fontFamily",
+          "type": "string",
+          "optional": true,
+          "description": "Font family for the title/centre label; sets the --michi-vz-font-family CSS var",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay and skip the no-data check",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: GaugeRingDatum[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on dataSet; default = empty dataSet (rings whose value is null still RENDER, as empty tracks).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "tooltipFormatter",
+          "type": "(ring: GaugeRingContext) => string",
+          "optional": true,
+          "description": "Opt-in hover tooltip HTML for a ring (sanitized). Default: no tooltip - the centre label is the built-in readout.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onHighlightItem",
+          "type": "(labels: string[]) => void",
+          "optional": true,
+          "description": "Called with the hovered ring's label (empty array on leave)",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onColorMappingGenerated",
+          "type": "(mapping: Record<string, string>) => void",
+          "optional": true,
+          "description": "Called with the resolved label -> colour map after the chart assigns colours",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onChartDataProcessed",
+          "type": "(context: ChartContext) => void",
+          "optional": true,
+          "description": "Called with the renderer-agnostic ChartContext whenever the data is (re)processed",
+          "default": "",
+          "common": true
+        },
+        {
+          "name": "onDataWarning",
+          "type": "(warnings: DataWarning[]) => void",
+          "optional": true,
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
+          "default": "",
+          "common": true
+        }
+      ]
+    },
     "line-chart": {
       "element": "michi-vz-line-chart",
       "propsType": "LineChartProps",
@@ -137,7 +449,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -145,7 +457,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -310,6 +622,22 @@
           "common": false
         },
         {
+          "name": "zoom",
+          "type": "boolean | LineZoomConfig",
+          "optional": true,
+          "description": "Opt-in x-axis drag-to-zoom: drag a horizontal range inside the plot to zoom into it (a selection rectangle previews the range). Marks clip to the plot box; axis ticks, crosshair snapping, and tooltips all follow the zoomed domain. The y-domain stays FULL (derived from all data, not the visible slice). While zoomed, a built-in \"Reset zoom\" button restores the full domain; `resetZoom()` / `setZoomDomain()` on the instance drive it programmatically. Off by default.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "onZoomChange",
+          "type": "(domain: [number, number] | null) => void",
+          "optional": true,
+          "description": "Called when the zoom domain changes: the zoomed [min, max] in axis units (epoch ms on date axes), or null when reset to the full domain.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "singlePointLine",
           "type": "boolean | SinglePointLineConfig",
           "optional": true,
@@ -329,7 +657,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -337,7 +665,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -353,7 +681,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -361,7 +689,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -369,7 +697,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -377,7 +705,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -473,7 +801,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         },
@@ -545,7 +873,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -553,7 +881,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -649,7 +977,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -657,7 +985,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -665,7 +993,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -673,7 +1001,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -681,7 +1009,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -689,7 +1017,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -729,7 +1057,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -801,7 +1129,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -809,7 +1137,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -921,7 +1249,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -929,7 +1257,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -937,7 +1265,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -945,7 +1273,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -953,7 +1281,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -961,7 +1289,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -1033,7 +1361,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -1081,7 +1409,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -1089,7 +1417,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1169,7 +1497,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -1177,7 +1505,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -1201,7 +1529,7 @@
           "name": "renderer",
           "type": "Renderer",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -1209,7 +1537,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -1217,7 +1545,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -1225,7 +1553,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -1297,7 +1625,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         },
@@ -1457,7 +1785,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 60 }",
           "common": true
         },
@@ -1465,7 +1793,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1545,7 +1873,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -1553,7 +1881,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -1561,7 +1889,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -1569,7 +1897,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -1577,7 +1905,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -1585,7 +1913,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -1625,7 +1953,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -1697,7 +2025,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 60, left: 60 }",
           "common": true
         },
@@ -1705,7 +2033,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -1761,7 +2089,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -1769,7 +2097,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -1777,7 +2105,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -1785,7 +2113,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -1793,7 +2121,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -1801,7 +2129,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -1841,7 +2169,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -1993,7 +2321,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 60, right: 80, bottom: 60, left: 80 }",
           "common": true
         },
@@ -2001,7 +2329,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -2041,7 +2369,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -2049,7 +2377,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -2057,7 +2385,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2065,7 +2393,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -2073,7 +2401,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2081,7 +2409,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -2121,7 +2449,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -2201,7 +2529,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 100, left: 60 }",
           "common": true
         },
@@ -2257,7 +2585,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -2313,7 +2641,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -2321,7 +2649,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -2329,7 +2657,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2337,7 +2665,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -2345,7 +2673,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2353,7 +2681,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -2465,7 +2793,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -2521,7 +2849,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 120 }",
           "common": true
         },
@@ -2529,7 +2857,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -2753,7 +3081,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -2761,7 +3089,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -2769,7 +3097,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -2777,7 +3105,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -2785,7 +3113,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -2793,7 +3121,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -2833,7 +3161,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -2889,7 +3217,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 100, left: 60 }",
           "common": true
         },
@@ -2897,7 +3225,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -3089,7 +3417,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -3097,7 +3425,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -3105,7 +3433,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -3113,7 +3441,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -3121,7 +3449,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -3129,7 +3457,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -3169,7 +3497,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -3225,7 +3553,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 120 }",
           "common": true
         },
@@ -3233,7 +3561,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -3329,7 +3657,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -3337,7 +3665,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -3345,7 +3673,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -3353,7 +3681,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -3361,7 +3689,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -3369,7 +3697,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -3409,7 +3737,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -3481,7 +3809,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 50, bottom: 50, left: 100 }",
           "common": true
         },
@@ -3489,7 +3817,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -3553,7 +3881,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -3561,7 +3889,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -3569,7 +3897,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -3577,7 +3905,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -3585,7 +3913,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -3593,7 +3921,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -3673,7 +4001,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -3721,7 +4049,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 150, bottom: 100, left: 150 }",
           "common": true
         },
@@ -3729,7 +4057,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -3769,7 +4097,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -3777,7 +4105,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -3913,7 +4241,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -3921,7 +4249,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -3929,7 +4257,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -3953,7 +4281,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -4025,7 +4353,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -4089,7 +4417,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 36, right: 6, bottom: 6, left: 6 }",
           "common": true
         },
@@ -4097,7 +4425,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -4193,7 +4521,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -4201,7 +4529,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -4209,7 +4537,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -4217,7 +4545,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -4225,7 +4553,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -4233,7 +4561,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -4321,7 +4649,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -4377,7 +4705,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 36, right: 8, bottom: 8, left: 8 }",
           "common": true
         },
@@ -4385,7 +4713,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -4457,7 +4785,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -4465,7 +4793,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -4473,7 +4801,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -4481,7 +4809,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -4489,7 +4817,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -4497,7 +4825,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -4545,7 +4873,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -4601,7 +4929,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 36, right: 8, bottom: 8, left: 8 }",
           "common": true
         },
@@ -4609,7 +4937,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -4721,7 +5049,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -4729,7 +5057,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -4737,7 +5065,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -4745,7 +5073,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -4753,7 +5081,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -4761,7 +5089,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -4809,7 +5137,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -4881,7 +5209,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 36, right: 12, bottom: 12, left: 12 }",
           "common": true
         },
@@ -4889,7 +5217,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -4961,7 +5289,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -4969,7 +5297,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -4977,7 +5305,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -4985,7 +5313,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -4993,7 +5321,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -5001,7 +5329,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -5081,7 +5409,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -5145,7 +5473,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 50, right: 40, bottom: 50, left: 60 }",
           "common": true
         },
@@ -5153,7 +5481,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -5273,7 +5601,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -5281,7 +5609,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -5289,7 +5617,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -5297,7 +5625,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -5305,7 +5633,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -5313,7 +5641,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -5353,7 +5681,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -5417,7 +5745,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 40, right: 10, bottom: 10, left: 10 }",
           "common": true
         },
@@ -5465,7 +5793,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -5537,7 +5865,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -5545,7 +5873,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -5553,7 +5881,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -5561,7 +5889,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -5569,7 +5897,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -5577,7 +5905,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -5609,7 +5937,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -5673,7 +6001,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 40, right: 10, bottom: 10, left: 10 }",
           "common": true
         },
@@ -5745,7 +6073,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -5769,7 +6097,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -5777,7 +6105,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -5785,7 +6113,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -5793,7 +6121,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -5801,7 +6129,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -5809,7 +6137,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -5881,7 +6209,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }
@@ -5953,7 +6281,7 @@
           "name": "margin",
           "type": "Margin",
           "optional": true,
-          "description": "Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels",
+          "description": "Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)",
           "default": "{ top: 36, right: 10, bottom: 10, left: 10 }",
           "common": true
         },
@@ -5977,7 +6305,7 @@
           "name": "colors",
           "type": "string[]",
           "optional": true,
-          "description": "Categorical palette for series/labels without an explicit colour or colorsMapping entry",
+          "description": "Categorical palette for rings without an explicit colour or colorsMapping entry",
           "default": "",
           "common": true
         },
@@ -5993,7 +6321,7 @@
           "name": "highlightItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to emphasise; all other marks dim",
+          "description": "Labels to emphasise (active styling); others keep their base opacity",
           "default": "",
           "common": true
         },
@@ -6001,7 +6329,7 @@
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,
-          "description": "Labels to hide and exclude from scales/stacks",
+          "description": "Labels to hide entirely (ring + track removed; remaining rings keep their radii order)",
           "default": "",
           "common": true
         },
@@ -6009,7 +6337,7 @@
           "name": "renderer",
           "type": "\"svg\" | \"canvas\" | \"webgpu\"",
           "optional": true,
-          "description": "Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way",
+          "description": "Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way",
           "default": "\"svg\"",
           "common": true
         },
@@ -6017,7 +6345,7 @@
           "name": "locale",
           "type": "string",
           "optional": true,
-          "description": "BCP-47 locale used for number and date formatting",
+          "description": "BCP-47 locale used for number formatting",
           "default": "",
           "common": true
         },
@@ -6025,7 +6353,7 @@
           "name": "skipColorMappingDispatch",
           "type": "boolean",
           "optional": true,
-          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract",
+          "description": "External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract",
           "default": "false",
           "common": true
         },
@@ -6033,7 +6361,7 @@
           "name": "enableTransitions",
           "type": "boolean",
           "optional": true,
-          "description": "Animate updates with CSS transitions (default true)",
+          "description": "Animate opacity/arc changes with CSS transitions (SVG renderer; default true)",
           "default": "true",
           "common": true
         },
@@ -6105,7 +6433,7 @@
           "name": "onDataWarning",
           "type": "(warnings: DataWarning[]) => void",
           "optional": true,
-          "description": "Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)",
+          "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
         }

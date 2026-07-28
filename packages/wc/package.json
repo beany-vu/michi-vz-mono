@@ -92,6 +92,11 @@
       "import": "./dist/pie-chart.js",
       "require": "./dist/pie-chart.cjs"
     },
+    "./gauge-chart": {
+      "types": "./dist/gauge-chart.d.ts",
+      "import": "./dist/gauge-chart.js",
+      "require": "./dist/gauge-chart.cjs"
+    },
     "./bubble-chart": {
       "types": "./dist/bubble-chart.d.ts",
       "import": "./dist/bubble-chart.js",

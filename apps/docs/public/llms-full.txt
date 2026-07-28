@@ -8,7 +8,7 @@ Package versions this file was generated against: @michi-vz/core 1.12.2, wc 1.10
 
 ## What michi-vz is
 
-michi-vz renders 21 chart types from a single plain-TypeScript engine, `@michi-vz/core`. The engine mounts into any DOM element; native web components (`@michi-vz/wc`, built with Lit) and thin React, Vue, Svelte, and Angular wrappers all delegate to it, so every framework gets the same charts, the same props, and the same behavior. Charts render to SVG by default, to canvas for large datasets, and experimentally to WebGPU; the same props work across renderers.
+michi-vz renders 22 chart types from a single plain-TypeScript engine, `@michi-vz/core`. The engine mounts into any DOM element; native web components (`@michi-vz/wc`, built with Lit) and thin React, Vue, Svelte, and Angular wrappers all delegate to it, so every framework gets the same charts, the same props, and the same behavior. Charts render to SVG by default, to canvas for large datasets, and experimentally to WebGPU; the same props work across renderers.
 
 Two design decisions shape everything else:
 
@@ -151,18 +151,18 @@ These props behave identically on every chart and are documented once here. A de
 
 - `width`: `number` - Chart width in pixels
 - `height`: `number` - Chart height in pixels
-- `margin`: `Margin` - Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels
-- `colors`: `string[]` - Categorical palette for series/labels without an explicit colour or colorsMapping entry
+- `margin`: `Margin` - Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title)
+- `colors`: `string[]` - Categorical palette for rings without an explicit colour or colorsMapping entry
 - `colorsMapping`: `Record<string, string>` - Explicit label -> colour map; takes precedence over the palette and per-item colours
-- `renderer`: `"svg" | "canvas" | "webgpu"` (default: `"svg"`) - Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way
-- `highlightItems`: `string[]` - Labels to emphasise; all other marks dim
-- `disabledItems`: `string[]` - Labels to hide and exclude from scales/stacks
-- `locale`: `string` - BCP-47 locale used for number and date formatting
-- `skipColorMappingDispatch`: `boolean` (default: `false`) - External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so mark colours come from your CSS via the data-label-safe contract
-- `enableTransitions`: `boolean` (default: `true`) - Animate updates with CSS transitions (default true)
+- `renderer`: `"svg" | "canvas" | "webgpu"` (default: `"svg"`) - Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way
+- `highlightItems`: `string[]` - Labels to emphasise (active styling); others keep their base opacity
+- `disabledItems`: `string[]` - Labels to hide entirely (ring + track removed; remaining rings keep their radii order)
+- `locale`: `string` - BCP-47 locale used for number formatting
+- `skipColorMappingDispatch`: `boolean` (default: `false`) - External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract
+- `enableTransitions`: `boolean` (default: `true`) - Animate opacity/arc changes with CSS transitions (SVG renderer; default true)
 - `onColorMappingGenerated`: `(mapping: Record<string, string>) => void` - Called with the resolved label -> colour map after the chart assigns colours
 - `onChartDataProcessed`: `(context: ChartContext) => void` - Called with the renderer-agnostic ChartContext whenever the data is (re)processed
-- `onDataWarning`: `(warnings: DataWarning[]) => void` - Called with any non-fatal data warnings (duplicate labels, non-finite values, non-monotonic dates, ...)
+- `onDataWarning`: `(warnings: DataWarning[]) => void` - Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)
 
 `onDataWarning` reports non-fatal data-quality findings (non-finite values, duplicate or non-monotonic dates, duplicate labels, empty datasets, layout overflow, non-positive values on a log scale, unmatched dataset ids, missing geo feature ids, invalid geometry, and similar) instead of throwing; charts render what they can.
 
@@ -171,6 +171,45 @@ Loading and empty states are also uniform: `isLoading` shows a loading overlay, 
 ## Chart reference
 
 Each entry lists the web component element, the core mount function, the props and context types, the docs pages, and the chart-specific props. The shared props above apply to every chart.
+
+### Gauge (Rings) (`gauge-chart`)
+
+Concentric ring gauge: one ring per item sweeping value/max of a full circle over a background track, with hover-activated rings and a built-in centre readout.
+
+- Element: `<michi-vz-gauge-chart>` (import `@michi-vz/wc/gauge-chart`)
+- Engine: `mountGaugeChart(host, props)` from `@michi-vz/core`; props `GaugeChartProps`, context `GaugeChartContext`
+- Docs: https://michi-vz.netlify.app/charts/gauge
+- API: https://michi-vz.netlify.app/api/gauge
+
+Required props:
+
+- `dataSet`: `GaugeRingDatum[]` - Rings, OUTER to INNER; each sweeps value/max of the circle over a track
+
+Chart-specific props (the shared props above also apply):
+
+- `title`: `string` - Optional chart title rendered above the plot
+- `max`: `number` (default: `100`) - Value corresponding to a full 360° sweep (default 100).
+- `ringThickness`: `number` (default: `18`) - Ring stroke thickness in px (default 18).
+- `ringGap`: `number` (default: `2`) - Gap between adjacent rings in px (default 2).
+- `outerRadius`: `number` (default: `null`) - Outermost ring's outer edge radius in px; default fills the plot box.
+- `startAngle`: `number` (default: `0`) - Arc start angle in degrees, 0 = 12 o'clock, positive clockwise (default 0).
+- `roundedCaps`: `boolean` (default: `false`) - Round the arc ends (default false = square caps).
+- `ringOpacity`: `number | number[]` (default: `1`) - Arc opacity per ring, outer→inner; a single number applies to every ring (default 1).
+- `trackColor`: `string | string[]` (default: `"#00000014"`) - Track colour(s) behind the arcs, outer→inner; per-ring `trackColor` wins (default "#00000014").
+- `trackOpacity`: `number | number[]` (default: `1`) - Track opacity per ring, outer→inner (default 1).
+- `defaultActive`: `number | "inner" | "outer" | null` - The ring active when nothing is hovered: a dataSet index, "inner"/"outer", or null for none (default "inner").
+- `activeStyle`: `GaugeActiveStyle` (default: `{}`) - Emphasis applied to the active ring (default { opacity: 1 }).
+- `showCenterLabel`: `boolean` (default: `true`) - Draw the built-in centre label: active ring's name + formatted value (default true).
+- `centerContent`: `(ring: GaugeRingContext | null) => string` - Custom centre HTML for the active ring (sanitized before insertion); wins over the default label+value markup.
+- `valueFormatter`: `(v: number) => string` - Formats a ring value for the centre label and tooltips (default `${v}%`).
+- `noValueLabel`: `string` - Centre value text for an active ring with no data (default "n/a").
+- `fontFamily`: `string` - Font family for the title/centre label; sets the --michi-vz-font-family CSS var
+- `isLoading`: `boolean` - Show the loading overlay and skip the no-data check
+- `isNodata`: `boolean | ((dataSet: GaugeRingDatum[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on dataSet; default = empty dataSet (rings whose value is null still RENDER, as empty tracks).
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `tooltipFormatter`: `(ring: GaugeRingContext) => string` - Opt-in hover tooltip HTML for a ring (sanitized).
+- `onHighlightItem`: `(labels: string[]) => void` - Called with the hovered ring's label (empty array on leave)
 
 ### Line Chart (`line-chart`)
 
@@ -208,6 +247,8 @@ Chart-specific props (the shared props above also apply):
 - `expectedStep`: `number` - Expected cadence in axis units; REQUIRED for xAxisDataType "number".
 - `showDataPoints`: `boolean` (default: `false`) - Whether to draw a marker at each data point (default false)
 - `enableMouseLine`: `boolean | MouseLineConfig` (default: `true`) - Solid vertical crosshair line snapped to the nearest data point x on hover; pass a config object to style it (default true)
+- `zoom`: `boolean | LineZoomConfig` - Opt-in x-axis drag-to-zoom: drag a horizontal range inside the plot to zoom into it (a selection rectangle previews the range).
+- `onZoomChange`: `(domain: [number, number] | null) => void` - Called when the zoom domain changes: the zoomed [min, max] in axis units (epoch ms on date axes), or null when reset to the full domain.
 - `singlePointLine`: `boolean | SinglePointLineConfig` - true / config draws a horizontal guide line for single-point series.
 - `fontFamily`: `string` - Font family for axis/title/tooltip text (SVG + canvas).
 - `filter`: `Filter` - Top-N / sort filter applied to the data before rendering

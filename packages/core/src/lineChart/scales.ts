@@ -14,6 +14,16 @@ export interface LineScales {
   yScale: LineYScale;
 }
 
+export interface LineScaleOptions {
+  /** Round the number-x domain out to nice values (default true). A ZOOMED
+   *  domain must NOT be niced - the user selected those exact bounds. */
+  xNice?: boolean;
+  /** Clamp number-x projections to the plot range (default true). A zoomed
+   *  domain needs clamp OFF so out-of-range points project beyond the plot and
+   *  get clipped, instead of piling up flat at the plot edges. */
+  xClamp?: boolean;
+}
+
 export function createLineScales(
   xDomain: [number, number],
   yDomain: [number, number],
@@ -22,15 +32,16 @@ export function createLineScales(
   margin: Margin,
   xAxisDataType: XaxisDataType,
   yAxisScale?: "linear" | "log",
+  xOpts?: LineScaleOptions,
 ): LineScales {
   const [xlo, xhi] = xDomain;
   let xScale: LineXScale;
   if (xAxisDataType === "number") {
-    xScale = scaleLinear()
+    const linear = scaleLinear()
       .domain([xlo || 0, xhi || 1])
       .range([margin.left, width - margin.right])
-      .clamp(true)
-      .nice();
+      .clamp(xOpts?.xClamp !== false);
+    xScale = xOpts?.xNice !== false ? linear.nice() : linear;
   } else {
     // lo/hi are epoch ms (0/1 for empty), matching the legacy new Date(min||0).
     xScale = scaleTime()

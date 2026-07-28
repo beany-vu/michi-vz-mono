@@ -18,6 +18,7 @@ export default defineConfig({
     "src/fan-chart.ts",
     "src/treemap-chart.ts",
     "src/pie-chart.ts",
+    "src/gauge-chart.ts",
     "src/bubble-chart.ts",
     "src/sankey-chart.ts",
     "src/fountain-chart.ts",

@@ -16,6 +16,7 @@ import type {
   XaxisDataType,
   SinglePointLineConfig,
   MouseLineConfig,
+  LineZoomConfig,
   ProgressiveDrawConfig,
   TimelinePeriodConfig,
   TimelineController,
@@ -69,6 +70,7 @@ export class LineChartElement extends LitElement {
     enableTransitions: { type: Boolean, attribute: "enable-transitions" },
     progressiveDraw: { attribute: false },
     timeline: { attribute: false },
+    zoom: { attribute: false },
     svgChildren: { type: String, attribute: "svg-children" },
   };
 
@@ -122,6 +124,7 @@ export class LineChartElement extends LitElement {
   enableTransitions?: boolean;
   progressiveDraw?: boolean | ProgressiveDrawConfig;
   timeline?: boolean | TimelinePeriodConfig;
+  zoom?: boolean | LineZoomConfig;
   svgChildren?: string;
 
   private chart?: ChartInstance<LineChartProps>;
@@ -183,11 +186,13 @@ export class LineChartElement extends LitElement {
       enableTransitions: this.enableTransitions,
       progressiveDraw: this.progressiveDraw,
       timeline: this.timeline,
+      zoom: this.zoom,
       svgChildren: this.svgChildren,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
       onDataWarning: (w) => this.emit("michi-vz:datawarning", w),
+      onZoomChange: (d) => this.emit("michi-vz:zoomchange", d),
     };
   }
 

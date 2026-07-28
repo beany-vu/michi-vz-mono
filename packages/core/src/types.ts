@@ -320,6 +320,19 @@ export interface SinglePointLineConfig {
   strokeDasharray?: string;
 }
 
+/** Drag-to-zoom on the x-axis (LineChart `zoom`). */
+export interface LineZoomConfig {
+  /** Zoomable axis; only "x" is supported for now (default "x"). */
+  axis?: "x";
+  /** Smallest selectable x-span in axis units (epoch ms on date axes); a drag
+   *  narrower than this is ignored instead of zooming (default 0). */
+  minRange?: number;
+  /** Show the built-in "Reset zoom" button while zoomed (default true). */
+  resetButton?: boolean;
+  /** Label for the built-in reset button (default "Reset zoom"). */
+  resetLabel?: string;
+}
+
 /** Vertical hover crosshair (mouse line) styling and behavior. */
 export interface MouseLineConfig {
   /** Stroke color (default #a9a9a9 via --michi-vz-crosshair) */
@@ -420,6 +433,17 @@ export interface LineChartProps {
   showDataPoints?: boolean;
   /** Solid vertical crosshair line snapped to the nearest data point x on hover; pass a config object to style it (default true) */
   enableMouseLine?: boolean | MouseLineConfig;
+  /** Opt-in x-axis drag-to-zoom: drag a horizontal range inside the plot to zoom
+   * into it (a selection rectangle previews the range). Marks clip to the plot
+   * box; axis ticks, crosshair snapping, and tooltips all follow the zoomed
+   * domain. The y-domain stays FULL (derived from all data, not the visible
+   * slice). While zoomed, a built-in "Reset zoom" button restores the full
+   * domain; `resetZoom()` / `setZoomDomain()` on the instance drive it
+   * programmatically. Off by default. */
+  zoom?: boolean | LineZoomConfig;
+  /** Called when the zoom domain changes: the zoomed [min, max] in axis units
+   * (epoch ms on date axes), or null when reset to the full domain. */
+  onZoomChange?: (domain: [number, number] | null) => void;
   /** true / config draws a horizontal guide line for single-point series. */
   singlePointLine?: boolean | SinglePointLineConfig;
   /** Font family for axis/title/tooltip text (SVG + canvas). Sets the --michi-vz-font-family CSS var so both renderers resolve it. */
@@ -2884,6 +2908,146 @@ export interface PieChartContext extends BaseChartContext {
   };
 }
 
+// ---- GaugeChart (concentric ring gauge) ----
+// One ring per dataSet item, outer to inner. Each ring sweeps value/max of a
+// full circle clockwise from `startAngle` over a background track; a ring with
+// value null renders the track only ("no data" without hiding the gauge).
+// Hovering a ring activates it (emphasis + the optional built-in centre label);
+// `defaultActive` picks the resting ring.
+
+/** One concentric ring of a GaugeChart. */
+export interface GaugeRingDatum {
+  /** Ring name; drives the legend, colour resolution, and the data-label CSS hook */
+  label: string;
+  /** Ring value in [0, max]; null/undefined draws the background track only */
+  value: number | null;
+  /** Optional explicit arc colour overriding the generated palette colour */
+  color?: string;
+  /** Optional per-ring track colour overriding the chart-level `trackColor` */
+  trackColor?: string;
+  /** Optional stable identifier carried into the context, not displayed */
+  code?: string;
+}
+
+/** Active-ring emphasis applied on hover (and to the `defaultActive` ring). */
+export interface GaugeActiveStyle {
+  /** Arc opacity while active (default 1). */
+  opacity?: number;
+  /** Track opacity while active (default: the ring's base track opacity). */
+  trackOpacity?: number;
+}
+
+export interface GaugeRingContext {
+  label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
+  code?: string;
+  /** Resolved arc colour */
+  color: string;
+  /** Clamped ring value, or null when the ring has no data */
+  value: number | null;
+  /** value / max in [0,1], or null when the ring has no data */
+  fraction: number | null;
+  /** Ring position in dataSet order: 0 = outermost */
+  index: number;
+}
+
+export interface GaugeChartProps {
+  /** Rings, OUTER to INNER; each sweeps value/max of the circle over a track */
+  dataSet: GaugeRingDatum[];
+  /** Optional chart title rendered above the plot */
+  title?: string;
+  /** Chart width in pixels */
+  width?: number;
+  /** Chart height in pixels */
+  height?: number;
+  /** Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title) */
+  margin?: Margin;
+  /** Value corresponding to a full 360° sweep (default 100). */
+  max?: number;
+  /** Ring stroke thickness in px (default 18). */
+  ringThickness?: number;
+  /** Gap between adjacent rings in px (default 2). */
+  ringGap?: number;
+  /** Outermost ring's outer edge radius in px; default fills the plot box. */
+  outerRadius?: number;
+  /** Arc start angle in degrees, 0 = 12 o'clock, positive clockwise (default 0). */
+  startAngle?: number;
+  /** Round the arc ends (default false = square caps). */
+  roundedCaps?: boolean;
+  /** Arc opacity per ring, outer→inner; a single number applies to every ring (default 1). */
+  ringOpacity?: number | number[];
+  /** Track colour(s) behind the arcs, outer→inner; per-ring `trackColor` wins (default "#00000014"). */
+  trackColor?: string | string[];
+  /** Track opacity per ring, outer→inner (default 1). */
+  trackOpacity?: number | number[];
+  /** The ring active when nothing is hovered: a dataSet index, "inner"/"outer",
+   * or null for none (default "inner"). */
+  defaultActive?: number | "inner" | "outer" | null;
+  /** Emphasis applied to the active ring (default { opacity: 1 }). */
+  activeStyle?: GaugeActiveStyle;
+  /** Draw the built-in centre label: active ring's name + formatted value (default true).
+   * Turn off to render your own centre overlay (drive it via onHighlightItem). */
+  showCenterLabel?: boolean;
+  /** Custom centre HTML for the active ring (sanitized before insertion); wins
+   * over the default label+value markup. Receives null when no ring is active. */
+  centerContent?: (ring: GaugeRingContext | null) => string;
+  /** Formats a ring value for the centre label and tooltips (default `${v}%`). */
+  valueFormatter?: (v: number) => string;
+  /** Centre value text for an active ring with no data (default "n/a"). */
+  noValueLabel?: string;
+  /** Categorical palette for rings without an explicit colour or colorsMapping entry */
+  colors?: string[];
+  /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
+  colorsMapping?: Record<string, string>;
+  /** Labels to emphasise (active styling); others keep their base opacity */
+  highlightItems?: string[];
+  /** Labels to hide entirely (ring + track removed; remaining rings keep their radii order) */
+  disabledItems?: string[];
+  /** Render as inline SVG (default) or to a canvas / WebGPU layer; getContext() is identical either way */
+  renderer?: "svg" | "canvas" | "webgpu";
+  /** BCP-47 locale used for number formatting */
+  locale?: string;
+  /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted, so arc colours come from your CSS via the data-label-safe contract */
+  skipColorMappingDispatch?: boolean;
+  /** Animate opacity/arc changes with CSS transitions (SVG renderer; default true) */
+  enableTransitions?: boolean;
+  /** Font family for the title/centre label; sets the --michi-vz-font-family CSS var */
+  fontFamily?: string;
+  /** Show the loading overlay and skip the no-data check */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on dataSet; default = empty dataSet
+   * (rings whose value is null still RENDER, as empty tracks). */
+  isNodata?: boolean | ((dataSet: GaugeRingDatum[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
+  /** Opt-in hover tooltip HTML for a ring (sanitized). Default: no tooltip - the
+   * centre label is the built-in readout. */
+  tooltipFormatter?: (ring: GaugeRingContext) => string;
+  /** Called with the hovered ring's label (empty array on leave) */
+  onHighlightItem?: (labels: string[]) => void;
+  /** Called with the resolved label -> colour map after the chart assigns colours */
+  onColorMappingGenerated?: (mapping: Record<string, string>) => void;
+  /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
+  onChartDataProcessed?: (context: ChartContext) => void;
+  /** Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...) */
+  onDataWarning?: (warnings: DataWarning[]) => void;
+}
+
+export interface GaugeChartContext extends BaseChartContext {
+  chartType: "gauge-chart";
+  /** Value corresponding to a full sweep. */
+  max: number;
+  /** Rings in dataSet order (outer to inner). */
+  rings: GaugeRingContext[];
+  stats: {
+    ringCount: number;
+    /** Ring with the largest non-null value, or null when every ring is empty. */
+    largestRing: { label: string; value: number } | null;
+  };
+}
+
 // ---- BubbleChart (gravity-packed bubbles) ----
 // Circles sized by value (area ∝ value) and clustered by a force simulation
 // (gravity toward centre + collision), so they nestle together. Each bubble may
@@ -3304,6 +3468,7 @@ export type ChartContext =
   | FanChartContext
   | TreemapChartContext
   | PieChartContext
+  | GaugeChartContext
   | BubbleChartContext
   | SankeyChartContext
   | FountainChartContext
@@ -3346,6 +3511,11 @@ export interface ChartInstance<P> {
   /** Present when the chart was mounted with a `timeline` config: the headless
    * playback controller (play/pause/seek/step through periods). */
   timeline?(): import("./animation/timeline").TimelineController | null;
+  /** Present when the chart was mounted with `zoom`: restore the full x-domain. */
+  resetZoom?(): void;
+  /** Present when the chart was mounted with `zoom`: set the zoomed x-domain in
+   * axis units (epoch ms on date axes); null clears back to the full domain. */
+  setZoomDomain?(domain: [number, number] | null): void;
 }
 
 /** Optional 3rd arg to every `mountXxxChart` for opt-in plugins. */

@@ -32,6 +32,7 @@ import {
   mountRadarChart,
   mountTreemapChart,
   mountPieChart,
+  mountGaugeChart,
   mountBubbleChart,
   mountSankeyChart,
   mountFountainChart,
@@ -59,6 +60,7 @@ import type {
   RadarChartProps,
   TreemapChartProps,
   PieChartProps,
+  GaugeChartProps,
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
@@ -93,6 +95,7 @@ export type {
   RadarChartProps,
   TreemapChartProps,
   PieChartProps,
+  GaugeChartProps,
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
@@ -220,6 +223,11 @@ export interface LineChartHandle {
   replay(): void;
   /** Headless playback controller (null unless the `timeline` prop is set). */
   timeline(): TimelineController | null;
+  /** Restore the full x-domain (no-op unless the `zoom` prop is set). */
+  resetZoom(): void;
+  /** Set the zoomed x-domain in axis units (epoch ms on date axes); null clears.
+   *  No-op unless the `zoom` prop is set. */
+  setZoomDomain(domain: [number, number] | null): void;
 }
 
 export interface FanChartHandle {
@@ -353,6 +361,13 @@ export interface PieChartHandle {
   getElement(): HTMLElement | null;
   /** Headless playback controller (null unless the `timeline` prop is set). */
   timeline(): TimelineController | null;
+}
+
+export interface GaugeChartHandle {
+  getContext(): ChartContext | null;
+  /** The chart host element (contains the svg/canvas). Feed it to the core
+   *  chartToStyledSvgDataUri / chartToPngDataUrl export helpers. */
+  getElement(): HTMLElement | null;
 }
 
 export interface BubbleChartHandle {
@@ -525,6 +540,9 @@ export const LineChart = forwardRef<LineChartHandle, LineChartReactProps>(
         getElement: () => hostRef.current,
         timeline: () => chartRef.current?.timeline?.() ?? null,
         replay: () => chartRef.current?.replay?.(),
+        resetZoom: () => chartRef.current?.resetZoom?.(),
+        setZoomDomain: (domain: [number, number] | null) =>
+          chartRef.current?.setZoomDomain?.(domain),
       }),
       [],
     );
@@ -1417,6 +1435,38 @@ export const PieChart = forwardRef<PieChartHandle, PieChartProps>(function PieCh
 
   return <div ref={hostRef} style={{ width: props.width ?? 600, height: props.height ?? 420 }} />;
 });
+
+export const GaugeChart = forwardRef<GaugeChartHandle, GaugeChartProps>(
+  function GaugeChart(props, ref) {
+    const hostRef = useRef<HTMLDivElement | null>(null);
+    const chartRef = useRef<ChartInstance<GaugeChartProps> | null>(null);
+
+    useEffect(() => {
+      if (!hostRef.current) return;
+      chartRef.current = mountGaugeChart(hostRef.current, props);
+      return () => {
+        chartRef.current?.destroy();
+        chartRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+      chartRef.current?.update(props);
+    });
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getContext: () => chartRef.current?.getContext() ?? null,
+        getElement: () => hostRef.current,
+      }),
+      [],
+    );
+
+    return <div ref={hostRef} style={{ width: props.width ?? 300, height: props.height ?? 300 }} />;
+  },
+);
 
 export const BubbleChart = forwardRef<BubbleChartHandle, BubbleChartProps>(
   function BubbleChart(props, ref) {

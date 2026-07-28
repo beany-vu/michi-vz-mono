@@ -38,6 +38,30 @@ export const CORE_CSS = `
 /* Row-label leader line (interactiveRowLabels on band-row charts): connects a
    hovered/focused y-axis label to its row's marks. Same theme vars as the crosshair. */
 .michi-vz .mv-row-leader { stroke: var(--michi-vz-crosshair, #a9a9a9); stroke-width: var(--michi-vz-crosshair-width, 1); stroke-dasharray: 3 3; pointer-events: none; }
+/* Gauge centre label (the active ring's readout). Sits at the gauge centre;
+   engine positions it via left/top. Theme via the font/ink vars or consumer CSS
+   on .mv-gauge-center-label / .mv-gauge-center-value. */
+.michi-vz .mv-gauge-center {
+  position: absolute; transform: translate(-50%, -50%); text-align: center;
+  pointer-events: none; line-height: 1.3;
+  font-size: var(--michi-vz-font-size, 12px); color: var(--michi-vz-ink, currentColor);
+}
+.michi-vz .mv-gauge-center .mv-gauge-center-label { display: block; }
+.michi-vz .mv-gauge-center .mv-gauge-center-value { display: block; }
+/* Drag-to-zoom selection rectangle (LineChart zoom). Theme via the two vars;
+   the default derives from currentColor so it reads on light AND dark. */
+.michi-vz .mv-zoom-rect { fill: var(--michi-vz-zoom-fill, color-mix(in srgb, currentColor 12%, transparent)); stroke: var(--michi-vz-zoom-stroke, color-mix(in srgb, currentColor 30%, transparent)); pointer-events: none; }
+/* "Reset zoom" chip, shown only while zoomed (top-right of the plot). Inherits
+   the chart font; theme via the button vars or a consumer rule. */
+.michi-vz .mv-zoom-reset {
+  position: absolute; top: 6px; right: 6px; z-index: 2; cursor: pointer;
+  font-family: inherit; font-size: var(--michi-vz-font-size, 12px);
+  color: var(--michi-vz-muted, #666);
+  background: var(--michi-vz-zoom-reset-bg, rgba(255, 255, 255, 0.85));
+  border: 1px solid var(--michi-vz-grid, lightgray); border-radius: 3px;
+  padding: 3px 10px; line-height: 1.2;
+}
+.michi-vz .mv-zoom-reset:hover { color: var(--michi-vz-ink, currentColor); }
 /* Opt-in "calm" axis theme (Nordic / lagom): a whisper-quiet grid and muted labels so
    the axis recedes and the data carries the only saturation. Add class="michi-vz-calm"
    to the chart host (or ANY ancestor - the vars cascade); pair with fewer ticks

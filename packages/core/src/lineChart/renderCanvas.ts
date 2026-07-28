@@ -19,6 +19,10 @@ export interface LineCanvasOptions {
   /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
    *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
   revealX?: number;
+  /** Horizontal clip to [x0, x1] px (the plot box while zoomed) so marks whose
+   *  points project outside the zoomed domain don't paint over the axes. Same
+   *  ctx.clip mechanism as revealX; both compose (clip intersection). */
+  clipX?: [number, number];
   /** Progressive-draw tip labels, drawn OUTSIDE the reveal clip (they trail the
    *  tip to its right, like the SVG labels living outside the <clipPath>). */
   tipLabels?: TipLabelTarget[];
@@ -69,6 +73,13 @@ export function drawLineCanvas(
     ctx.clip();
   }
 
+  if (o.clipX !== undefined) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(o.clipX[0], 0, Math.max(0, o.clipX[1] - o.clipX[0]), o.height);
+    ctx.clip();
+  }
+
   const labels = model.series.map((s) => s.label);
   const fallback = new Map(model.series.map((s) => [s.label, s.color]));
   const strokeColors = resolveMarkColors(
@@ -114,6 +125,7 @@ export function drawLineCanvas(
     ctx.restore();
   }
 
+  if (o.clipX !== undefined) ctx.restore();
   if (o.revealX !== undefined) ctx.restore();
 
   if (o.tipLabels && o.tipLabels.length > 0) {

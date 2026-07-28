@@ -18,7 +18,7 @@ import {
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processLineChartData } from "../lineChart/data";
 import { buildLineColors } from "../lineChart/colors";
-import { createLineScales } from "../lineChart/scales";
+import { createLineScales, type LineXScale } from "../lineChart/scales";
 import { buildLineRenderModel } from "../lineChart/renderModel";
 import { lttb } from "../lineChart/lttb";
 import { projectX } from "../lineChart/geometry";
@@ -63,6 +63,7 @@ import type {
   DataPoint,
   LineChartProps,
   LineDataItem,
+  LineZoomConfig,
   Margin,
   MountOptions,
   MouseLineConfig,
@@ -89,11 +90,17 @@ interface Resolved {
   yAxisScale: "linear" | "log";
   progressiveDraw: ResolvedProgressiveDraw | null;
   timeline: ResolvedTimeline | null;
+  zoom: LineZoomConfig | null;
 }
 
 function resolveSinglePointLine(
   v: LineChartProps["singlePointLine"],
 ): SinglePointLineConfig | null {
+  if (!v) return null;
+  return v === true ? {} : v;
+}
+
+function resolveZoom(v: LineChartProps["zoom"]): LineZoomConfig | null {
   if (!v) return null;
   return v === true ? {} : v;
 }
@@ -120,8 +127,11 @@ function resolve(p: LineChartProps): Resolved {
     yAxisScale: p.yAxisScale ?? "linear",
     progressiveDraw: resolveProgressiveDraw(p.progressiveDraw),
     timeline: resolveTimeline(p.timeline),
+    zoom: resolveZoom(p.zoom),
   };
 }
+
+let zoomClipSeq = 0;
 
 export function mountLineChart(
   host: HTMLElement,
@@ -180,6 +190,110 @@ export function mountLineChart(
   let hitData: Array<{ label: string; points: Array<{ x: number; y: number; d: DataPoint }> }> = [];
   // Resolved label -> colour for the shared tooltip's per-series swatches (updated each render).
   let currentColors: Record<string, string> = {};
+
+  // ---- Drag-to-zoom (opt-in `zoom` prop) ----
+  // The zoomed x-domain in axis units (epoch ms on date axes). Survives update()
+  // so a data refresh keeps the user's zoom; render() re-clamps it to the data
+  // domain and drops it when the intersection is degenerate.
+  let zoomDomain: [number, number] | null = null;
+  // px x where the current selection drag started, in svg coords; null = not dragging.
+  let zoomDragStart: number | null = null;
+  let zoomRectEl: SVGRectElement | null = null;
+  // A completed selection drag ends with a click event on the host; without this
+  // flag that click would toggle the canvas-mode tooltip pin (or pin via an SVG
+  // path's own click) right after zooming.
+  let suppressNextClick = false;
+  // The x-scale of the LAST render, for inverting the selection px -> axis units.
+  let currentXScale: LineXScale | null = null;
+  const ZOOM_DRAG_MIN_PX = 5;
+
+  const consumeSuppressedClick = (): boolean => {
+    if (!suppressNextClick) return false;
+    suppressNextClick = false;
+    return true;
+  };
+
+  const applyZoom = (domain: [number, number] | null): void => {
+    zoomDomain = domain;
+    render(); // clamps to the data domain; a degenerate intersection nulls it
+    baseProps.onZoomChange?.(zoomDomain);
+  };
+
+  const removeZoomRect = (): void => {
+    zoomRectEl?.remove();
+    zoomRectEl = null;
+  };
+
+  const onZoomDown = (ev: MouseEvent): void => {
+    const r = resolve(baseProps);
+    if (!r.zoom || ev.button !== 0) return;
+    const rect = svg.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+    if (x < r.margin.left || x > r.width - r.margin.right) return;
+    if (y < r.margin.top || y > r.height - r.margin.bottom) return;
+    zoomDragStart = x;
+    ev.preventDefault(); // no text selection while dragging
+  };
+
+  const updateZoomRect = (ev: MouseEvent): void => {
+    if (zoomDragStart === null) return;
+    const r = resolve(baseProps);
+    const rect = svg.getBoundingClientRect();
+    const x = Math.max(r.margin.left, Math.min(ev.clientX - rect.left, r.width - r.margin.right));
+    // Below the drag threshold this is still a potential click - draw nothing.
+    if (!zoomRectEl && Math.abs(x - zoomDragStart) < ZOOM_DRAG_MIN_PX) return;
+    if (!zoomRectEl) {
+      zoomRectEl = svgEl("rect", { class: "mv-zoom-rect" }) as SVGRectElement;
+      svg.appendChild(zoomRectEl);
+    }
+    zoomRectEl.setAttribute("x", String(Math.min(zoomDragStart, x)));
+    zoomRectEl.setAttribute("y", String(r.margin.top));
+    zoomRectEl.setAttribute("width", String(Math.abs(x - zoomDragStart)));
+    zoomRectEl.setAttribute(
+      "height",
+      String(Math.max(0, r.height - r.margin.top - r.margin.bottom)),
+    );
+    // The selection replaces the hover chrome while it is visible.
+    if (mouseLine) mouseLine.style.visibility = "hidden";
+    if (!sticky) tooltip.style.visibility = "hidden";
+  };
+
+  // window-level so a drag released outside the host still completes.
+  const onZoomUp = (ev: MouseEvent): void => {
+    if (zoomDragStart === null) return;
+    const start = zoomDragStart;
+    zoomDragStart = null;
+    const hadRect = zoomRectEl !== null;
+    removeZoomRect();
+    const r = resolve(baseProps);
+    if (!r.zoom || !currentXScale) return;
+    const rect = svg.getBoundingClientRect();
+    const end = Math.max(r.margin.left, Math.min(ev.clientX - rect.left, r.width - r.margin.right));
+    if (!hadRect || Math.abs(end - start) < ZOOM_DRAG_MIN_PX) return; // a click, not a drag
+    suppressNextClick = true;
+    const toValue = (px: number): number => {
+      const v = (currentXScale as { invert(px: number): number | Date }).invert(px);
+      return v instanceof Date ? v.valueOf() : v;
+    };
+    const lo = toValue(Math.min(start, end));
+    const hi = toValue(Math.max(start, end));
+    if (hi - lo < (r.zoom.minRange ?? 0)) return;
+    applyZoom([lo, hi]);
+  };
+
+  // Built-in "Reset zoom" chip; render() toggles visibility + label.
+  const zoomResetBtn = htmlEl("button", {
+    class: "mv-zoom-reset",
+    type: "button",
+  }) as HTMLButtonElement;
+  zoomResetBtn.style.display = "none";
+  const onZoomReset = (ev: MouseEvent): void => {
+    ev.stopPropagation(); // never toggle the canvas tooltip pin
+    applyZoom(null);
+  };
+  zoomResetBtn.addEventListener("click", onZoomReset);
+  host.appendChild(zoomResetBtn);
 
   const findPoint = (label: string, x: number): { d: DataPoint; series: DataPoint[] } | null => {
     const entry = hitData.find((h) => h.label === label);
@@ -272,6 +386,12 @@ export function mountLineChart(
   };
 
   const onHostMove = (ev: MouseEvent): void => {
+    // An in-progress zoom selection owns the pointer: grow the rectangle and
+    // keep the hover chrome (crosshair/tooltips) out of the way.
+    if (zoomDragStart !== null) {
+      updateZoomRect(ev);
+      if (zoomRectEl) return;
+    }
     const r = resolve(baseProps);
     // Everything right of the reveal edge is not drawn: the crosshair, snapping,
     // and tooltips all stop there. The timeline caps even while PAUSED (undrawn
@@ -358,6 +478,7 @@ export function mountLineChart(
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
   // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
   const onHostClick = (): void => {
+    if (consumeSuppressedClick()) return; // the click that ends a zoom drag
     if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
@@ -376,6 +497,8 @@ export function mountLineChart(
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
+  host.addEventListener("mousedown", onZoomDown);
+  window.addEventListener("mouseup", onZoomUp);
   const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
     isSticky: () => sticky,
     unpin: () => {
@@ -395,7 +518,7 @@ export function mountLineChart(
     // Plugin hook #1 - transformData: forecast/etc. append predicted points/series.
     // With no plugins this is an identity fold, so behaviour is unchanged.
     const props = applyTransformData(pluginList, baseProps, pc);
-    const r = resolve(props);
+    let r = resolve(props);
     const xAxisDataType = props.xAxisDataType ?? "number";
     const highlightItems = props.highlightItems ?? [];
 
@@ -413,6 +536,36 @@ export function mountLineChart(
     });
     const logHasNoPositiveValues =
       r.yAxisScale === "log" && processedDataSet.every((item) => item.series.length === 0);
+
+    // Zoomed x-domain: clamp the stored selection to the (possibly refreshed)
+    // data domain; a degenerate intersection clears the zoom entirely. The
+    // y-domain stays FULL by design (stable reading while panning through x).
+    let effectiveXDomain: [number, number] = xAxisDomain;
+    if (r.zoom && zoomDomain) {
+      const lo = Math.max(Math.min(zoomDomain[0], zoomDomain[1]), xAxisDomain[0]);
+      const hi = Math.min(Math.max(zoomDomain[0], zoomDomain[1]), xAxisDomain[1]);
+      if (hi > lo) {
+        zoomDomain = [lo, hi];
+        effectiveXDomain = zoomDomain;
+      } else {
+        zoomDomain = null;
+      }
+    }
+    const zoomed = r.zoom !== null && zoomDomain !== null;
+    // The webgpu path has no clip support, so a zoomed chart would paint marks
+    // over the axes; canvas is visually identical and clips correctly.
+    if (zoomed && r.renderer === "webgpu") r = { ...r, renderer: "canvas" };
+    zoomResetBtn.textContent = r.zoom?.resetLabel ?? "Reset zoom";
+    zoomResetBtn.style.display = zoomed && r.zoom?.resetButton !== false ? "" : "none";
+    // A value in axis units (epoch ms on date axes) inside the zoomed domain?
+    const inZoomDomain = (raw: number | Date): boolean => {
+      const v = raw instanceof Date ? raw.valueOf() : raw;
+      return v >= effectiveXDomain[0] && v <= effectiveXDomain[1];
+    };
+    // Canvas plot clip while zoomed (the SVG path installs a <clipPath> wrapper).
+    const zoomClipX: [number, number] | undefined = zoomed
+      ? [r.margin.left, r.width - r.margin.right]
+      : undefined;
 
     // data-mv-state + font var + default loading/no-data overlays (shared chrome).
     const dataState = applyChartChrome(
@@ -442,23 +595,32 @@ export function mountLineChart(
     }
 
     const scales = createLineScales(
-      xAxisDomain,
+      effectiveXDomain,
       yAxisDomain,
       r.width,
       r.height,
       r.margin,
       xAxisDataType,
       r.yAxisScale,
+      // A zoomed domain is the user's exact selection: nicing would round it
+      // away, and clamping would pile out-of-range points flat on the plot
+      // edges instead of letting them project out and clip.
+      zoomed ? { xNice: false, xClamp: false } : undefined,
     );
+    currentXScale = scales.xScale;
 
-    // Build hit-test data from the FULL (undecimated) processed points.
+    // Build hit-test data from the FULL (undecimated) processed points. While
+    // zoomed, out-of-domain points are excluded so the crosshair and tooltips
+    // never snap to a clipped (invisible) point.
     hitData = processedDataSet.map((item) => ({
       label: item.label,
-      points: item.series.map((d) => ({
-        x: projectX(d, scales.xScale, xAxisDataType),
-        y: scales.yScale(d.value),
-        d,
-      })),
+      points: item.series
+        .filter((d) => !zoomed || inZoomDomain(parseXValue(d.date, xAxisDataType)))
+        .map((d) => ({
+          x: projectX(d, scales.xScale, xAxisDataType),
+          y: scales.yScale(d.value),
+          d,
+        })),
     }));
     currentColors = colors.generatedColorsMapping;
 
@@ -511,6 +673,13 @@ export function mountLineChart(
       // periods present in data); periods with no non-null value are marked faded and
       // get a "no data" hover tooltip. Explicit `tickValues` still wins over the fill.
       let candidateTicks = props.tickValues ?? periodTicks;
+      // While zoomed, period/explicit ticks outside the zoomed domain would
+      // render beyond the plot; drop them, and if fewer than 2 survive let d3
+      // generate ticks inside the zoomed domain instead.
+      if (zoomed && candidateTicks) {
+        const kept = candidateTicks.filter((t) => inZoomDomain(t));
+        candidateTicks = kept.length >= 2 ? kept : undefined;
+      }
       let noDataValues: Set<number> | undefined;
       const isDateAxis = xAxisDataType === "date_annual" || xAxisDataType === "date_monthly";
       if (props.fillPeriodTicks && !props.tickValues && isDateAxis) {
@@ -602,12 +771,38 @@ export function mountLineChart(
             if (!sticky) props.onHighlightItem?.([]);
           },
           onClick: (label, ev) => {
+            if (consumeSuppressedClick()) return; // the click that ends a zoom drag
             sticky = true;
             tooltip.classList.add("sticky");
             showTooltip(label, ev);
           },
         },
       );
+    }
+
+    // While zoomed, clip the SVG marks to the plot box: with clamp off, points
+    // outside the zoomed domain project beyond the plot and must not paint over
+    // the axes. The clip lives on a WRAPPER group so progressiveDraw's own
+    // clip-path on g.line-chart-content composes with it instead of replacing it.
+    if (zoomed && r.renderer === "svg" && dataState !== "nodata") {
+      const contentRoot = svg.querySelector<SVGGElement>("g.line-chart-content");
+      if (contentRoot && contentRoot.parentNode) {
+        const id = `mv-zoom-clip-${++zoomClipSeq}`;
+        const clip = svgEl("clipPath", { id });
+        clip.appendChild(
+          svgEl("rect", {
+            x: r.margin.left,
+            y: 0,
+            width: Math.max(0, r.width - r.margin.left - r.margin.right),
+            height: r.height,
+          }),
+        );
+        svg.appendChild(clip);
+        const wrap = svgEl("g", { class: "mv-zoom-clip" });
+        wrap.setAttribute("clip-path", `url(#${id})`);
+        contentRoot.parentNode.insertBefore(wrap, contentRoot);
+        wrap.appendChild(contentRoot);
+      }
     }
 
     // Mouse crosshair line (drawn above marks, below tooltip). Styling lives in
@@ -676,6 +871,7 @@ export function mountLineChart(
           margin: r.margin,
           showDataPoints: r.showDataPoints,
           singlePointLine: r.singlePointLine,
+          clipX: zoomClipX,
         });
       }
     } else if (r.renderer === "canvas" && dataState !== "nodata") {
@@ -687,6 +883,7 @@ export function mountLineChart(
         margin: r.margin,
         showDataPoints: r.showDataPoints,
         singlePointLine: r.singlePointLine,
+        clipX: zoomClipX,
       });
     } else {
       removeCanvas();
@@ -729,6 +926,7 @@ export function mountLineChart(
             showDataPoints: r.showDataPoints,
             singlePointLine: r.singlePointLine,
             revealX: x,
+            clipX: zoomClipX,
             tipLabels: tipCfg ? computeTipLabels(hitData, colorOf, x, tipCfg) : undefined,
             fontFamily,
           });
@@ -799,6 +997,7 @@ export function mountLineChart(
             showDataPoints: r.showDataPoints,
             singlePointLine: r.singlePointLine,
             revealX: x,
+            clipX: zoomClipX,
             tipLabels: tlTip ? computeTipLabels(hitData, colorOfTl, x, tlTip) : undefined,
             fontFamily,
           });
@@ -925,6 +1124,10 @@ export function mountLineChart(
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("mouseleave", onHostLeave);
       host.removeEventListener("click", onHostClick);
+      host.removeEventListener("mousedown", onZoomDown);
+      window.removeEventListener("mouseup", onZoomUp);
+      zoomResetBtn.removeEventListener("click", onZoomReset);
+      removeZoomRect();
       canvas = null;
       webgpuCanvas = null;
       clear(host);
@@ -940,6 +1143,10 @@ export function mountLineChart(
   }
   if (resolve(initial).timeline) {
     instance.timeline = () => cumTl.controller();
+  }
+  if (resolve(initial).zoom) {
+    instance.resetZoom = () => applyZoom(null);
+    instance.setZoomDomain = (domain) => applyZoom(domain);
   }
 
   return attachDevtools(instance, host, "line-chart", () => baseProps);

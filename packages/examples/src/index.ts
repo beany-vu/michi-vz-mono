@@ -23,6 +23,7 @@ import type {
   FanChartProps,
   TreemapChartProps,
   PieChartProps,
+  GaugeChartProps,
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
@@ -1354,6 +1355,51 @@ const treemap: Example<TreemapChartProps>[] = [
   },
 ];
 
+const gauge: Example<GaugeChartProps>[] = [
+  // [0] Market-share rings: one product's share of three nested markets.
+  {
+    id: "gauge-market-share",
+    title: "Market share by scope",
+    description:
+      "Three concentric rings, outer to inner: a product's import share of the world, the region, and the destination market. Hover a ring to read it in the centre; the inner ring is active at rest.",
+    element: "michi-vz-gauge-chart",
+    props: {
+      width: 300,
+      height: 300,
+      dataSet: [
+        { label: "World", value: 38.16, color: TM_BLUE },
+        { label: "Africa", value: 58.4, color: TM_GOLD },
+        { label: "Egypt", value: 96.14, color: TM_TEAL },
+      ],
+    },
+  },
+  // [1] Config-friendly variant: one palette with per-ring opacities, rounded
+  // caps, a rotated start, and a custom centre readout.
+  {
+    id: "gauge-progress-rings",
+    title: "Progress rings (single hue)",
+    description:
+      "The same gauge configured like an activity tracker: one colour with per-ring opacity steps, rounded caps, a 180-degree start, thicker rings, and a custom centre formatter.",
+    element: "michi-vz-gauge-chart",
+    props: {
+      width: 300,
+      height: 300,
+      dataSet: [
+        { label: "Move", value: 82, color: TM_RED },
+        { label: "Exercise", value: 55, color: TM_RED },
+        { label: "Stand", value: null, color: TM_RED },
+      ],
+      ringOpacity: [1, 0.7, 0.45],
+      ringThickness: 24,
+      ringGap: 4,
+      roundedCaps: true,
+      startAngle: 180,
+      defaultActive: "outer",
+      noValueLabel: "no data",
+    },
+  },
+];
+
 const pie: Example<PieChartProps>[] = [
   // [0] Solid pie: export value share by sector.
   {
@@ -2109,6 +2155,7 @@ export const examples = {
   "fan-chart": fan,
   "treemap-chart": treemap,
   "pie-chart": pie,
+  "gauge-chart": gauge,
   "bubble-chart": bubble,
   "sankey-chart": sankey,
   "fountain-chart": fountain,

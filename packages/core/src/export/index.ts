@@ -5,4 +5,4 @@
 export { chartContextToCsv } from "./csv";
 export type { CsvOptions } from "./csv";
 export { chartToStyledSvgString, chartToStyledSvgDataUri, chartToPngDataUrl } from "./image";
-export type { StyledSvgOptions, PngOptions } from "./image";
+export type { StyledSvgOptions, PngOptions, PngTextBlock } from "./image";

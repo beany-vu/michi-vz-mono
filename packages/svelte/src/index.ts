@@ -16,6 +16,7 @@ import {
   mountRadarChart,
   mountTreemapChart,
   mountPieChart,
+  mountGaugeChart,
   mountBubbleChart,
   mountSankeyChart,
   mountFountainChart,
@@ -39,6 +40,7 @@ import type {
   RadarChartProps,
   TreemapChartProps,
   PieChartProps,
+  GaugeChartProps,
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
@@ -64,6 +66,7 @@ export type {
   RadarChartProps,
   TreemapChartProps,
   PieChartProps,
+  GaugeChartProps,
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
@@ -305,6 +308,21 @@ export function pieChart(node: HTMLElement, props: PieChartProps): PieChartActio
   const chart = mountPieChart(node, props);
   return {
     update: (next: PieChartProps) => chart.update(next),
+    destroy: () => chart.destroy(),
+    getContext: () => chart.getContext(),
+  };
+}
+
+export interface GaugeChartAction {
+  update(props: GaugeChartProps): void;
+  destroy(): void;
+  getContext: ChartInstance<GaugeChartProps>["getContext"];
+}
+
+export function gaugeChart(node: HTMLElement, props: GaugeChartProps): GaugeChartAction {
+  const chart = mountGaugeChart(node, props);
+  return {
+    update: (next: GaugeChartProps) => chart.update(next),
     destroy: () => chart.destroy(),
     getContext: () => chart.getContext(),
   };
