@@ -3,7 +3,7 @@
 // marker guard are preserved exactly. Pure (no DOM). HARD RULE: the guard lives
 // here and ONLY here; the canvas renderer must not re-implement it.
 import type { StackRectData, VerticalStackBarDataSet } from "../types";
-import type { StackScales } from "./scales";
+import type { HorizontalStackScales, StackScales } from "./scales";
 import type { StackColorResolver } from "./colors";
 
 export interface PrepareStackOptions {
@@ -125,4 +125,101 @@ export function prepareStackedData(
   });
 
   return { stackedData, groupWidth };
+}
+
+/**
+ * layout="horizontal": the same stacking rules transposed - rows on a band
+ * y-axis, segments growing rightward from x(0). The minBar* options keep their
+ * ROLE, not their axis: `minBarHeight` is still the minimum size of a non-zero
+ * segment along the VALUE axis (here: width), `minBarHeightZero` the size of a
+ * zero-value segment, and `minBarWidth` the minimum band-side thickness (here:
+ * row height). The hasOwnProperty missing-marker guard is shared verbatim.
+ * keysOrder "topToBottom" (default) puts keys[0] nearest the axis (leftmost).
+ */
+export function prepareStackedDataHorizontal(
+  dataSet: VerticalStackBarDataSet[],
+  effectiveKeys: string[],
+  scales: HorizontalStackScales,
+  colors: StackColorResolver,
+  o: PrepareStackOptions,
+): PreparedStack {
+  const stackedData: Record<string, StackRectData[]> = {};
+  for (const k of effectiveKeys) stackedData[k] = [];
+
+  const disabled = new Set(o.disabledItems ?? []);
+  const visibleDataSet = dataSet.filter((ds) => !disabled.has(ds.seriesKey ?? ""));
+
+  const bandwidth = scales.yScale.bandwidth();
+  const groupHeight = visibleDataSet.length > 0 ? bandwidth / visibleDataSet.length : bandwidth;
+
+  // Horizontal reads left-to-right, so "topToBottom" (keys[0] first) stacks
+  // keys[0] against the axis; "bottomToTop" reverses (keys[0] outermost).
+  const orderedKeys = o.keysOrder === "bottomToTop" ? [...effectiveKeys].reverse() : effectiveKeys;
+
+  visibleDataSet.forEach((dataItem, groupIndex) => {
+    for (const yearData of dataItem.series) {
+      let v0 = 0;
+      let pixelLeft = scales.xScale(0);
+      const baseY = (scales.yScale(String(yearData.date)) ?? 0) + groupHeight * groupIndex + 2;
+      const height = Math.max(groupHeight - 4, o.minBarWidth);
+
+      for (const key of orderedKeys) {
+        const value = yearData[key];
+        const numericValue = typeof value === "string" ? parseFloat(value) : (value as number);
+        const isMissingValue = value === undefined || value === null || Number.isNaN(numericValue);
+
+        if (isMissingValue) {
+          const isExplicitlyMissing = Object.prototype.hasOwnProperty.call(yearData, key);
+          if (o.missingDataMarker && isExplicitlyMissing) {
+            const markerWidth = o.missingDataMarker.height;
+            stackedData[key].push({
+              key,
+              height,
+              width: markerWidth,
+              y: baseY,
+              x: scales.xScale(0),
+              data: yearData,
+              fill: colors.getColor(key),
+              seriesKey: dataItem.seriesKey,
+              seriesKeyAbbreviation: dataItem.seriesKeyAbbreviation,
+              value: null,
+              date: yearData.date,
+              code: codeOf(yearData.code),
+              isMissing: true,
+            });
+          }
+          continue;
+        }
+
+        const v1 = v0 + numericValue;
+        const rawWidth = scales.xScale(v1) - scales.xScale(v0);
+        const itemWidth =
+          numericValue !== 0 && rawWidth > 0
+            ? Math.max(o.minBarHeight, rawWidth)
+            : numericValue === 0
+              ? o.minBarHeightZero
+              : Math.max(0, rawWidth);
+
+        stackedData[key].push({
+          key,
+          height,
+          width: itemWidth,
+          y: baseY,
+          x: pixelLeft,
+          data: yearData,
+          fill: colors.getColor(key),
+          seriesKey: dataItem.seriesKey,
+          seriesKeyAbbreviation: dataItem.seriesKeyAbbreviation,
+          value: numericValue,
+          date: yearData.date,
+          code: codeOf(yearData.code),
+        });
+
+        v0 = v1;
+        pixelLeft = pixelLeft + itemWidth;
+      }
+    }
+  });
+
+  return { stackedData, groupWidth: groupHeight };
 }

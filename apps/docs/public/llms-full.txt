@@ -487,6 +487,7 @@ Chart-specific props (the shared props above also apply):
 - `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `keys`: `string[]` - Explicit stack order; present keys first (in this order), natural keys appended.
 - `keysOrder`: `"topToBottom" | "bottomToTop"` (default: `"topToBottom"`) - Where keys[0] sits in the stack: "topToBottom" (default) puts keys[0] at the top, "bottomToTop" anchors keys[0] at the bottom
+- `layout`: `"vertical" | "horizontal"` (default: `"vertical"`) - Bar orientation.
 - `title`: `string` - Optional chart title rendered above the plot
 - `xAxisLabelPadding`: `number` - Min gap (px) a horizontal x-axis label needs before it tilts -45°.
 - `xAxisMode`: `"auto" | "horizontal"` - "auto" (default) tilts crowded date labels -45°; "horizontal" keeps them flat (thinning instead), so no rotated-label bottom margin is reserved.

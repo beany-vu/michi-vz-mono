@@ -960,6 +960,15 @@ export interface VerticalStackBarChartProps {
   keys?: string[];
   /** Where keys[0] sits in the stack: "topToBottom" (default) puts keys[0] at the top, "bottomToTop" anchors keys[0] at the bottom */
   keysOrder?: "topToBottom" | "bottomToTop";
+  /** Bar orientation. "vertical" (default): columns over a band x-axis - the classic
+   * chart, unchanged. "horizontal": rows over a band y-axis with values growing
+   * rightward; long category labels render via the shared HTML y-band labels
+   * (ellipsized, hoverable). In horizontal mode `keysOrder: "topToBottom"` puts
+   * keys[0] nearest the axis (leftmost segment); series-abbreviation labels,
+   * `xAxisMode`, and `timeline` apply to the vertical layout only. The category
+   * axis keeps the `xAxis*` props and the value axis the `yAxis*` props in BOTH
+   * orientations (the "inverted axes" convention), so flipping layout is one prop. */
+  layout?: "vertical" | "horizontal";
   /** Optional chart title rendered above the plot */
   title?: string;
   /** Chart width in pixels */

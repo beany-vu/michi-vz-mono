@@ -10,6 +10,8 @@ import { defaultNumberFormatter } from "../i18n/formatters";
 import {
   renderTitle,
   renderXAxisBand,
+  renderXAxisLinear,
+  renderYAxisBand,
   renderYAxisLinear,
   ROTATED_LABEL_OFFSET,
 } from "../render/svg";
@@ -24,8 +26,8 @@ import {
   computeYDomain,
 } from "../verticalStackBarChart/data";
 import { buildStackColors } from "../verticalStackBarChart/colors";
-import { createStackScales } from "../verticalStackBarChart/scales";
-import { prepareStackedData } from "../verticalStackBarChart/stack";
+import { createHorizontalStackScales, createStackScales } from "../verticalStackBarChart/scales";
+import { prepareStackedData, prepareStackedDataHorizontal } from "../verticalStackBarChart/stack";
 import { ABBREV_LABEL_OFFSET, buildStackRenderModel } from "../verticalStackBarChart/renderModel";
 import { renderStackSvg } from "../verticalStackBarChart/renderSvg";
 import { drawStackCanvas } from "../verticalStackBarChart/renderCanvas";
@@ -69,6 +71,7 @@ interface Resolved {
   margin: Margin;
   renderer: Renderer;
   keysOrder: "topToBottom" | "bottomToTop";
+  layout: "vertical" | "horizontal";
   minBarWidth: number;
   minBarHeight: number;
   minBarHeightZero: number;
@@ -87,6 +90,7 @@ function resolve(p: VerticalStackBarChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     keysOrder: p.keysOrder ?? "topToBottom",
+    layout: p.layout ?? "vertical",
     minBarWidth: p.minBarWidth ?? 5,
     minBarHeight: p.minBarHeight ?? 15,
     minBarHeightZero: p.minBarHeightZero ?? 0,
@@ -352,23 +356,32 @@ export function mountVerticalStackBarChart(
       ? ABBREV_LABEL_OFFSET - ROTATED_LABEL_OFFSET + ABBREV_ROW_GAP
       : 0;
 
+    const horizontal = r.layout === "horizontal";
     let margin = r.margin;
     let scales = createStackScales(dates, yDomain, r.width, r.height, margin);
-    const axis = chooseAxisMode({
-      domain: dates,
-      formatter: (d) => xFormat(d),
-      bandWidth: scales.xScale.step(),
-      measure: measureLabelWidth,
-      // Min gap (px) a horizontal label needs before it tilts -45°. Bump it to give
-      // crowded date labels (e.g. "MM-YYYY") more breathing room - they rotate sooner
-      // instead of sitting flush against each other. Default 8 (legacy parity).
-      padding: props.xAxisLabelPadding,
-      // "horizontal" keeps labels flat (thinning if needed) instead of rotating -45°,
-      // so no rotated-label bottom-margin is reserved - useful when labels are hidden
-      // (thumbnails) or you simply never want tilted dates.
-      forceMode: props.xAxisMode,
-    });
-    if (axis.mode === "rotated") {
+    // layout="horizontal": categories move to a band y-axis whose HTML labels
+    // ellipsize instead of rotating, so the chooseAxisMode ladder and the
+    // rotated-label margin reserve below are vertical-only concerns.
+    const hScales = horizontal
+      ? createHorizontalStackScales(dates, yDomain, r.width, r.height, margin)
+      : null;
+    const axis = horizontal
+      ? null
+      : chooseAxisMode({
+          domain: dates,
+          formatter: (d) => xFormat(d),
+          bandWidth: scales.xScale.step(),
+          measure: measureLabelWidth,
+          // Min gap (px) a horizontal label needs before it tilts -45°. Bump it to give
+          // crowded date labels (e.g. "MM-YYYY") more breathing room - they rotate sooner
+          // instead of sitting flush against each other. Default 8 (legacy parity).
+          padding: props.xAxisLabelPadding,
+          // "horizontal" keeps labels flat (thinning if needed) instead of rotating -45°,
+          // so no rotated-label bottom-margin is reserved - useful when labels are hidden
+          // (thumbnails) or you simply never want tilted dates.
+          forceMode: props.xAxisMode,
+        });
+    if (axis && axis.mode === "rotated") {
       const maxLabelWidth = axis.tickValues.reduce(
         (m, v) => Math.max(m, measureLabelWidth(xFormat(v))),
         0,
@@ -385,20 +398,26 @@ export function mountVerticalStackBarChart(
       }
     }
 
-    const prepared = prepareStackedData(filteredDataSet, effectiveKeys, scales, colors, {
+    const stackOptions = {
       keysOrder: r.keysOrder,
       minBarWidth: r.minBarWidth,
       minBarHeight: r.minBarHeight,
       minBarHeightZero: r.minBarHeightZero,
       missingDataMarker: props.missingDataMarker,
       disabledItems: props.disabledItems,
-    });
+    };
+    const prepared = horizontal
+      ? prepareStackedDataHorizontal(filteredDataSet, effectiveKeys, hScales!, colors, stackOptions)
+      : prepareStackedData(filteredDataSet, effectiveKeys, scales, colors, stackOptions);
     model = buildStackRenderModel(prepared, effectiveKeys, dates, colors, {
       height: r.height,
       margin,
       highlightItems: props.highlightItems ?? [],
       legendOrder: legendKeys,
       disabledItems: props.disabledItems,
+      // The series-abbreviation row sits below the band x-axis; it has no home
+      // in the horizontal layout.
+      abbrevLabels: !horizontal,
     });
 
     if (props.onLegendDataChange) {
@@ -415,24 +434,45 @@ export function mountVerticalStackBarChart(
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
     // No-data: render only the title; the overlay covers the rest.
     if (dataState !== "nodata") {
-      renderXAxisBand(svg, scales.xScale, {
-        width: r.width,
-        height: r.height,
-        margin,
-        format: (label) => xFormat(label),
-        mode: axis.mode,
-        tickValues: axis.tickValues,
-        labelOffset: tickLabelDrop,
-      });
-      renderYAxisLinear(svg, scales.yScale, {
-        width: r.width,
-        height: r.height,
-        margin,
-        format: (v) => yFormat(v),
-        ticks: props.yTicks ?? 10,
-        showGrid: props.showGridLines !== false,
-        highlightZeroLine: props.highlightZeroLine !== false,
-      });
+      if (horizontal) {
+        // Value axis along the bottom (linear x), categories on a band y-axis.
+        // Prop semantics stay orientation-independent: xAxis* formats the
+        // category labels, yAxis*/yTicks the value axis.
+        renderXAxisLinear(svg, hScales!.xScale, {
+          width: r.width,
+          height: r.height,
+          margin,
+          xAxisDataType: "number",
+          format: (v) => yFormat(v),
+          ticks: props.yTicks ?? 5,
+          showGrid: props.showGridLines !== false,
+        });
+        renderYAxisBand(svg, hScales!.yScale, {
+          width: r.width,
+          margin,
+          format: (label) => xFormat(label),
+          showGrid: false,
+        });
+      } else {
+        renderXAxisBand(svg, scales.xScale, {
+          width: r.width,
+          height: r.height,
+          margin,
+          format: (label) => xFormat(label),
+          mode: axis!.mode,
+          tickValues: axis!.tickValues,
+          labelOffset: tickLabelDrop,
+        });
+        renderYAxisLinear(svg, scales.yScale, {
+          width: r.width,
+          height: r.height,
+          margin,
+          format: (v) => yFormat(v),
+          ticks: props.yTicks ?? 10,
+          showGrid: props.showGridLines !== false,
+          highlightZeroLine: props.highlightZeroLine !== false,
+        });
+      }
 
       if (r.renderer === "svg") {
         renderStackSvg(
@@ -561,7 +601,9 @@ export function mountVerticalStackBarChart(
     // ----- Cumulative timeline (opt-in play-through-years) -----
     // The bars draw UP TO the active period (band edge); play/scrub sweeps the
     // same reveal clip progressiveDraw uses. Data + getContext() stay full.
-    if (r.timeline && dataState !== "nodata" && r.renderer !== "webgpu") {
+    // Horizontal layout: the reveal clip sweeps x while the periods live on the
+    // band Y-axis, so period playback doesn't map - vertical-only for now.
+    if (r.timeline && !horizontal && dataState !== "nodata" && r.renderer !== "webgpu") {
       const periods: CumulativePeriod[] = dates
         .map((d) => ({
           period: d,

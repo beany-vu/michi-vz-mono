@@ -21,6 +21,7 @@ export class VerticalStackBarChartElement extends LitElement {
     dataSet: { attribute: false },
     keys: { attribute: false },
     keysOrder: { type: String, attribute: "keys-order" },
+    layout: { type: String },
     chartTitle: { type: String, attribute: "chart-title" },
     width: { type: Number },
     height: { type: Number },
@@ -60,6 +61,7 @@ export class VerticalStackBarChartElement extends LitElement {
   dataSet: VerticalStackBarDataSet[] = [];
   keys?: string[];
   keysOrder: "topToBottom" | "bottomToTop" = "topToBottom";
+  layout?: "vertical" | "horizontal";
   chartTitle = "";
   width = 900;
   height = 480;
@@ -114,6 +116,7 @@ export class VerticalStackBarChartElement extends LitElement {
       dataSet: this.dataSet,
       keys: this.keys,
       keysOrder: this.keysOrder,
+      layout: this.layout,
       title: this.chartTitle || undefined,
       width: this.width,
       height: this.height,

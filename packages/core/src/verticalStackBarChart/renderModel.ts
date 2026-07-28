@@ -43,6 +43,9 @@ export interface BuildStackModelOptions {
    * (flagged disabled so the pill greys out instead of disappearing) even
    * though their bars are excluded from the stack. */
   disabledItems?: string[];
+  /** Emit the series-abbreviation labels below the band x-axis (default true).
+   * layout="horizontal" passes false - that axis row doesn't exist there. */
+  abbrevLabels?: boolean;
 }
 
 export function buildStackRenderModel(
@@ -59,12 +62,13 @@ export function buildStackRenderModel(
   const seenAbbrev = new Set<string>();
   const visibleItems: string[] = [];
 
+  const emitAbbrev = o.abbrevLabels !== false;
   for (const key of effectiveKeys) {
     const rects = stackedData[key] ?? [];
     if (rects.some((r) => !r.isMissing)) visibleItems.push(key);
     for (const r of rects) {
       // Abbrev labels only where the bar is wide enough to be legible.
-      if (r.width >= 20 && r.seriesKeyAbbreviation) {
+      if (emitAbbrev && r.width >= 20 && r.seriesKeyAbbreviation) {
         const tag = `${r.seriesKey}|${r.date}|${Math.round(r.x)}`;
         if (!seenAbbrev.has(tag)) {
           seenAbbrev.add(tag);

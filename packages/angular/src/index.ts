@@ -347,6 +347,7 @@ export function applyVerticalStackBarChartProps(
   el.dataSet = props.dataSet;
   if (props.keys !== undefined) el.keys = props.keys;
   if (props.keysOrder !== undefined) el.keysOrder = props.keysOrder;
+  if (props.layout !== undefined) el.layout = props.layout;
   if (props.title !== undefined) el.chartTitle = props.title;
   if (props.width !== undefined) el.width = props.width;
   if (props.height !== undefined) el.height = props.height;
