@@ -10,6 +10,22 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.2
+
+Package versions: core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·
+examples **1.1.2** · devtools, insights **0.2.17**.
+
+- **The context now says what's actually on screen.** New `renderedRankedIds` on the
+  shared ChartContext: the codes of the series actually drawn, in rendered order
+  (after `disabledItems` and the Top/Bottom `filter` sort+slice), emitted by the
+  [Line Chart](/charts/line), [Vertical Stack Bar](/charts/vertical-stack-bar),
+  [Comparable Horizontal Bar](/charts/comparable),
+  [Comparable Vertical Bar](/charts/comparable-vertical-bar), and
+  [Gap Chart](/charts/gap) builders. Per-series `code` is also surfaced on the stack
+  and comparable-bar contexts, and numeric codes are no longer dropped by the stack
+  chart. Lets a consumer selection UI follow a ranked chart (the "Top-N chips"
+  pattern).
+
 ## v1.11.1
 
 Package versions: core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·

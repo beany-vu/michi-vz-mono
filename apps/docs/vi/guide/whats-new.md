@@ -10,6 +10,24 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.2
+
+Phiên bản gói: core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·
+examples **1.1.2** · devtools, insights **0.2.17**.
+
+- **Context giờ cho biết chính xác những gì đang hiển thị.** Trường mới
+  `renderedRankedIds` trên ChartContext dùng chung: mã (code) của các chuỗi thực sự
+  được vẽ, theo thứ tự hiển thị (sau `disabledItems` và bước sắp xếp/cắt của `filter`
+  Top/Bottom), được phát ra bởi các builder của
+  [Biểu đồ đường](/vi/charts/line),
+  [Biểu đồ cột chồng dọc](/vi/charts/vertical-stack-bar),
+  [Biểu đồ cột so sánh](/vi/charts/comparable),
+  [Biểu đồ cột dọc so sánh](/vi/charts/comparable-vertical-bar) và
+  [Biểu đồ khoảng cách](/vi/charts/gap). `code` theo từng chuỗi cũng được đưa lên
+  context của stack và comparable-bar, và mã dạng số không còn bị biểu đồ cột chồng
+  bỏ qua. Cho phép giao diện chọn lọc bám theo một biểu đồ đã xếp hạng (mẫu "Top-N
+  chips").
+
 ## v1.11.1
 
 Phiên bản gói: core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·

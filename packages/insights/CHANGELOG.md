@@ -1,5 +1,12 @@
 # @michi-vz/insights
 
+## 0.2.17
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.15.0
+
 ## 0.2.16
 
 ### Patch Changes

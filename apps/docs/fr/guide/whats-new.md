@@ -12,6 +12,24 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.2
+
+Versions des paquets : core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·
+examples **1.1.2** · devtools, insights **0.2.17**.
+
+- **Le contexte indique désormais ce qui est réellement affiché.** Nouveau champ
+  `renderedRankedIds` sur le ChartContext partagé : les codes des séries effectivement
+  dessinées, dans l'ordre de rendu (après `disabledItems` et le tri/découpage du
+  `filter` Top/Bottom), émis par les builders de
+  [Graphique en courbes](/fr/charts/line),
+  [Barres empilées verticales](/fr/charts/vertical-stack-bar),
+  [Barres comparables](/fr/charts/comparable),
+  [Barres comparables verticales](/fr/charts/comparable-vertical-bar) et
+  [Graphique d'écart](/fr/charts/gap). Le `code` par série est aussi exposé sur les
+  contextes stack et comparable-bar, et les codes numériques ne sont plus ignorés par
+  le graphique empilé. Permet à une interface de sélection de suivre un graphique
+  classé (le motif « puces Top-N »).
+
 ## v1.11.1
 
 Versions des paquets : core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·

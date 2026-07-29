@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.15.0
+
+### Minor Changes
+
+- ChartContext: new uniform `renderedRankedIds` field (BaseChartContext) listing the codes of the series actually drawn, in rendered order (post `disabledItems`, post Top/Bottom `filter` sort+slice). Emitted by the line, vertical-stack-bar, comparable-horizontal-bar, comparable-vertical-bar, and gap context builders; `code` is now also surfaced per series on the stack and comparable-bar contexts (`StackSeriesContext.code`, `ComparableBarSeriesContext.code`, `ComparableVerticalBarSeriesContext.code`) and accepted on `ComparableBarDataPoint`. The vertical-stack-bar `code` reader also accepts numeric codes now (previously silently dropped). Restores the rendered-set contract consumers use to narrow a selection UI to a ranked chart (e.g. thd MonitorV2's Top/Bottom chip sync, broken since the legacy-package migration removed `renderedData` from non-gap charts).
+
 ## 1.14.0
 
 ### Minor Changes

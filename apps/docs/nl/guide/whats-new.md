@@ -10,6 +10,24 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.2
+
+Pakketversies: core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·
+examples **1.1.2** · devtools, insights **0.2.17**.
+
+- **De context vertelt nu wat er echt op het scherm staat.** Nieuw veld
+  `renderedRankedIds` op de gedeelde ChartContext: de codes van de daadwerkelijk
+  getekende reeksen, in tekenvolgorde (na `disabledItems` en het sorteren/afkappen van
+  de Top/Bottom-`filter`), uitgezonden door de builders van
+  [Lijndiagram](/nl/charts/line),
+  [Verticale gestapelde staven](/nl/charts/vertical-stack-bar),
+  [Vergelijkbare staven](/nl/charts/comparable),
+  [Vergelijkbare verticale staven](/nl/charts/comparable-vertical-bar) en
+  [Verschildiagram](/nl/charts/gap). De `code` per reeks staat nu ook op de stack- en
+  comparable-bar-contexten, en numerieke codes worden niet langer genegeerd door de
+  gestapelde staafgrafiek. Hiermee kan een selectie-UI een gerangschikte grafiek
+  volgen (het "Top-N chips"-patroon).
+
 ## v1.11.1
 
 Pakketversies: core **1.14.0** · wc, angular **1.12.0** · react **1.11.1** · vue, svelte **1.7.1** ·
