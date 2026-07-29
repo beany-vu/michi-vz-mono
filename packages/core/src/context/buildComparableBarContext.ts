@@ -30,6 +30,7 @@ export function buildComparableBarContext(
   const series: ComparableBarSeriesContext[] = input.points.map((d) => ({
     label: d.label,
     color: input.colorsMapping[d.label] ?? d.color ?? "",
+    code: d.code,
     valueBased: d.valueBased,
     valueCompared: d.valueCompared,
     difference: round(d.valueCompared - d.valueBased),
@@ -72,6 +73,12 @@ export function buildComparableBarContext(
     stats: { count: series.length, totalBased, totalCompared, largestMover },
     colorsMapping: input.colorsMapping,
     legendData,
+    // `points` is already post-disabledItems + post-`filter` (ranked sort+slice).
+    // != null (not Boolean) so a legitimate numeric 0 code survives.
+    renderedRankedIds: series
+      .map((s) => s.code)
+      .filter((c) => c != null && c !== "")
+      .map(String),
     summary,
     a11yTable: {
       headers: ["Label", "Based", "Compared", "Difference"],

@@ -34,7 +34,13 @@ export function buildStackContext(input: BuildStackContextInput): VerticalStackB
       return { date, value, isMissing: !!rect?.isMissing };
     });
     const total = byDate.reduce((a, b) => a + (b.value ?? 0), 0);
-    return { key, color: input.colorsMapping[key] ?? "", total: round(total), byDate };
+    return {
+      key,
+      color: input.colorsMapping[key] ?? "",
+      code: rects.find((r) => r.code)?.code,
+      total: round(total),
+      byDate,
+    };
   });
 
   // per-date totals + largest segment
@@ -79,6 +85,11 @@ export function buildStackContext(input: BuildStackContextInput): VerticalStackB
     // Flat colour-contract payload (same rows as `legend`) read by consumer
     // colour authorities via onChartDataProcessed(ctx).legendData.
     legendData: input.legend,
+    // `keys` is effectiveKeys: post-disabledItems, post-`filter` (ranked) order.
+    renderedRankedIds: series
+      .map((s) => s.code)
+      .filter(Boolean)
+      .map(String),
     stats: {
       seriesCount: keys.length,
       dateCount: dates.length,

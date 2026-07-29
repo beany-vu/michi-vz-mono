@@ -45,6 +45,7 @@ export function buildComparableVerticalBarContext(
     const row: ComparableVerticalBarSeriesContext = {
       label: d.label,
       color: input.colorsMapping[d.label] ?? d.color ?? "",
+      code: d.code,
       valueBased: d.valueBased,
       valueCompared: d.valueCompared,
       difference,
@@ -130,6 +131,12 @@ export function buildComparableVerticalBarContext(
     },
     colorsMapping: input.colorsMapping,
     legendData,
+    // `points` is already post-disabledItems + post-`filter` (ranked sort+slice).
+    // != null (not Boolean) so a legitimate numeric 0 code survives.
+    renderedRankedIds: series
+      .map((s) => s.code)
+      .filter((c) => c != null && c !== "")
+      .map(String),
     summary,
     a11yTable: { headers, rows },
   };

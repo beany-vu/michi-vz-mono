@@ -83,6 +83,11 @@ export function buildGapContext(input: BuildContextInput): GapChartContext {
     // array of the rendered datum. thd's TradeSimulationSnapshot reads value1/value2
     // off this to size its x-axis ticks; omitting it collapsed the axis to [0,0].
     renderedData: Object.fromEntries(input.processedDataSet.map((d) => [d.label, [d]])),
+    // Uniform rendered-ids contract (BaseChartContext); != null keeps a numeric 0 code.
+    renderedRankedIds: series
+      .map((s) => s.code)
+      .filter((c) => c != null && c !== "")
+      .map(String),
     colorsMapping: input.colorsMapping,
     legendData,
     summary,

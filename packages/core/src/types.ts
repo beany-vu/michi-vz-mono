@@ -253,6 +253,16 @@ export interface BaseChartContext {
    * doubles as accessibility alt text. */
   summary: string;
   a11yTable: ChartA11yTable;
+  /**
+   * Codes of the series/rows actually drawn, in rendered order (post
+   * disabledItems filter, post Top/Bottom `filter` sort+slice). The uniform
+   * "what's on screen right now" contract for consumers that narrow a
+   * selection UI to a ranked chart (e.g. thd MonitorV2's Top/Bottom chip
+   * sync). Items without a stable code are omitted, so a dataset mixing coded
+   * and codeless series yields a partial list; absent when the chart type has
+   * no per-item code concept.
+   */
+  renderedRankedIds?: string[];
 }
 
 export interface GapChartContext extends BaseChartContext {
@@ -1052,6 +1062,8 @@ export interface StackSeriesContext {
   key: string;
   /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
+  /** Stable id for this key (from the DataSet rows' `code`), when provided */
+  code?: string;
   total: number;
   byDate: Array<{ date: string; value: number | null; isMissing: boolean }>;
 }
@@ -1087,6 +1099,10 @@ export interface ComparableBarDataPoint {
   valueBased: number;
   /** The comparison value, drawn as the front sub-bar */
   valueCompared: number;
+  /** Optional stable id for this row (e.g. a country/sector code), surfaced on
+   * the context (`series[i].code`, `renderedRankedIds`) for consumers that map
+   * rendered rows back to their domain entities. Not used for drawing. */
+  code?: string | number;
 }
 
 /**
@@ -1276,6 +1292,8 @@ export interface ComparableBarSeriesContext {
   label: string;
   /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
+  /** Stable id for this row (from the DataSet point's `code`), when provided */
+  code?: string | number;
   valueBased: number;
   valueCompared: number;
   /** valueCompared - valueBased. */
@@ -1426,6 +1444,8 @@ export interface ComparableVerticalBarSeriesContext {
   label: string;
   /** Optional explicit colour for this item, overriding the generated palette colour */
   color: string;
+  /** Stable id for this row (from the DataSet point's `code`), when provided */
+  code?: string | number;
   valueBased: number;
   valueCompared: number;
   /** valueCompared - valueBased. */

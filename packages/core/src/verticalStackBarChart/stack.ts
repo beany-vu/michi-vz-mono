@@ -22,7 +22,9 @@ export interface PreparedStack {
   groupWidth: number;
 }
 
-const codeOf = (v: unknown): string | undefined => (typeof v === "string" ? v : undefined);
+// Codes may be numeric (e.g. thd goods sector codes) — coerce, don't drop them.
+const codeOf = (v: unknown): string | undefined =>
+  typeof v === "string" || typeof v === "number" ? String(v) : undefined;
 
 export function prepareStackedData(
   dataSet: VerticalStackBarDataSet[],

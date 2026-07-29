@@ -140,6 +140,12 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
     colorsMapping: input.colorsMapping,
     legendData: input.legendData,
     visibleItems,
+    // processedDataSet is already post-disabledItems + post-`filter` (sort+slice),
+    // so this is the rendered ranked set in rendered order (codeless series omitted).
+    renderedRankedIds: series
+      .map((s) => s.code)
+      .filter(Boolean)
+      .map(String),
     summary,
     a11yTable: {
       headers: a11yHeaders,
