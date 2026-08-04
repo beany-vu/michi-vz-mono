@@ -10,6 +10,22 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.3
+
+Phiên bản các gói: core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·
+examples **1.1.3** · devtools, insights **0.2.18**.
+
+- **Ẩn một series đã xếp hạng không còn bị lấp chỗ.** Trên
+  [biểu đồ đường](/charts/line), [thanh ngang so sánh](/charts/comparable) và
+  [thanh dọc so sánh](/charts/comparable-vertical-bar), `filter` Top/Bottom giờ xếp
+  hạng và cắt lát trên TOÀN BỘ tập dữ liệu *trước khi* loại bỏ `disabledItems` — nên
+  ẩn một trong N series đầu qua legend sẽ vẽ N−1 series thay vì để mục thứ (N+1) chen
+  vào chỗ trống (thứ tự mà [biểu đồ gap](/charts/gap) và lát cắt nhóm của thanh chồng
+  vẫn luôn dùng). Khi `filter` đang bật, `legendData` giữ series bị ẩn dưới dạng hàng
+  làm mờ và `renderedRankedIds` vẫn liệt kê code của nó, nhờ vậy UI chọn lọc phía
+  consumer phản chiếu tập được render vẫn ổn định qua các lần bật/tắt hiển thị. Không
+  có `filter` thì hành vi không đổi.
+
 ## v1.11.2
 
 Phiên bản gói: core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·

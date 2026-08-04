@@ -12,6 +12,23 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.3
+
+Versions des paquets : core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·
+examples **1.1.3** · devtools, insights **0.2.18**.
+
+- **Masquer une série classée ne comble plus le vide.** Sur le
+  [graphique en ligne](/charts/line), les [barres comparables horizontales](/charts/comparable)
+  et les [barres comparables verticales](/charts/comparable-vertical-bar), le `filter`
+  Top/Bottom classe et découpe désormais l'ensemble COMPLET *avant* le retrait des
+  `disabledItems` — masquer l'une des N premières séries via la légende dessine donc
+  N−1 séries au lieu de laisser la (N+1)-ième prendre la place libérée (l'ordre que le
+  [graphique gap](/charts/gap) et le découpage de groupes des barres empilées ont
+  toujours utilisé). Tant qu'un `filter` est actif, `legendData` conserve la série
+  masquée en pastille grisée et `renderedRankedIds` liste toujours son code, si bien
+  qu'une interface de sélection consommatrice reste stable à travers les bascules
+  afficher/masquer. Sans `filter`, rien ne change.
+
 ## v1.11.2
 
 Versions des paquets : core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·

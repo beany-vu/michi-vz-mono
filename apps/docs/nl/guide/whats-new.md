@@ -10,6 +10,23 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.3
+
+Pakketversies: core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·
+examples **1.1.3** · devtools, insights **0.2.18**.
+
+- **Een gerangschikte serie verbergen vult niet langer op.** Op de
+  [lijngrafiek](/charts/line), de [vergelijkbare horizontale balk](/charts/comparable)
+  en de [vergelijkbare verticale balk](/charts/comparable-vertical-bar) rangschikt en
+  snijdt het Top/Bottom-`filter` nu de VOLLEDIGE set *voordat* `disabledItems` worden
+  verwijderd — een van de top-N series verbergen via de legenda tekent dus N−1 series
+  in plaats van de (N+1)-de in het vrijgekomen slot te laten schuiven (de volgorde die
+  de [gap-grafiek](/charts/gap) en de groepsselectie van de stapelbalk altijd al
+  gebruikten). Zolang een `filter` actief is, houdt `legendData` de verborgen serie
+  als gedimde rij en vermeldt `renderedRankedIds` nog steeds haar code, zodat een
+  consumerende selectie-UI stabiel blijft over toon/verberg-wissels. Zonder `filter`
+  verandert er niets.
+
 ## v1.11.2
 
 Pakketversies: core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·

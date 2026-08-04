@@ -10,6 +10,22 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.3
+
+Package versions: core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·
+examples **1.1.3** · devtools, insights **0.2.18**.
+
+- **Hiding a ranked series no longer backfills.** On the [Line Chart](/charts/line),
+  [Comparable Horizontal Bar](/charts/comparable) and
+  [Comparable Vertical Bar](/charts/comparable-vertical-bar), the Top/Bottom `filter`
+  now ranks and slices the FULL set *before* `disabledItems` are removed — so hiding
+  one of the top N via the legend draws N−1 series instead of letting the (N+1)-th
+  item slide into the freed slot (the order the [Gap Chart](/charts/gap) and the
+  stacked-bar group slice always used). While a `filter` is active, `legendData`
+  keeps the hidden ranked series as a greyed row and `renderedRankedIds` still lists
+  its code, so a consumer selection UI mirroring the rendered set stays stable
+  across show/hide toggles. Without a `filter`, nothing changes.
+
 ## v1.11.2
 
 Package versions: core **1.15.0** · wc, angular **1.12.1** · react **1.11.2** · vue, svelte **1.7.2** ·

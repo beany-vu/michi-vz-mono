@@ -1,5 +1,12 @@
 # @michi-vz/vue
 
+## 1.7.3
+
+### Patch Changes
+
+- Updated dependencies [5ccc78c]
+  - @michi-vz/core@1.16.0
+
 ## 1.7.2
 
 ### Patch Changes
