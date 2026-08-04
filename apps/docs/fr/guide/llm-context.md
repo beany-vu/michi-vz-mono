@@ -51,6 +51,15 @@ Il expose trois choses à partir d'une seule source :
 La forme est une union discriminée indexée sur `chartType`, si bien qu'elle se restreint
 proprement graphique par graphique.
 
+Sur les graphiques qui gèrent le classement Top/Bottom (ligne, barres empilées verticales,
+barres comparables horizontales/verticales, gap), le contexte porte aussi **`renderedRankedIds`** —
+les `code`s des séries dans l'ordre du classement. Quand un `filter` est actif, masquer une série
+via `disabledItems` est un **masquage de vue** : la tranche classée est calculée d'abord et la série
+masquée garde sa place, donc le graphique dessine N−1 séries (rien ne vient combler le vide), la
+légende conserve sa pastille grisée, et `renderedRankedIds` liste toujours le code de la série
+masquée. Un consommateur qui reflète l'ensemble rendu dans l'état de son application peut donc le
+considérer comme stable à travers les bascules afficher/masquer.
+
 ## Parlez à votre graphique : un chatbot qui le pilote
 
 Parce que le sens est structuré **et** que les commandes sont des outils, un chatbot

@@ -45,6 +45,15 @@ Het geeft drie dingen af uit één bron:
 
 De vorm is een discriminated union op `chartType`, zodat het per grafiek keurig versmalt.
 
+Op grafieken met Top/Bottom-ranking (lijn, verticale stapelbalk, vergelijkbare horizontale/verticale
+balk, gap) draagt de context ook **`renderedRankedIds`** — de `code`s van de series in
+rangschikkingsvolgorde. Terwijl een `filter` actief is, is het verbergen van een serie via
+`disabledItems` een **weergave-niveau verbergen**: de gerangschikte selectie wordt eerst berekend en
+de verborgen serie houdt haar plek, dus de grafiek tekent N−1 series (niets vult het gat op), de
+legenda behoudt haar gedimde rij, en `renderedRankedIds` vermeldt nog steeds de code van de
+verborgen serie. Consumenten die de gerenderde set naar app-state spiegelen kunnen die dus als
+stabiel beschouwen over toon/verberg-wissels heen.
+
 ## Praat met je grafiek: een chatbot die hem bestuurt
 
 Omdat de betekenis gestructureerd is **en** de besturingselementen tools zijn, schraapt een chatbot geen pixels - hij

@@ -20,6 +20,10 @@ export interface BuildLineContextInput {
   xAxisDomain: [number, number];
   yAxisDomain: [number, number];
   processedDataSet: LineDataItem[];
+  /** The ranked top-N slice BEFORE disabledItems were removed (present only while
+   *  a `filter` is active). Source for renderedRankedIds so hiding a ranked
+   *  series via the legend never changes the emitted ranked positions. */
+  rankedDataSet?: LineDataItem[];
   colorsMapping: Record<string, string>;
   /** Flat legend rows (label/dataLabelSafe/color/disabled) for the colour contract. */
   legendData?: LegendItem[];
@@ -140,11 +144,13 @@ export function buildLineContext(input: BuildLineContextInput): LineChartContext
     colorsMapping: input.colorsMapping,
     legendData: input.legendData,
     visibleItems,
-    // processedDataSet is already post-disabledItems + post-`filter` (sort+slice),
-    // so this is the rendered ranked set in rendered order (codeless series omitted).
-    renderedRankedIds: series
-      .map((s) => s.code)
-      .filter(Boolean)
+    // The ranked slice PRE-disabledItems while a filter is active (hiding a
+    // series via the legend is view-level and must not shift the ranked set a
+    // consumer mirrors into its selection); the drawn set otherwise. Codeless
+    // series omitted.
+    renderedRankedIds: (input.rankedDataSet ?? input.processedDataSet)
+      .map((it) => it.series.find((d) => d.code)?.code)
+      .filter((c) => c != null && c !== "")
       .map(String),
     summary,
     a11yTable: {

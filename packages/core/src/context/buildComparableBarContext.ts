@@ -13,6 +13,10 @@ export interface BuildComparableContextInput {
   renderer: "svg" | "canvas" | "webgpu";
   xAxisDomain: [number, number];
   points: ComparableBarDataPoint[];
+  /** The ranked top-N slice BEFORE disabledItems were removed (present only while
+   *  a `filter` is active). Source for renderedRankedIds so hiding a ranked bar
+   *  via the legend never changes the emitted ranked positions. */
+  rankedPoints?: ComparableBarDataPoint[];
   colorsMapping: Record<string, string>;
   disabledItems?: string[];
   /**
@@ -73,10 +77,12 @@ export function buildComparableBarContext(
     stats: { count: series.length, totalBased, totalCompared, largestMover },
     colorsMapping: input.colorsMapping,
     legendData,
-    // `points` is already post-disabledItems + post-`filter` (ranked sort+slice).
+    // The ranked slice PRE-disabledItems while a filter is active (hiding a bar
+    // via the legend is view-level and must not shift the ranked set a consumer
+    // mirrors into its selection); the drawn points otherwise.
     // != null (not Boolean) so a legitimate numeric 0 code survives.
-    renderedRankedIds: series
-      .map((s) => s.code)
+    renderedRankedIds: (input.rankedPoints ?? input.points)
+      .map((p) => p.code)
       .filter((c) => c != null && c !== "")
       .map(String),
     summary,

@@ -1,6 +1,13 @@
 // LineChart data pipeline (ported from useFilteredDataSet + gap-detection wiring).
-// Order: exclude disabledItems -> optional top-N filter (by value at filter.date)
-// -> optional per-series gap detection -> compute x/y domains. Pure.
+// Order: optional top-N filter (by value at filter.date) on the FULL set ->
+// exclude disabledItems from the ranked slice -> optional per-series gap
+// detection -> compute x/y domains. Pure.
+//
+// The filter runs BEFORE disabledItems on purpose: hiding a ranked series via a
+// legend click is a VIEW-level hide of that slot, so the chart must draw N-1
+// series - never re-rank the remaining pool and backfill the slot with the
+// (limit+1)-th item. (GapChart has always applied disabledItems after its
+// slice; this aligns the line pipeline with it.)
 import { applyGapDetection } from "./detectGaps";
 import { getXScaleDomain, getYScaleDomain } from "./lineUtils";
 import type { Filter, LineDataItem, XaxisDataType } from "../types";
@@ -27,6 +34,10 @@ export interface ProcessedLine {
   visibleLabels: string[];
   xAxisDomain: [number, number];
   yAxisDomain: [number, number];
+  /** The ranked top-N slice BEFORE disabledItems were removed — present only when
+   * `filter` is set. Feeds legendData (hidden-but-ranked series keep their greyed
+   * pill) and renderedRankedIds (ranked positions stay stable while hiding). */
+  rankedDataSet?: LineDataItem[];
 }
 
 // Value of a series at a specific x (for filter ranking). Missing -> -Infinity so
@@ -41,16 +52,20 @@ export function processLineChartData(
   opts: ProcessLineOptions,
 ): ProcessedLine {
   const disabled = new Set(opts.disabledItems ?? []);
-  let items = dataSet.filter((it) => !disabled.has(it.label));
 
+  // Rank/slice the FULL set first (hidden series keep their ranked slot)...
+  let rankedDataSet: LineDataItem[] | undefined;
   if (opts.filter) {
     const { criteria, date, sortingDir, limit } = opts.filter;
     const at = criteria === "value" || !criteria ? date : date;
     const dir = sortingDir === "asc" ? 1 : -1;
-    items = [...items]
+    rankedDataSet = [...dataSet]
       .sort((a, b) => dir * (valueAtDate(a, at) - valueAtDate(b, at)))
       .slice(0, limit);
   }
+
+  // ...then drop disabledItems from what gets DRAWN.
+  const items = (rankedDataSet ?? dataSet).filter((it) => !disabled.has(it.label));
 
   // Log mode: non-positive points are treated as missing (like any other gap) -
   // dropped BEFORE detectGaps runs, so an existing time-based gap check (when opted
@@ -79,5 +94,6 @@ export function processLineChartData(
     visibleLabels: processedDataSet.map((it) => it.label),
     xAxisDomain,
     yAxisDomain,
+    rankedDataSet,
   };
 }

@@ -525,15 +525,18 @@ export function mountLineChart(
     // Computed up front (pure - no host/DOM dependency) so a log y-axis with no
     // positive values anywhere can force the no-data state below instead of asking
     // d3 for a degenerate/zero-inclusive log scale.
-    const { processedDataSet, xAxisDomain, yAxisDomain } = processLineChartData(props.dataSet, {
-      disabledItems: props.disabledItems,
-      filter: props.filter,
-      detectGaps: props.detectGaps,
-      expectedStep: props.expectedStep,
-      xAxisDataType,
-      yAxisDomain: props.yAxisDomain,
-      yAxisScale: r.yAxisScale,
-    });
+    const { processedDataSet, xAxisDomain, yAxisDomain, rankedDataSet } = processLineChartData(
+      props.dataSet,
+      {
+        disabledItems: props.disabledItems,
+        filter: props.filter,
+        detectGaps: props.detectGaps,
+        expectedStep: props.expectedStep,
+        xAxisDataType,
+        yAxisDomain: props.yAxisDomain,
+        yAxisScale: r.yAxisScale,
+      },
+    );
     const logHasNoPositiveValues =
       r.yAxisScale === "log" && processedDataSet.every((item) => item.series.length === 0);
 
@@ -1029,12 +1032,13 @@ export function mountLineChart(
     }
 
     // ----- Legend rows (flat colour-contract payload) -----
-    // Mirrors legacy useLineChartMetadataExpose: with a filter, the legend is the
-    // visible/filtered set (= processedDataSet); without one, every series with
-    // data (disabled included, flagged) so a consumer legend can re-enable them.
+    // With a filter, the legend is the RANKED slice pre-disabledItems (a hidden
+    // ranked series keeps its greyed pill — the only way back, same 1.5.6/1.12.2
+    // contract as VSB/ComparableBar); without one, every series with data
+    // (disabled included, flagged) so a consumer legend can re-enable them.
     const skipDispatch = props.skipColorMappingDispatch ?? false;
     const legendLabels = props.filter
-      ? processedDataSet.map((d) => d.label)
+      ? (rankedDataSet ?? processedDataSet).map((d) => d.label)
       : props.dataSet.filter((d) => (d.series?.length ?? 0) > 0).map((d) => d.label);
     const legendData = buildLegendData({
       labels: legendLabels,
@@ -1051,6 +1055,7 @@ export function mountLineChart(
       xAxisDomain,
       yAxisDomain,
       processedDataSet,
+      rankedDataSet,
       colorsMapping: colors.generatedColorsMapping,
       legendData,
       disabledItems: props.disabledItems,

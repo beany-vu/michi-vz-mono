@@ -315,12 +315,15 @@ export function mountComparableVerticalBarChart(
       props.dataSet,
       props.filter as unknown as Filter | undefined,
     );
-    const { points, labels, yAxisDomain } = processComparableVerticalBarData(tlData.dataSet, {
-      disabledItems: props.disabledItems,
-      filter: tlData.filter as unknown as ComparableVerticalBarChartProps["filter"],
-      yAxisDomain: props.yAxisDomain,
-      symmetric: props.symmetricYDomain,
-    });
+    const { points, labels, yAxisDomain, rankedPoints } = processComparableVerticalBarData(
+      tlData.dataSet,
+      {
+        disabledItems: props.disabledItems,
+        filter: tlData.filter as unknown as ComparableVerticalBarChartProps["filter"],
+        yAxisDomain: props.yAxisDomain,
+        symmetric: props.symmetricYDomain,
+      },
+    );
 
     const colors = buildComparableBarColors(
       tlData.dataSet,
@@ -535,6 +538,7 @@ export function mountComparableVerticalBarChart(
       renderer: r.renderer,
       yAxisDomain,
       points,
+      rankedPoints,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
       legendLabels,

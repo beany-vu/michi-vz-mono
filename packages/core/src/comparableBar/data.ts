@@ -15,6 +15,10 @@ export interface ProcessedComparable {
   points: ComparableBarDataPoint[];
   labels: string[];
   xAxisDomain: [number, number];
+  /** The ranked top-N slice BEFORE disabledItems were removed — present only when
+   * `filter` is set. Feeds renderedRankedIds so hiding a ranked bar via the
+   * legend never re-ranks/backfills the emitted set. */
+  rankedPoints?: ComparableBarDataPoint[];
 }
 
 export function processComparableBarData(
@@ -22,13 +26,18 @@ export function processComparableBarData(
   opts: ProcessComparableOptions,
 ): ProcessedComparable {
   const disabled = new Set(opts.disabledItems ?? []);
-  let points = dataSet.filter((d) => !disabled.has(d.label));
 
+  // Rank/slice the FULL set first (a hidden bar keeps its ranked slot — hiding
+  // is view-level, it must not let the (limit+1)-th item backfill)...
+  let rankedPoints: ComparableBarDataPoint[] | undefined;
   if (opts.filter) {
     const { criteria, sortingDir, limit } = opts.filter;
     const dir = sortingDir === "asc" ? 1 : -1;
-    points = [...points].sort((a, b) => dir * (a[criteria] - b[criteria])).slice(0, limit);
+    rankedPoints = [...dataSet].sort((a, b) => dir * (a[criteria] - b[criteria])).slice(0, limit);
   }
+
+  // ...then drop disabledItems from what gets DRAWN.
+  const points = (rankedPoints ?? dataSet).filter((d) => !disabled.has(d.label));
 
   let lo = 0;
   let hi = 0;
@@ -53,5 +62,6 @@ export function processComparableBarData(
     points,
     labels: points.map((d) => d.label),
     xAxisDomain,
+    rankedPoints,
   };
 }

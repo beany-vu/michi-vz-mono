@@ -51,6 +51,14 @@ Nó cung cấp ba thứ, cùng từ một nguồn:
 Hình dạng của nó là một discriminated union theo khóa `chartType`, nên type tự thu hẹp gọn
 gàng theo từng biểu đồ.
 
+Với các biểu đồ hỗ trợ xếp hạng Top/Bottom (line, vertical stack bar, comparable horizontal/vertical
+bar, gap), context còn mang **`renderedRankedIds`** — các `code` của series theo thứ tự xếp hạng.
+Khi `filter` đang bật, việc ẩn một series qua `disabledItems` chỉ là **ẩn ở mức hiển thị**: lát cắt
+xếp hạng được tính trước và series bị ẩn vẫn giữ vị trí của nó, nên biểu đồ vẽ N−1 series (không có
+mục nào chen vào thế chỗ), legend giữ nguyên hàng bị làm mờ, và `renderedRankedIds` vẫn liệt kê code
+của series bị ẩn. Consumer phản chiếu tập được render vào state ứng dụng vì vậy có thể coi nó là ổn
+định qua các lần bật/tắt hiển thị.
+
 ## Trò chuyện với biểu đồ của bạn: chatbot điều khiển thẳng
 
 Vì ý nghĩa đã có cấu trúc **và** các điều khiển đều là tool, chatbot không cào pixel, nó

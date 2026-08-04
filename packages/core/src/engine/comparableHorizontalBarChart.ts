@@ -351,7 +351,7 @@ export function mountComparableHorizontalBarChart(
       props.xAxisPredefinedDomain && props.xAxisPredefinedDomain.length === 2
         ? ([props.xAxisPredefinedDomain[0], props.xAxisPredefinedDomain[1]] as [number, number])
         : undefined;
-    const { points, labels, xAxisDomain } = processComparableBarData(tlData.dataSet, {
+    const { points, labels, xAxisDomain, rankedPoints } = processComparableBarData(tlData.dataSet, {
       disabledItems: props.disabledItems,
       filter: props.filter,
       xAxisDomain: predefined ?? props.xAxisDomain,
@@ -613,6 +613,7 @@ export function mountComparableHorizontalBarChart(
       renderer: r.renderer,
       xAxisDomain,
       points,
+      rankedPoints,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
       legendLabels,

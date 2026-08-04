@@ -49,6 +49,14 @@ It exposes three things from one source:
 
 The shape is a discriminated union keyed on `chartType`, so it narrows cleanly per chart.
 
+On charts that support Top/Bottom ranking (line, vertical stack bar, comparable horizontal/vertical
+bar, gap), the context also carries **`renderedRankedIds`** — the series `code`s in ranked order.
+While a `filter` is active, hiding a series via `disabledItems` is a **view-level hide**: the ranked
+slice is computed first and the hidden series keeps its slot, so the chart draws N−1 series (nothing
+backfills), the legend keeps its greyed row, and `renderedRankedIds` still lists the hidden series'
+code. Consumers that mirror the rendered set into app state can therefore treat it as stable across
+show/hide toggles.
+
 ## Talk to your chart: a chatbot that drives it
 
 Because the meaning is structured **and** the controls are tools, a chatbot does not scrape pixels - it
