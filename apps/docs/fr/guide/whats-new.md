@@ -12,6 +12,25 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.4
+
+Versions des paquets : core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·
+examples **1.1.4** · devtools, insights **0.2.19**.
+
+- **Le classement Top/Bottom ignore les séries sans donnée à la date d'ancrage.** Sur le
+  [graphique en ligne](/charts/line), une série sans valeur finie à la date d'ancrage
+  `filter.date` se classe désormais EN DERNIER dans les **deux** sens de tri. L'ancienne
+  sentinelle ne la classait dernière que sous `desc` — sous `asc` (Bottom-N) elle se
+  classait *première*, si bien que le Bottom-N remplissait ses places avec les séries
+  sans donnée à l'année d'ancrage au lieu des valeurs réelles les plus basses. Une ligne
+  présente à l'ancrage mais portant `null`/`NaN` compte aussi comme manquante.
+- **Les graduations de l'axe des dates ne dépassent plus les courbes dessinées.** Les
+  graduations candidates du graphique en ligne (et l'ensemble « présent » de
+  `fillPeriodTicks`) proviennent désormais du même ensemble classé/découpé/filtré par
+  `disabledItems` que le domaine x. Auparavant, une série du pool écartée du classement
+  mais portant une période plus récente que toute série dessinée peignait une graduation
+  au-delà du bord du tracé, laissant un tronçon d'axe vide après la dernière courbe.
+
 ## v1.11.3
 
 Versions des paquets : core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·

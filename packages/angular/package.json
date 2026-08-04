@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/angular",
-  "version": "1.12.2",
+  "version": "1.12.3",
   "description": "Angular charts - SVG, canvas & WebGPU rendering, accessible by default, with an LLM-ready data context. Thin wrapper over the framework-agnostic @michi-vz engine.",
   "type": "module",
   "files": [

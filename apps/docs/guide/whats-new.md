@@ -10,6 +10,25 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.4
+
+Package versions: core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·
+examples **1.1.4** · devtools, insights **0.2.19**.
+
+- **Top/Bottom ranking skips series with no data at the anchor date.** On the
+  [Line Chart](/charts/line), a series with no finite value at the `filter.date`
+  anchor now ranks LAST in **both** sort directions. The old sentinel only sorted
+  it last under `desc` — under `asc` (Bottom-N) it sorted *first*, so Bottom-N
+  filled its slots with the series that had no data at the anchor year instead of
+  the lowest real values. A row present at the anchor holding a `null`/`NaN`
+  value counts as missing too.
+- **Date-axis ticks can no longer outrun the drawn lines.** The Line Chart's
+  period tick candidates (and the `fillPeriodTicks` "present" set) are now
+  sourced from the same ranked/sliced/`disabledItems`-filtered set the x-domain
+  uses. Previously a ranked-out pool series holding a later period than any
+  drawn series painted a tick past the plot edge, leaving an empty axis stretch
+  after the last line.
+
 ## v1.11.3
 
 Package versions: core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·

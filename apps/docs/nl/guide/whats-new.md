@@ -10,6 +10,25 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.4
+
+Pakketversies: core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·
+examples **1.1.4** · devtools, insights **0.2.19**.
+
+- **Top/Bottom-rangschikking slaat series zonder data op de ankerdatum over.** Op de
+  [lijngrafiek](/charts/line) rangschikt een serie zonder eindige waarde op het
+  `filter.date`-anker nu als LAATSTE in **beide** sorteerrichtingen. De oude sentinel
+  sorteerde alleen onder `desc` als laatste — onder `asc` (Bottom-N) sorteerde ze
+  *eerst*, waardoor Bottom-N zijn plekken vulde met series zonder data in het ankerjaar
+  in plaats van de laagste echte waarden. Een rij die op het anker bestaat maar
+  `null`/`NaN` bevat, telt ook als ontbrekend.
+- **Ticks op de datum-as kunnen de getekende lijnen niet meer voorbijschieten.** De
+  periode-tick-kandidaten van de lijngrafiek (en de "aanwezig"-set van
+  `fillPeriodTicks`) komen nu uit dezelfde gerangschikte/gesneden/door `disabledItems`
+  gefilterde set als het x-domein. Voorheen schilderde een uit de rangschikking
+  gevallen poolserie met een latere periode dan enige getekende serie een tick voorbij
+  de plotrand, met een leeg stuk as na de laatste lijn.
+
 ## v1.11.3
 
 Pakketversies: core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·

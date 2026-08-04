@@ -1,5 +1,14 @@
 # @michi-vz/core
 
+## 1.16.1
+
+### Patch Changes
+
+- LineChart Top/Bottom ranking + date-axis ticks vs a ranked pool (thd MonitorV2 services Bottom-N regression):
+
+  - A series with no finite value at the `filter.date` anchor now ranks LAST in BOTH sort directions. The old `-Infinity` sentinel only sorted last under `desc`; under `asc` (Bottom-N) it sorted FIRST, so Bottom-N filled its slots with the series that had no data at the anchor year instead of the lowest real values. A row present at the anchor but holding a null/NaN value counts as missing too, and the comparator handles missing pairwise (signed-Infinity arithmetic made NaN comparators, i.e. unspecified sort order).
+  - The date-axis candidate ticks (`periodTicks`) and the `fillPeriodTicks` "present" set are now sourced from `processedDataSet` — the same ranked/sliced/disabled-filtered set the x-domain uses — instead of the raw `props.dataSet`. A ranked-out pool series holding a later period than any drawn series can no longer paint a tick past the drawn lines (the unclamped date scale projected it beyond the plot edge).
+
 ## 1.16.0
 
 ### Minor Changes

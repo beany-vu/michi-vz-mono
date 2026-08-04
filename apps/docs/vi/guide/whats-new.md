@@ -10,6 +10,23 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.4
+
+Phiên bản các gói: core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·
+examples **1.1.4** · devtools, insights **0.2.19**.
+
+- **Xếp hạng Top/Bottom bỏ qua series không có dữ liệu tại ngày neo.** Trên
+  [biểu đồ đường](/charts/line), series không có giá trị hữu hạn tại ngày neo
+  `filter.date` giờ xếp CUỐI trong **cả hai** chiều sắp xếp. Sentinel cũ chỉ xếp cuối
+  dưới `desc` — dưới `asc` (Bottom-N) nó xếp *đầu*, khiến Bottom-N lấp đầy các vị trí
+  bằng những series không có dữ liệu ở năm neo thay vì các giá trị thực thấp nhất.
+  Hàng tồn tại tại ngày neo nhưng mang giá trị `null`/`NaN` cũng được coi là thiếu.
+- **Vạch chia trục ngày không còn vượt quá các đường đã vẽ.** Các vạch chia ứng viên
+  của biểu đồ đường (và tập "hiện diện" của `fillPeriodTicks`) giờ lấy từ đúng tập đã
+  xếp hạng/cắt lát/lọc `disabledItems` mà miền x sử dụng. Trước đây, một series trong
+  pool bị loại khỏi xếp hạng nhưng mang kỳ muộn hơn mọi series được vẽ sẽ vẽ một vạch
+  chia vượt mép biểu đồ, để lại một đoạn trục trống sau đường cuối cùng.
+
 ## v1.11.3
 
 Phiên bản các gói: core **1.16.0** · wc, angular **1.12.2** · react **1.11.3** · vue, svelte **1.7.3** ·
