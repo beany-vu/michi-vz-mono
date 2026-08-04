@@ -659,10 +659,15 @@ export function mountLineChart(
       // snaps to "nice" calendar boundaries and silently drops non-round endpoints).
       // maxTicks thins a dense series (e.g. 48 months) to ~3-5 keeping both ends;
       // autoRotate tilts -45deg only when the kept labels still collide.
+      // Periods come from processedDataSet — the SAME ranked/sliced/disabled-filtered
+      // set the x-domain is computed from — never from the raw props.dataSet: with a
+      // top/bottom `filter`, a ranked-out pool series holding a later period than any
+      // drawn series would otherwise contribute a tick past the domain edge, which the
+      // unclamped date scale happily projects beyond the plotted lines.
       const periodTicks =
         xAxisDataType === "date_annual" || xAxisDataType === "date_monthly"
           ? Array.from(
-              new Set(props.dataSet.flatMap((row) => row.series.map((p) => String(p.date)))),
+              new Set(processedDataSet.flatMap((row) => row.series.map((p) => String(p.date)))),
             )
               .map((d) => parseXValue(d, xAxisDataType))
               .sort(
@@ -689,8 +694,10 @@ export function mountLineChart(
         const [dMin, dMax] = scales.xScale.domain() as [Date, Date];
         const allPeriods = enumeratePeriods(dMin, dMax, xAxisDataType);
         candidateTicks = allPeriods;
+        // Same sourcing rule as periodTicks above: a ranked-out/hidden pool series
+        // must not mark a period as "present" (its faded no-data tick would lie).
         const present = new Set<number>();
-        for (const row of props.dataSet) {
+        for (const row of processedDataSet) {
           for (const p of row.series) {
             if (p.value === null || p.value === undefined || Number.isNaN(p.value)) continue;
             const parsed = parseXValue(p.date, xAxisDataType);

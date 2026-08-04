@@ -40,11 +40,15 @@ export interface ProcessedLine {
   rankedDataSet?: LineDataItem[];
 }
 
-// Value of a series at a specific x (for filter ranking). Missing -> -Infinity so
-// it sorts last under desc.
+// Value of a series at a specific x (for filter ranking). NaN = "missing at the
+// anchor": no row at that x, or a row whose value is not a finite number (a
+// consumer null/NaN placeholder). The ranking comparator sends missing to the
+// END in BOTH directions — the old `-Infinity` sentinel only sorted last under
+// desc; under asc (Bottom-N) it sorted FIRST, so Bottom-N filled its slots with
+// the series that had NO data at the anchor date instead of the lowest values.
 function valueAtDate(item: LineDataItem, date: number | string): number {
   const hit = item.series.find((d) => String(d.date) === String(date));
-  return hit ? hit.value : -Infinity;
+  return hit && Number.isFinite(hit.value) ? hit.value : NaN;
 }
 
 export function processLineChartData(
@@ -59,8 +63,20 @@ export function processLineChartData(
     const { criteria, date, sortingDir, limit } = opts.filter;
     const at = criteria === "value" || !criteria ? date : date;
     const dir = sortingDir === "asc" ? 1 : -1;
+    // Missing-at-anchor is handled pairwise, never via signed-Infinity
+    // arithmetic: (-Infinity) - (-Infinity) is NaN, and a NaN comparator
+    // result makes Array.sort ordering unspecified.
     rankedDataSet = [...dataSet]
-      .sort((a, b) => dir * (valueAtDate(a, at) - valueAtDate(b, at)))
+      .sort((a, b) => {
+        const va = valueAtDate(a, at);
+        const vb = valueAtDate(b, at);
+        const aMiss = Number.isNaN(va);
+        const bMiss = Number.isNaN(vb);
+        if (aMiss && bMiss) return 0;
+        if (aMiss) return 1;
+        if (bMiss) return -1;
+        return dir * (va - vb);
+      })
       .slice(0, limit);
   }
 
