@@ -1,0 +1,64 @@
+name: Deploy Docs to Netlify
+
+# Auto-deploys the VitePress docs site to Netlify on every push to main, gated by
+# a manual approval. Mirrors the auto-deploy-on-push model used by mugshotcoffee.
+#
+# Approval gate: the job targets the `docs-production` Environment, which is
+# configured (repo Settings -> Environments) with "required reviewers" = you.
+# Each run therefore PAUSES and waits for your one-click Approve in the Actions
+# tab before any build/deploy step runs. Nothing reaches Netlify without you
+# accepting; ignore it and it just stays pending, then expires.
+#
+# Requires secrets NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID (repo- or
+# environment-scoped). Reuse existing secrets if they already exist under these
+# names.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel an in-progress docs deploy when a newer push arrives.
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    timeout-minutes: 20
+    environment:
+      name: docs-production
+      url: ${{ steps.deploy.outputs.deploy_url }}
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Validate Netlify secrets
+        shell: bash
+        run: |
+          [ -n "$NETLIFY_AUTH_TOKEN" ] || { echo "❌ NETLIFY_AUTH_TOKEN missing"; exit 1; }
+          [ -n "$NETLIFY_SITE_ID" ]   || { echo "❌ NETLIFY_SITE_ID missing"; exit 1; }
+          echo "✅ Netlify secrets present"
+
+      - run: pnpm install --frozen-lockfile
+
+      # Builds the docs package and its workspace deps in dependency order.
+      - name: Build docs
+        run: pnpm --filter "docs..." build
+
+      - name: Deploy to Netlify (prod)
+        id: deploy
+        run: >
+          pnpm dlx netlify-cli deploy
+          --dir=apps/docs/.vitepress/dist
+          --prod
+          --message "Deploy ${{ github.sha }}"
