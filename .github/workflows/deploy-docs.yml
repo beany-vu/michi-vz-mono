@@ -15,6 +15,21 @@ name: Deploy Docs to Netlify
 on:
   push:
     branches: [main]
+    # Only deploy (and prompt for approval) when the docs app or a package it
+    # depends on changes. Mirrors the build filter `pnpm --filter "docs..."`:
+    # docs pulls in core, wc, examples, insights, devtools. Root install/build
+    # inputs and this workflow itself are included so infra changes still fire.
+    paths:
+      - "apps/docs/**"
+      - "packages/core/**"
+      - "packages/wc/**"
+      - "packages/examples/**"
+      - "packages/insights/**"
+      - "packages/devtools/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/deploy-docs.yml"
+  # Manual runs are never path-filtered - always available from the Actions tab.
   workflow_dispatch:
 
 # Cancel an in-progress docs deploy when a newer push arrives.
