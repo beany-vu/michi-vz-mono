@@ -72,8 +72,13 @@ jobs:
 
       - name: Deploy to Netlify (prod)
         id: deploy
+        # --filter docs: this is a pnpm monorepo, so the Netlify CLI detects
+        # many packages and refuses to guess which one; --filter names the
+        # package (its package.json "name" is "docs"). Site linkage comes from
+        # NETLIFY_SITE_ID. --dir is absolute so the filter's base can't skew it.
         run: >
           pnpm --package=netlify-cli dlx netlify deploy
-          --dir=apps/docs/.vitepress/dist
+          --filter docs
+          --dir="${{ github.workspace }}/apps/docs/.vitepress/dist"
           --prod
           --message "Deploy ${{ github.sha }}"
