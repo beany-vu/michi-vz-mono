@@ -23,5 +23,10 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm test
-      - run: pnpm exec playwright install --with-deps chromium
+      # Self-hosted runner has no passwordless sudo, so we can't use
+      # `--with-deps` (it runs apt-get as root). Download just the browser
+      # binary; its system libraries must already exist on the runner host.
+      # One-time host setup if the launch below fails on missing libs:
+      #   sudo pnpm exec playwright install-deps chromium
+      - run: pnpm exec playwright install chromium
       - run: pnpm verify:playground
