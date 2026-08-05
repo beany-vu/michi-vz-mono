@@ -67,7 +67,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Builds the docs package and its workspace deps in dependency order.
+      # GA_MEASUREMENT_ID / GOOGLE_SITE_VERIFICATION are read from process.env
+      # at build time (see apps/docs/.vitepress/config.ts). They must be present
+      # HERE or the analytics + Search Console tags are silently omitted. Both
+      # values end up in the public page source, so they are not truly secret,
+      # but we source them from secrets to keep them out of the open-source repo.
       - name: Build docs
+        env:
+          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
+          GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
         run: pnpm --filter "docs..." build
 
       - name: Deploy to Netlify (prod)
