@@ -1,9 +1,11 @@
 # Netlify config for the @michi-vz docs site.
 #
-# Deploy model: the site is BUILT LOCALLY (via docker, due to a WSL root-owned
-# dist quirk) and UPLOADED prebuilt with `pnpm deploy:docs` (netlify deploy
-# --dir=...). So Netlify itself must NOT build - it just serves the folder we
-# send. The build command is therefore a no-op.
+# Deploy model: the site is built in GitHub Actions (deploy-docs.yml, which
+# bakes in the analytics secrets) and UPLOADED prebuilt via the Netlify CLI.
+# A local docker build + `pnpm deploy:docs` remains available as a manual
+# fallback (never build docs on the WSL host - root-owned dist quirk). So
+# Netlify itself must NOT build - it just serves the uploaded folder. The
+# build command is therefore a no-op.
 #
 # To switch back to Netlify's own git-triggered build, restore:
 #   command = "pnpm install --frozen-lockfile && pnpm --filter \"docs...\" build"

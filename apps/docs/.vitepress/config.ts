@@ -1,5 +1,8 @@
-import { defineConfig, type HeadConfig } from "vitepress";
+import { defineConfig, loadEnv, type HeadConfig } from "vitepress";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { ui, chartNames, prefixOf, type LocaleKey } from "./i18n";
+import { buildAnalyticsHead, logAnalyticsStatus } from "./analyticsHead.mjs";
 import reactPkg from "../../../packages/react/package.json";
 
 // Navbar version = the react wrapper's version (the headline package), stamped
@@ -10,32 +13,26 @@ const LIB_VERSION = `v${reactPkg.version}`;
 // absolute origin used for canonical / OG / sitemap URLs.
 const SITE_URL = "https://michi-vz.netlify.app";
 
-// Google Analytics + Search Console are injected ONLY from build-time env vars,
-// so neither value lives in this open-source repo. Set GA_MEASUREMENT_ID and
-// GOOGLE_SITE_VERIFICATION in the build environment (Netlify: Site settings ->
-// Environment variables; local/CLI deploy: export them in your shell before
-// building). When unset - forks, clones, local dev - nothing is emitted, so nobody
-// pollutes the property. For Search Console, verify the URL-prefix property
+// Google Analytics + Search Console are injected ONLY from build-time env
+// vars, so neither value lives in this open-source repo. Production values
+// come from GitHub Actions secrets (deploy-docs.yml). For a local or docker
+// build, loadEnv (vitepress re-exports vite's) reads a gitignored
+// apps/docs/.env created from .env.example; docker-compose bind-mounts the
+// repo, so the file reaches the container without any -e flags. A value
+// already present in process.env always wins over the file. When unset -
+// forks, clones, local dev - nothing is emitted, so nobody pollutes the
+// property; logAnalyticsStatus makes the outcome loud in the build log
+// either way. For Search Console, verify the URL-prefix property
 // https://michi-vz.netlify.app/ via the HTML-tag (meta) method.
-const GSC_TOKEN = process.env.GOOGLE_SITE_VERIFICATION;
-const gscHead: HeadConfig[] = GSC_TOKEN
-  ? [["meta", { name: "google-site-verification", content: GSC_TOKEN }]]
-  : [];
-
-const GA_ID = process.env.GA_MEASUREMENT_ID;
-const gaHead: HeadConfig[] = GA_ID
-  ? [
-      ["script", { async: "", src: `https://www.googletagmanager.com/gtag/js?id=${GA_ID}` }],
-      [
-        "script",
-        {},
-        `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${GA_ID}');`,
-      ],
-    ]
-  : [];
+// Mode is hardcoded to "production": no per-mode .env files exist here, and
+// deriving it would risk vite's reserved "local" mode throwing.
+const DOCS_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const analyticsEnv = loadEnv("production", DOCS_ROOT, [
+  "GA_MEASUREMENT_ID",
+  "GOOGLE_SITE_VERIFICATION",
+]);
+logAnalyticsStatus(analyticsEnv);
+const analyticsHead: HeadConfig[] = buildAnalyticsHead(analyticsEnv);
 
 // Charts in catalog order (slug only; localized display names live in i18n.ts).
 const chartOrder: string[] = [
@@ -307,8 +304,7 @@ export default defineConfig({
     ],
     // Bing Webmaster Tools site verification (token is public by design).
     ["meta", { name: "msvalidate.01", content: "C7FF9872BF63126CE38DF255A3D55CB6" }],
-    ...gscHead,
-    ...gaHead,
+    ...analyticsHead,
   ],
   // Four locales share one engine + theme; each gets its own translated nav,
   // sidebar, footer, and content tree (root = English, /fr, /nl, /vi).
