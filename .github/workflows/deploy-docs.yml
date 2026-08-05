@@ -58,7 +58,7 @@ jobs:
       - name: Deploy to Netlify (prod)
         id: deploy
         run: >
-          pnpm dlx netlify-cli deploy
+          pnpm --package=netlify-cli dlx netlify deploy
           --dir=apps/docs/.vitepress/dist
           --prod
           --message "Deploy ${{ github.sha }}"
