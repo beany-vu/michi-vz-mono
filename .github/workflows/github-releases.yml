@@ -32,6 +32,7 @@ concurrency: github-releases
 jobs:
   release-notes:
     runs-on: self-hosted
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
