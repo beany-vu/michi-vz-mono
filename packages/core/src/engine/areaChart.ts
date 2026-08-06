@@ -535,6 +535,8 @@ export function mountAreaChart(
       yAxisDomain,
       series: props.series,
       activeKeys,
+      // Pre-disable keys: a disabled key keeps its greyed pill in its slot.
+      legendKeys: props.keys,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
     });

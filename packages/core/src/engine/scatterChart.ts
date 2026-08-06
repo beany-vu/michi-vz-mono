@@ -584,6 +584,9 @@ export function mountScatterChart(
       xAxisDomain,
       yAxisDomain,
       points,
+      // Pre-disable rows: keeps a disabled label's greyed pill in its slot and
+      // its value on `series` (VSB 1.5.6 / ComparableBar 1.12.2 legend contract).
+      fullDataSet: tlData.dataSet,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
     });

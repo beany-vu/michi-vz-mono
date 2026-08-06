@@ -388,6 +388,8 @@ export function mountBarBellChart(
       xAxisDomain,
       dataSet: timelineRows,
       activeKeys,
+      // Pre-disable keys: a disabled key keeps its greyed pill in its slot.
+      legendKeys: props.keys,
       dates,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,

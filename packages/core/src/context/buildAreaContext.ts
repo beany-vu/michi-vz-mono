@@ -15,6 +15,10 @@ export interface BuildAreaContextInput {
   yAxisDomain: [number, number];
   series: AreaDataRow[];
   activeKeys: string[];
+  /** The PRE-disable key list (props.keys). Feeds the legend so a disabled key keeps its
+   * greyed pill in its original slot (VSB 1.5.6 / ComparableBar 1.12.2 contract) instead
+   * of vanishing; the stack still reflows from activeKeys. Optional for standalone callers. */
+  legendKeys?: string[];
   colorsMapping: Record<string, string>;
   disabledItems?: string[];
 }
@@ -60,7 +64,7 @@ export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext
   // onChartDataProcessed(ctx).legendData. Without it thd's setMetadata
   // early-returns → colorsMapping stays {} → stacked fills resolve transparent.
   const legendData = buildLegendData({
-    labels: input.activeKeys,
+    labels: input.legendKeys ?? input.activeKeys,
     colorsMapping: input.colorsMapping,
     disabledItems: input.disabledItems,
   });

@@ -866,11 +866,23 @@ export interface ScatterChartProps {
   svgChildren?: string;
 }
 
+/** Per-label summary on the scatter context (mirrors LineSeriesContext's label/code/last
+ * trio) so consumers can rank legends by "value at the newest period" without the raw
+ * points. Built from the PRE-disable dataSet, so a disabled label keeps its value. */
+export interface ScatterSeriesContext {
+  label: string;
+  /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
+  code?: string;
+  /** The label's newest point (max x, last occurrence on ties), or null with no points. */
+  last: { x: number; y: number } | null;
+}
+
 export interface ScatterChartContext extends BaseChartContext {
   chartType: "scatter-plot-chart";
   xAxis: { type: XaxisDataType; domain: [number, number] | string[] };
   yAxis: { domain: [number, number] };
   pointCount: number;
+  series?: ScatterSeriesContext[];
   stats: {
     xMean: number;
     yMean: number;

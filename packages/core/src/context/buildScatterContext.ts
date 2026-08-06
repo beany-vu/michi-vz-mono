@@ -1,6 +1,12 @@
 // Renderer-agnostic semantic context for ScatterPlot. x/y means + Pearson
 // correlation + a chart-agnostic a11yTable (one row per point) + NL summary.
-import type { Renderer, ScatterChartContext, ScatterDataPoint, XaxisDataType } from "../types";
+import type {
+  Renderer,
+  ScatterChartContext,
+  ScatterDataPoint,
+  ScatterSeriesContext,
+  XaxisDataType,
+} from "../types";
 import { buildLegendData } from "./legend";
 
 const round = (n: number): number => Math.round(n * 100) / 100;
@@ -12,6 +18,11 @@ export interface BuildScatterContextInput {
   xAxisDomain: [number, number] | string[];
   yAxisDomain: [number, number];
   points: ScatterDataPoint[];
+  /** The PRE-disable rows (the engine's full dataSet for the active period). Feeds the
+   * legend (a disabled label keeps its greyed pill in its original slot — the VSB 1.5.6 /
+   * ComparableBar 1.12.2 contract) and the per-label `series` summary. Optional so
+   * standalone callers keep the points-only behavior. */
+  fullDataSet?: ScatterDataPoint[];
   colorsMapping: Record<string, string>;
   disabledItems?: string[];
 }
@@ -65,10 +76,44 @@ export function buildScatterContext(input: BuildScatterContextInput): ScatterCha
   // Flat colour-contract payload the consumer colour authority reads via
   // onChartDataProcessed(ctx).legendData. Without it thd's setMetadata
   // early-returns → colorsMapping stays {} → points resolve transparent.
+  // Labels come from the PRE-disable rows when the engine provides them: `points`
+  // are disabled-filtered, and deriving the legend from them dropped a clicked
+  // label entirely (consumer fallbacks then re-appended it at the END — the thd
+  // "disabled pill jumps to the last slot" bug). Same contract as VSB 1.5.6 /
+  // ComparableBar 1.12.2: walk the pre-disable rows so a disabled label keeps its
+  // flagged pill in its original slot, but keep only visible-or-disabled labels so
+  // a rank/date-filtered-out label is not resurrected.
+  const legendRows = input.fullDataSet ?? input.points;
+  const visibleLabels = new Set(input.points.map((p) => p.label));
+  const disabledSet = new Set(input.disabledItems ?? []);
+  const seenLegendLabels = new Set<string>();
+  const legendLabels: string[] = [];
+  for (const p of legendRows) {
+    if (seenLegendLabels.has(p.label)) continue;
+    if (!visibleLabels.has(p.label) && !disabledSet.has(p.label)) continue;
+    seenLegendLabels.add(p.label);
+    legendLabels.push(p.label);
+  }
   const legendData = buildLegendData({
-    labels: input.points.map((p) => p.label),
+    labels: legendLabels,
     colorsMapping: input.colorsMapping,
     disabledItems: input.disabledItems,
+  });
+
+  // Per-label newest-point summary (max x, last occurrence on ties), from the
+  // pre-disable rows so disabled labels keep their value for consumer ranking.
+  const latestByLabel = new Map<string, ScatterDataPoint>();
+  for (const p of legendRows) {
+    const prev = latestByLabel.get(p.label);
+    if (!prev || p.x >= prev.x) latestByLabel.set(p.label, p);
+  }
+  const series: ScatterSeriesContext[] = legendLabels.map((label) => {
+    const p = latestByLabel.get(label);
+    return {
+      label,
+      ...(p?.code != null ? { code: p.code } : {}),
+      last: p ? { x: p.x, y: p.y } : null,
+    };
   });
 
   return {
@@ -78,6 +123,7 @@ export function buildScatterContext(input: BuildScatterContextInput): ScatterCha
     xAxis: { type: input.xAxisDataType, domain: input.xAxisDomain },
     yAxis: { domain: input.yAxisDomain },
     pointCount: n,
+    series,
     stats: { xMean, yMean, correlation },
     colorsMapping: input.colorsMapping,
     legendData,

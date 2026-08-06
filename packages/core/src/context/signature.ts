@@ -49,7 +49,15 @@ function hashCells(rows: ReadonlyArray<ReadonlyArray<string | number | boolean>>
  * astronomically) certainly unchanged. Used to fire onChartDataProcessed only
  * once per distinct context. */
 export function contextSignature(context: BaseChartContext): string {
-  const { a11yTable, legendData, ...rest } = context;
+  // `series` is per-label on most charts but can be per-datum-sized when labels
+  // are unique (a 50k-point scatter), so it is hashed like rows/legend rather
+  // than serialized into the signature.
+  const { a11yTable, legendData, series, ...rest } = context as BaseChartContext & {
+    series?: ReadonlyArray<unknown>;
+  };
+  const seriesSig = Array.isArray(series)
+    ? series.length + ":" + hashCells(series.map((s) => [JSON.stringify(s)]))
+    : "none";
   const legendSig = legendData
     ? hashCells(
         legendData.map((l) => [
@@ -72,6 +80,8 @@ export function contextSignature(context: BaseChartContext): string {
     "|l:" +
     (legendData ? legendData.length : -1) +
     ":" +
-    legendSig
+    legendSig +
+    "|s:" +
+    seriesSig
   );
 }

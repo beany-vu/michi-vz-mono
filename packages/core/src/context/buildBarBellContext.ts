@@ -10,6 +10,10 @@ export interface BuildBarBellContextInput {
   xAxisDomain: [number, number];
   dataSet: BarBellDataRow[];
   activeKeys: string[];
+  /** The PRE-disable key list (props.keys). Feeds the legend so a disabled key keeps its
+   * greyed pill in its original slot (VSB 1.5.6 / ComparableBar 1.12.2 contract) instead
+   * of vanishing; drawing still uses activeKeys. Optional for standalone callers. */
+  legendKeys?: string[];
   dates: string[];
   colorsMapping: Record<string, string>;
   disabledItems?: string[];
@@ -36,7 +40,7 @@ export function buildBarBellContext(input: BuildBarBellContextInput): BarBellCha
   // onChartDataProcessed(ctx).legendData. Without it, thd's setMetadata
   // early-returns and colorsMapping stays {} → every mark resolves transparent.
   const legendData = buildLegendData({
-    labels: input.activeKeys,
+    labels: input.legendKeys ?? input.activeKeys,
     colorsMapping: input.colorsMapping,
     disabledItems: input.disabledItems,
   });
