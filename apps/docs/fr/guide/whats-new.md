@@ -12,6 +12,18 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.7
+
+Versions des paquets : core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·
+examples **1.1.7** · devtools, insights **0.2.22**.
+
+- **Fini les axes d'état vide** : les graphiques n'affichent plus axes ni marques pendant
+  un chargement sans rien à dessiner, et le [Graphique d'écart](/charts/gap) comme le
+  [Nuage de points](/charts/scatter) respectent désormais `isLoading`/`isNodata`
+  (overlays + `data-mv-state`) au lieu de dessiner un axe effondré au centre quand les
+  données sont vides. Un rechargement avec des données encore à l'écran conserve ses axes.
+  Nouveaux exports core : `isEmptyDataSet`, `shouldSkipScaffold`.
+
 ## v1.11.6
 
 Versions des paquets : core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·

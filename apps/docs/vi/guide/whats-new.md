@@ -10,6 +10,18 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.7
+
+Phiên bản các gói: core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·
+examples **1.1.7** · devtools, insights **0.2.22**.
+
+- **Không còn trục ở trạng thái rỗng**: biểu đồ bỏ qua trục và các điểm vẽ khi đang tải
+  mà chưa có gì để vẽ, còn [Biểu đồ khoảng cách](/charts/gap) và
+  [Biểu đồ phân tán](/charts/scatter) nay tôn trọng `isLoading`/`isNodata`
+  (overlay + `data-mv-state`) thay vì vẽ một trục co sụp nằm giữa khi dữ liệu rỗng.
+  Refetch khi dữ liệu vẫn còn trên màn hình sẽ giữ nguyên trục. Export mới của core:
+  `isEmptyDataSet`, `shouldSkipScaffold`.
+
 ## v1.11.6
 
 Phiên bản các gói: core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·

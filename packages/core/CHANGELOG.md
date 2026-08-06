@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.18.0
+
+### Minor Changes
+
+- Charts no longer draw axes while loading with nothing to paint yet, and GapChart/ScatterChart now honor their `isLoading`/`isNodata` props (overlays + `data-mv-state`), fixing the collapsed "centered axis" on empty data. A refetch with data still on screen keeps its axes. New exports: `isEmptyDataSet`, `shouldSkipScaffold`.
+
 ## 1.17.0
 
 ### Minor Changes

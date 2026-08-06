@@ -10,6 +10,18 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.7
+
+Pakketversies: core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·
+examples **1.1.7** · devtools, insights **0.2.22**.
+
+- **Geen lege-toestand-assen meer**: diagrammen slaan assen en markeringen over tijdens
+  het laden zonder iets om te tekenen, en het [Verschildiagram](/charts/gap) en het
+  [Spreidingsdiagram](/charts/scatter) respecteren nu `isLoading`/`isNodata`
+  (overlays + `data-mv-state`) in plaats van een ingeklapte, gecentreerde as te tekenen
+  bij lege data. Een refetch met nog zichtbare data behoudt zijn assen. Nieuwe
+  core-exports: `isEmptyDataSet`, `shouldSkipScaffold`.
+
 ## v1.11.6
 
 Pakketversies: core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·

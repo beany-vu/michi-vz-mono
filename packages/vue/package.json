@@ -1,6 +1,6 @@
 {
   "name": "@michi-vz/vue",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "description": "Vue 3 charts - SVG, canvas & WebGPU rendering, accessible by default, with an LLM-ready data context. Thin wrapper over the framework-agnostic @michi-vz engine.",
   "type": "module",
   "files": [

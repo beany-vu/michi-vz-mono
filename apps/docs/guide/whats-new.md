@@ -10,6 +10,17 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.7
+
+Package versions: core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·
+examples **1.1.7** · devtools, insights **0.2.22**.
+
+- **No more empty-state axes**: charts skip axes and marks while loading with nothing to
+  draw yet, and the [Gap Chart](/charts/gap) and [scatter plot](/charts/scatter) now honor
+  `isLoading`/`isNodata` (overlays + `data-mv-state`) instead of drawing a collapsed,
+  centered axis on empty data. A refetch with data still on screen keeps its axes. New
+  core exports: `isEmptyDataSet`, `shouldSkipScaffold`.
+
 ## v1.11.6
 
 Package versions: core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·
