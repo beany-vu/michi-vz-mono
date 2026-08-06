@@ -12,6 +12,25 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.5
+
+Versions des paquets : core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·
+examples **1.1.5** · devtools, insights **0.2.20**.
+
+- **Les éléments de légende désactivés conservent leur position** sur le
+  [nuage de points](/charts/scatter), la [barre-haltère](/charts/bar-bell) et le
+  [graphique en aires](/charts/area). Leur légende était dérivée des données déjà
+  filtrées : un libellé cliqué (désactivé) disparaissait de `legendData` et les replis
+  côté consommateur le rajoutaient en fin de légende. Les trois conservent désormais le
+  libellé marqué `disabled: true` à sa position d'origine, le même contrat que les
+  légendes du diagramme empilé (core 1.5.6) et des barres comparables (core 1.12.2). Le
+  contexte du nuage de points gagne aussi un résumé `series` par libellé
+  (`label`/`code`/`last`) construit à partir des lignes avant filtrage : un libellé
+  masqué garde ainsi sa valeur la plus récente pour le tri de légende côté consommateur.
+- **`contextSignature` reste bornée avec le nouveau champ `series`** : il passe par le
+  même hachage que les lignes et la légende au lieu d'être sérialisé, la signature d'un
+  nuage de 50 000 points reste donc de quelques centaines d'octets.
+
 ## v1.11.4
 
 Versions des paquets : core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·

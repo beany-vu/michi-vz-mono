@@ -10,6 +10,24 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.5
+
+Phiên bản các gói: core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·
+examples **1.1.5** · devtools, insights **0.2.20**.
+
+- **Các mục chú giải bị tắt giữ nguyên vị trí** trên [biểu đồ phân tán](/charts/scatter),
+  [biểu đồ quả tạ](/charts/bar-bell) và [biểu đồ vùng](/charts/area). Chú giải của chúng
+  trước đây được suy ra từ dữ liệu đã lọc: nhãn bị nhấp (bị tắt) biến mất khỏi
+  `legendData` và cơ chế dự phòng phía consumer thêm lại nó ở cuối chú giải. Cả ba giờ
+  giữ nhãn được đánh dấu `disabled: true` tại vị trí ban đầu, cùng hợp đồng với chú giải
+  của biểu đồ cột chồng (core 1.5.6) và thanh so sánh (core 1.12.2). Ngữ cảnh biểu đồ phân
+  tán cũng có thêm tóm tắt `series` theo nhãn (`label`/`code`/`last`) dựng từ các
+  hàng trước khi lọc, nên nhãn bị ẩn vẫn giữ giá trị mới nhất cho việc xếp hạng chú giải
+  phía consumer.
+- **`contextSignature` vẫn có giới hạn với trường `series` mới**: nó được đưa qua cùng
+  hàm băm như hàng và chú giải thay vì tuần tự hóa, nên signature của biểu đồ phân tán 50k
+  điểm vẫn chỉ vài trăm byte.
+
 ## v1.11.4
 
 Phiên bản các gói: core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·

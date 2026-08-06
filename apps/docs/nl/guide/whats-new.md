@@ -10,6 +10,25 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.5
+
+Pakketversies: core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·
+examples **1.1.5** · devtools, insights **0.2.20**.
+
+- **Uitgeschakelde legenda-items behouden hun plek** op het
+  [spreidingsdiagram](/charts/scatter), het [halterdiagram](/charts/bar-bell) en het
+  [vlakdiagram](/charts/area). Hun legenda's werden afgeleid van de al gefilterde data:
+  een aangeklikt (uitgeschakeld) label verdween uit `legendData` en consumer-fallbacks
+  voegden het achteraan de legenda weer toe. Alle drie houden het label nu gemarkeerd als
+  `disabled: true` op zijn oorspronkelijke plek, hetzelfde contract als de legenda's van
+  het gestapelde staafdiagram (core 1.5.6) en de vergelijkbare balk (core 1.12.2). De
+  scatter-context krijgt ook een `series`-samenvatting per label
+  (`label`/`code`/`last`) uit de rijen van vóór het filteren, zodat een verborgen
+  label zijn nieuwste waarde behoudt voor legenda-sortering aan consumer-zijde.
+- **`contextSignature` blijft begrensd met het nieuwe `series`-veld**: het gaat door
+  dezelfde hash als rijen en legenda in plaats van geserialiseerd te worden, zodat de
+  signature van een scatter met 50k punten enkele honderden bytes blijft.
+
 ## v1.11.4
 
 Pakketversies: core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·

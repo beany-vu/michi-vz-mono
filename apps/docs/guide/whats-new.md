@@ -10,6 +10,24 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.5
+
+Package versions: core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·
+examples **1.1.5** · devtools, insights **0.2.20**.
+
+- **Disabled legend items keep their slot** on the [scatter plot](/charts/scatter),
+  [bar-bell](/charts/bar-bell) and [area chart](/charts/area). Their legends previously
+  derived from the disabled-filtered data, so a clicked (disabled) label vanished from
+  `legendData` and consumer fallbacks re-appended it at the end of the legend. All three
+  now keep the label flagged `disabled: true` in its original slot, the same contract the
+  stacked bar (core 1.5.6) and comparable bar (core 1.12.2) legends follow. The scatter
+  context also gains a per-label `series` summary (`label`/`code`/`last`) built from
+  the pre-disable rows, so a hidden label keeps its newest value for consumer-side legend
+  ranking.
+- **`contextSignature` stays bounded with the new `series` field**: it is folded through
+  the same hash as rows and legend instead of serialized, so a 50k-point scatter signature
+  stays a few hundred bytes.
+
 ## v1.11.4
 
 Package versions: core **1.16.1** · wc, angular **1.12.3** · react **1.11.4** · vue, svelte **1.7.4** ·
