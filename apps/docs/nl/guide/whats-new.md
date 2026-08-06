@@ -10,6 +10,19 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.6
+
+Pakketversies: core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·
+examples **1.1.6** · devtools, insights **0.2.21**.
+
+- **Gedeeltelijke `yAxisDomain` op het [Lijndiagram](/charts/line)**: elke grens mag nu
+  `null` zijn om alleen die grens uit de data af te leiden. `[0, null]` pint de basislijn
+  op 0 terwijl het maximum de zichtbare reeksen blijft volgen - het schaalt mee met
+  legenda-toggles en Top/Bottom-N-selecties, precies zoals het volledig afgeleide domein.
+  Een afgeleide grens kruist nooit een vastgezette grens (volledig negatieve data onder
+  `[0, null]` levert `[0, 0]` op in plaats van een omgekeerde as). Een gewone `[min, max]`
+  met getallen gedraagt zich als voorheen.
+
 ## v1.11.5
 
 Pakketversies: core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·

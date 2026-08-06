@@ -12,6 +12,19 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.6
+
+Versions des paquets : core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·
+examples **1.1.6** · devtools, insights **0.2.21**.
+
+- **`yAxisDomain` partiel sur le [Graphique en courbes](/charts/line)** : chaque borne
+  peut désormais valoir `null` pour rester dérivée des données. `[0, null]` fixe la ligne
+  de base à 0 tandis que le maximum continue de suivre les séries visibles - il se
+  recalcule lors des bascules de légende et des tranches Top/Bottom-N, exactement comme le
+  domaine entièrement dérivé. Une borne dérivée ne croise jamais une borne fixée (des
+  données toutes négatives sous `[0, null]` donnent `[0, 0]` plutôt qu'un axe inversé).
+  Un `[min, max]` de nombres se comporte comme avant.
+
 ## v1.11.5
 
 Versions des paquets : core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·

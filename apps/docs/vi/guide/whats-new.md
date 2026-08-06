@@ -10,6 +10,18 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.6
+
+Phiên bản các gói: core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·
+examples **1.1.6** · devtools, insights **0.2.21**.
+
+- **`yAxisDomain` một phần trên [Biểu đồ đường](/charts/line)**: mỗi cận nay có thể là
+  `null` để riêng cận đó tiếp tục được suy ra từ dữ liệu. `[0, null]` ghim đường cơ sở ở 0
+  trong khi giá trị lớn nhất vẫn bám theo các chuỗi đang hiển thị - nó vẫn co giãn theo
+  thao tác bật/tắt chú giải và các lát cắt Top/Bottom-N, đúng như miền suy ra hoàn toàn.
+  Cận suy ra không bao giờ vượt qua cận đã ghim (dữ liệu toàn số âm với `[0, null]` cho
+  `[0, 0]` thay vì một trục đảo ngược). Truyền `[min, max]` bằng số hoạt động như trước.
+
 ## v1.11.5
 
 Phiên bản các gói: core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·

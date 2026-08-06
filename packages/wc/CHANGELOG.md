@@ -1,5 +1,13 @@
 # @michi-vz/wc
 
+## 1.12.5
+
+### Patch Changes
+
+- d4ca9d9: LineChart `yAxisDomain` accepts partial bounds: either entry may be `null` to keep that bound data-derived. `[0, null]` pins the baseline at 0 while the maximum keeps following the visible series (rescaling with legend toggles and Top/Bottom-N slices, exactly like the fully-derived domain). A derived bound is clamped so it never crosses a pinned one.
+- Updated dependencies [d4ca9d9]
+  - @michi-vz/core@1.17.0
+
 ## 1.12.4
 
 ### Patch Changes

@@ -10,6 +10,18 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.6
+
+Package versions: core **1.17.0** · wc, angular **1.12.5** · react **1.11.6** · vue, svelte **1.7.6** ·
+examples **1.1.6** · devtools, insights **0.2.21**.
+
+- **Partial `yAxisDomain` on the [Line Chart](/charts/line)**: either bound may now be
+  `null` to keep just that bound data-derived. `[0, null]` pins the baseline at 0 while
+  the maximum keeps following the visible series - it still rescales with legend toggles
+  and Top/Bottom-N slices, exactly like the fully-derived domain. A derived bound is
+  clamped so it never crosses a pinned one (all-negative data under `[0, null]` yields
+  `[0, 0]` instead of a reversed axis). A plain `[min, max]` of numbers behaves as before.
+
 ## v1.11.5
 
 Package versions: core **1.16.2** · wc, angular **1.12.4** · react **1.11.5** · vue, svelte **1.7.5** ·
