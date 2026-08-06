@@ -10,6 +10,16 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.8
+
+Pakketversies: core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·
+examples **1.1.8** · devtools, insights **0.2.23**.
+
+- **Meerregelige titel voor de groottelegenda van het [Spreidingsdiagram](/charts/scatter)**:
+  `dScaleLegend.title` accepteert nu ook een array van strings, weergegeven als gestapelde
+  regels boven de groottebogen: lange vertaalde titels lopen niet meer voorbij de rechterrand
+  van het diagram.
+
 ## v1.11.7
 
 Pakketversies: core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·

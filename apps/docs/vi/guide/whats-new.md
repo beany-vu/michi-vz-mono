@@ -10,6 +10,15 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.8
+
+Phiên bản các gói: core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·
+examples **1.1.8** · devtools, insights **0.2.23**.
+
+- **Tiêu đề chú giải kích thước nhiều dòng cho [Biểu đồ phân tán](/charts/scatter)**:
+  `dScaleLegend.title` nay cũng nhận một mảng chuỗi, hiển thị thành các dòng xếp chồng phía
+  trên các cung kích thước: tiêu đề dịch dài sẽ xuống dòng thay vì tràn qua mép phải biểu đồ.
+
 ## v1.11.7
 
 Phiên bản các gói: core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·

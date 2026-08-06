@@ -10,6 +10,15 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.8
+
+Package versions: core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·
+examples **1.1.8** · devtools, insights **0.2.23**.
+
+- **Multi-line size-legend title on the [scatter plot](/charts/scatter)**: `dScaleLegend.title`
+  also accepts an array of strings, rendered as stacked lines above the size arcs: long
+  translated titles wrap instead of spilling past the chart's right edge.
+
 ## v1.11.7
 
 Package versions: core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·

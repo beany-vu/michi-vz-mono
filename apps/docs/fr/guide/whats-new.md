@@ -12,6 +12,16 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.8
+
+Versions des paquets : core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·
+examples **1.1.8** · devtools, insights **0.2.23**.
+
+- **Titre de légende de taille sur plusieurs lignes pour le [Nuage de points](/charts/scatter)** :
+  `dScaleLegend.title` accepte aussi un tableau de chaînes, rendu en lignes empilées au-dessus
+  des arcs de taille: les titres traduits longs passent à la ligne au lieu de déborder du bord
+  droit du graphique.
+
 ## v1.11.7
 
 Versions des paquets : core **1.18.0** · wc, angular **1.12.6** · react **1.11.7** · vue, svelte **1.7.7** ·

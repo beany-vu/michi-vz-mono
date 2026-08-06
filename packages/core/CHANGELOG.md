@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.19.0
+
+### Minor Changes
+
+- e3414ce: ScatterChart `dScaleLegend.title` now also accepts an array of strings, rendered as stacked lines above the size arcs. Lets long translated titles wrap instead of spilling past the chart's right edge.
+
 ## 1.18.0
 
 ### Minor Changes
