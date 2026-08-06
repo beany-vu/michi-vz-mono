@@ -369,7 +369,7 @@ Chart-specific props (the shared props above also apply):
 - `crosshairLineStyle`: `"solid" | "dashed"` - "dashed" → both hover+pinned dashed; "solid" → both solid; undefined → hover dashed.
 - `crosshairSpan`: `"full" | "half"` (default: `"full"`) - "full" → both crosshair lines span the whole plot; "half" → an L-shaped arm from the bubble to the two axes.
 - `crosshairLabelPlacement`: `"auto" | "fixed"` - "auto" → collision-flip badges; "fixed" → anchor to bottom-left.
-- `dScaleLegend`: `{ title?: string; valueFormatter?: (d: number) => string }` - Bubble-size reference legend (half-arc trio + domain labels).
+- `dScaleLegend`: `{ title?: string | string[]; valueFormatter?: (d: number) => string }` - Bubble-size reference legend (half-arc trio + domain labels).
 - `yTicksQty`: `number` - Override the y-axis tick count (scale.ticks(n)); falls back to `ticks`.
 - `showGrid`: `boolean | { x?: boolean; y?: boolean }` - Grid lines per axis: boolean → both; { x?, y? } → per-axis (each defaults true).
 - `pinIcon`: `boolean` - Pass false to suppress the sticky-tooltip pin icon.

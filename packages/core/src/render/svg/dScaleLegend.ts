@@ -10,7 +10,10 @@ function halfLeftCirclePath(x: number, y: number, r: number): string {
 }
 
 export interface DScaleLegendConfig {
-  title?: string;
+  /** Legend heading. Pass an array to render explicit lines (stacked upward from
+   *  the single-line baseline, so multi-line titles never crowd the arc labels);
+   *  SVG <text> cannot wrap, and the consumer's i18n knows the break points. */
+  title?: string | string[];
   valueFormatter?: (d: number) => string;
 }
 
@@ -42,9 +45,19 @@ export function renderDScaleLegend(
   const g = svgEl("g", { class: "michi-vz-legend" });
 
   if (cfg.title) {
-    const title = svgEl("text", { x: px, y: py - 2 * rMax - 40, "text-anchor": "middle" });
-    title.textContent = cfg.title;
-    g.appendChild(title);
+    const lines = (Array.isArray(cfg.title) ? cfg.title : [cfg.title]).filter(Boolean);
+    const lineHeight = 18;
+    const baseY = py - 2 * rMax - 40;
+    // Last line keeps the legacy single-line baseline; extra lines stack upward.
+    lines.forEach((line, i) => {
+      const title = svgEl("text", {
+        x: px,
+        y: baseY - (lines.length - 1 - i) * lineHeight,
+        "text-anchor": "middle",
+      });
+      title.textContent = line;
+      g.appendChild(title);
+    });
   }
 
   // Arcs largest-first so the smaller ones nest visibly inside.

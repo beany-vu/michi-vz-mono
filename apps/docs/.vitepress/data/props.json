@@ -1671,9 +1671,9 @@
         },
         {
           "name": "dScaleLegend",
-          "type": "{ title?: string; valueFormatter?: (d: number) => string }",
+          "type": "{ title?: string | string[]; valueFormatter?: (d: number) => string }",
           "optional": true,
-          "description": "Bubble-size reference legend (half-arc trio + domain labels).",
+          "description": "Bubble-size reference legend (half-arc trio + domain labels). Array title = explicit lines, stacked upward.",
           "default": "",
           "common": false
         },

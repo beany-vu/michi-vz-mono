@@ -237,6 +237,24 @@ describe("mountScatterChart - URP features (crosshair / dScaleLegend / grid / ti
     b.host.remove();
   });
 
+  it("renders an array title as stacked lines, last line on the single-line baseline", () => {
+    const single = mount({ dScaleLegend: { title: "One line" } });
+    const singleTitle = single.host.querySelector(".michi-vz-legend text") as SVGTextElement;
+    const baseY = Number(singleTitle.getAttribute("y"));
+    single.chart.destroy();
+    single.host.remove();
+
+    const multi = mount({ dScaleLegend: { title: ["First line", "Second line"] } });
+    const texts = [...multi.host.querySelectorAll(".michi-vz-legend text")];
+    const titleTexts = texts.filter((t) => /line/.test(t.textContent ?? ""));
+    expect(titleTexts.map((t) => t.textContent)).toEqual(["First line", "Second line"]);
+    // Second (last) line keeps the legacy baseline; first stacks 18px above it.
+    expect(Number(titleTexts[1].getAttribute("y"))).toBe(baseY);
+    expect(Number(titleTexts[0].getAttribute("y"))).toBe(baseY - 18);
+    multi.chart.destroy();
+    multi.host.remove();
+  });
+
   it("suppresses y grid lines when showGrid.y=false", () => {
     const { host, chart } = mount({ showGrid: { x: true, y: false } });
     const yAxis = host.querySelector(".mv-y-axis")!;

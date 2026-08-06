@@ -94,7 +94,7 @@ export class ScatterChartElement extends LitElement {
   crosshairLineStyle?: "solid" | "dashed";
   crosshairSpan?: "full" | "half";
   crosshairLabelPlacement?: "auto" | "fixed";
-  dScaleLegend?: { title?: string; valueFormatter?: (d: number) => string };
+  dScaleLegend?: { title?: string | string[]; valueFormatter?: (d: number) => string };
   yTicksQty?: number;
   showGrid?: boolean | { x?: boolean; y?: boolean };
   pinIcon?: boolean;

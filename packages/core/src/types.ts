@@ -813,8 +813,8 @@ export interface ScatterChartProps {
   crosshairSpan?: "full" | "half";
   /** "auto" → collision-flip badges; "fixed" → anchor to bottom-left. Default "auto". */
   crosshairLabelPlacement?: "auto" | "fixed";
-  /** Bubble-size reference legend (half-arc trio + domain labels). */
-  dScaleLegend?: { title?: string; valueFormatter?: (d: number) => string };
+  /** Bubble-size reference legend (half-arc trio + domain labels). Array title = explicit lines, stacked upward. */
+  dScaleLegend?: { title?: string | string[]; valueFormatter?: (d: number) => string };
   /** Override the y-axis tick count (scale.ticks(n)); falls back to `ticks`. */
   yTicksQty?: number;
   /** Grid lines per axis: boolean → both; { x?, y? } → per-axis (each defaults true). Default both on. */
