@@ -111,7 +111,7 @@ export class LineChartElement extends LitElement {
   noDataLabel?: string;
   margin?: Margin;
   colors?: string[];
-  yAxisDomain?: [number, number];
+  yAxisDomain?: [number | null, number | null];
   yAxisScale?: "linear" | "log";
   xAxisFormat?: (d: number | string) => string;
   yAxisFormat?: (d: number | string) => string;

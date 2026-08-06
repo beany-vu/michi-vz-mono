@@ -4,6 +4,7 @@ import { describe, it, test, expect } from "vitest";
 import { applyGapDetection, parseAxisUnit } from "../src/lineChart/detectGaps";
 import { lttb } from "../src/lineChart/lttb";
 import { getXScaleDomain, getYScaleDomain, parseXValue } from "../src/lineChart/lineUtils";
+import { processLineChartData } from "../src/lineChart/data";
 import type { DataPoint } from "../src/types";
 
 const pt = (date: number | string, value: number, certainty = true): DataPoint => ({
@@ -144,5 +145,43 @@ describe("scale-domain helpers", () => {
     expect(getYScaleDomain(ds)).toEqual([-3, 20]);
     expect(getXScaleDomain(ds, "number")).toEqual([2016, 2018]);
     expect(getYScaleDomain([])).toEqual([0, 1]);
+  });
+});
+
+describe("processLineChartData partial yAxisDomain", () => {
+  const ds = [
+    { label: "A", series: [pt(2016, 40), pt(2017, 80)] },
+    { label: "B", series: [pt(2016, 25), pt(2017, 60)] },
+  ];
+  it("keeps both bounds when fully pinned (existing contract)", () => {
+    const out = processLineChartData(ds, { xAxisDataType: "number", yAxisDomain: [0, 100] });
+    expect(out.yAxisDomain).toEqual([0, 100]);
+  });
+  it("[0, null] pins the min and derives the max from the data", () => {
+    const out = processLineChartData(ds, { xAxisDataType: "number", yAxisDomain: [0, null] });
+    expect(out.yAxisDomain).toEqual([0, 80]);
+  });
+  it("[null, 100] derives the min and pins the max", () => {
+    const out = processLineChartData(ds, { xAxisDataType: "number", yAxisDomain: [null, 100] });
+    expect(out.yAxisDomain).toEqual([25, 100]);
+  });
+  it("derived max follows disabledItems and top-N slicing like the auto domain", () => {
+    const out = processLineChartData(ds, {
+      xAxisDataType: "number",
+      yAxisDomain: [0, null],
+      disabledItems: ["A"],
+    });
+    expect(out.yAxisDomain).toEqual([0, 60]);
+    const ranked = processLineChartData(ds, {
+      xAxisDataType: "number",
+      yAxisDomain: [0, null],
+      filter: { criteria: "value", date: 2017, sortingDir: "asc", limit: 1 },
+    });
+    expect(ranked.yAxisDomain).toEqual([0, 60]);
+  });
+  it("a derived bound never crosses a pinned one (all-negative data under [0, null])", () => {
+    const neg = [{ label: "N", series: [pt(2016, -5), pt(2017, -2)] }];
+    const out = processLineChartData(neg, { xAxisDataType: "number", yAxisDomain: [0, null] });
+    expect(out.yAxisDomain).toEqual([0, 0]);
   });
 });

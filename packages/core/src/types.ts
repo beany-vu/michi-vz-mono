@@ -398,8 +398,11 @@ export interface LineChartProps {
   colors?: string[];
   /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
   colorsMapping?: Record<string, string>;
-  /** Fix the y-axis range as [min, max] instead of deriving it from the data */
-  yAxisDomain?: [number, number];
+  /** Fix the y-axis range as [min, max] instead of deriving it from the data.
+   * Either bound may be null to keep just that bound data-derived — e.g.
+   * [0, null] pins the baseline at 0 while the maximum keeps following the
+   * visible (post legend-toggle, post top-N) series. */
+  yAxisDomain?: [number | null, number | null];
   /** Y-axis scale: "linear" (default) or a base-10 "log" scale. In "log" mode, a
    * non-positive value (<= 0) can't be plotted, so those points are dropped as missing
    * (reported via `onDataWarning`); a dataSet with no positive values at all renders

@@ -471,9 +471,9 @@
         },
         {
           "name": "yAxisDomain",
-          "type": "[number, number]",
+          "type": "[number | null, number | null]",
           "optional": true,
-          "description": "Fix the y-axis range as [min, max] instead of deriving it from the data",
+          "description": "Fix the y-axis range as [min, max] instead of deriving it from the data. Either bound may be null to keep just that bound data-derived — e.g. [0, null] pins the baseline at 0 while the maximum keeps following the visible (post legend-toggle, post top-N) series.",
           "default": "",
           "common": false
         },

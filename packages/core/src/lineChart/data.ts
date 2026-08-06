@@ -18,7 +18,7 @@ export interface ProcessLineOptions {
   detectGaps?: boolean;
   expectedStep?: number;
   xAxisDataType: XaxisDataType;
-  yAxisDomain?: [number, number];
+  yAxisDomain?: [number | null, number | null];
   yAxisScale?: "linear" | "log";
 }
 
@@ -103,7 +103,18 @@ export function processLineChartData(
     : logSafeItems;
 
   const xAxisDomain = getXScaleDomain(processedDataSet, opts.xAxisDataType);
-  const yAxisDomain = opts.yAxisDomain ?? getYScaleDomain(processedDataSet);
+  // Either yAxisDomain bound may be null to keep that bound data-derived
+  // (e.g. [0, null] = baseline pinned at 0, max follows the visible series).
+  // Merging happens AFTER ranking/disabling so a partial pin still rescales
+  // with legend toggles and top-N slices, exactly like the fully-derived case.
+  const derivedYDomain = getYScaleDomain(processedDataSet);
+  let yLo = opts.yAxisDomain?.[0] ?? derivedYDomain[0];
+  let yHi = opts.yAxisDomain?.[1] ?? derivedYDomain[1];
+  // A derived bound must not cross a pinned one: [0, null] over all-negative
+  // data would otherwise yield a reversed [0, hi<0] domain.
+  if (opts.yAxisDomain?.[0] != null && opts.yAxisDomain?.[1] == null && yHi < yLo) yHi = yLo;
+  if (opts.yAxisDomain?.[1] != null && opts.yAxisDomain?.[0] == null && yLo > yHi) yLo = yHi;
+  const yAxisDomain: [number, number] = [yLo, yHi];
 
   return {
     processedDataSet,
