@@ -8,6 +8,8 @@ import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderXAxisBand, renderYAxisLinear } from "../render/svg";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
+import { shouldSkipScaffold } from "../state/dataState";
 import { renderDScaleLegend } from "../render/svg/dScaleLegend";
 import { drawCrosshair, clearCrosshair } from "../render/svg/scatterCrosshair";
 import { makeSvgGroupDraggable } from "../render/svg/draggable";
@@ -163,6 +165,7 @@ export function mountScatterChart(
 
   let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
+  const chrome = createChromeRefs();
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
   // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
@@ -338,6 +341,14 @@ export function mountScatterChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    // Wired late for ScatterChart (the isLoading/isNodata props predate this call):
+    // an empty dataSet used to render degenerate axes with no state signal at all.
+    const dataState = applyChartChrome(host, props, props.dataSet, chrome);
+    // Skip axes/marks for "nodata" AND for a first-load "loading" with nothing to
+    // draw — but never during a refetch with stale data still on screen.
+    const skipScaffold = shouldSkipScaffold(dataState, props.dataSet);
+
     // Timeline (opt-in): swap in the active period's rows; the user's own filter
     // still applies within the period (its `date` is neutralized while playing).
     const tlData = engineTl.beforeRender(r.timeline, props.dataSet, props.filter);
@@ -387,47 +398,51 @@ export function mountScatterChart(
 
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
-    if (xAxisDataType === "band" && "bandwidth" in scales.xScale) {
-      // Categorical axis: one centred label per band (band categories are few, so no
-      // thinning/rotation). xAxisFormat, if given, maps the raw category label.
-      renderXAxisBand(svg, scales.xScale as ScaleBand<string>, {
-        width: r.width,
-        height: r.height,
-        margin: r.margin,
-        format: props.xAxisFormat as ((label: string) => string) | undefined,
-      });
-    } else {
-      renderXAxisLinear(
-        svg,
-        scales.xScale as ScaleLinear<number, number> | ScaleTime<number, number>,
-        {
+    // No-data / empty first-load: render only the title (axes + marks hidden,
+    // matching LineChart); a refetch with stale data keeps its scaffolding.
+    if (!skipScaffold) {
+      if (xAxisDataType === "band" && "bandwidth" in scales.xScale) {
+        // Categorical axis: one centred label per band (band categories are few, so no
+        // thinning/rotation). xAxisFormat, if given, maps the raw category label.
+        renderXAxisBand(svg, scales.xScale as ScaleBand<string>, {
           width: r.width,
           height: r.height,
           margin: r.margin,
-          xAxisDataType,
-          format: (v) => xFormat(v),
-          ticks: r.ticks,
-          tickValues: props.tickValues,
-          enableExplicitTickValues: true,
-          showGrid: r.showGridX,
-        },
-      );
+          format: props.xAxisFormat as ((label: string) => string) | undefined,
+        });
+      } else {
+        renderXAxisLinear(
+          svg,
+          scales.xScale as ScaleLinear<number, number> | ScaleTime<number, number>,
+          {
+            width: r.width,
+            height: r.height,
+            margin: r.margin,
+            xAxisDataType,
+            format: (v) => xFormat(v),
+            ticks: r.ticks,
+            tickValues: props.tickValues,
+            enableExplicitTickValues: true,
+            showGrid: r.showGridX,
+          },
+        );
+      }
+      renderYAxisLinear(svg, scales.yScale, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        format: (v) => yFormat(v),
+        ticks: r.yTicks ?? r.ticks,
+        showGrid: r.showGridY,
+      });
     }
-    renderYAxisLinear(svg, scales.yScale, {
-      width: r.width,
-      height: r.height,
-      margin: r.margin,
-      format: (v) => yFormat(v),
-      ticks: r.yTicks ?? r.ticks,
-      showGrid: r.showGridY,
-    });
 
     // Consumer-supplied SVG children (axis text labels, reference lines) - rendered
     // before the marks, mirroring the legacy `{children}` slot. The source is the React
     // wrapper's renderToStaticMarkup(children). DOMPurify strips a bare <text> (mXSS
     // guard) unless it sits under an <svg> root, so sanitise the markup wrapped in one,
     // then lift the children out into the chart's <svg>.
-    if (props.svgChildren) {
+    if (props.svgChildren && !skipScaffold) {
       const childG = svgEl("g", { class: "mv-svg-children" });
       const clean = DOMPurify.sanitize(
         `<svg xmlns="http://www.w3.org/2000/svg">${props.svgChildren}</svg>`,
@@ -464,7 +479,7 @@ export function mountScatterChart(
       });
     }
 
-    if (r.renderer === "svg") {
+    if (r.renderer === "svg" && !skipScaffold) {
       renderScatterSvg(
         svg,
         model,
@@ -491,7 +506,7 @@ export function mountScatterChart(
     // ⚠️ PAINTED (canvas + webgpu) render branch - opt-in renderer="webgpu" support.
     // Keep the webgpu arm (agents/humans): it tries the GPU then falls back to the 2D
     // canvas when unavailable (always, in jsdom/CI). SVG/canvas behaviour is untouched.
-    if (isPainted(r.renderer)) {
+    if (isPainted(r.renderer) && !skipScaffold) {
       if (r.renderer === "webgpu") {
         if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("scatter-chart-webgpu-canvas");
         // Re-render once the async GPU device resolves, upgrading canvas → GPU.
@@ -539,6 +554,8 @@ export function mountScatterChart(
         crosshairGroup = null;
       }
     } else {
+      // svg renderer, OR nothing to paint (nodata / empty first-load): drop any
+      // layer left over from a previous data render so stale marks never linger.
       removeCanvas();
       removeWebgpuCanvas();
     }
@@ -548,7 +565,7 @@ export function mountScatterChart(
     // scatterChart/renderPointLabelsSvg.ts), so labels appear identically
     // whichever `renderer` painted the points themselves. No-op when the prop
     // is absent/false (r.pointLabels is null).
-    if (r.pointLabels) {
+    if (r.pointLabels && !skipScaffold) {
       const formatter = r.pointLabels.formatter ?? ((d: ScatterDataPoint) => d.label);
       // Pass the plot bounds so a label near the right edge flips left instead of
       // being cropped (margin.left / width-margin.right are the plot's x-extent).
@@ -563,7 +580,7 @@ export function mountScatterChart(
 
     // Crosshair config the canvas hover handler (onHostMove) reads; null when off.
     crosshairCfg =
-      isPainted(r.renderer) && r.showCrosshair
+      isPainted(r.renderer) && r.showCrosshair && !skipScaffold
         ? {
             margin: r.margin,
             width: r.width,

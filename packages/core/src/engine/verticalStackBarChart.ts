@@ -18,6 +18,7 @@ import {
 import { chooseAxisMode } from "../render/svg/chooseAxisMode";
 import { measureLabelWidth } from "../render/svg/measureLabelWidth";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
+import { shouldSkipScaffold } from "../state/dataState";
 import {
   extractDataKeys,
   resolveEffectiveKeys,
@@ -296,6 +297,9 @@ export function mountVerticalStackBarChart(
 
     // data-mv-state + font var + default loading/no-data overlays (shared chrome).
     const dataState = applyChartChrome(host, props, props.dataSet, chrome);
+    // Skip axes/marks for "nodata" AND for a first-load "loading" with nothing to
+    // draw — but never during a refetch with stale data still on screen.
+    const skipScaffold = shouldSkipScaffold(dataState, props.dataSet);
 
     // Top/Bottom filter ranks the DataSets (groups) by grand total and slices to
     // limit; EVERYTHING downstream (keys, dates, legend, y-domain, bars) derives from
@@ -433,7 +437,7 @@ export function mountVerticalStackBarChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
     // No-data: render only the title; the overlay covers the rest.
-    if (dataState !== "nodata") {
+    if (!skipScaffold) {
       if (horizontal) {
         // Value axis along the bottom (linear x), categories on a band y-axis.
         // Prop semantics stay orientation-independent: xAxis* formats the
@@ -603,7 +607,7 @@ export function mountVerticalStackBarChart(
     // same reveal clip progressiveDraw uses. Data + getContext() stay full.
     // Horizontal layout: the reveal clip sweeps x while the periods live on the
     // band Y-axis, so period playback doesn't map - vertical-only for now.
-    if (r.timeline && !horizontal && dataState !== "nodata" && r.renderer !== "webgpu") {
+    if (r.timeline && !horizontal && !skipScaffold && r.renderer !== "webgpu") {
       const periods: CumulativePeriod[] = dates
         .map((d) => ({
           period: d,

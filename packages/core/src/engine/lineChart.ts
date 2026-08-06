@@ -16,6 +16,7 @@ import {
   wireNoDataTickTooltips,
 } from "../render/svg";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
+import { shouldSkipScaffold } from "../state/dataState";
 import { processLineChartData } from "../lineChart/data";
 import { buildLineColors } from "../lineChart/colors";
 import { createLineScales, type LineXScale } from "../lineChart/scales";
@@ -577,6 +578,9 @@ export function mountLineChart(
       props.dataSet,
       chrome,
     );
+    // Skip axes/marks for "nodata" AND for a first-load "loading" with nothing to
+    // draw — but never during a refetch with stale data still on screen.
+    const skipScaffold = shouldSkipScaffold(dataState, props.dataSet);
 
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -651,9 +655,10 @@ export function mountLineChart(
     // ----- SVG layer (axes + title always; marks only in svg mode) -----
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
-    // No-data: render only the title (axes + marks hidden, matching legacy
-    // `!displayIsNodata && filteredDataSet.length > 0` gating); the overlay covers it.
-    if (dataState !== "nodata") {
+    // No-data / empty first-load: render only the title (axes + marks hidden,
+    // matching legacy `!displayIsNodata && filteredDataSet.length > 0` gating);
+    // the overlay covers it. A refetch with stale data keeps its scaffolding.
+    if (!skipScaffold) {
       // Legacy parity (mirrors AreaChart): feed every DATA period as a candidate tick
       // so the axis ALWAYS keeps the first + last period (raw `scaleTime().ticks()`
       // snaps to "nice" calendar boundaries and silently drops non-round endpoints).
@@ -759,7 +764,7 @@ export function mountLineChart(
       svg.appendChild(childG);
     }
 
-    if (r.renderer === "svg" && dataState !== "nodata") {
+    if (r.renderer === "svg" && !skipScaffold) {
       renderLineSvg(
         svg,
         model,
@@ -794,7 +799,7 @@ export function mountLineChart(
     // outside the zoomed domain project beyond the plot and must not paint over
     // the axes. The clip lives on a WRAPPER group so progressiveDraw's own
     // clip-path on g.line-chart-content composes with it instead of replacing it.
-    if (zoomed && r.renderer === "svg" && dataState !== "nodata") {
+    if (zoomed && r.renderer === "svg" && !skipScaffold) {
       const contentRoot = svg.querySelector<SVGGElement>("g.line-chart-content");
       if (contentRoot && contentRoot.parentNode) {
         const id = `mv-zoom-clip-${++zoomClipSeq}`;
@@ -820,7 +825,7 @@ export function mountLineChart(
     // per-instance by setting the --michi-vz-crosshair* vars the rule consumes.
     // Inline stroke ATTRIBUTES would lose to the class rule (y-band gridline
     // gotcha), so no presentation attrs here.
-    if (r.mouseLine && dataState !== "nodata") {
+    if (r.mouseLine && !skipScaffold) {
       mouseLine = svgEl("line", { class: "mv-mouse-line" }) as SVGLineElement;
       const cfg = r.mouseLine;
       if (cfg.stroke !== undefined) mouseLine.style.setProperty("--michi-vz-crosshair", cfg.stroke);
@@ -858,7 +863,7 @@ export function mountLineChart(
       }
     };
 
-    if (r.renderer === "webgpu" && dataState !== "nodata") {
+    if (r.renderer === "webgpu" && !skipScaffold) {
       if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("lineChart-webgpu-canvas");
       const ready = drawLineWebgpu(webgpuCanvas, svg, model, {
         width: r.width,
@@ -884,7 +889,7 @@ export function mountLineChart(
           clipX: zoomClipX,
         });
       }
-    } else if (r.renderer === "canvas" && dataState !== "nodata") {
+    } else if (r.renderer === "canvas" && !skipScaffold) {
       removeWebgpuCanvas();
       if (!canvas) canvas = makeLayerCanvas("line-chart-canvas");
       drawLineCanvas(canvas, svg, model, {
@@ -905,7 +910,7 @@ export function mountLineChart(
     // Canvas mode: redraw the same model per frame under an equivalent ctx.clip.
     // WebGPU degrades to instant-draw (no dash/text support there either).
     const pd = r.progressiveDraw;
-    if (pd && !r.timeline && dataState !== "nodata" && r.renderer !== "webgpu") {
+    if (pd && !r.timeline && !skipScaffold && r.renderer !== "webgpu") {
       const startPx = r.margin.left;
       const endPx = r.width;
       // Tip labels are computed from the undecimated hitData (same nearest-point
@@ -976,7 +981,7 @@ export function mountLineChart(
     // ----- Cumulative timeline (opt-in play-through-years) -----
     // The line draws UP TO the active year; play/scrub sweeps the same reveal
     // clip progressiveDraw uses. Data + getContext() stay full (visual only).
-    if (r.timeline && dataState !== "nodata" && r.renderer !== "webgpu") {
+    if (r.timeline && !skipScaffold && r.renderer !== "webgpu") {
       // Distinct periods across every series, ordered by pixel position.
       const periodMap = new Map<string, CumulativePeriod>();
       for (const entry of hitData) {

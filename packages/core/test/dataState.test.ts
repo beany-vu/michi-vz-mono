@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { resolveIsNodata, evaluateDataState } from "../src/state/dataState";
+import {
+  resolveIsNodata,
+  evaluateDataState,
+  isEmptyDataSet,
+  shouldSkipScaffold,
+} from "../src/state/dataState";
 import { mountLineChart } from "../src/engine/lineChart";
 import type { LineDataItem } from "../src/types";
 
@@ -27,6 +32,36 @@ describe("evaluateDataState", () => {
   it("nodata when empty, ready otherwise", () => {
     expect(evaluateDataState({ dataSet: [] })).toBe("nodata");
     expect(evaluateDataState({ dataSet: [{ series: [1] }] })).toBe("ready");
+  });
+});
+
+describe("isEmptyDataSet", () => {
+  it("matches resolveIsNodata's default emptiness heuristic", () => {
+    expect(isEmptyDataSet([])).toBe(true);
+    expect(isEmptyDataSet([{ series: [] }, { series: [] }])).toBe(true);
+    expect(isEmptyDataSet([{ series: [1] }])).toBe(false);
+    expect(isEmptyDataSet([{ x: 1 }])).toBe(false);
+    expect(isEmptyDataSet(null)).toBe(false);
+    expect(isEmptyDataSet(undefined)).toBe(false);
+  });
+});
+
+describe("shouldSkipScaffold", () => {
+  it("nodata always skips", () => {
+    expect(shouldSkipScaffold("nodata", [])).toBe(true);
+    expect(shouldSkipScaffold("nodata", [{ x: 1 }])).toBe(true);
+  });
+  it("loading skips only when there is nothing to draw (first paint)", () => {
+    expect(shouldSkipScaffold("loading", [])).toBe(true);
+    expect(shouldSkipScaffold("loading", [{ series: [] }])).toBe(true);
+  });
+  it("loading with stale data on screen keeps the scaffolding (refetch)", () => {
+    expect(shouldSkipScaffold("loading", [{ series: [1] }])).toBe(false);
+    expect(shouldSkipScaffold("loading", [{ x: 1 }])).toBe(false);
+  });
+  it("ready never skips", () => {
+    expect(shouldSkipScaffold("ready", [])).toBe(false);
+    expect(shouldSkipScaffold("ready", [{ x: 1 }])).toBe(false);
   });
 });
 
@@ -61,6 +96,25 @@ describe("LineChart data-state (jsdom)", () => {
     const { host, chart } = mount({ isLoading: true });
     expect(host.getAttribute("data-mv-state")).toBe("loading");
     expect(host.querySelector(".mv-loading")).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("loading + EMPTY dataSet (first paint): axes hidden, only the loading overlay", () => {
+    const { host, chart } = mount({ isLoading: true, dataSet: [] });
+    expect(host.getAttribute("data-mv-state")).toBe("loading");
+    expect(host.querySelector(".mv-x-axis")).toBeNull();
+    expect(host.querySelector(".mv-y-axis")).toBeNull();
+    expect(host.querySelectorAll("path.line").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("loading + stale data (refetch): axes and marks stay visible", () => {
+    const { host, chart } = mount({ isLoading: true });
+    expect(host.getAttribute("data-mv-state")).toBe("loading");
+    expect(host.querySelector(".mv-x-axis")).not.toBeNull();
+    expect(host.querySelectorAll("path.line").length).toBeGreaterThanOrEqual(1);
     chart.destroy();
     host.remove();
   });

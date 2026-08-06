@@ -36,6 +36,25 @@ export function resolveIsNodata<T>(
   return false;
 }
 
+/**
+ * True when there is nothing to draw for this dataSet shape, independent of the
+ * isLoading/isNodata overrides — the same array / series-shaped emptiness check
+ * resolveIsNodata applies by default, exposed standalone.
+ */
+export function isEmptyDataSet<T>(dataSet: T[] | null | undefined): boolean {
+  return resolveIsNodata(undefined, dataSet);
+}
+
+/**
+ * Should the chart skip its axis/mark scaffolding this render?
+ * "nodata" always skips; "loading" skips only when there is genuinely nothing
+ * to draw yet (first paint) — a refetch with stale data still on screen keeps
+ * its axes and marks visible.
+ */
+export function shouldSkipScaffold<T>(state: DataState, dataSet: T[] | null | undefined): boolean {
+  return state === "nodata" || (state === "loading" && isEmptyDataSet(dataSet));
+}
+
 /** loading takes precedence over no-data; both over ready. */
 export function evaluateDataState<T>(opts: {
   isLoading?: boolean;

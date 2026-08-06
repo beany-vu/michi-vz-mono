@@ -13,6 +13,8 @@ import { buildGapColors } from "../gapChart/colors";
 import { createGapScales } from "../gapChart/scales";
 import { buildGapRenderModel } from "../gapChart/renderModel";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
+import { shouldSkipScaffold } from "../state/dataState";
 import { renderGapSvg, buildGapLegendItems, renderGapLegend } from "../gapChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
 import { drawGapCanvas } from "../gapChart/renderCanvas";
@@ -138,6 +140,7 @@ export function mountGapChart(
   // hit-test must stand down (it would miss and hide the scrub tooltip).
   let scrubbing = false;
   let lastColorMappingSent: Record<string, string> = {};
+  const chrome = createChromeRefs();
   // Idempotency guard: only fire onChartDataProcessed when the serialized context
   // changes - an unconditional re-fire loops "Maximum update depth" in any consumer
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
@@ -246,6 +249,15 @@ export function mountGapChart(
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
 
+    // data-mv-state + font var + default loading/no-data overlays (shared chrome).
+    // Wired late for GapChart (the isLoading/isNodata props predate this call): an
+    // empty dataSet used to fall through to a [0,0] domain whose zero-span scale
+    // parked a lone axis tick at the pixel-range MIDPOINT (the "centered axis").
+    const dataState = applyChartChrome(host, props, props.dataSet, chrome);
+    // Skip axes/marks for "nodata" AND for a first-load "loading" with nothing to
+    // draw — but never during a refetch with stale data still on screen.
+    const skipScaffold = shouldSkipScaffold(dataState, props.dataSet);
+
     const xAxisDataType = props.xAxisDataType ?? "number";
     const explicitTickValues =
       props.enableExplicitTickValues === false ? undefined : props.tickValues;
@@ -311,86 +323,89 @@ export function mountGapChart(
     const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
     const yFormat = props.yAxisFormat ?? ((d: number | string) => String(d));
 
-    // ----- SVG layer (axes + title always; marks only in svg mode) -----
+    // ----- SVG layer (title always; axes hidden for nodata / empty first-load,
+    // matching LineChart; marks only in svg mode) -----
     clear(svg);
     renderTitle(svg, {
       text: props.title,
       x: r.width / 2,
       y: r.margin.top / 2,
     });
-    // maxTicks thins a dense/narrow numeric axis to a legible count, keeping the
-    // first + last tick; autoRotate tilts -45deg only if the kept labels still
-    // collide. Mirrors LineChart/AreaChart's identical width-based heuristic - a
-    // no-op (byte-identical output) whenever the ticks already fit cleanly.
-    const gapPlotW = r.width - r.margin.left - r.margin.right;
-    const gapMaxTicks = gapPlotW < 480 ? 3 : 5;
-    renderXAxisLinear(svg, scales.xScale, {
-      width: r.width,
-      height: r.height,
-      margin: r.margin,
-      xAxisDataType,
-      format: (v) => xFormat(v),
-      ticks: r.ticks,
-      tickValues: props.tickValues,
-      enableExplicitTickValues: props.enableExplicitTickValues ?? true,
-      showZeroLine: r.showZeroLineForXAxis,
-      autoRotate: true,
-      maxTicks: gapMaxTicks,
-    });
-    // interactiveRowLabels: label hover/focus = leader line + row tooltip +
-    // highlight; click pins (same sticky contract as the marks). Composed from the
-    // row model, so it works in svg, canvas, and webgpu modes alike.
-    const rowByLabel = new Map(model.elements.map((el) => [el.d.label, el]));
-    const labelTooltipEvent = (x: number, rowCenterY: number): MouseEvent => {
-      const hostRect = host.getBoundingClientRect();
-      return { clientX: hostRect.left + x, clientY: hostRect.top + rowCenterY } as MouseEvent;
-    };
-    renderYAxisBand(svg, scales.yScale, {
-      width: r.width,
-      margin: r.margin,
-      format: (label) => yFormat(label),
-      tickHtmlWidth: r.tickHtmlWidth,
-      showGrid: true,
-      interactions: r.interactiveRowLabels
-        ? {
-            leaderToX: (label) => {
-              const el = rowByLabel.get(label);
-              // The row's nearest mark edge (either endpoint marker).
-              return el ? Math.min(el.value1X, el.value2X) : r.margin.left;
-            },
-            onEnter: (label, rowCenterY, pointer) => {
-              scrubbing = true;
-              if (sticky) return;
-              const el = rowByLabel.get(label);
-              if (!el) return;
-              showTooltip(
-                el.d,
-                (pointer as MouseEvent) ??
-                  labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY),
-              );
-              props.onHighlightItem?.(el.d);
-            },
-            onLeave: () => {
-              scrubbing = false;
-              hideTooltip();
-              if (!sticky) props.onHighlightItem?.(null);
-            },
-            onClick: (label, rowCenterY, pointer) => {
-              const el = rowByLabel.get(label);
-              if (!el) return;
-              sticky = true;
-              tooltip.classList.add("sticky");
-              showTooltip(
-                el.d,
-                (pointer as MouseEvent) ??
-                  labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY),
-              );
-            },
-          }
-        : undefined,
-    });
+    if (!skipScaffold) {
+      // maxTicks thins a dense/narrow numeric axis to a legible count, keeping the
+      // first + last tick; autoRotate tilts -45deg only if the kept labels still
+      // collide. Mirrors LineChart/AreaChart's identical width-based heuristic - a
+      // no-op (byte-identical output) whenever the ticks already fit cleanly.
+      const gapPlotW = r.width - r.margin.left - r.margin.right;
+      const gapMaxTicks = gapPlotW < 480 ? 3 : 5;
+      renderXAxisLinear(svg, scales.xScale, {
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        xAxisDataType,
+        format: (v) => xFormat(v),
+        ticks: r.ticks,
+        tickValues: props.tickValues,
+        enableExplicitTickValues: props.enableExplicitTickValues ?? true,
+        showZeroLine: r.showZeroLineForXAxis,
+        autoRotate: true,
+        maxTicks: gapMaxTicks,
+      });
+      // interactiveRowLabels: label hover/focus = leader line + row tooltip +
+      // highlight; click pins (same sticky contract as the marks). Composed from the
+      // row model, so it works in svg, canvas, and webgpu modes alike.
+      const rowByLabel = new Map(model.elements.map((el) => [el.d.label, el]));
+      const labelTooltipEvent = (x: number, rowCenterY: number): MouseEvent => {
+        const hostRect = host.getBoundingClientRect();
+        return { clientX: hostRect.left + x, clientY: hostRect.top + rowCenterY } as MouseEvent;
+      };
+      renderYAxisBand(svg, scales.yScale, {
+        width: r.width,
+        margin: r.margin,
+        format: (label) => yFormat(label),
+        tickHtmlWidth: r.tickHtmlWidth,
+        showGrid: true,
+        interactions: r.interactiveRowLabels
+          ? {
+              leaderToX: (label) => {
+                const el = rowByLabel.get(label);
+                // The row's nearest mark edge (either endpoint marker).
+                return el ? Math.min(el.value1X, el.value2X) : r.margin.left;
+              },
+              onEnter: (label, rowCenterY, pointer) => {
+                scrubbing = true;
+                if (sticky) return;
+                const el = rowByLabel.get(label);
+                if (!el) return;
+                showTooltip(
+                  el.d,
+                  (pointer as MouseEvent) ??
+                    labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY),
+                );
+                props.onHighlightItem?.(el.d);
+              },
+              onLeave: () => {
+                scrubbing = false;
+                hideTooltip();
+                if (!sticky) props.onHighlightItem?.(null);
+              },
+              onClick: (label, rowCenterY, pointer) => {
+                const el = rowByLabel.get(label);
+                if (!el) return;
+                sticky = true;
+                tooltip.classList.add("sticky");
+                showTooltip(
+                  el.d,
+                  (pointer as MouseEvent) ??
+                    labelTooltipEvent(Math.min(el.value1X, el.value2X), rowCenterY),
+                );
+              },
+            }
+          : undefined,
+      });
+    }
 
-    if (r.renderer === "svg") {
+    if (r.renderer === "svg" && !skipScaffold) {
       renderGapSvg(
         svg,
         model,
@@ -420,7 +435,12 @@ export function mountGapChart(
     }
 
     // ----- Canvas / WebGPU layer -----
-    if (r.renderer === "webgpu") {
+    if (skipScaffold) {
+      // Nothing to paint; also drop any layer left over from a previous data render
+      // (e.g. the dataSet emptied on a refetch) so stale marks never linger.
+      removeCanvas();
+      removeWebgpuCanvas();
+    } else if (r.renderer === "webgpu") {
       if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("gapChart-webgpu-canvas");
       const painted = drawGapWebgpu(webgpuCanvas, svg, model, {
         width: r.width,
@@ -464,7 +484,7 @@ export function mountGapChart(
     // Legacy parity: render only when opted in AND shape labels are supplied. thd's
     // TradeSimulationSnapshot keeps it off on screen (its own legend sits above the
     // chart) and re-shows it during PDF capture via showLegend={isDownloadingChart}.
-    if (props.showLegend && props.shapesLabelsMapping) {
+    if (!skipScaffold && props.showLegend && props.shapesLabelsMapping) {
       const legendItems = buildGapLegendItems(
         props.shapesLabelsMapping,
         r.shapeValue1,

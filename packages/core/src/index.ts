@@ -30,7 +30,12 @@ export { createMichiVzStore } from "./state/store";
 export type { MichiVzStore, MichiVzState } from "./state/store";
 
 // ---- Data state (loading / no-data decision; reused by wrappers) ----
-export { evaluateDataState, resolveIsNodata } from "./state/dataState";
+export {
+  evaluateDataState,
+  resolveIsNodata,
+  isEmptyDataSet,
+  shouldSkipScaffold,
+} from "./state/dataState";
 export type { DataState } from "./state/dataState";
 
 // ---- Shared engine chrome (data-mv-state + font var + default overlays) ----
