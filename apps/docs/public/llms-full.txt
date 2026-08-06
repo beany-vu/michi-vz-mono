@@ -4,7 +4,7 @@
 
 > michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at https://michi-vz.netlify.app/llms.txt.
 
-Package versions this file was generated against: @michi-vz/core 1.16.1, wc 1.12.3, react 1.11.4, vue 1.7.4, svelte 1.7.4, angular 1.12.3, insights 0.2.19, devtools 0.2.19.
+Package versions this file was generated against: @michi-vz/core 1.16.2, wc 1.12.4, react 1.11.5, vue 1.7.5, svelte 1.7.5, angular 1.12.4, insights 0.2.20, devtools 0.2.20.
 
 ## What michi-vz is
 
@@ -19,14 +19,14 @@ AI features live in a separate opt-in package, `@michi-vz/insights`, and are loc
 
 ## Packages
 
-- `@michi-vz/core` 1.16.1 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
-- `@michi-vz/wc` 1.12.3 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
-- `@michi-vz/react` 1.11.4 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
-- `@michi-vz/vue` 1.7.4 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
-- `@michi-vz/svelte` 1.7.4 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
-- `@michi-vz/angular` 1.12.3 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
-- `@michi-vz/insights` 0.2.19 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
-- `@michi-vz/devtools` 0.2.19 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
+- `@michi-vz/core` 1.16.2 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
+- `@michi-vz/wc` 1.12.4 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
+- `@michi-vz/react` 1.11.5 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
+- `@michi-vz/vue` 1.7.5 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
+- `@michi-vz/svelte` 1.7.5 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
+- `@michi-vz/angular` 1.12.4 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
+- `@michi-vz/insights` 0.2.20 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
+- `@michi-vz/devtools` 0.2.20 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
 
 The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
 
@@ -228,7 +228,7 @@ Chart-specific props (the shared props above also apply):
 
 - `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
 - `title`: `string` - Optional chart title rendered above the plot
-- `yAxisDomain`: `[number, number]` - Fix the y-axis range as [min, max] instead of deriving it from the data
+- `yAxisDomain`: `[number | null, number | null]` - Fix the y-axis range as [min, max] instead of deriving it from the data.
 - `yAxisScale`: `"linear" | "log"` (default: `"linear"`) - Y-axis scale: "linear" (default) or a base-10 "log" scale.
 - `xAxisDataType`: `"date_annual" | "date_monthly" | "number"` (default: `"number"`) - How x values are parsed and formatted: yearly dates, monthly dates, or plain numbers
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
