@@ -1706,13 +1706,23 @@
             'CMPV: bar carries data-label-safe="Alpha_One"',
           );
 
-          // Fixed z-order (unlike CMP horizontal): valueBased is ALWAYS first/behind, valueCompared ALWAYS second/in front.
-          const cmpVOrder = Array.from(
+          // Per-row z-order (comparableVerticalDrawOrder, matches CMP horizontal): the
+          // SHORTER sub-bar draws last (on top) so neither value is ever fully hidden;
+          // legacy based-then-compared only on a tie.
+          const cmpVOrderRects = Array.from(
             cmpVSvgEl.querySelectorAll('g.data-group[data-label="Alpha One"] rect.bar'),
-          ).map((r) => (r.classList.contains("value-based") ? "based" : "compared"));
+          );
+          const cmpVOrder = cmpVOrderRects.map((r) =>
+            r.classList.contains("value-based") ? "based" : "compared",
+          );
+          const cmpVHeights = cmpVOrderRects.map((r) => parseFloat(r.getAttribute("height")));
           log(
-            cmpVOrder.length === 2 && cmpVOrder[0] === "based" && cmpVOrder[1] === "compared",
-            `CMPV: FIXED z-order valueBased behind, valueCompared in front (got ${cmpVOrder.join(",")})`,
+            cmpVOrder.length === 2 &&
+              cmpVOrder[0] !== cmpVOrder[1] &&
+              (cmpVHeights[0] === cmpVHeights[1]
+                ? cmpVOrder[0] === "based"
+                : cmpVHeights[0] >= cmpVHeights[1]),
+            `CMPV: per-row z-order, shorter sub-bar on top (got ${cmpVOrder.join(",")} heights ${cmpVHeights.join(",")})`,
           );
 
           // Full-bandwidth overlay: based and compared share the same x and width for a column.
