@@ -4,10 +4,18 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
+
+# A single self-hosted runner serializes all jobs; cancel superseded runs of
+# the same ref so a rapid push train doesn't queue up stale verifications.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
     runs-on: self-hosted
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
