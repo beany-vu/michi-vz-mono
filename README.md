@@ -1,7 +1,7 @@
 # @michi-vz
 
 **Charts that move with your stack, not against it.** One rendering engine,
-twenty-one chart types, and first-class support for **React, Vue, Svelte, Angular,
+twenty-two chart types, and first-class support for **React, Vue, Svelte, Angular,
 native web components, or no framework at all**. Every chart is interactive,
 accessible, and emits an LLM-ready data context you can drop straight into a
 report, a dashboard, or an AI feature.
@@ -44,11 +44,11 @@ in progress). Every chart emits a renderer-agnostic, LLM-ready **`ChartContext`*
 (structured data + stats + rule-based NL summary + a hidden a11y table mirror)
 that is identical whether the chart renders as SVG or canvas.
 
-## Charts (21)
+## Charts (22)
 
 GapChart · LineChart · FanChart (forecast) · AreaChart · ScatterPlot · VerticalStackBar ·
 ComparableHorizontalBar · ComparableVerticalBar · DualHorizontalBar (tornado) · BarBell ·
-Range · Ribbon · Radar · Treemap (realized/untapped split + mobile stack) · Pie / Donut ·
+Range · Ribbon · Radar · Treemap (realized/untapped split + mobile stack) · Pie / Donut · Gauge (rings) ·
 Bubble (gravity cluster + realized/untapped split) · Sankey (flow diagram) · Fountain
 (Jet d'Eau, experimental) · ChoroplethMap · SymbolMap · RadialTree - each available from the core
 engine, the web component, and all four framework wrappers, in SVG, canvas, and
@@ -117,7 +117,7 @@ chart.destroy();
 The whole library ships as machine-readable docs (llmstxt.org convention), regenerated on
 every docs build:
 
-- [llms.txt](https://michi-vz.netlify.app/llms.txt) - compact index: packages, guides, all 21 charts
+- [llms.txt](https://michi-vz.netlify.app/llms.txt) - compact index: packages, guides, all 22 charts
 - [llms-full.txt](https://michi-vz.netlify.app/llms-full.txt) - the full reference in one file:
   per-chart props, usage in every framework, `ChartContext`, insights, theming, gotchas
 

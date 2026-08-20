@@ -26,6 +26,7 @@ import {
   mountFanChart,
   mountTreemapChart,
   mountPieChart,
+  mountGaugeChart,
   mountBubbleChart,
   mountSankeyChart,
   mountFountainChart,
@@ -50,6 +51,7 @@ import type {
   GapChartProps,
   TreemapChartProps,
   PieChartProps,
+  GaugeChartProps,
   BubbleChartProps,
   SankeyChartProps,
   FountainChartProps,
@@ -327,6 +329,21 @@ export const previews: Record<string, Preview> = {
         { label: "D", value: 12, color: GREEN },
       ],
     } satisfies PieChartProps,
+  },
+
+  "gauge-chart": {
+    mount: mountGaugeChart as Mount,
+    props: {
+      ringThickness: 9,
+      ringGap: 3,
+      roundedCaps: true,
+      showCenterLabel: false,
+      dataSet: [
+        { label: "A", value: 78, color: BLUE },
+        { label: "B", value: 56, color: GOLD },
+        { label: "C", value: 34, color: RED },
+      ],
+    } satisfies GaugeChartProps,
   },
 
   "bubble-chart": {
