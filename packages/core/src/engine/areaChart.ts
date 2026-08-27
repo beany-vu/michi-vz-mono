@@ -108,9 +108,14 @@ export function mountAreaChart(
   const a11y = htmlEl("div", { class: "mv-a11y" });
   a11y.setAttribute("role", "img");
   // The 2D canvas (canvas mode, and the webgpu first-frame fallback) and the
-  // dedicated WebGPU canvas. Both are layered absolutely behind the SVG.
+  // dedicated WebGPU canvas. They are inserted as LATER siblings than the base
+  // svg, so with z-index:auto they paint ABOVE it - which is why the hover line
+  // is re-homed into hoverOverlaySvg (an even later sibling) whenever a canvas
+  // paints the marks: crosshair chrome must stack above the marks while the
+  // svg's gridlines/axes stay below them.
   let canvas: HTMLCanvasElement | null = null;
   let webgpuCanvas: HTMLCanvasElement | null = null;
+  let hoverOverlaySvg: SVGSVGElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -385,12 +390,15 @@ export function mountAreaChart(
     }
 
     // Hover line (above areas) + transparent capture overlay (topmost).
+    // Painted modes re-home the line into hoverOverlaySvg after the canvas
+    // block below (the canvas would occlude svg-internal chrome); svg mode
+    // keeps the legacy in-svg placement.
     hoverLine = svgEl("line", { class: "mv-hover-line" }) as SVGLineElement;
     hoverLine.setAttribute("stroke", "#666");
     hoverLine.setAttribute("stroke-width", "2");
     hoverLine.style.visibility = "hidden";
     hoverLine.style.pointerEvents = "none";
-    svg.appendChild(hoverLine);
+    if (!isPainted(r.renderer)) svg.appendChild(hoverLine);
 
     const overlay = renderOverlay(svg, { width: r.width, height: r.height });
     overlay.style.cursor = "crosshair";
@@ -459,6 +467,27 @@ export function mountAreaChart(
     } else {
       removeCanvas();
       removeWebgpuCanvas();
+    }
+
+    // Painted modes: hover line lives in its own overlay svg, re-inserted before
+    // the tooltip EVERY render - insertBefore MOVES an existing node, so a canvas
+    // recreated after a nodata frame can never end up stacked above it.
+    if (isPainted(r.renderer)) {
+      if (!hoverOverlaySvg) {
+        hoverOverlaySvg = svgEl("svg") as SVGSVGElement;
+        hoverOverlaySvg.style.position = "absolute";
+        hoverOverlaySvg.style.top = getComputedStyle(host).paddingTop;
+        hoverOverlaySvg.style.left = getComputedStyle(host).paddingLeft;
+        hoverOverlaySvg.style.pointerEvents = "none";
+      }
+      hoverOverlaySvg.setAttribute("width", String(r.width));
+      hoverOverlaySvg.setAttribute("height", String(r.height));
+      host.insertBefore(hoverOverlaySvg, tooltip);
+      clear(hoverOverlaySvg);
+      hoverOverlaySvg.appendChild(hoverLine);
+    } else if (hoverOverlaySvg) {
+      hoverOverlaySvg.remove();
+      hoverOverlaySvg = null;
     }
 
     // ----- Progressive draw (opt-in reveal animation) -----
@@ -588,6 +617,7 @@ export function mountAreaChart(
       for (const t of teardowns) t();
       canvas = null;
       webgpuCanvas = null;
+      hoverOverlaySvg = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-area-chart");
     },

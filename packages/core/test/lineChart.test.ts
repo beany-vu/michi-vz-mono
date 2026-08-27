@@ -430,6 +430,96 @@ describe("mountLineChart enableMouseLine crosshair (legacy mouse-line parity)", 
   });
 });
 
+describe("mountLineChart mouse-line stacking vs the marks canvas layer", () => {
+  // The marks canvas is a LATER host sibling than the base svg, so with
+  // z-index:auto it paints ABOVE svg-internal chrome. Painted renderers
+  // therefore re-home the mouse line into a dedicated overlay svg inserted
+  // AFTER the canvas (before the tooltip); svg mode keeps the legacy in-svg
+  // placement.
+  const base: LineChartProps = {
+    dataSet: sample,
+    title: "Demo",
+    width: 600,
+    height: 300,
+    xAxisDataType: "date_annual",
+  };
+  const hostIndex = (host: HTMLElement, el: Element): number =>
+    Array.from(host.children).indexOf(el);
+
+  it("canvas renderer: the mouse line's overlay svg is a LATER sibling than the marks canvas", () => {
+    const { host, chart } = mount({ renderer: "canvas" });
+    const canvas = host.querySelector("canvas.line-chart-canvas")!;
+    const line = host.querySelector("line.mv-mouse-line")!;
+    const mainSvg = host.querySelector("svg")!;
+    expect(canvas).not.toBeNull();
+    expect(mainSvg.contains(line)).toBe(false);
+    expect(hostIndex(host, line.parentNode as Element)).toBeGreaterThan(hostIndex(host, canvas));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("svg renderer (default): the mouse line stays inside the single main svg - unchanged", () => {
+    const { host, chart } = mount();
+    expect(host.querySelectorAll("svg").length).toBe(1);
+    expect(host.querySelector("svg")!.contains(host.querySelector("line.mv-mouse-line")!)).toBe(
+      true,
+    );
+    chart.destroy();
+    host.remove();
+  });
+
+  it("canvas mode: update() keeps exactly one mouse line and one overlay svg, still above the canvas", () => {
+    const { host, chart } = mount({ renderer: "canvas" });
+    chart.update({ ...base, renderer: "canvas" });
+    expect(host.querySelectorAll("line.mv-mouse-line").length).toBe(1);
+    expect(host.querySelectorAll("svg").length).toBe(2); // main + overlay
+    const canvas = host.querySelector("canvas.line-chart-canvas")!;
+    const line = host.querySelector("line.mv-mouse-line")!;
+    expect(hostIndex(host, line.parentNode as Element)).toBeGreaterThan(hostIndex(host, canvas));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("canvas → webgpu flip: a newly-inserted canvas never ends up above the overlay (drift pin)", () => {
+    // makeLayerCanvas inserts before the tooltip, i.e. AFTER an already-mounted
+    // overlay - the overlay must be re-inserted every render to stay on top.
+    const { host, chart } = mount({ renderer: "canvas" });
+    chart.update({ ...base, renderer: "webgpu" }); // jsdom: webgpu canvas + 2D stopgap
+    const line = host.querySelector("line.mv-mouse-line")!;
+    const overlayIdx = hostIndex(host, line.parentNode as Element);
+    for (const c of Array.from(host.querySelectorAll("canvas"))) {
+      expect(overlayIdx).toBeGreaterThan(hostIndex(host, c));
+    }
+    chart.destroy();
+    host.remove();
+  });
+
+  it("canvas → svg flip removes the stale overlay svg and re-homes the line into the main svg", () => {
+    const { host, chart } = mount({ renderer: "canvas" });
+    expect(host.querySelectorAll("svg").length).toBe(2);
+    chart.update({ ...base, renderer: "svg" });
+    expect(host.querySelectorAll("svg").length).toBe(1);
+    expect(host.querySelector("svg")!.contains(host.querySelector("line.mv-mouse-line")!)).toBe(
+      true,
+    );
+    chart.destroy();
+    host.remove();
+  });
+
+  it("nodata frame drops the overlay; the data round-trip rebuilds it above the recreated canvas", () => {
+    const { host, chart } = mount({ renderer: "canvas" });
+    chart.update({ ...base, dataSet: [], renderer: "canvas" }); // skipScaffold: no line, no canvas
+    expect(host.querySelector("line.mv-mouse-line")).toBeNull();
+    expect(host.querySelectorAll("svg").length).toBe(1);
+    chart.update({ ...base, renderer: "canvas" });
+    const canvas = host.querySelector("canvas.line-chart-canvas")!;
+    const line = host.querySelector("line.mv-mouse-line")!;
+    expect(hostIndex(host, line.parentNode as Element)).toBeGreaterThan(hostIndex(host, canvas));
+    chart.destroy();
+    host.remove();
+  });
+});
+
 describe("mountLineChart yAxisScale (log y-axis)", () => {
   // Round powers of 10 so the expected pixel math is exact and easy to eyeball.
   const powersOfTen: LineDataItem[] = [

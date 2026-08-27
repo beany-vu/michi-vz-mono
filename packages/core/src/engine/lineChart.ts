@@ -149,6 +149,10 @@ export function mountLineChart(
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
   let webgpuCanvas: HTMLCanvasElement | null = null;
+  // Painted-mode crosshair layer: the marks canvas is a LATER sibling than the
+  // svg (paints above it under z-index:auto), so the mouse line re-homes into
+  // this overlay svg to stack above the marks while gridlines/axes stay below.
+  let mouseOverlaySvg: SVGSVGElement | null = null;
   let mouseLine: SVGLineElement | null = null;
   const chrome = createChromeRefs();
 
@@ -835,7 +839,10 @@ export function mountLineChart(
         mouseLine.style.setProperty("--michi-vz-crosshair-dash", cfg.strokeDasharray);
       mouseLine.style.visibility = "hidden";
       mouseLine.style.pointerEvents = "none";
-      svg.appendChild(mouseLine);
+      // Painted modes re-home the line into mouseOverlaySvg after the canvas
+      // block below (the canvas would occlude svg-internal chrome); svg mode
+      // keeps the legacy in-svg placement.
+      if (!isPainted(r.renderer)) svg.appendChild(mouseLine);
     } else {
       mouseLine = null;
     }
@@ -903,6 +910,27 @@ export function mountLineChart(
     } else {
       removeCanvas();
       removeWebgpuCanvas();
+    }
+
+    // Painted modes: mouse line lives in its own overlay svg, re-inserted before
+    // the tooltip EVERY render - insertBefore MOVES an existing node, so a canvas
+    // recreated after a loading/nodata frame can never end up stacked above it.
+    if (mouseLine && isPainted(r.renderer)) {
+      if (!mouseOverlaySvg) {
+        mouseOverlaySvg = svgEl("svg") as SVGSVGElement;
+        mouseOverlaySvg.style.position = "absolute";
+        mouseOverlaySvg.style.top = getComputedStyle(host).paddingTop;
+        mouseOverlaySvg.style.left = getComputedStyle(host).paddingLeft;
+        mouseOverlaySvg.style.pointerEvents = "none";
+      }
+      mouseOverlaySvg.setAttribute("width", String(r.width));
+      mouseOverlaySvg.setAttribute("height", String(r.height));
+      host.insertBefore(mouseOverlaySvg, tooltip);
+      clear(mouseOverlaySvg);
+      mouseOverlaySvg.appendChild(mouseLine);
+    } else if (mouseOverlaySvg) {
+      mouseOverlaySvg.remove();
+      mouseOverlaySvg = null;
     }
 
     // ----- Progressive draw (opt-in reveal animation) -----
@@ -1147,6 +1175,7 @@ export function mountLineChart(
       removeZoomRect();
       canvas = null;
       webgpuCanvas = null;
+      mouseOverlaySvg = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-line-chart");
     },
