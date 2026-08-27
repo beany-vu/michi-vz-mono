@@ -51,6 +51,7 @@ const chartOrder: string[] = [
   "gap",
   "treemap",
   "pie",
+  "gauge",
   "bubble",
   "sankey",
   "fountain",
