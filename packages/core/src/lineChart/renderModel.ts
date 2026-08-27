@@ -1,6 +1,6 @@
 // Renderer-agnostic LineChart model: one structure consumed by BOTH the SVG and
 // canvas renderers (so they can't drift) and the source for buildLineContext.
-import { getRuns, makeLineGenerator, projectX } from "./geometry";
+import { buildSeriesRunPaths, getRuns, projectX } from "./geometry";
 import { sanitizeForClassName } from "../math/sanitize";
 import type { LineColorResolver } from "./colors";
 import type { LineScales } from "./scales";
@@ -54,16 +54,22 @@ export function buildLineRenderModel(
   const anyHighlight = highlightSet.size > 0;
 
   const series: LineSeriesModel[] = dataSet.map((item) => {
-    const gen = makeLineGenerator(
+    const rawRuns = getRuns(item.series);
+    // One full-series curve sliced into per-run paths, so a dashed gap run
+    // keeps the same curvature as the solid runs around it (a 2-point run
+    // generated on its own is always straight under monotoneX/linear).
+    const runPaths = buildSeriesRunPaths(
+      item.series,
+      rawRuns,
       scales.xScale,
       scales.yScale,
       o.xAxisDataType,
       item.curve ?? o.curve,
     );
-    const runs: LineRunModel[] = getRuns(item.series).map((run) => ({
+    const runs: LineRunModel[] = rawRuns.map((run, i) => ({
       points: run.points,
       certain: run.certain,
-      path: gen(run.points) ?? "",
+      path: runPaths[i] ?? "",
     }));
 
     const points: LinePointModel[] = item.series.map((d) => ({
