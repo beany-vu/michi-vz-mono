@@ -1,5 +1,12 @@
 # @michi-vz/core
 
+## 1.19.1
+
+### Patch Changes
+
+- a6af158: Dashed missing-data segments on line-based charts now follow the same curve as the solid line around them, instead of rendering as straight bridges.
+- 93e5bcf: Canvas and WebGPU line/area charts keep the hover crosshair above the painted marks instead of it disappearing behind the canvas layer.
+
 ## 1.19.0
 
 ### Minor Changes

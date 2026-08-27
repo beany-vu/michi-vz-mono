@@ -1,5 +1,13 @@
 # @michi-vz/wc
 
+## 1.12.8
+
+### Patch Changes
+
+- Updated dependencies [a6af158]
+- Updated dependencies [93e5bcf]
+  - @michi-vz/core@1.19.1
+
 ## 1.12.7
 
 ### Patch Changes

@@ -10,6 +10,17 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.9
+
+Pakketversies: core **1.19.1** · wc, angular **1.12.8** · react **1.11.9** · vue, svelte **1.7.9** ·
+examples **1.1.9** · devtools, insights **0.2.24**.
+
+- **Gebogen overbruggingen van ontbrekende data in het [Lijndiagram](/charts/line)**: gestippelde
+  gap-segmenten volgen nu dezelfde curve als de doorgetrokken lijn eromheen, in plaats van als
+  rechte bruggen te renderen.
+- **Draadkruis boven canvas-markeringen**: bij canvas/WebGPU-lijn- en
+  [vlakdiagrammen](/charts/area) blijft de hoverlijn zichtbaar boven de geschilderde markeringen.
+
 ## v1.11.8
 
 Pakketversies: core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·

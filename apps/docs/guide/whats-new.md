@@ -10,6 +10,16 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.9
+
+Package versions: core **1.19.1** · wc, angular **1.12.8** · react **1.11.9** · vue, svelte **1.7.9** ·
+examples **1.1.9** · devtools, insights **0.2.24**.
+
+- **Curved missing-data bridges on the [Line Chart](/charts/line)**: dashed gap segments now
+  follow the same curve as the solid line around them, instead of rendering as straight bridges.
+- **Crosshair above canvas marks**: on canvas/WebGPU line and [area](/charts/area) charts the
+  hover line stays visible above the painted marks.
+
 ## v1.11.8
 
 Package versions: core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·

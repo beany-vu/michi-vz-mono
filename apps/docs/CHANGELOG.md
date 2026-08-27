@@ -1,5 +1,17 @@
 # docs
 
+## 0.1.30
+
+### Patch Changes
+
+- Updated dependencies [a6af158]
+- Updated dependencies [93e5bcf]
+  - @michi-vz/core@1.19.1
+  - @michi-vz/devtools@0.2.24
+  - @michi-vz/examples@1.1.9
+  - @michi-vz/insights@0.2.24
+  - @michi-vz/wc@1.12.8
+
 ## 0.1.29
 
 ### Patch Changes

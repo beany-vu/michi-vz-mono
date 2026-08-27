@@ -12,6 +12,18 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.9
+
+Versions des paquets : core **1.19.1** · wc, angular **1.12.8** · react **1.11.9** · vue, svelte **1.7.9** ·
+examples **1.1.9** · devtools, insights **0.2.24**.
+
+- **Ponts de données manquantes courbés sur le [Graphique en courbes](/charts/line)** : les
+  segments en pointillés suivent désormais la même courbe que la ligne pleine qui les entoure,
+  au lieu d'être rectilignes.
+- **Réticule au-dessus des marques canvas** : sur les graphiques en courbes et
+  [en aires](/charts/area) rendus en canvas/WebGPU, la ligne de survol reste visible au-dessus
+  des marques peintes.
+
 ## v1.11.8
 
 Versions des paquets : core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·

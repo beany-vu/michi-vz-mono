@@ -10,6 +10,17 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.9
+
+Phiên bản các gói: core **1.19.1** · wc, angular **1.12.8** · react **1.11.9** · vue, svelte **1.7.9** ·
+examples **1.1.9** · devtools, insights **0.2.24**.
+
+- **Cầu nối dữ liệu thiếu dạng cong trên [Biểu đồ đường](/charts/line)**: các đoạn nét đứt cho
+  khoảng trống dữ liệu nay đi theo đúng đường cong của phần nét liền xung quanh, thay vì hiển
+  thị thành đoạn thẳng.
+- **Đường chữ thập nằm trên các mark canvas**: với biểu đồ đường và [biểu đồ vùng](/charts/area)
+  vẽ bằng canvas/WebGPU, đường hover luôn hiển thị phía trên các mark đã vẽ.
+
 ## v1.11.8
 
 Phiên bản các gói: core **1.19.0** · wc, angular **1.12.7** · react **1.11.8** · vue, svelte **1.7.8** ·
