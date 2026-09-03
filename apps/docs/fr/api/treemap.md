@@ -34,6 +34,7 @@ Le composant web émet ces `CustomEvent`s à bouillonnement (bubbling) (le moteu
 | Événement | Détail | Se déclenche quand |
 | --- | --- | --- |
 | `michi-vz:highlight` | `string[]` | la surbrillance au survol change |
+| `michi-vz:tileclick` | `TreemapLeafContext` | une tuile feuille est cliquée |
 | `michi-vz:colormapping` | `Record<string, string>` | un mapping de couleurs est généré |
 | `michi-vz:dataprocessed` | `ChartContext` | les données sont (re)traitées |
 | `michi-vz:datawarning` | `DataWarning[]` | des avertissements sur les données d'entrée sont détectés |

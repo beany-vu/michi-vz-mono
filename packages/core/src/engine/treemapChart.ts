@@ -197,18 +197,24 @@ export function mountTreemapChart(
   };
 
   // Canvas-mode hit-test: tiles don't overlap, so the first containing rect wins.
-  const onHostMove = (ev: MouseEvent): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
+  const hitTest = (ev: MouseEvent): { x: number; y: number; hit: TreemapLeafMark | null } => {
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
     let hit: TreemapLeafMark | null = null;
-    for (const d of model.leaves) {
-      if (x >= d.x && x <= d.x + d.w && y >= d.y && y <= d.y + d.h) {
-        hit = d;
-        break;
+    if (model) {
+      for (const d of model.leaves) {
+        if (x >= d.x && x <= d.x + d.w && y >= d.y && y <= d.y + d.h) {
+          hit = d;
+          break;
+        }
       }
     }
+    return { x, y, hit };
+  };
+  const onHostMove = (ev: MouseEvent): void => {
+    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
+    const { x, y, hit } = hitTest(ev);
     reportDevtoolsHit(host, x, y, hit ? hit.label : null);
     if (hit) {
       showTooltip(hit, ev);
@@ -219,8 +225,9 @@ export function mountTreemapChart(
     }
   };
   // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
-  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
-  const onHostClick = (): void => {
+  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin
+  // and reports the hit tile through onTileClick (SVG parity).
+  const onHostClick = (ev: MouseEvent): void => {
     if (!isPainted(resolve(baseProps).renderer)) return;
     if (sticky) {
       sticky = false;
@@ -230,6 +237,8 @@ export function mountTreemapChart(
       sticky = true;
       tooltip.classList.add("sticky");
     }
+    const { hit } = hitTest(ev);
+    if (hit) baseProps.onTileClick?.(leafToContext(hit), ev);
   };
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("click", onHostClick);
@@ -407,6 +416,7 @@ export function mountTreemapChart(
               sticky = true;
               tooltip.classList.add("sticky");
               showTooltip(leaf, ev);
+              props.onTileClick?.(leafToContext(leaf), ev);
             },
           },
         );

@@ -136,6 +136,7 @@ export class TreemapChartElement extends LitElement {
       progressiveDraw: this.progressiveDraw,
       timeline: this.timeline,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
+      onTileClick: (leaf) => this.emit("michi-vz:tileclick", leaf),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),
       onDataWarning: (w) => this.emit("michi-vz:datawarning", w),

@@ -34,6 +34,7 @@ The web component dispatches these bubbling `CustomEvent`s (the engine exposes t
 | Event | Detail | Fires when |
 | --- | --- | --- |
 | `michi-vz:highlight` | `string[]` | hover highlight changes |
+| `michi-vz:tileclick` | `TreemapLeafContext` | a leaf tile is clicked |
 | `michi-vz:colormapping` | `Record<string, string>` | a color mapping is generated |
 | `michi-vz:dataprocessed` | `ChartContext` | data is (re)processed |
 | `michi-vz:datawarning` | `DataWarning[]` | input warnings are detected |

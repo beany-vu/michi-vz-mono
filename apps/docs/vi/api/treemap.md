@@ -34,6 +34,7 @@ Web component phát ra các `CustomEvent` nổi bọt (bubbling) sau đây (engi
 | Event | Detail | Kích hoạt khi |
 | --- | --- | --- |
 | `michi-vz:highlight` | `string[]` | khi trạng thái tô sáng hover thay đổi |
+| `michi-vz:tileclick` | `TreemapLeafContext` | khi một ô lá được nhấp |
 | `michi-vz:colormapping` | `Record<string, string>` | khi một color mapping được tạo ra |
 | `michi-vz:dataprocessed` | `ChartContext` | khi dữ liệu được xử lý (lại) |
 | `michi-vz:datawarning` | `DataWarning[]` | khi phát hiện cảnh báo về dữ liệu đầu vào |

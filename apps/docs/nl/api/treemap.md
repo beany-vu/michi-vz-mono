@@ -34,6 +34,7 @@ Het webcomponent verzendt deze bubbelende `CustomEvent`s (de engine biedt dezelf
 | Gebeurtenis | Detail | Wordt geactiveerd wanneer |
 | --- | --- | --- |
 | `michi-vz:highlight` | `string[]` | de hover-markering verandert |
+| `michi-vz:tileclick` | `TreemapLeafContext` | een bladtegel wordt aangeklikt |
 | `michi-vz:colormapping` | `Record<string, string>` | een kleurmapping wordt gegenereerd |
 | `michi-vz:dataprocessed` | `ChartContext` | data (opnieuw) wordt verwerkt |
 | `michi-vz:datawarning` | `DataWarning[]` | invoerwaarschuwingen worden gedetecteerd |

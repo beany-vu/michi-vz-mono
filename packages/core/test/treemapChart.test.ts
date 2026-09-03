@@ -390,3 +390,59 @@ describe("tileValueLabels (default-off, second line reusing the existing tile-si
     host.remove();
   });
 });
+
+describe("onTileClick", () => {
+  it("svg: a click on a leaf tile reports its TreemapLeafContext and the native event", () => {
+    const clicks: Array<{ label: string; value: number; code?: string }> = [];
+    const { host, chart } = mount({
+      dataSet: [
+        { label: "Coffee", value: 100, code: "CF" },
+        { label: "Tea", value: 60 },
+      ],
+      showSplit: false,
+      onTileClick: (leaf, ev) => {
+        expect(ev).toBeInstanceOf(MouseEvent);
+        clicks.push({ label: leaf.label, value: leaf.value, code: leaf.code });
+      },
+    });
+    const tea = Array.from(host.querySelectorAll<SVGRectElement>("rect.tile")).find(
+      (t) => t.getAttribute("data-leaf") === "Tea",
+    );
+    expect(tea).toBeTruthy();
+    tea!.parentElement!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(clicks).toEqual([{ label: "Tea", value: 60, code: undefined }]);
+    // The click still pins the tooltip (existing behaviour is unchanged).
+    expect(host.querySelector(".tooltip")?.classList.contains("sticky")).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("canvas: a host click hit-tests the painted tiles and reports the hit leaf", () => {
+    const labels: string[] = [];
+    const { host, chart } = mount({
+      dataSet: flat,
+      showSplit: false,
+      renderer: "canvas",
+      onTileClick: (leaf) => labels.push(leaf.label),
+    });
+    // jsdom rects are all-zero, so client coords are plot coords. Squarify puts the
+    // largest leaf (Coffee) at the top-left of the plot area (below the 36px title margin).
+    host.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: 12, clientY: 44 }));
+    expect(labels).toEqual(["Coffee"]);
+    // A click outside every tile (inside the title margin) reports nothing.
+    host.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: 12, clientY: 2 }));
+    expect(labels).toEqual(["Coffee"]);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("is a no-op when the prop is omitted", () => {
+    const { host, chart } = mount({ dataSet: flat, showSplit: false });
+    const tile = host.querySelector<SVGRectElement>("rect.tile")!;
+    expect(() =>
+      tile.parentElement!.dispatchEvent(new MouseEvent("click", { bubbles: true })),
+    ).not.toThrow();
+    chart.destroy();
+    host.remove();
+  });
+});

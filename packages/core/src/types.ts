@@ -2803,6 +2803,10 @@ export interface TreemapChartProps {
    * the chart's existing mechanism", not byte-identical legacy pixels.
    */
   tileValueLabels?: boolean | TreemapTileValueLabelsConfig;
+  /** Called when a leaf tile is clicked (SVG, canvas and webgpu renderers alike) with the
+   * same `TreemapLeafContext` the tooltip formatter receives, plus the native event. The
+   * click still pins the tooltip; use this for navigation / selection in the consumer. */
+  onTileClick?: (leaf: TreemapLeafContext, event: MouseEvent) => void;
   /** Called when the hovered/highlighted label(s) change */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */
