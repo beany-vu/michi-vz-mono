@@ -1,5 +1,16 @@
 # @michi-vz/wc
 
+## 1.13.0
+
+### Minor Changes
+
+- 62dfd94: TreemapChart `onTileClick(leaf, event)`: a leaf-tile click callback carrying the same `TreemapLeafContext` the tooltip formatter receives, on the SVG, canvas and webgpu renderers. The web component dispatches it as `michi-vz:tileclick`.
+
+### Patch Changes
+
+- Updated dependencies [62dfd94]
+  - @michi-vz/core@1.20.0
+
 ## 1.12.8
 
 ### Patch Changes

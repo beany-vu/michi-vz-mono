@@ -12,6 +12,16 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.10
+
+Versions des paquets : core **1.20.0** · wc **1.13.0** · angular **1.12.9** · react **1.11.10** · vue, svelte **1.7.10** ·
+examples **1.1.10** · devtools, insights **0.2.25**.
+
+- **Clics sur les tuiles du [Treemap](/charts/treemap)** : un nouveau callback `onTileClick(leaf, event)`
+  signale la tuile feuille cliquée (le même contexte que reçoit le formateur d'infobulle) sur les
+  rendus SVG, canvas et WebGPU ; le composant web l'émet sous le nom `michi-vz:tileclick`. Le clic
+  épingle toujours l'infobulle.
+
 ## v1.11.9
 
 Versions des paquets : core **1.19.1** · wc, angular **1.12.8** · react **1.11.9** · vue, svelte **1.7.9** ·

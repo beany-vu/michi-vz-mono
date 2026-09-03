@@ -742,6 +742,7 @@ Chart-specific props (the shared props above also apply):
 - `valueFormatter`: `(n: number) => string` - Formats numeric values shown in the default tooltip (defaults to a locale number formatter)
 - `tooltipFormatter`: `(leaf: TreemapLeafContext) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted)
 - `tileValueLabels`: `boolean | TreemapTileValueLabelsConfig` - Render each tile's value (+ share of the dataset total) as a SECOND line under the existing name label.
+- `onTileClick`: `(leaf: TreemapLeafContext, event: MouseEvent) => void` - Called when a leaf tile is clicked (SVG, canvas and webgpu renderers alike) with the same `TreemapLeafContext` the tooltip formatter receives, plus the native event.
 - `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
 
 ### Pie / Donut (`pie-chart`)

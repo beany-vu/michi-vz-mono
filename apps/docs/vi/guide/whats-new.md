@@ -10,6 +10,15 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.10
+
+Phiên bản các gói: core **1.20.0** · wc **1.13.0** · angular **1.12.9** · react **1.11.10** · vue, svelte **1.7.10** ·
+examples **1.1.10** · devtools, insights **0.2.25**.
+
+- **Nhấp vào ô trên [Treemap](/charts/treemap)**: callback mới `onTileClick(leaf, event)` báo
+  ô lá được nhấp (cùng ngữ cảnh mà trình định dạng tooltip nhận) trên các renderer SVG, canvas
+  và WebGPU; web component phát sự kiện `michi-vz:tileclick`. Nhấp vẫn ghim tooltip.
+
 ## v1.11.9
 
 Phiên bản các gói: core **1.19.1** · wc, angular **1.12.8** · react **1.11.9** · vue, svelte **1.7.9** ·

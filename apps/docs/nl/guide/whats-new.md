@@ -10,6 +10,16 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.10
+
+Pakketversies: core **1.20.0** · wc **1.13.0** · angular **1.12.9** · react **1.11.10** · vue, svelte **1.7.10** ·
+examples **1.1.10** · devtools, insights **0.2.25**.
+
+- **Tegelklikken op het [Treemap](/charts/treemap)**: een nieuwe callback `onTileClick(leaf, event)`
+  meldt de aangeklikte bladtegel (dezelfde context die de tooltip-formatter ontvangt) op de SVG-,
+  canvas- en WebGPU-renderers; het webcomponent verzendt dit als `michi-vz:tileclick`. Klikken
+  pint de tooltip nog steeds vast.
+
 ## v1.11.9
 
 Pakketversies: core **1.19.1** · wc, angular **1.12.8** · react **1.11.9** · vue, svelte **1.7.9** ·

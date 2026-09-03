@@ -4630,6 +4630,14 @@
           "common": false
         },
         {
+          "name": "onTileClick",
+          "type": "(leaf: TreemapLeafContext, event: MouseEvent) => void",
+          "optional": true,
+          "description": "Called when a leaf tile is clicked (SVG, canvas and webgpu renderers alike) with the same `TreemapLeafContext` the tooltip formatter receives, plus the native event. The click still pins the tooltip; use this for navigation / selection in the consumer.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
