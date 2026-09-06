@@ -1023,7 +1023,11 @@
   border-radius: 10px;
   flex: 0 0 auto;
 }
-.mv-michi-note p { margin: 0; line-height: 1.6; color: var(--vp-c-text-1); }
+.mv-michi-note p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--vp-c-text-1);
+}
 .mv-michi-kicker {
   font-size: 12px;
   letter-spacing: 0.08em;
@@ -1032,5 +1036,10 @@
   margin-bottom: 6px !important;
 }
 @media (max-width: 640px) {
-  .mv-michi-note { flex-direction: column; text-align: center; margin-left: 24px; margin-right: 24px; }
+  .mv-michi-note {
+    flex-direction: column;
+    text-align: center;
+    margin-left: 24px;
+    margin-right: 24px;
+  }
 }
