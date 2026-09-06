@@ -6,6 +6,7 @@ import WhySpotlight from "./WhySpotlight.vue";
 import ChartAtlas from "./ChartAtlas.vue";
 import HeroInfo from "./HeroInfo.vue";
 import HomeFeatures from "./HomeFeatures.vue";
+import MichiNote from "./MichiNote.vue";
 
 const { Layout } = DefaultTheme;
 
@@ -35,6 +36,7 @@ const META = ["SVG · canvas · WebGPU", "getContext() on every chart", "tree-sh
       <CatBand />
       <WhySpotlight />
       <ChartAtlas />
+      <MichiNote />
     </template>
 
     <!-- The stock footer only shows on the sidebar-less homepage; this mirrors

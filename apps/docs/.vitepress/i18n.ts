@@ -55,6 +55,9 @@ export interface UiStrings {
   footerMoreChat: string;
   footerMoreSax: string;
   footerMoreMaker: string;
+  michiNoteKicker: string;
+  michiNoteText: string;
+  michiNoteAlt: string;
   darkModeSwitch: string;
   returnToTop: string;
   sidebarMenu: string;
@@ -112,6 +115,9 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerMoreChat: "michi-chat, a chat assistant platform for small businesses",
     footerMoreSax: "e-Saxophone Learning, practice with your electronic sax",
     footerMoreMaker: "the maker's site",
+    michiNoteKicker: "Good to know",
+    michiNoteText: "There is indeed a cat in Geneva named Michi. Every project in this workshop is named after Michi, and this is Michi's contribution: sleeping through the code review, then taking the credit.",
+    michiNoteAlt: "Michi, an orange cat, asleep on the floor",
     darkModeSwitch: "Appearance",
     returnToTop: "Return to top",
     sidebarMenu: "Menu",
@@ -167,6 +173,9 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerMoreChat: "michi-chat, un assistant de chat pour les petites entreprises",
     footerMoreSax: "e-Saxophone Learning, pour s'exercer au saxophone électronique",
     footerMoreMaker: "le site de l'auteur",
+    michiNoteKicker: "Bon à savoir",
+    michiNoteText: "Il y a bel et bien un chat à Genève qui s'appelle Michi. Chaque projet de cet atelier porte ce nom, et voici la contribution de Michi : dormir pendant la revue de code, puis s'en attribuer le mérite.",
+    michiNoteAlt: "Michi, un chat roux, endormi sur le sol",
     darkModeSwitch: "Apparence",
     returnToTop: "Retour en haut",
     sidebarMenu: "Menu",
@@ -222,6 +231,9 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerMoreChat: "michi-chat, een chatassistent voor kleine bedrijven",
     footerMoreSax: "e-Saxophone Learning, oefenen met je elektronische sax",
     footerMoreMaker: "de site van de maker",
+    michiNoteKicker: "Goed om te weten",
+    michiNoteText: "Er is echt een kat in Genève die Michi heet. Elk project in deze werkplaats is naar Michi vernoemd, en dit is de bijdrage van Michi: door de code review heen slapen en daarna de eer opstrijken.",
+    michiNoteAlt: "Michi, een rode kat, slapend op de vloer",
     darkModeSwitch: "Weergave",
     returnToTop: "Terug naar boven",
     sidebarMenu: "Menu",
@@ -277,6 +289,9 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerMoreChat: "michi-chat, nền tảng trợ lý chat cho doanh nghiệp nhỏ",
     footerMoreSax: "e-Saxophone Learning, luyện tập với kèn saxophone điện tử",
     footerMoreMaker: "trang của tác giả",
+    michiNoteKicker: "Điều đáng biết",
+    michiNoteText: "Ở Geneva thật sự có một chú mèo tên Michi. Mọi dự án trong xưởng này đều mang tên Michi, và đây là đóng góp của Michi: ngủ suốt buổi review code, rồi nhận hết công lao.",
+    michiNoteAlt: "Michi, chú mèo vàng cam, đang ngủ trên sàn",
     darkModeSwitch: "Giao diện",
     returnToTop: "Lên đầu trang",
     sidebarMenu: "Menu",
