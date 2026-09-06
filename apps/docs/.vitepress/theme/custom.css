@@ -984,6 +984,12 @@
 .VPFooter .mv-foot-heart {
   display: block;
 }
+.VPFooter .mv-foot-ask,
+.VPFooter .mv-foot-more {
+  display: block;
+  max-width: 64ch;
+  margin: 6px auto 0;
+}
 .VPFooter .mv-foot-links {
   display: block;
   margin-top: 6px;

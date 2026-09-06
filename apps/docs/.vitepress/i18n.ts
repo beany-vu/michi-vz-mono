@@ -50,6 +50,11 @@ export interface UiStrings {
   footerContribute: string;
   footerTranslate: string;
   footerCopyright: string;
+  footerStarAsk: string;
+  footerMore: string;
+  footerMoreChat: string;
+  footerMoreSax: string;
+  footerMoreMaker: string;
   darkModeSwitch: string;
   returnToTop: string;
   sidebarMenu: string;
@@ -102,6 +107,11 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerContribute: "Contribute",
     footerTranslate: "Help translate",
     footerCopyright: "MIT licensed · © 2026 Hoang VU",
+    footerStarAsk: "If it made you smile, a star on GitHub keeps the cat fed. Pull requests are welcome too; the cat reviews every one personally.",
+    footerMore: "More from the same workshop",
+    footerMoreChat: "michi-chat, a chat assistant platform for small businesses",
+    footerMoreSax: "e-Saxophone Learning, practice with your electronic sax",
+    footerMoreMaker: "the maker's site",
     darkModeSwitch: "Appearance",
     returnToTop: "Return to top",
     sidebarMenu: "Menu",
@@ -152,6 +162,11 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerContribute: "Contribuer",
     footerTranslate: "Aider à traduire",
     footerCopyright: "Sous licence MIT · © 2026 Hoang VU",
+    footerStarAsk: "Si cela vous a fait sourire, une étoile sur GitHub nourrit le chat. Les pull requests sont les bienvenues aussi ; le chat relit chacune en personne.",
+    footerMore: "Du même atelier",
+    footerMoreChat: "michi-chat, un assistant de chat pour les petites entreprises",
+    footerMoreSax: "e-Saxophone Learning, pour s'exercer au saxophone électronique",
+    footerMoreMaker: "le site de l'auteur",
     darkModeSwitch: "Apparence",
     returnToTop: "Retour en haut",
     sidebarMenu: "Menu",
@@ -202,6 +217,11 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerContribute: "Bijdragen",
     footerTranslate: "Help met vertalen",
     footerCopyright: "MIT-licentie · © 2026 Hoang VU",
+    footerStarAsk: "Als dit u een glimlach gaf, houdt een ster op GitHub de kat gevoed. Pull requests zijn ook welkom; de kat beoordeelt elke persoonlijk.",
+    footerMore: "Meer uit dezelfde werkplaats",
+    footerMoreChat: "michi-chat, een chatassistent voor kleine bedrijven",
+    footerMoreSax: "e-Saxophone Learning, oefenen met je elektronische sax",
+    footerMoreMaker: "de site van de maker",
     darkModeSwitch: "Weergave",
     returnToTop: "Terug naar boven",
     sidebarMenu: "Menu",
@@ -252,6 +272,11 @@ export const ui: Record<LocaleKey, UiStrings> = {
     footerContribute: "Đóng góp",
     footerTranslate: "Giúp dịch thuật",
     footerCopyright: "Giấy phép MIT · © 2026 Hoang VU",
+    footerStarAsk: "Nếu bạn thấy vui, một ngôi sao trên GitHub sẽ giúp nuôi mèo. Cũng rất hoan nghênh pull request; mèo sẽ đích thân xem xét từng cái.",
+    footerMore: "Từ cùng một xưởng",
+    footerMoreChat: "michi-chat, nền tảng trợ lý chat cho doanh nghiệp nhỏ",
+    footerMoreSax: "e-Saxophone Learning, luyện tập với kèn saxophone điện tử",
+    footerMoreMaker: "trang của tác giả",
     darkModeSwitch: "Giao diện",
     returnToTop: "Lên đầu trang",
     sidebarMenu: "Menu",

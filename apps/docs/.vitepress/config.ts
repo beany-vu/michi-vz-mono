@@ -142,8 +142,18 @@ function themeForLocale(loc: LocaleKey) {
         ` · <a href="https://github.com/beany-vu/michi-vz-mono/blob/main/CONTRIBUTING.md#translations">${t.footerTranslate}</a>` +
         // AI-facing docs (llmstxt.org); the filename is language-neutral on purpose.
         ` · <a href="/llms.txt">llms.txt</a>` +
+        "</span>" +
+        // The polite, funny ask, then the sister projects: one workshop, three doors.
+        `<span class="mv-foot-ask">${t.footerStarAsk}</span>` +
+        `<span class="mv-foot-more">${t.footerMore}: ` +
+        `<a href="https://beany-vu.github.io/michi-chat/">${t.footerMoreChat}</a>` +
+        ` · <a href="https://e-saxophone.body-and-binary.net/">${t.footerMoreSax}</a>` +
+        ` · <a href="https://hoang.body-and-binary.net/">${t.footerMoreMaker}</a>` +
         "</span>",
-      copyright: t.footerCopyright,
+      copyright: t.footerCopyright.replace(
+        "Hoang VU",
+        '<a href="https://hoang.body-and-binary.net/">Hoang VU</a>',
+      ),
     },
     docFooter: { prev: t.docPrev, next: t.docNext },
     outline: { label: t.outline },
