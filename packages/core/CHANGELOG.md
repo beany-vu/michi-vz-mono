@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.21.0
+
+### Minor Changes
+
+- SymbolMapChart hexagon tiles: `shape: "hexagon"`, `positionMode: "honeycomb"` (+ `honeycomb` radius/gap/orientation - equal tiles snapped to a hex lattice, deterministic ring-walk collision resolution, `layout-overflow` warning), value-driven `colorScale` + `noDataColor`, optional item `value` (no-value tiles never claim a cell), per-item `offset`, `markers` pin overlays, and `geoNaturalEarth1`. The context now carries each symbol's `x`/`y`, `hasValue`, `stats.noValueCount`, `shape`, `positionMode`, `colorScale` and `markers`. Web component and Angular applicator forward the new props.
+
 ## 1.20.1
 
 ### Patch Changes

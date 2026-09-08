@@ -10,6 +10,18 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.12
+
+Pakketversies: core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·
+examples **1.1.12** · devtools, insights **0.2.27**.
+
+- **Zeshoekige tegels op de [Symboolkaart](/charts/symbol-map)**: `shape: "hexagon"` plus
+  `positionMode: "honeycomb"` maken van de symboolkaart een tegelkaart - even grote zeshoeken op een
+  zeshoekig rooster (deterministische botsingsafhandeling, `layout-overflow`-waarschuwing), de
+  waarde in een `colorScale` met `noDataColor` voor items zonder `value`, `offset`-verschuivingen
+  per item, decoratieve `markers`-spelden en de projectie `geoNaturalEarth1`. De context vermeldt
+  `x`/`y`, `hasValue`, `noValueCount`, `shape`, `positionMode`, `colorScale` en `markers`.
+
 ## v1.11.11
 
 Pakketversies: core **1.20.1** · wc **1.13.1** · angular **1.13.0** · react **1.11.11** · vue, svelte **1.7.11** ·

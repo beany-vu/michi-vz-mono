@@ -10,6 +10,18 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.12
+
+Package versions: core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·
+examples **1.1.12** · devtools, insights **0.2.27**.
+
+- **Hexagon tiles on the [Symbol Map](/charts/symbol-map)**: `shape: "hexagon"` plus
+  `positionMode: "honeycomb"` turn the symbol map into a tile map - equal hexagons snapped to a
+  hex lattice (deterministic collision resolution, `layout-overflow` warning), value carried by a
+  `colorScale` with `noDataColor` for items without a `value`, per-item `offset` nudges,
+  decorative `markers` pins, and the `geoNaturalEarth1` projection. The context reports each
+  symbol's `x`/`y`, `hasValue`, `noValueCount`, `shape`, `positionMode`, `colorScale` and `markers`.
+
 ## v1.11.11
 
 Package versions: core **1.20.1** · wc **1.13.1** · angular **1.13.0** · react **1.11.11** · vue, svelte **1.7.11** ·

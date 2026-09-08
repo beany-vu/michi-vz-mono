@@ -12,6 +12,19 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.12
+
+Versions des paquets : core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·
+examples **1.1.12** · devtools, insights **0.2.27**.
+
+- **Tuiles hexagonales sur la [Carte à symboles](/charts/symbol-map)** : `shape: "hexagon"` et
+  `positionMode: "honeycomb"` transforment la carte à symboles en carte à tuiles - des hexagones
+  égaux accrochés à un réseau hexagonal (résolution déterministe des collisions, avertissement
+  `layout-overflow`), la valeur portée par un `colorScale` avec `noDataColor` pour les éléments
+  sans `value`, des décalages `offset` par élément, des épingles décoratives `markers`, et la
+  projection `geoNaturalEarth1`. Le contexte expose `x`/`y`, `hasValue`, `noValueCount`, `shape`,
+  `positionMode`, `colorScale` et `markers`.
+
 ## v1.11.11
 
 Versions des paquets : core **1.20.1** · wc **1.13.1** · angular **1.13.0** · react **1.11.11** · vue, svelte **1.7.11** ·

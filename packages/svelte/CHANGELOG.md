@@ -1,5 +1,12 @@
 # @michi-vz/svelte
 
+## 1.7.12
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.21.0
+
 ## 1.7.11
 
 ### Patch Changes

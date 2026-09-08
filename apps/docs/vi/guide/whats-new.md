@@ -10,6 +10,18 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.12
+
+Phiên bản các gói: core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·
+examples **1.1.12** · devtools, insights **0.2.27**.
+
+- **Ô lục giác trên [Bản đồ ký hiệu](/charts/symbol-map)**: `shape: "hexagon"` cùng
+  `positionMode: "honeycomb"` biến bản đồ ký hiệu thành bản đồ ô - các lục giác bằng nhau bám vào
+  lưới lục giác (giải quyết va chạm tất định, cảnh báo `layout-overflow`), giá trị thể hiện qua
+  `colorScale` với `noDataColor` cho mục không có `value`, dịch chuyển `offset` theo mục, ghim
+  trang trí `markers`, và phép chiếu `geoNaturalEarth1`. Ngữ cảnh báo cáo `x`/`y`, `hasValue`,
+  `noValueCount`, `shape`, `positionMode`, `colorScale` và `markers`.
+
 ## v1.11.11
 
 Phiên bản các gói: core **1.20.1** · wc **1.13.1** · angular **1.13.0** · react **1.11.11** · vue, svelte **1.7.11** ·
