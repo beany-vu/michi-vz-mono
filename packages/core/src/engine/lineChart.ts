@@ -432,9 +432,11 @@ export function mountLineChart(
         mouseLine.style.visibility = "hidden";
       }
     }
-    if (!isPainted(r.renderer) || sticky || hitData.length === 0 || overNoDataTick) return;
+    if (sticky || hitData.length === 0 || overNoDataTick) return;
     // Shared tooltip: whenever the cursor is within the plot x-range, list every
     // series' value at the nearest year (no need to be near a specific line).
+    // Renderer-agnostic: in svg mode the per-line overlays stand down (see the
+    // renderLineSvg interactions) so this host-level column tooltip is the only one.
     if (baseProps.sharedTooltip) {
       const rect = svg.getBoundingClientRect();
       const sx = ev.clientX - rect.left;
@@ -447,6 +449,9 @@ export function mountLineChart(
       }
       return;
     }
+    // Per-series host hit-test is the painted-mode path; svg marks carry their
+    // own overlay listeners.
+    if (!isPainted(r.renderer)) return;
     const svgRect = svg.getBoundingClientRect();
     const x = ev.clientX - svgRect.left;
     const y = ev.clientY - svgRect.top;
@@ -480,11 +485,12 @@ export function mountLineChart(
       baseProps.onHighlightItem?.([]);
     }
   };
-  // Canvas-mode click-to-pin: SVG marks pin via their own onClick, but canvas
-  // marks have no DOM, so a click on the host toggles the hovered tooltip's pin.
+  // Host click-to-pin: canvas marks have no DOM, and the shared (column) tooltip
+  // belongs to no mark, so in either case a click on the host toggles the
+  // hovered tooltip's pin. Plain svg marks pin via their own overlay onClick.
   const onHostClick = (): void => {
     if (consumeSuppressedClick()) return; // the click that ends a zoom drag
-    if (!isPainted(resolve(baseProps).renderer)) return;
+    if (!isPainted(resolve(baseProps).renderer) && !baseProps.sharedTooltip) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");
@@ -780,17 +786,21 @@ export function mountLineChart(
           enableTransitions: r.enableTransitions,
         },
         {
+          // With sharedTooltip the host-level column tooltip owns hover + pin;
+          // the per-line overlays must not swap in the single-series tooltip.
           onEnter: (label, ev) => {
-            if (sticky) return;
+            if (sticky || props.sharedTooltip) return;
             showTooltip(label, ev);
             props.onHighlightItem?.([label]);
           },
           onLeave: () => {
+            if (props.sharedTooltip) return;
             hideTooltip();
             if (!sticky) props.onHighlightItem?.([]);
           },
           onClick: (label, ev) => {
             if (consumeSuppressedClick()) return; // the click that ends a zoom drag
+            if (props.sharedTooltip) return; // the host click handler pins the column tooltip
             sticky = true;
             tooltip.classList.add("sticky");
             showTooltip(label, ev);

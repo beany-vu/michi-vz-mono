@@ -823,6 +823,48 @@ describe("mountLineChart sharedTooltip (all series at the hovered year)", () => 
     chart.destroy();
     host.remove();
   });
+
+  it("svg renderer: host mousemove shows the column tooltip, host click pins/unpins, line overlays stand down", () => {
+    // Before this the shared path was gated on isPainted(), so an svg chart with
+    // sharedTooltip silently fell back to the per-line single-series tooltip.
+    const { host, chart } = mount({ sharedTooltip: true, renderer: "svg" });
+    const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 150, bubbles: true }));
+    expect(tooltip.style.visibility).toBe("visible");
+    expect(tooltip.innerHTML).toContain("Alpha One");
+    expect(tooltip.innerHTML).toContain("Beta");
+    // Hovering a line's hit overlay must NOT replace the column tooltip with the
+    // single-series one, and leaving it must not hide the column tooltip.
+    const overlay = host.querySelector<SVGPathElement>("path.line-overlay")!;
+    overlay.dispatchEvent(
+      new MouseEvent("mouseenter", { clientX: 300, clientY: 150, bubbles: false }),
+    );
+    expect(tooltip.innerHTML).toContain("Beta");
+    overlay.dispatchEvent(new MouseEvent("mouseleave", { bubbles: false }));
+    expect(tooltip.style.visibility).toBe("visible");
+    // Click anywhere on the host pins; a second click unpins.
+    host.dispatchEvent(new MouseEvent("click", { clientX: 300, clientY: 150, bubbles: true }));
+    expect(tooltip.classList.contains("sticky")).toBe(true);
+    host.dispatchEvent(new MouseEvent("click", { clientX: 300, clientY: 150, bubbles: true }));
+    expect(tooltip.classList.contains("sticky")).toBe(false);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("svg renderer WITHOUT sharedTooltip keeps the per-line overlay tooltip (no host-level column tooltip)", () => {
+    const { host, chart } = mount({ renderer: "svg" });
+    const tooltip = host.querySelector<HTMLDivElement>(".tooltip")!;
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 300, clientY: 150, bubbles: true }));
+    expect(tooltip.style.visibility).not.toBe("visible");
+    const overlay = host.querySelector<SVGPathElement>("path.line-overlay")!;
+    overlay.dispatchEvent(
+      new MouseEvent("mouseenter", { clientX: 300, clientY: 150, bubbles: false }),
+    );
+    expect(tooltip.style.visibility).toBe("visible");
+    expect(tooltip.innerHTML).not.toContain("Beta"); // single-series tooltip
+    chart.destroy();
+    host.remove();
+  });
 });
 
 describe("mountLineChart per-series tooltipFormatter", () => {

@@ -54,6 +54,18 @@ import type {
   RadialTreeChartProps,
 } from "@michi-vz/core";
 
+// Data-item + config types a consumer needs to BUILD props (the *Props types
+// alone force `LineChartProps["dataSet"][number]`-style indexing).
+export type {
+  DataPoint,
+  LineDataItem,
+  Margin,
+  Filter,
+  CurveType,
+  XaxisDataType,
+  MouseLineConfig,
+  SinglePointLineConfig,
+} from "@michi-vz/core";
 export type {
   GapChartProps,
   LineChartProps,
