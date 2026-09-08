@@ -2283,8 +2283,12 @@ export interface SymbolMapDataItem {
   lng: number;
   /** Latitude in degrees ([-90, 90]). */
   lat: number;
-  /** Primary value; sets the outer circle's radius (via `radiusRange`). */
-  value: number;
+  /** Primary value; sets the outer circle's radius (via `radiusRange`) and, with
+   * `colorScale`, the colour. OMIT it for a located item with no value: the item is
+   * painted `noDataColor`, excluded from the colour scale and the radius domain, drawn at
+   * the minimum radius (the tile radius in honeycomb mode) and never reserves a
+   * honeycomb cell. */
+  value?: number;
   /** Optional secondary value, drawn as a concentric second circle inside (or
    * outside, if larger than `value`) the primary one - the legacy chart's
    * `radiusSecond` ring. */
@@ -2364,6 +2368,14 @@ export interface SymbolMapChartProps {
    * (default "flat" = a flat edge on top, columns offset; "pointy" = a vertex on
    * top, rows offset). Also sets the hexagon outline orientation for `shape`. */
   honeycomb?: { radius?: number; gap?: number; orientation?: "flat" | "pointy" };
+  /** Value-driven colour encoding: a resolved hex `range` keyed to a numeric `domain`,
+   * built into a d3 `scaleThreshold` (values outside the domain clamp to the first/last
+   * colour). Precedence: `colorsMapping[label]` > `colorScale(value)` > the item's `color`
+   * > the palette. Same contract as ChoroplethMapChart's `colorScale`. */
+  colorScale?: { domain: number[]; range: string[] };
+  /** Fill for items without a `value` (default `#d2d7dd`, ChoroplethMap's no-data grey).
+   * Pass "transparent" to hide them while keeping their tooltip target. */
+  noDataColor?: string;
   /** Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral). */
   geographyColor?: string;
   /** Border colour for the optional backdrop `geography` (default `#d7dce3`). */

@@ -42,6 +42,8 @@ export interface SymbolMapMark {
   opacitySecond: number | null;
   value: number;
   valueSecond: number | null;
+  /** False = painted `noDataColor` (no finite value on the item). */
+  hasValue: boolean;
   dimmed: boolean;
 }
 
@@ -53,6 +55,8 @@ export interface SymbolMapRenderModel {
 
 export interface BuildSymbolMapModelOptions {
   highlightItems: string[];
+  /** Fill for items without a value (default "#d2d7dd" in the engine). */
+  noDataColor?: string;
 }
 
 export function buildSymbolMapBackdrop(
@@ -100,11 +104,14 @@ export function buildSymbolMapRenderModel(
       y: lp.y,
       radius: lp.radius,
       radiusSecond,
-      fill: colors.getColor(n.label),
+      fill: n.hasValue
+        ? colors.getColorFor(n)
+        : colors.getColorFor(n) || o.noDataColor || "#d2d7dd",
       opacity,
       opacitySecond: radiusSecond != null ? Math.max(0, opacity - 0.3) : null,
       value: n.value,
       valueSecond: n.valueSecond,
+      hasValue: n.hasValue,
       dimmed: anyHighlight && !highlightSet.has(n.label),
     };
   });

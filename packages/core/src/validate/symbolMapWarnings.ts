@@ -26,7 +26,7 @@ export function checkSymbolMapData(dataSet: SymbolMapDataItem[]): DataWarning[] 
         message: `Symbol "${d.label}" has a non-finite value.`,
         label: d.label,
       });
-    } else if (Number(d.value) < 0) {
+    } else if (d.value !== undefined && Number(d.value) < 0) {
       warnings.push({
         type: "non-finite-value",
         message: `Symbol "${d.label}" has a negative value (${d.value}); it is clamped to 0.`,

@@ -157,7 +157,8 @@ export function buildSymbolMapRadiusScale(
 ): SymbolMapRadiusScale {
   const values: number[] = [];
   for (const n of located) {
-    values.push(n.value);
+    // No-value items carry a placeholder 0 - they must not drag the domain floor down.
+    if (n.hasValue) values.push(n.value);
     if (n.valueSecond != null) values.push(n.valueSecond);
   }
   const [rawLo, rawHi] = (extent(values) as [number | undefined, number | undefined]) ?? [

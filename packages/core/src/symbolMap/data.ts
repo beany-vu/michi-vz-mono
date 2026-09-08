@@ -22,8 +22,13 @@ export interface SymbolMapNode {
    * validate/symbolMapWarnings.ts, which flags the input instead of silently
    * fixing it up here). */
   value: number;
+  /** False when the item had no finite `value`: painted `noDataColor`, excluded
+   * from the radius/colour domains, never reserving a honeycomb cell. */
+  hasValue: boolean;
   valueSecond: number | null;
   color?: string;
+  /** Pixel nudge applied after projection, before layout (see SymbolMapDataItem). */
+  offset?: { dx: number; dy: number };
 }
 
 export interface ProcessedSymbolMap {
@@ -62,14 +67,18 @@ export function processSymbolMapData(
       lng: d.lng,
       lat: d.lat,
       value: finite(d.value) ? Math.max(0, d.value) : 0,
+      hasValue: finite(d.value),
       valueSecond: finite(d.valueSecond) ? Math.max(0, d.valueSecond as number) : null,
       color: d.color,
+      offset: d.offset,
     }));
 
   const visible =
     min === undefined
       ? located
-      : located.filter((n) => n.value > min && (n.valueSecond === null || n.valueSecond >= min));
+      : located.filter(
+          (n) => !n.hasValue || (n.value > min && (n.valueSecond === null || n.valueSecond >= min)),
+        );
 
   const groupKeys: string[] = [];
   for (const n of visible) if (!groupKeys.includes(n.label)) groupKeys.push(n.label);
