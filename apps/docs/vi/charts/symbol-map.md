@@ -25,8 +25,8 @@ Symbol vẽ nhầm sang nước khác là lỗi chính xác bản đồ, với n
 
 <PositionModeDemo labelPrecise="precise: vị trí thật" labelForce="force: tách chồng lấn" hint="Chuyển sang force để thấy các bong bóng lệch khỏi tọa độ thật nhằm tránh va chạm. Khi có nền bản đồ, precise thường là lựa chọn trung thực hơn." />
 
-::: warning Bản đồ chỉ để minh họa
-Atlas thế giới trên trang này là file GeoJSON đơn giản hóa thuộc phạm vi công cộng, đi kèm ví dụ tài liệu chỉ để minh họa. Đường biên giới, tên gọi và hình dạng KHÔNG mang tính chính thức. Hãy rà soát biên giới và tên gọi trong file `geography` của bạn theo chính sách bản đồ của tổ chức trước khi dùng thật: thư viện vẽ nguyên trạng file được truyền vào, không hiệu chỉnh gì.
+::: warning Bản đồ chỉ để minh họa - và biên giới là vấn đề chính trị
+Bản đồ thế giới trên trang này là một tệp GeoJSON đơn giản hóa thuộc phạm vi công cộng, đi kèm ví dụ tài liệu chỉ để minh họa. Nó có thể **sai**: biên giới, tên gọi và hình dạng KHÔNG có giá trị chính thức, và một số đang bị tranh chấp. Biên giới và tên gọi nào là "đúng" khác nhau theo đối tượng, khu vực pháp lý và tổ chức, và một bản đồ sai ở điểm này là vấn đề chính trị, không phải thẩm mỹ. Không có gì được vẽ ở đây là sự công nhận đối với bất kỳ đường biên giới nào. Trước khi dùng trong sản phẩm, hãy đối chiếu biên giới và tên gọi trong tệp `geography` bạn truyền vào với chính sách bản đồ của tổ chức: thư viện vẽ tệp nguyên trạng và không sửa gì.
 :::
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ mã tích hợp bên dưới là khác.
@@ -36,6 +36,8 @@ Atlas thế giới trên trang này là file GeoJSON đơn giản hóa thuộc p
 Đôi khi mọi địa điểm cần có cùng trọng số và **giá trị nằm ở màu sắc**: một bản đồ ô. Đặt `shape: "hexagon"` và `positionMode: "honeycomb"`, mỗi ký hiệu trở thành một lục giác cùng kích thước bám vào lưới lục giác: các ô lát kín mặt phẳng, không bao giờ chồng lấn, và ô của một quốc gia ở gần trọng tâm của nó nhất có thể trong lưới. `colorScale` (miền/dải `scaleThreshold`, cùng hợp đồng với [Bản đồ choropleth](/charts/choropleth-map)) mang giá trị; các ô được tô ở độ mờ đầy đủ vì màu sắc *chính là* mã hóa.
 
 <ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+> Cảnh báo về bản đồ minh họa ở trên cũng áp dụng ở đây: các ô nằm trên một bản đồ minh họa, và vị trí của mỗi ô cũng như quốc gia mà nó đại diện chỉ đúng khi `geography` và tọa độ bạn cung cấp đúng.
 
 - **`honeycomb`** - `{ radius, gap, orientation }`: bán kính ngoại tiếp của ô tính bằng px (mặc định 11), khoảng cách giữa các cạnh ô (mặc định 2), và đỉnh `"flat"` (mặc định, cạnh phẳng ở trên) hoặc `"pointy"`. Hướng chi phối cả đường viền lục giác lẫn lưới, để các ô khớp nhau.
 - **Va chạm** được giải quyết theo thứ tự `dataSet`: ô đến sau mà cell đã bị chiếm sẽ đi ra từng vòng đến cell trống đầu tiên, một cách tất định. Nếu không có cell trống trong sáu vòng, ô sẽ chồng lấn và một `onDataWarning` loại `layout-overflow` nêu tên nó.

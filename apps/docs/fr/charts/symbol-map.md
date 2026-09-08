@@ -25,8 +25,8 @@ Un symbole dessiné sur le mauvais pays est un problème d'exactitude cartograph
 
 <PositionModeDemo labelPrecise="precise : positions exactes" labelForce="force : anti-chevauchement" hint="Passez en force : les bulles dérivent de leurs coordonnées réelles pour résoudre les collisions. Avec un fond de carte visible, precise est en général le choix honnête." />
 
-::: warning Géographie de démonstration uniquement
-L'atlas mondial de cette page est un fichier GeoJSON simplifié du domaine public, fourni avec les exemples de la documentation à titre d'illustration. Frontières, noms et tracés ne font PAS autorité. Vérifiez les frontières et la toponymie de votre propre fichier `geography` selon la politique cartographique de votre organisation avant tout usage en production : la bibliothèque rend le fichier tel quel, sans correction.
+::: warning Géographie de démonstration uniquement - et les frontières sont politiques
+L'atlas mondial de cette page est un fichier GeoJSON simplifié du domaine public, fourni avec les exemples de la documentation à titre d'illustration. Il peut être **faux** : frontières, noms et tracés ne font PAS autorité, et certains sont contestés. Les frontières et noms « corrects » varient selon le public, la juridiction et l'organisation, et une carte qui se trompe est un problème politique, pas cosmétique. Rien de ce qui est rendu ici ne constitue une reconnaissance d'une frontière. Avant tout usage en production, vérifiez les frontières et la toponymie de votre propre fichier `geography` selon la politique cartographique de votre organisation : la bibliothèque rend le fichier tel quel, sans correction.
 :::
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
@@ -36,6 +36,8 @@ L'atlas mondial de cette page est un fichier GeoJSON simplifié du domaine publi
 Parfois chaque lieu doit peser autant que les autres et **la valeur appartient à la couleur** : une carte à tuiles. Avec `shape: "hexagon"` et `positionMode: "honeycomb"`, chaque symbole devient un hexagone de taille égale accroché à un réseau hexagonal : les tuiles pavent le plan, ne se chevauchent jamais, et la tuile d'un pays reste aussi proche de son centroïde que le réseau le permet. `colorScale` (un domaine/plage `scaleThreshold`, le même contrat que la [Carte choroplèthe](/charts/choropleth-map)) porte la valeur ; les marques sont peintes à pleine opacité puisque la couleur *est* l'encodage.
 
 <ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+> L'avertissement « géographie de démonstration » ci-dessus s'applique ici aussi : les tuiles reposent sur un atlas illustratif, et la position de chaque tuile, comme le pays qu'elle représente, n'est correcte que dans la mesure où le sont la `geography` et les coordonnées que vous fournissez.
 
 - **`honeycomb`** - `{ radius, gap, orientation }` : rayon circonscrit de la tuile en px (11 par défaut), espace entre les bords (2 par défaut), et sommets `"flat"` (défaut, côté plat en haut) ou `"pointy"`. L'orientation régit à la fois le contour de l'hexagone et le réseau, pour que les tuiles s'emboîtent.
 - **Les collisions** se résolvent dans l'ordre de `dataSet` : une tuile dont la cellule est prise avance anneau par anneau jusqu'à la première cellule libre, de façon déterministe. Sans cellule libre dans six anneaux, la tuile chevauche et un `onDataWarning` de type `layout-overflow` la nomme.

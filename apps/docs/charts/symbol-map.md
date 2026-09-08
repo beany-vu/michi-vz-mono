@@ -25,8 +25,8 @@ A symbol drawn over the wrong country is a cartographic-accuracy problem and, fo
 
 <PositionModeDemo />
 
-::: warning Demo geography only
-The world atlas on this page is a simplified public-domain GeoJSON file bundled with the docs examples for illustration. Boundaries, names, and shapes are NOT authoritative. Review the borders and naming of the `geography` file you pass against your organization's cartographic policy before production use: the library renders the file as-is and applies no corrections.
+::: warning Demo geography only - and borders are political
+The world atlas on this page is a simplified public-domain GeoJSON file bundled with the docs examples for illustration. It can be **wrong**: boundaries, names, and shapes are NOT authoritative, and some of them are disputed. Which borders and names are "correct" differs by audience, jurisdiction and organisation, and a map that gets them wrong is a political problem, not a cosmetic one. Nothing rendered here is an endorsement of any boundary. Before production use, review the borders and naming of the `geography` file you pass against your organization's cartographic policy: the library renders the file as-is and applies no corrections.
 :::
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
@@ -36,6 +36,8 @@ The world atlas on this page is a simplified public-domain GeoJSON file bundled 
 Sometimes every place should weigh the same and the **value belongs in colour**: a tile map. Set `shape: "hexagon"` and `positionMode: "honeycomb"`, and every symbol becomes an equal-size hexagon snapped to a hex lattice - tiles tessellate, never overlap, and a country's tile stays as close to its centroid as the lattice allows. `colorScale` (a `scaleThreshold` domain/range, the same contract as the [Choropleth Map](/charts/choropleth-map)) carries the value; marks paint at full opacity because the colour *is* the encoding.
 
 <ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+> The demo-geography warning above applies here too: the tiles sit on an illustrative atlas, and every tile's position, and which country it stands for, is only as correct as the `geography` and coordinates you supply.
 
 - **`honeycomb`** - `{ radius, gap, orientation }`: tile circumradius in px (default 11), gap between tile edges (default 2), and `"flat"` (default) or `"pointy"` tops. Orientation drives both the hexagon outline and the lattice, so the tiles fit.
 - **Collisions** are resolved in `dataSet` order: a later tile whose cell is taken walks outward ring by ring to the first free cell, deterministically. If no cell is free within six rings the tile overlaps and an `onDataWarning` of type `layout-overflow` names it.

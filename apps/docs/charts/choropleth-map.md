@@ -14,8 +14,8 @@ Categorical mode - `colorsMapping` wins over `colorScale` (the sdg-trade **Data 
 
 <ChartDemo chart="choropleth-map-chart" :index="1" :legend="[]" />
 
-::: warning Demo geography only
-The world atlas on this page is a simplified public-domain GeoJSON file bundled with the docs examples for illustration. Boundaries, names, and shapes are NOT authoritative. Review the borders and naming of the `geography` file you pass against your organization's cartographic policy before production use: the library renders the file as-is and applies no corrections.
+::: warning Demo geography only - and borders are political
+The world atlas on this page is a simplified public-domain GeoJSON file bundled with the docs examples for illustration. It can be **wrong**: boundaries, names, and shapes are NOT authoritative, and some of them are disputed. Which borders and names are "correct" differs by audience, jurisdiction and organisation, and a map that gets them wrong is a political problem, not a cosmetic one. Nothing rendered here is an endorsement of any boundary. Before production use, review the borders and naming of the `geography` file you pass against your organization's cartographic policy: the library renders the file as-is and applies no corrections.
 :::
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.

@@ -25,8 +25,8 @@ Een symbool boven het verkeerde land is een cartografisch nauwkeurigheidsproblee
 
 <PositionModeDemo labelPrecise="precise: echte posities" labelForce="force: ontklonteren" hint="Schakel naar force en zie de bellen van hun echte coördinaten wegdrijven om botsingen op te lossen. Met een zichtbare landmassa is precise meestal de eerlijke keuze." />
 
-::: warning Alleen demogeografie
-De wereldatlas op deze pagina is een vereenvoudigd publiek-domein GeoJSON-bestand, alleen ter illustratie meegeleverd met de documentatievoorbeelden. Grenzen, namen en vormen zijn NIET gezaghebbend. Controleer de grenzen en naamgeving van je eigen `geography`-bestand tegen het cartografische beleid van je organisatie vóór productiegebruik: de bibliotheek tekent het bestand zoals het is, zonder correcties.
+::: warning Alleen demogeografie - en grenzen zijn politiek
+De wereldatlas op deze pagina is een vereenvoudigd GeoJSON-bestand uit het publieke domein, meegeleverd met de documentatievoorbeelden ter illustratie. Hij kan **fout** zijn: grenzen, namen en vormen zijn NIET gezaghebbend, en sommige zijn omstreden. Welke grenzen en namen "juist" zijn verschilt per publiek, rechtsgebied en organisatie, en een kaart die het mis heeft is een politiek probleem, geen cosmetisch. Niets wat hier wordt getekend is een erkenning van een grens. Controleer vóór productiegebruik de grenzen en naamgeving van het `geography`-bestand dat je doorgeeft aan het cartografische beleid van je organisatie: de bibliotheek tekent het bestand zoals het is en corrigeert niets.
 :::
 
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
@@ -36,6 +36,8 @@ De wereldatlas op deze pagina is een vereenvoudigd publiek-domein GeoJSON-bestan
 Soms moet elke plek even zwaar wegen en **hoort de waarde in de kleur**: een tegelkaart. Met `shape: "hexagon"` en `positionMode: "honeycomb"` wordt elk symbool een even grote zeshoek die op een zeshoekig rooster klikt: tegels betegelen het vlak, overlappen nooit, en de tegel van een land blijft zo dicht bij zijn zwaartepunt als het rooster toelaat. `colorScale` (een `scaleThreshold`-domein/bereik, hetzelfde contract als de [Choropletenkaart](/charts/choropleth-map)) draagt de waarde; markeringen worden op volle dekking geschilderd omdat de kleur *de* codering is.
 
 <ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+> De waarschuwing over demogeografie hierboven geldt hier ook: de tegels liggen op een illustratieve atlas, en de positie van elke tegel, en welk land hij voorstelt, is alleen zo juist als de `geography` en coördinaten die je aanlevert.
 
 - **`honeycomb`** - `{ radius, gap, orientation }`: omgeschreven straal van de tegel in px (standaard 11), ruimte tussen tegelranden (standaard 2), en `"flat"` (standaard, platte kant boven) of `"pointy"`. De oriëntatie stuurt zowel de zeshoekcontour als het rooster, zodat de tegels passen.
 - **Botsingen** worden in `dataSet`-volgorde opgelost: een latere tegel waarvan de cel bezet is, loopt ring voor ring naar buiten tot de eerste vrije cel, deterministisch. Is er binnen zes ringen geen cel vrij, dan overlapt de tegel en noemt een `onDataWarning` van het type `layout-overflow` hem.

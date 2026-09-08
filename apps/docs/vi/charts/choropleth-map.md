@@ -14,8 +14,8 @@ Chế độ danh mục - `colorsMapping` thắng `colorScale` (trường hợp s
 
 <ChartDemo chart="choropleth-map-chart" :index="1" :legend="[]" />
 
-::: warning Bản đồ chỉ để minh họa
-Atlas thế giới trên trang này là file GeoJSON đơn giản hóa thuộc phạm vi công cộng, đi kèm ví dụ tài liệu chỉ để minh họa. Đường biên giới, tên gọi và hình dạng KHÔNG mang tính chính thức. Hãy rà soát biên giới và tên gọi trong file `geography` của bạn theo chính sách bản đồ của tổ chức trước khi dùng thật: thư viện vẽ nguyên trạng file được truyền vào, không hiệu chỉnh gì.
+::: warning Bản đồ chỉ để minh họa - và biên giới là vấn đề chính trị
+Bản đồ thế giới trên trang này là một tệp GeoJSON đơn giản hóa thuộc phạm vi công cộng, đi kèm ví dụ tài liệu chỉ để minh họa. Nó có thể **sai**: biên giới, tên gọi và hình dạng KHÔNG có giá trị chính thức, và một số đang bị tranh chấp. Biên giới và tên gọi nào là "đúng" khác nhau theo đối tượng, khu vực pháp lý và tổ chức, và một bản đồ sai ở điểm này là vấn đề chính trị, không phải thẩm mỹ. Không có gì được vẽ ở đây là sự công nhận đối với bất kỳ đường biên giới nào. Trước khi dùng trong sản phẩm, hãy đối chiếu biên giới và tên gọi trong tệp `geography` bạn truyền vào với chính sách bản đồ của tổ chức: thư viện vẽ tệp nguyên trạng và không sửa gì.
 :::
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ có mã tích hợp bên dưới là khác nhau.

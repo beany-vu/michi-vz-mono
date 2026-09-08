@@ -14,8 +14,8 @@ Categorische modus - `colorsMapping` wint van `colorScale` (de sdg-trade **Data 
 
 <ChartDemo chart="choropleth-map-chart" :index="1" :legend="[]" />
 
-::: warning Alleen demogeografie
-De wereldatlas op deze pagina is een vereenvoudigd publiek-domein GeoJSON-bestand, alleen ter illustratie meegeleverd met de documentatievoorbeelden. Grenzen, namen en vormen zijn NIET gezaghebbend. Controleer de grenzen en naamgeving van je eigen `geography`-bestand tegen het cartografische beleid van je organisatie vóór productiegebruik: de bibliotheek tekent het bestand zoals het is, zonder correcties.
+::: warning Alleen demogeografie - en grenzen zijn politiek
+De wereldatlas op deze pagina is een vereenvoudigd GeoJSON-bestand uit het publieke domein, meegeleverd met de documentatievoorbeelden ter illustratie. Hij kan **fout** zijn: grenzen, namen en vormen zijn NIET gezaghebbend, en sommige zijn omstreden. Welke grenzen en namen "juist" zijn verschilt per publiek, rechtsgebied en organisatie, en een kaart die het mis heeft is een politiek probleem, geen cosmetisch. Niets wat hier wordt getekend is een erkenning van een grens. Controleer vóór productiegebruik de grenzen en naamgeving van het `geography`-bestand dat je doorgeeft aan het cartografische beleid van je organisatie: de bibliotheek tekent het bestand zoals het is en corrigeert niets.
 :::
 
 > De grafiek hierboven gebruikt in elk framework dezelfde **engine** - alleen de integratiecode hieronder verschilt.
