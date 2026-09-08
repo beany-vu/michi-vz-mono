@@ -2040,6 +2040,11 @@ export interface FountainJetContext {
    * The sign-only skew flag: which side the spread hangs on (negative = left/downside,
    * positive = right/upside, 0 = balanced). Null when the item did not encode a lean
    * (the jet's gentle drift is then purely decorative wind, not data).
+   * - "honeycomb": every symbol becomes an equal-size tile (radius from
+   *   `honeycomb.radius`, value carries no size) snapped to a hexagonal lattice so
+   *   tiles tessellate and never overlap. A later item whose cell is taken walks
+   *   outward to the first free cell (deterministic, dataSet order); items without
+   *   a `value` are placed but never claim a cell. Pair with `shape: "hexagon"`.
    */
   lean: number | null;
   predicted: boolean;
@@ -2286,6 +2291,10 @@ export interface SymbolMapDataItem {
   valueSecond?: number;
   /** Optional explicit colour for this item, overriding the generated palette colour */
   color?: string;
+  /** Pixel nudge applied AFTER projection and BEFORE layout (all positionModes) -
+   * e.g. to pull a small country's tile out from under a large neighbour before
+   * the honeycomb snap decides its cell. */
+  offset?: { dx: number; dy: number };
 }
 
 export interface SymbolMapChartProps {
@@ -2344,12 +2353,17 @@ export interface SymbolMapChartProps {
    * - "precise": every symbol stays at its exact projected lng/lat; overlapping
    *   circles are allowed. Prefer this whenever a `geography` backdrop is shown,
    *   since a visible landmass invites reading positions literally. */
-  positionMode?: "force" | "precise";
+  positionMode?: "force" | "precise" | "honeycomb";
   /** Mark geometry: "circle" (default) or a "hexagon" whose CIRCUMRADIUS is the mark
    * radius - collision, hit-testing and label fitting stay circle-based on `radius`,
    * only the painted outline changes. Orientation follows `honeycomb.orientation`
    * (default "flat"). Pair with `positionMode: "honeycomb"` for tessellating tiles. */
   shape?: "circle" | "hexagon";
+  /** Lattice settings for `positionMode: "honeycomb"`: tile circumradius in px
+   * (default 11), gap between tile edges in px (default 2), and orientation
+   * (default "flat" = a flat edge on top, columns offset; "pointy" = a vertex on
+   * top, rows offset). Also sets the hexagon outline orientation for `shape`. */
+  honeycomb?: { radius?: number; gap?: number; orientation?: "flat" | "pointy" };
   /** Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral). */
   geographyColor?: string;
   /** Border colour for the optional backdrop `geography` (default `#d7dce3`). */

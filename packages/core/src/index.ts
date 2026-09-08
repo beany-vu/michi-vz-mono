@@ -230,6 +230,8 @@ export {
 } from "./symbolMap/scales";
 export { layoutSymbolMap } from "./symbolMap/layout";
 export { hexagonPath, hexagonVertices } from "./symbolMap/shape";
+export { layoutHoneycomb, honeycombSpacing, cellCenter, nearestCell } from "./symbolMap/honeycomb";
+export type { HoneycombConfig, HoneycombResult } from "./symbolMap/honeycomb";
 export type { SymbolShape, HexOrientation } from "./symbolMap/shape";
 export { buildSymbolMapRenderModel, buildSymbolMapBackdrop } from "./symbolMap/renderModel";
 export { buildSymbolMapContext } from "./context/buildSymbolMapContext";
