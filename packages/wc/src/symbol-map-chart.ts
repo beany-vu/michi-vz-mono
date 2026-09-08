@@ -7,6 +7,7 @@ import { mountSymbolMapChart } from "@michi-vz/core";
 import type {
   AgentTool,
   SymbolMapDataItem,
+  SymbolMapMarker,
   SymbolMapChartProps,
   ChartContext,
   ChartInstance,
@@ -30,6 +31,11 @@ export class SymbolMapChartElement extends LitElement {
     radiusRange: { attribute: false },
     radiusVisibleMin: { type: Number, attribute: "radius-visible-min" },
     positionMode: { type: String, attribute: "position-mode" },
+    shape: { type: String },
+    honeycomb: { attribute: false },
+    colorScale: { attribute: false },
+    noDataColor: { type: String, attribute: "no-data-color" },
+    markers: { attribute: false },
     geographyColor: { type: String, attribute: "geography-color" },
     strokeColor: { type: String, attribute: "stroke-color" },
     strokeWidth: { type: Number, attribute: "stroke-width" },
@@ -60,7 +66,12 @@ export class SymbolMapChartElement extends LitElement {
   projectionConfig?: SymbolMapChartProps["projectionConfig"];
   radiusRange?: [number, number];
   radiusVisibleMin?: number;
-  positionMode?: "force" | "precise";
+  positionMode?: "force" | "precise" | "honeycomb";
+  shape?: "circle" | "hexagon";
+  honeycomb?: SymbolMapChartProps["honeycomb"];
+  colorScale?: { domain: number[]; range: string[] };
+  noDataColor?: string;
+  markers?: SymbolMapMarker[];
   geographyColor?: string;
   strokeColor?: string;
   strokeWidth?: number;
@@ -107,6 +118,11 @@ export class SymbolMapChartElement extends LitElement {
       radiusRange: this.radiusRange,
       radiusVisibleMin: this.radiusVisibleMin,
       positionMode: this.positionMode,
+      shape: this.shape,
+      honeycomb: this.honeycomb,
+      colorScale: this.colorScale,
+      noDataColor: this.noDataColor,
+      markers: this.markers,
       geographyColor: this.geographyColor,
       strokeColor: this.strokeColor,
       strokeWidth: this.strokeWidth,

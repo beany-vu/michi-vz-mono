@@ -65,6 +65,8 @@ export type {
   XaxisDataType,
   MouseLineConfig,
   SinglePointLineConfig,
+  SymbolMapDataItem,
+  SymbolMapMarker,
 } from "@michi-vz/core";
 export type {
   GapChartProps,
@@ -908,6 +910,11 @@ export function applySymbolMapChartProps(
   if (props.radiusRange !== undefined) el.radiusRange = props.radiusRange;
   if (props.radiusVisibleMin !== undefined) el.radiusVisibleMin = props.radiusVisibleMin;
   if (props.positionMode !== undefined) el.positionMode = props.positionMode;
+  if (props.shape !== undefined) el.shape = props.shape;
+  if (props.honeycomb !== undefined) el.honeycomb = props.honeycomb;
+  if (props.colorScale !== undefined) el.colorScale = props.colorScale;
+  if (props.noDataColor !== undefined) el.noDataColor = props.noDataColor;
+  if (props.markers !== undefined) el.markers = props.markers;
   if (props.geographyColor !== undefined) el.geographyColor = props.geographyColor;
   if (props.strokeColor !== undefined) el.strokeColor = props.strokeColor;
   if (props.strokeWidth !== undefined) el.strokeWidth = props.strokeWidth;
