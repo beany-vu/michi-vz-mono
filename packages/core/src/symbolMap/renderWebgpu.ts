@@ -20,6 +20,8 @@ export interface SymbolMapWebgpuOptions {
   geographyColor: string;
   strokeColor: string;
   strokeWidth: number;
+  shape?: "circle" | "hexagon";
+  orientation?: "flat" | "pointy";
   /** Present for interface parity with every other chart's *Webgpu options (never
    * invoked - this renderer has no async device to wait on). */
   onReady?: () => void;
@@ -38,6 +40,8 @@ export function drawSymbolMapWebgpu(
     geographyColor: o.geographyColor,
     strokeColor: o.strokeColor,
     strokeWidth: o.strokeWidth,
+    shape: o.shape,
+    orientation: o.orientation,
   });
   return true;
 }

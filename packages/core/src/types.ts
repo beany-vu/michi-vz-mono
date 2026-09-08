@@ -2301,6 +2301,26 @@ export interface SymbolMapDataItem {
   offset?: { dx: number; dy: number };
 }
 
+/** A decorative pin drawn above the symbols at a lng/lat (e.g. a home location).
+ * Not laid out, not hit-tested, no tooltip; style via `.symbol-map-marker`. */
+export interface SymbolMapMarker {
+  /** Stable id (default `marker-<index>`); surfaces in the context. */
+  id?: string;
+  lng: number;
+  lat: number;
+  /** Accessible name / `data-label`; not rendered as text. */
+  label?: string;
+  /** Fill (default "#333"). */
+  color?: string;
+  /** Rendered height in px (default 24); the path is scaled uniformly. */
+  size?: number;
+  /** Custom SVG path (e.g. an icon library glyph) replacing the built-in map pin.
+   * Its box is `pathSize`; the box's bottom-centre is anchored on the point. */
+  path?: string;
+  /** Width/height of the `path` coordinate box (default [24, 24]). */
+  pathSize?: [number, number];
+}
+
 export interface SymbolMapChartProps {
   /** Opt-in "play through years": snapshots one period at a time over the distinct
    * per-row `date` values, with a headless controller (`chart.timeline()`) plus an
@@ -2376,6 +2396,10 @@ export interface SymbolMapChartProps {
   /** Fill for items without a `value` (default `#d2d7dd`, ChoroplethMap's no-data grey).
    * Pass "transparent" to hide them while keeping their tooltip target. */
   noDataColor?: string;
+  /** Decorative pins drawn above the symbols (a home location, an office). Anchored
+   * tip-down at the projected lng/lat; never laid out or hit-tested; no tooltip.
+   * Built-in map-pin glyph, or pass your own `path` + `pathSize`. */
+  markers?: SymbolMapMarker[];
   /** Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral). */
   geographyColor?: string;
   /** Border colour for the optional backdrop `geography` (default `#d7dce3`). */

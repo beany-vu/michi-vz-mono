@@ -130,6 +130,9 @@ export const CORE_CSS = `
 @keyframes mv-fade-in-out {
   0% { opacity: 0; } 50% { opacity: 0.2; } 100% { opacity: 0; }
 }
+/* SymbolMap marker pins (decorative, above the symbols). Fill comes from the marker's
+   own colour; theme the outline/shadow here. */
+.michi-vz .symbol-map-marker { stroke: #fff; stroke-width: 1.5; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
 .michi-vz .mv-nodata {
   position: absolute; inset: 0;
   display: flex; justify-content: center; align-items: center; text-align: center;

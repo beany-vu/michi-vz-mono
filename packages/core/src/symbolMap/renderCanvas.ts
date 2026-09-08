@@ -8,6 +8,8 @@ import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import { readableTextColor } from "../math/contrast";
 import { createGeoPathGenerator } from "../geo/projections";
+import { hexagonVertices } from "./shape";
+import type { HexOrientation, SymbolShape } from "./shape";
 import type { SymbolMapRenderModel } from "./renderModel";
 
 export interface SymbolMapCanvasOptions {
@@ -17,6 +19,8 @@ export interface SymbolMapCanvasOptions {
   geographyColor: string;
   strokeColor: string;
   strokeWidth: number;
+  shape?: SymbolShape;
+  orientation?: HexOrientation;
 }
 
 function fitText(text: string, r: number, charPx = 6.2): string {
@@ -53,11 +57,15 @@ export function drawSymbolMapCanvas(
 
   const labels = model.symbols.map((m) => m.colorKey);
   const fallback = new Map(model.symbols.map((m) => [m.colorKey, m.fill]));
+  const shape = o.shape ?? "circle";
+  const orientation = o.orientation ?? "flat";
+  // The colour probe must match the SVG contract element: `path.symbol` for
+  // hexagons, `circle.symbol` otherwise, so consumer CSS keyed on the tag resolves.
   const fillColors = resolveMarkColors(
     svg,
     labels,
     (l) => fallback.get(l) || "transparent",
-    makeSimpleProbe("circle", "symbol", "fill"),
+    makeSimpleProbe(shape === "hexagon" ? "path" : "circle", "symbol", "fill"),
     "fill",
   );
 
@@ -72,7 +80,14 @@ export function drawSymbolMapCanvas(
 
   const disc = (x: number, y: number, r: number): void => {
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    if (shape === "hexagon") {
+      const v = hexagonVertices(r, orientation);
+      ctx.moveTo(x + v[0][0], y + v[0][1]);
+      for (let i = 1; i < 6; i++) ctx.lineTo(x + v[i][0], y + v[i][1]);
+      ctx.closePath();
+    } else {
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+    }
     ctx.fill();
   };
 
@@ -99,4 +114,21 @@ export function drawSymbolMapCanvas(
     }
   }
   ctx.globalAlpha = 1;
+
+  // Marker pins last (above the symbols). Path2D scales the glyph box uniformly;
+  // jsdom has no Path2D, so guard for the test environment.
+  if (model.markers.length > 0 && typeof Path2D !== "undefined") {
+    for (const mk of model.markers) {
+      ctx.save();
+      ctx.translate(mk.tx, mk.ty);
+      ctx.scale(mk.scale, mk.scale);
+      ctx.fillStyle = mk.color;
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1.5 / mk.scale;
+      const p2d = new Path2D(mk.path);
+      ctx.fill(p2d);
+      ctx.stroke(p2d);
+      ctx.restore();
+    }
+  }
 }

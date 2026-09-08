@@ -8,6 +8,7 @@ import { createGeoPathGenerator } from "../geo/projections";
 import type { NormalizedGeoFeature } from "../choroplethMap/data";
 import type { SymbolMapColorResolver } from "./colors";
 import type { SymbolMapLayoutPoint } from "./layout";
+import type { SymbolMapMarkerMark } from "./markers";
 import type { GeoProjection, GeoPath } from "d3-geo";
 
 export interface SymbolMapBackdropMark {
@@ -50,6 +51,8 @@ export interface SymbolMapMark {
 export interface SymbolMapRenderModel {
   backdrop: SymbolMapBackdropMark[];
   symbols: SymbolMapMark[];
+  /** Decorative pins drawn above the symbols (see markers.ts). */
+  markers: SymbolMapMarkerMark[];
   projection: GeoProjection;
 }
 
@@ -85,6 +88,7 @@ export function buildSymbolMapRenderModel(
   o: BuildSymbolMapModelOptions,
   projection: GeoProjection,
   backdrop: SymbolMapBackdropMark[] = [],
+  markers: SymbolMapMarkerMark[] = [],
 ): SymbolMapRenderModel {
   const highlightSet = new Set(o.highlightItems);
   const anyHighlight = highlightSet.size > 0;
@@ -116,5 +120,5 @@ export function buildSymbolMapRenderModel(
     };
   });
 
-  return { backdrop, symbols, projection };
+  return { backdrop, symbols, markers, projection };
 }

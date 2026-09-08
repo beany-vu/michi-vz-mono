@@ -10,6 +10,8 @@
 import { svgEl } from "../dom";
 import { readableTextColor } from "../math/contrast";
 import { symbolEffectiveHitRadius } from "./hitTest";
+import { hexagonPath } from "./shape";
+import type { HexOrientation, SymbolShape } from "./shape";
 import type { SymbolMapMark, SymbolMapRenderModel } from "./renderModel";
 
 export interface SymbolMapSvgOptions {
@@ -18,6 +20,23 @@ export interface SymbolMapSvgOptions {
   geographyColor: string;
   strokeColor: string;
   strokeWidth: number;
+  /** "circle" (default) or "hexagon" marks; the hexagon's circumradius is the mark radius. */
+  shape?: SymbolShape;
+  orientation?: HexOrientation;
+}
+
+/** The painted mark: a circle, or a hexagon path with the identical attribute contract. */
+function markEl(
+  shape: SymbolShape,
+  orientation: HexOrientation,
+  cls: string,
+  r: number,
+  attrs: Record<string, string | number>,
+): SVGElement {
+  if (shape === "hexagon") {
+    return svgEl("path", { class: cls, d: hexagonPath(r, orientation), ...attrs });
+  }
+  return svgEl("circle", { class: cls, r, ...attrs });
 }
 
 export interface SymbolMapInteractions {
@@ -80,12 +99,12 @@ export function renderSymbolMapSvg(
     g.style.opacity = m.dimmed ? "0.3" : "1";
     g.style.transition = transition;
 
+    const shape = o.shape ?? "circle";
+    const orientation = o.orientation ?? "flat";
     g.appendChild(
-      svgEl("circle", {
-        class: "symbol",
+      markEl(shape, orientation, "symbol", m.radius, {
         "data-label": m.colorKey,
         "data-label-safe": m.dataLabelSafe,
-        r: m.radius,
         fill: m.fill,
         opacity: m.opacity,
       }),
@@ -93,10 +112,8 @@ export function renderSymbolMapSvg(
 
     if (m.radiusSecond != null) {
       g.appendChild(
-        svgEl("circle", {
-          class: "symbol-second",
+        markEl(shape, orientation, "symbol-second", m.radiusSecond, {
           "data-label-safe": m.dataLabelSafe,
-          r: m.radiusSecond,
           fill: m.fill,
           opacity: m.opacitySecond ?? m.opacity,
         }),
@@ -138,6 +155,24 @@ export function renderSymbolMapSvg(
     g.addEventListener("mouseleave", (e) => ia.onLeave(e));
     g.addEventListener("click", (e) => ia.onClick(m, e));
     root.appendChild(g);
+  }
+
+  // Marker pins LAST so they sit above every symbol; pointer-events off so they
+  // never intercept a symbol's hover/click underneath.
+  if (model.markers.length > 0) {
+    const markersG = svgEl("g", { class: "symbol-map-markers" });
+    for (const mk of model.markers) {
+      const p = svgEl("path", {
+        class: "symbol-map-marker",
+        "data-label": mk.label,
+        d: mk.path,
+        fill: mk.color,
+        transform: `translate(${mk.tx}, ${mk.ty}) scale(${mk.scale})`,
+      }) as SVGPathElement;
+      p.style.pointerEvents = "none";
+      markersG.appendChild(p);
+    }
+    root.appendChild(markersG);
   }
 
   parent.appendChild(root);
