@@ -2107,7 +2107,8 @@ export type GeoProjectionName =
   | "geoConicEqualArea"
   | "geoConicEquidistant"
   | "geoRobinson"
-  | "geoGilbert";
+  | "geoGilbert"
+  | "geoNaturalEarth1";
 
 /** Fine-tunes a `GeoProjectionName` projection (shared by every geo chart).
  * Omitted fields fall back to each chart's own tuned defaults - see
@@ -2391,7 +2392,9 @@ export interface SymbolMapChartProps {
   /** Value-driven colour encoding: a resolved hex `range` keyed to a numeric `domain`,
    * built into a d3 `scaleThreshold` (values outside the domain clamp to the first/last
    * colour). Precedence: `colorsMapping[label]` > `colorScale(value)` > the item's `color`
-   * > the palette. Same contract as ChoroplethMapChart's `colorScale`. */
+   * > the palette. Same contract as ChoroplethMapChart's `colorScale`. With a colorScale
+   * the colour IS the encoding, so marks paint at full opacity (the legacy value->alpha
+   * ramp applies only without one). */
   colorScale?: { domain: number[]; range: string[] };
   /** Fill for items without a `value` (default `#d2d7dd`, ChoroplethMap's no-data grey).
    * Pass "transparent" to hide them while keeping their tooltip target. */
@@ -2453,6 +2456,12 @@ export interface SymbolMapSymbolContext {
   radius: number;
   radiusSecond: number | null;
   color: string;
+  /** Plot-space centre after layout (px, relative to the plot origin) - lets a
+   * consumer overlay its own annotations without re-deriving the projection. */
+  x: number;
+  y: number;
+  /** False for an item without a `value` (painted `noDataColor`). */
+  hasValue: boolean;
 }
 
 export interface SymbolMapChartContext extends BaseChartContext {
@@ -2473,8 +2482,17 @@ export interface SymbolMapChartContext extends BaseChartContext {
     min: { id: string; label: string; value: number } | null;
     /** The visible symbol with the largest `value`; null when none. */
     max: { id: string; label: string; value: number } | null;
+    /** Visible items without a `value` (painted `noDataColor`). */
+    noValueCount: number;
   };
   symbols: SymbolMapSymbolContext[];
+  /** Effective mark shape and placement mode. */
+  shape: "circle" | "hexagon";
+  positionMode: "force" | "precise" | "honeycomb";
+  /** Echo of the `colorScale` prop so a consumer can draw a matching legend. */
+  colorScale?: { domain: number[]; range: string[] };
+  /** Marker pins that were placed (dropped ones - unprojectable lng/lat - are absent). */
+  markers: Array<{ id: string; label: string; lng: number; lat: number }>;
 }
 
 // ---- RadarChart (polar) ----

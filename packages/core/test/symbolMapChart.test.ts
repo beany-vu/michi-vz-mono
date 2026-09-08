@@ -621,3 +621,128 @@ describe("positionMode", () => {
     host.remove();
   });
 });
+
+describe("hexagon / honeycomb / markers / colorScale (engine)", () => {
+  it("shape hexagon renders path.symbol with the colour-contract attributes", () => {
+    const { host, chart } = mount({ shape: "hexagon" });
+    const paths = host.querySelectorAll("path.symbol[data-label-safe]");
+    expect(paths.length).toBe(3);
+    expect(host.querySelectorAll("circle.symbol").length).toBe(0);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("honeycomb mode gives every symbol the tile radius and distinct cells", () => {
+    const { host, chart } = mount({
+      shape: "hexagon",
+      positionMode: "honeycomb",
+      honeycomb: { radius: 9, gap: 1 },
+    });
+    const ctx = chart.getContext() as any;
+    expect(ctx.symbols.every((s: any) => s.radius === 9)).toBe(true);
+    const keys = new Set(ctx.symbols.map((s: any) => `${s.x},${s.y}`));
+    expect(keys.size).toBe(3);
+    expect(ctx.positionMode).toBe("honeycomb");
+    expect(ctx.shape).toBe("hexagon");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("colorScale colours by value and no-value items get noDataColor", () => {
+    const { host, chart } = mount({
+      dataSet: [...dataSet, { id: "nov", label: "NoValue", lng: 0, lat: 0 }],
+      colorScale: { domain: [50], range: ["#0000ff", "#ff0000"] },
+      noDataColor: "#cccccc",
+    });
+    const fills = Array.from(host.querySelectorAll("circle.symbol")).map((c) => [
+      c.getAttribute("data-label"),
+      c.getAttribute("fill"),
+    ]);
+    expect(fills).toContainEqual(["United States", "#ff0000"]);
+    expect(fills).toContainEqual(["Vietnam", "#0000ff"]);
+    expect(fills).toContainEqual(["NoValue", "#cccccc"]);
+    // colour is the encoding: no value->alpha ramp
+    expect(host.querySelector("circle.symbol")!.getAttribute("opacity")).toBe("1");
+    const ctx = chart.getContext() as any;
+    expect(ctx.stats.noValueCount).toBe(1);
+    expect(ctx.colorScale).toEqual({ domain: [50], range: ["#0000ff", "#ff0000"] });
+    chart.destroy();
+    host.remove();
+  });
+
+  it("markers render above symbols in both projection modes and reach the context", () => {
+    const geo: GeoFeatureItem[] = [
+      {
+        id: "x",
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [0, 0],
+              [1, 0],
+              [1, 1],
+              [0, 0],
+            ],
+          ],
+        },
+      },
+    ];
+    for (const geography of [undefined, geo]) {
+      const { host, chart } = mount({ geography, markers: [{ lng: 10, lat: 51, label: "Pin" }] });
+      const g = host.querySelector("g.symbol-map-content > g:last-child")!;
+      expect(g.getAttribute("class")).toBe("symbol-map-markers");
+      expect(host.querySelectorAll("path.symbol-map-marker").length).toBe(1);
+      const ctx = chart.getContext() as any;
+      expect(ctx.markers).toEqual([{ id: "marker-0", label: "Pin", lng: 10, lat: 51 }]);
+      chart.destroy();
+      host.remove();
+    }
+  });
+
+  it("accepts geoNaturalEarth1", () => {
+    const { host, chart } = mount({ projection: "geoNaturalEarth1" });
+    expect(host.querySelectorAll("circle.symbol").length).toBe(3);
+    expect((chart.getContext() as any).projection).toBe("geoNaturalEarth1");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("offset nudges a symbol before layout and x/y reach the context", () => {
+    const a = mount({ positionMode: "precise" });
+    const ax = (a.chart.getContext() as any).symbols[0].x;
+    expect(typeof ax).toBe("number");
+    a.chart.destroy();
+    a.host.remove();
+    const b = mount({
+      positionMode: "precise",
+      dataSet: [{ ...dataSet[0], offset: { dx: 7, dy: 0 } }, dataSet[1], dataSet[2]],
+    });
+    expect((b.chart.getContext() as any).symbols[0].x).toBeCloseTo(ax + 7);
+    b.chart.destroy();
+    b.host.remove();
+  });
+
+  it("emits a layout-overflow warning when honeycomb cells run out", () => {
+    const warnings: any[] = [];
+    // rings 1..6 around one cell hold 1 + 6 + 12 + ... + 36 = 127 tiles; 130 same-point
+    // items must leave 3 unresolved.
+    const crowded = Array.from({ length: 130 }, (_, i) => ({
+      id: `c${i}`,
+      label: `C${i}`,
+      lng: 0,
+      lat: 0,
+      value: 1,
+    }));
+    const { host, chart } = mount({
+      dataSet: crowded,
+      positionMode: "honeycomb",
+      honeycomb: { radius: 4, gap: 0 },
+      onDataWarning: (w) => warnings.push(...w),
+    });
+    const overflow = warnings.filter((w) => w.type === "layout-overflow");
+    expect(overflow.length).toBe(1);
+    expect(overflow[0].message).toContain("3");
+    chart.destroy();
+    host.remove();
+  });
+});

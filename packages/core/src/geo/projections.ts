@@ -23,6 +23,7 @@ import {
   geoConicConformal,
   geoConicEqualArea,
   geoConicEquidistant,
+  geoNaturalEarth1,
 } from "d3-geo";
 import type { GeoProjection, GeoPath } from "d3-geo";
 import { geoRobinson, geoGilbert } from "d3-geo-projection";
@@ -44,6 +45,7 @@ export const PROJECTIONS: Record<GeoProjectionName, () => GeoProjection> = {
   geoConicEquidistant,
   geoRobinson,
   geoGilbert,
+  geoNaturalEarth1,
 };
 
 // Narrow, untyped-in-@types/d3-geo method probes (geoAlbersUsa lacks them).

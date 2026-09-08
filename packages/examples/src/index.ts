@@ -1951,7 +1951,7 @@ const symbolMap: Example<SymbolMapChartProps>[] = [
     props: {
       title: "Merchandise trade value by hub, 2024 (US$ bn)",
       tooltipFormatter: (d) =>
-        `<strong>${d.label}</strong><br/>${d.value.toLocaleString()} bn${
+        `<strong>${d.label}</strong><br/>${(d.value ?? 0).toLocaleString()} bn${
           d.valueSecond !== undefined ? `<br/>of which: ${d.valueSecond.toLocaleString()} bn` : ""
         }`,
       // ~50 hubs spanning every continent: enough dot density that the cloud

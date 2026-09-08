@@ -16,6 +16,8 @@ export const DEFAULT_MARKER_COLOR = "#333";
 export interface SymbolMapMarkerMark {
   id: string;
   label: string;
+  lng: number;
+  lat: number;
   /** Anchor point in plot px (the pin tip). */
   x: number;
   y: number;
@@ -43,6 +45,8 @@ export function buildSymbolMapMarkers(
     out.push({
       id: m.id ?? `marker-${i}`,
       label: m.label ?? "",
+      lng: m.lng,
+      lat: m.lat,
       x: p[0],
       y: p[1],
       path: m.path ?? DEFAULT_MARKER_PATH,

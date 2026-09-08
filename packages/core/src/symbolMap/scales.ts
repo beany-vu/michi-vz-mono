@@ -41,6 +41,10 @@ export interface ProjectedPoint {
 export interface ProjectSymbolMapResult {
   points: ProjectedPoint[];
   projection: GeoProjection;
+  /** The SAME lng/lat -> plot px mapping the points went through (backdrop mode:
+   * the tuned projection; dot-only mode: the bare projection plus the extent
+   * rescale), for anything else that must land on the same plane - markers. */
+  project: (lng: number, lat: number) => [number, number] | null;
 }
 
 export function projectSymbolMapPoints(
@@ -68,7 +72,11 @@ export function projectSymbolMapPoints(
       const p = projection([node.lng, node.lat]);
       if (p) points.push({ node, x: p[0], y: p[1] });
     }
-    return { points, projection };
+    const project = (lng: number, lat: number): [number, number] | null => {
+      const p = projection([lng, lat]);
+      return p ? [p[0], p[1]] : null;
+    };
+    return { points, projection, project };
   }
 
   const factory = PROJECTIONS[projectionName ?? DEFAULT_PROJECTION] ?? PROJECTIONS.geoMercator;
@@ -79,7 +87,15 @@ export function projectSymbolMapPoints(
     const p = projection([node.lng, node.lat]);
     if (p) raw.push({ node, x: p[0], y: p[1] });
   }
-  if (raw.length === 0) return { points: [], projection };
+  if (raw.length === 0)
+    return {
+      points: [],
+      projection,
+      project: (lng, lat) => {
+        const p = projection([lng, lat]);
+        return p ? [p[0], p[1]] : null;
+      },
+    };
 
   const xExtent = extent(raw, (r) => r.x) as [number, number];
   const yExtent = extent(raw, (r) => r.y) as [number, number];
@@ -123,7 +139,12 @@ export function projectSymbolMapPoints(
     x: xFlat ? width / 2 : xScale!(r.x),
     y: yFlat ? height / 2 : yScale!(r.y),
   }));
-  return { points, projection };
+  const project = (lng: number, lat: number): [number, number] | null => {
+    const p = projection([lng, lat]);
+    if (!p) return null;
+    return [xFlat ? width / 2 : xScale!(p[0]), yFlat ? height / 2 : yScale!(p[1])];
+  };
+  return { points, projection, project };
 }
 
 export interface SymbolMapRadiusScale {

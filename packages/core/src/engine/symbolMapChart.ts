@@ -21,6 +21,8 @@ import {
   DEFAULT_PROJECTION,
 } from "../symbolMap/scales";
 import { layoutSymbolMap } from "../symbolMap/layout";
+import { layoutHoneycomb } from "../symbolMap/honeycomb";
+import { buildSymbolMapMarkers } from "../symbolMap/markers";
 import { buildSymbolMapRenderModel, buildSymbolMapBackdrop } from "../symbolMap/renderModel";
 import type { SymbolMapMark, SymbolMapRenderModel } from "../symbolMap/renderModel";
 import { pickNearestSymbolHit } from "../symbolMap/hitTest";
@@ -60,6 +62,8 @@ const DEFAULT_MARGIN: Margin = { top: 40, right: 10, bottom: 10, left: 10 };
 const DEFAULT_RADIUS_RANGE: [number, number] = [3, 70];
 const DEFAULT_GEOGRAPHY_COLOR = "#eef1f5";
 const DEFAULT_STROKE_COLOR = "#d7dce3";
+const DEFAULT_NO_DATA_COLOR = "#d2d7dd";
+const DEFAULT_HONEYCOMB = { radius: 11, gap: 2, orientation: "flat" as const };
 
 // canvas + webgpu (delegated) both paint into a <canvas> layer (no DOM marks), so
 // they share the host-level hit-test. svg does not - its marks carry their own
@@ -72,7 +76,10 @@ interface Resolved {
   margin: Margin;
   renderer: Renderer;
   radiusRange: [number, number];
-  positionMode: "force" | "precise";
+  positionMode: "force" | "precise" | "honeycomb";
+  shape: "circle" | "hexagon";
+  honeycomb: { radius: number; gap: number; orientation: "flat" | "pointy" };
+  noDataColor: string;
   geographyColor: string;
   strokeColor: string;
   strokeWidth: number;
@@ -92,6 +99,13 @@ function resolve(p: SymbolMapChartProps): Resolved {
     renderer: resolveRenderer(p.renderer),
     radiusRange: p.radiusRange ?? DEFAULT_RADIUS_RANGE,
     positionMode: p.positionMode ?? "force",
+    shape: p.shape ?? "circle",
+    honeycomb: {
+      radius: p.honeycomb?.radius ?? DEFAULT_HONEYCOMB.radius,
+      gap: p.honeycomb?.gap ?? DEFAULT_HONEYCOMB.gap,
+      orientation: p.honeycomb?.orientation ?? DEFAULT_HONEYCOMB.orientation,
+    },
+    noDataColor: p.noDataColor ?? DEFAULT_NO_DATA_COLOR,
     geographyColor: p.geographyColor ?? DEFAULT_GEOGRAPHY_COLOR,
     strokeColor: p.strokeColor ?? DEFAULT_STROKE_COLOR,
     strokeWidth: p.strokeWidth ?? 1,
@@ -290,6 +304,7 @@ export function mountSymbolMapChart(
       props.colors,
       seededMapping,
       props.skipColorMappingDispatch ?? false,
+      props.colorScale,
     );
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
@@ -304,22 +319,34 @@ export function mountSymbolMapChart(
     // width/height or the projection), so the dot-only fit below can inset
     // for the radii it's about to draw (B3.6 - see scales.ts's
     // projectSymbolMapPoints comment).
-    const { radiusOf, opacityOf } = buildSymbolMapRadiusScale(
+    const scales = buildSymbolMapRadiusScale(
       processed.located,
       r.radiusRange,
       props.radiusVisibleMin,
     );
+    const radiusOf = scales.radiusOf;
+    // With a colorScale the colour is the encoding: paint at full opacity instead of
+    // the legacy value->alpha ramp (which would muddy the classes).
+    const opacityOf = props.colorScale ? () => 1 : scales.opacityOf;
+    // Per-node primary radius: a no-value item sits at the range floor (it has
+    // nothing to size by); honeycomb tiles are all the tile radius.
+    const nodeRadius = (node: (typeof processed.visible)[number]): number =>
+      r.positionMode === "honeycomb"
+        ? r.honeycomb.radius
+        : node.hasValue
+          ? radiusOf(node.value)
+          : r.radiusRange[0];
     // Effective (rendered) radius per node - the larger of the primary and
     // (if present) `valueSecond` ring, since both circles share one centre and
     // either can be the one that visually overflows the plot edge.
     const effectiveRadiusOf = (node: (typeof processed.visible)[number]): number => {
-      const primary = radiusOf(node.value);
+      const primary = nodeRadius(node);
       const secondary = node.valueSecond != null ? radiusOf(node.valueSecond) : 0;
       return Math.max(primary, secondary);
     };
 
     const hasGeography = props.geography != null;
-    const { points, projection } = projectSymbolMapPoints(
+    const projected = projectSymbolMapPoints(
       processed.visible,
       props.projection,
       hasGeography,
@@ -328,25 +355,40 @@ export function mountSymbolMapChart(
       innerHeight,
       effectiveRadiusOf,
     );
+    const projection = projected.projection;
+    // Per-item `offset`: a px nudge after projection, before any layout decides.
+    const points = projected.points.map((pt) =>
+      pt.node.offset ? { ...pt, x: pt.x + pt.node.offset.dx, y: pt.y + pt.node.offset.dy } : pt,
+    );
 
     // "precise" keeps every symbol at its exact projected lng/lat (overlaps
     // allowed, no clamp - scales.ts's radius-aware fit inset already reserves
     // edge room). "force" (default, legacy parity) runs the one-shot de-overlap
     // sim, which trades positional accuracy for readability - see the
     // positionMode JSDoc for when that trade-off is NOT acceptable.
-    const laidOut =
-      r.positionMode === "precise"
-        ? points.map((point) => ({
-            point,
-            radius: radiusOf(point.node.value),
-            x: point.x,
-            y: point.y,
-          }))
-        : layoutSymbolMap(points, (point) => radiusOf(point.node.value), {
-            width: innerWidth,
-            height: innerHeight,
-            radiusOf: (point) => effectiveRadiusOf(point.node),
-          });
+    // "honeycomb": equal tiles snapped to a hex lattice (see symbolMap/honeycomb.ts);
+    // reserving = items with a value. Overflow (no free cell within the ring walk)
+    // is reported through onDataWarning below.
+    let honeycombUnresolved: string[] = [];
+    let laidOut;
+    if (r.positionMode === "honeycomb") {
+      const hc = layoutHoneycomb(points, r.honeycomb, (pt) => pt.node.hasValue);
+      laidOut = hc.placed;
+      honeycombUnresolved = hc.unresolved;
+    } else if (r.positionMode === "precise") {
+      laidOut = points.map((point) => ({
+        point,
+        radius: nodeRadius(point.node),
+        x: point.x,
+        y: point.y,
+      }));
+    } else {
+      laidOut = layoutSymbolMap(points, (point) => nodeRadius(point.node), {
+        width: innerWidth,
+        height: innerHeight,
+        radiusOf: (point) => effectiveRadiusOf(point.node),
+      });
+    }
 
     const backdrop = hasGeography
       ? buildSymbolMapBackdrop(normalizeGeography(props.geography!), projection)
@@ -357,9 +399,10 @@ export function mountSymbolMapChart(
       colors,
       radiusOf,
       opacityOf,
-      { highlightItems: props.highlightItems ?? [] },
+      { highlightItems: props.highlightItems ?? [], noDataColor: r.noDataColor },
       projection,
       backdrop,
+      buildSymbolMapMarkers(props.markers, projected.project),
     );
 
     clear(svg);
@@ -379,6 +422,8 @@ export function mountSymbolMapChart(
             geographyColor: r.geographyColor,
             strokeColor: r.strokeColor,
             strokeWidth: r.strokeWidth,
+            shape: r.shape,
+            orientation: r.honeycomb.orientation,
           },
           {
             onEnter: (mark, ev) => {
@@ -413,6 +458,8 @@ export function mountSymbolMapChart(
           geographyColor: r.geographyColor,
           strokeColor: r.strokeColor,
           strokeWidth: r.strokeWidth,
+          shape: r.shape,
+          orientation: r.honeycomb.orientation,
         });
       } else {
         removeWebgpuCanvas();
@@ -426,6 +473,8 @@ export function mountSymbolMapChart(
           geographyColor: r.geographyColor,
           strokeColor: r.strokeColor,
           strokeWidth: r.strokeWidth,
+          shape: r.shape,
+          orientation: r.honeycomb.orientation,
         });
       }
     } else {
@@ -442,6 +491,10 @@ export function mountSymbolMapChart(
       symbols: model.symbols,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
+      shape: r.shape,
+      positionMode: r.positionMode,
+      colorScale: props.colorScale,
+      markers: model.markers.map((m) => ({ id: m.id, label: m.label, lng: m.lng, lat: m.lat })),
     });
     // Plugin hook #3 - enrichContext.
     context = applyEnrichContext(pluginList, context, pc);
@@ -459,6 +512,12 @@ export function mountSymbolMapChart(
         ...checkSymbolMapData(baseProps.dataSet),
         ...collectValidate(pluginList, baseProps, pc),
       ];
+      if (honeycombUnresolved.length > 0) {
+        warnings.push({
+          type: "layout-overflow",
+          message: `SymbolMap honeycomb: ${honeycombUnresolved.length} tile(s) found no free cell within 6 rings and overlap a neighbour: ${honeycombUnresolved.join(", ")}.`,
+        });
+      }
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
 

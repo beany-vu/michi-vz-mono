@@ -17,6 +17,10 @@ export interface BuildSymbolMapContextInput {
   symbols: SymbolMapMark[];
   colorsMapping: Record<string, string>;
   disabledItems?: string[];
+  shape: "circle" | "hexagon";
+  positionMode: "force" | "precise" | "honeycomb";
+  colorScale?: { domain: number[]; range: string[] };
+  markers: Array<{ id: string; label: string; lng: number; lat: number }>;
 }
 
 export function buildSymbolMapContext(input: BuildSymbolMapContextInput): SymbolMapChartContext {
@@ -28,7 +32,11 @@ export function buildSymbolMapContext(input: BuildSymbolMapContextInput): Symbol
     radius: m.radius,
     radiusSecond: m.radiusSecond,
     color: m.fill,
+    x: m.x,
+    y: m.y,
+    hasValue: m.hasValue,
   }));
+  const noValueCount = symbols.filter((s) => !s.hasValue).length;
 
   let max: { id: string; label: string; value: number } | null = null;
   let min: { id: string; label: string; value: number } | null = null;
@@ -45,6 +53,7 @@ export function buildSymbolMapContext(input: BuildSymbolMapContextInput): Symbol
   let summary = `Symbol map ${titlePart}shows ${visibleCount} symbol${visibleCount === 1 ? "" : "s"}`;
   if (hiddenCount > 0) summary += ` (${hiddenCount} hidden below radiusVisibleMin)`;
   if (input.invalidCount > 0) summary += ` (${input.invalidCount} dropped for invalid coordinates)`;
+  if (noValueCount > 0) summary += ` (${noValueCount} without a value)`;
   summary += ".";
   if (max && min && max.id !== min.id) {
     summary += ` Largest: ${max.label} (${max.value}). Smallest: ${min.label} (${min.value}).`;
@@ -69,8 +78,13 @@ export function buildSymbolMapContext(input: BuildSymbolMapContextInput): Symbol
       valueDomain,
       min,
       max,
+      noValueCount,
     },
     symbols,
+    shape: input.shape,
+    positionMode: input.positionMode,
+    colorScale: input.colorScale,
+    markers: input.markers,
     colorsMapping: input.colorsMapping,
     legendData,
     summary,
