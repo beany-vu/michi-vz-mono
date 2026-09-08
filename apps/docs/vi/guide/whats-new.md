@@ -10,6 +10,18 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.11
+
+Phiên bản các gói: core **1.20.1** · wc **1.13.1** · angular **1.13.0** · react **1.11.11** · vue, svelte **1.7.11** ·
+examples **1.1.11** · devtools, insights **0.2.26**.
+
+- **Tooltip dùng chung trên [Biểu đồ đường](/charts/line) SVG**: `sharedTooltip` (một tooltip
+  liệt kê mọi chuỗi tại năm đang trỏ, kèm ghim khi nhấp) giờ hoạt động cả trên renderer SVG mặc
+  định; trước đây chỉ áp dụng cho canvas/WebGPU nên biểu đồ SVG âm thầm dùng tooltip theo từng
+  đường.
+- **Kiểu Angular**: `@michi-vz/angular` xuất lại `DataPoint`, `LineDataItem`, `Margin`,
+  `Filter`, `CurveType`, `XaxisDataType`, `MouseLineConfig` và `SinglePointLineConfig`.
+
 ## v1.11.10
 
 Phiên bản các gói: core **1.20.0** · wc **1.13.0** · angular **1.12.9** · react **1.11.10** · vue, svelte **1.7.10** ·

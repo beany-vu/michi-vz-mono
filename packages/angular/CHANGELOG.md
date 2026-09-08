@@ -1,5 +1,19 @@
 # @michi-vz/angular
 
+## 1.13.0
+
+### Minor Changes
+
+- LineChart `sharedTooltip` now works on the svg renderer: the host-level column tooltip and host click-to-pin were gated on the painted (canvas/webgpu) renderers, so an svg chart silently fell back to the per-line single-series tooltip. In shared mode the svg line overlays stand down so the column tooltip is the only one.
+
+  `@michi-vz/angular` re-exports `DataPoint`, `LineDataItem`, `Margin`, `Filter`, `CurveType`, `XaxisDataType`, `MouseLineConfig` and `SinglePointLineConfig` so a consumer can type its dataSet without indexing `LineChartProps`.
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.20.1
+  - @michi-vz/wc@1.13.1
+
 ## 1.12.9
 
 ### Patch Changes

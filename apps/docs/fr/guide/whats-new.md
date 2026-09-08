@@ -12,6 +12,18 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.11
+
+Versions des paquets : core **1.20.1** · wc **1.13.1** · angular **1.13.0** · react **1.11.11** · vue, svelte **1.7.11** ·
+examples **1.1.11** · devtools, insights **0.2.26**.
+
+- **Infobulle partagée sur le [Graphique en courbes](/charts/line) SVG** : `sharedTooltip` (une
+  seule infobulle listant toutes les séries à l'année survolée, avec épinglage au clic) fonctionne
+  désormais aussi avec le rendu SVG par défaut ; elle ne s'appliquait qu'aux rendus canvas/WebGPU,
+  un graphique SVG retombant silencieusement sur l'infobulle par courbe.
+- **Types Angular** : `@michi-vz/angular` réexporte `DataPoint`, `LineDataItem`, `Margin`,
+  `Filter`, `CurveType`, `XaxisDataType`, `MouseLineConfig` et `SinglePointLineConfig`.
+
 ## v1.11.10
 
 Versions des paquets : core **1.20.0** · wc **1.13.0** · angular **1.12.9** · react **1.11.10** · vue, svelte **1.7.10** ·

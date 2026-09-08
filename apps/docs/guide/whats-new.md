@@ -10,6 +10,18 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.11.11
+
+Package versions: core **1.20.1** · wc **1.13.1** · angular **1.13.0** · react **1.11.11** · vue, svelte **1.7.11** ·
+examples **1.1.11** · devtools, insights **0.2.26**.
+
+- **Shared tooltip on the SVG [Line Chart](/charts/line)**: `sharedTooltip` (one tooltip listing
+  every series at the hovered year, with click-to-pin) now works on the default SVG renderer too;
+  it used to apply only to canvas/WebGPU, where an SVG chart silently fell back to the per-line
+  tooltip.
+- **Angular types**: `@michi-vz/angular` re-exports `DataPoint`, `LineDataItem`, `Margin`,
+  `Filter`, `CurveType`, `XaxisDataType`, `MouseLineConfig` and `SinglePointLineConfig`.
+
 ## v1.11.10
 
 Package versions: core **1.20.0** · wc **1.13.0** · angular **1.12.9** · react **1.11.10** · vue, svelte **1.7.10** ·
