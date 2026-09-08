@@ -2345,6 +2345,11 @@ export interface SymbolMapChartProps {
    *   circles are allowed. Prefer this whenever a `geography` backdrop is shown,
    *   since a visible landmass invites reading positions literally. */
   positionMode?: "force" | "precise";
+  /** Mark geometry: "circle" (default) or a "hexagon" whose CIRCUMRADIUS is the mark
+   * radius - collision, hit-testing and label fitting stay circle-based on `radius`,
+   * only the painted outline changes. Orientation follows `honeycomb.orientation`
+   * (default "flat"). Pair with `positionMode: "honeycomb"` for tessellating tiles. */
+  shape?: "circle" | "hexagon";
   /** Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral). */
   geographyColor?: string;
   /** Border colour for the optional backdrop `geography` (default `#d7dce3`). */

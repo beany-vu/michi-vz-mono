@@ -229,6 +229,8 @@ export {
   DEFAULT_PROJECTION as SYMBOL_MAP_DEFAULT_PROJECTION,
 } from "./symbolMap/scales";
 export { layoutSymbolMap } from "./symbolMap/layout";
+export { hexagonPath, hexagonVertices } from "./symbolMap/shape";
+export type { SymbolShape, HexOrientation } from "./symbolMap/shape";
 export { buildSymbolMapRenderModel, buildSymbolMapBackdrop } from "./symbolMap/renderModel";
 export { buildSymbolMapContext } from "./context/buildSymbolMapContext";
 export { checkSymbolMapData } from "./validate/symbolMapWarnings";
