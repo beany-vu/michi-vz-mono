@@ -908,7 +908,7 @@ Chart-specific props (the shared props above also apply):
 
 ### Symbol Map (`symbol-map-chart`)
 
-A force-de-overlapped symbol/bubble map: you supply lng/lat per item, a one-shot d3-force simulation pulls overlapping circles apart. Dot-only by default (legacy parity); an optional muted backdrop landmass is available. SVG, canvas, and a delegated WebGPU layer.
+A force-de-overlapped symbol/bubble map: you supply lng/lat per item, a one-shot d3-force simulation pulls overlapping circles apart. Dot-only by default (legacy parity); an optional muted backdrop landmass is available, and hexagon tiles on a honeycomb turn it into a tile map. SVG, canvas, and a delegated WebGPU layer.
 
 - Element: `<michi-vz-symbol-map-chart>` (import `@michi-vz/wc/symbol-map-chart`)
 - Engine: `mountSymbolMapChart(host, props)` from `@michi-vz/core`; props `SymbolMapChartProps`, context `SymbolMapChartContext`
@@ -928,7 +928,12 @@ Chart-specific props (the shared props above also apply):
 - `projectionConfig`: `GeoProjectionConfig` - Fine-tunes the projection; only consulted when `geography` is supplied (see `projection`).
 - `radiusRange`: `[number, number]` (default: `DEFAULT_RADIUS_RANGE`) - [min, max] circle radius in px (default [3, 70], the legacy `circleRange`).
 - `radiusVisibleMin`: `number` - Hides items whose RAW `value` is <= this threshold (and, when `valueSecond` is set, whose `valueSecond` is also < this threshold) BEFORE the force layout runs - ported from the legacy chart's own filter, which compares the raw value/valueSecond, not the scaled radius.
-- `positionMode`: `"force" | "precise"` (default: `"force"`) - How symbols are placed: "force" (default) runs a one-shot de-overlap simulation that pulls colliding circles apart, while "precise" keeps every symbol at its exact projected lng/lat (overlaps allowed).
+- `positionMode`: `"force" | "precise" | "honeycomb"` (default: `"force"`) - How symbols are placed: "force" (default) runs a one-shot de-overlap simulation that pulls colliding circles apart, while "precise" keeps every symbol at its exact projected lng/lat (overlaps allowed).
+- `shape`: `"circle" | "hexagon"` (default: `"circle"`) - Mark geometry: "circle" (default) or a "hexagon" whose CIRCUMRADIUS is the mark radius - collision, hit-testing and label fitting stay circle-based on `radius`, only the painted outline changes.
+- `honeycomb`: `{ radius?: number; gap?: number; orientation?: "flat" | "pointy" }` - Lattice settings for `positionMode: "honeycomb"`: tile circumradius in px (default 11), gap between tile edges in px (default 2), and orientation (default "flat" = a flat edge on top, columns offset; "pointy" = a vertex on top, rows offset).
+- `colorScale`: `{ domain: number[]; range: string[] }` - Value-driven colour encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold` (values outside the domain clamp to the first/last colour).
+- `noDataColor`: `string` (default: `DEFAULT_NO_DATA_COLOR`) - Fill for items without a `value` (default `#d2d7dd`, ChoroplethMap's no-data grey).
+- `markers`: `SymbolMapMarker[]` - Decorative pins drawn above the symbols (a home location, an office).
 - `geographyColor`: `string` (default: `DEFAULT_GEOGRAPHY_COLOR`) - Fill for the optional backdrop `geography` (default `#eef1f5`, a muted neutral).
 - `strokeColor`: `string` (default: `DEFAULT_STROKE_COLOR`) - Border colour for the optional backdrop `geography` (default `#d7dce3`).
 - `strokeWidth`: `number` (default: `1`) - Border width for the optional backdrop `geography`, in px (default 1).

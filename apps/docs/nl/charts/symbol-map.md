@@ -1,6 +1,6 @@
 ---
 title: Symboolkaart
-description: "Een symbool-/bellenkaart waarvan overlappingen worden opgelost door een eenmalige d3-force-simulatie: je geeft lng/lat per item op. Standaard dot-only (legacy-pariteit); een optionele gedempte achtergrondlandmassa is beschikbaar. SVG, canvas en een gedelegeerde WebGPU-laag."
+description: "Een symbool-/bellenkaart waarvan overlappingen worden opgelost door een eenmalige d3-force-simulatie: je geeft lng/lat per item op. Standaard dot-only (legacy-pariteit); een optionele gedempte achtergrondlandmassa is beschikbaar, en zeshoekige tegels in een honingraat maken er een tegelkaart van. SVG, canvas en een gedelegeerde WebGPU-laag."
 ---
 # Symboolkaart
 
@@ -30,6 +30,24 @@ De wereldatlas op deze pagina is een vereenvoudigd publiek-domein GeoJSON-bestan
 :::
 
 > De grafiek hierboven is dezelfde **engine** in elk framework - alleen de integratiecode hieronder verschilt.
+
+## Zeshoekige tegels in een honingraat
+
+Soms moet elke plek even zwaar wegen en **hoort de waarde in de kleur**: een tegelkaart. Met `shape: "hexagon"` en `positionMode: "honeycomb"` wordt elk symbool een even grote zeshoek die op een zeshoekig rooster klikt: tegels betegelen het vlak, overlappen nooit, en de tegel van een land blijft zo dicht bij zijn zwaartepunt als het rooster toelaat. `colorScale` (een `scaleThreshold`-domein/bereik, hetzelfde contract als de [Choropletenkaart](/charts/choropleth-map)) draagt de waarde; markeringen worden op volle dekking geschilderd omdat de kleur *de* codering is.
+
+<ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+- **`honeycomb`** - `{ radius, gap, orientation }`: omgeschreven straal van de tegel in px (standaard 11), ruimte tussen tegelranden (standaard 2), en `"flat"` (standaard, platte kant boven) of `"pointy"`. De oriëntatie stuurt zowel de zeshoekcontour als het rooster, zodat de tegels passen.
+- **Botsingen** worden in `dataSet`-volgorde opgelost: een latere tegel waarvan de cel bezet is, loopt ring voor ring naar buiten tot de eerste vrije cel, deterministisch. Is er binnen zes ringen geen cel vrij, dan overlapt de tegel en noemt een `onDataWarning` van het type `layout-overflow` hem.
+- **Geen waarde?** Laat `value` weg. Het item krijgt `noDataColor` (standaard `#d2d7dd`, geef `"transparent"` om het te verbergen), valt buiten de kleurschaal en claimt nooit een cel: een "geen data"-tegel kan echte data nooit wegduwen.
+- **`offset`** op een item verschuift het in px na de projectie en vóór het klikken: de uitweg voor een klein land dat onder een grote buur schuilgaat.
+- **`markers`** tekent decoratieve spelden boven de tegels op een lng/lat (bijvoorbeeld een hoofdkantoor): de ingebouwde kaartspeld, of je eigen `path` in zijn `pathSize`-vak, geschaald naar `size` px en met de punt verankerd. Spelden worden niet gepositioneerd, niet aangeklikt en hebben geen tooltip; stijl ze via `.symbol-map-marker`. De context vermeldt de `x`/`y` van elk geplaatst symbool (en elke speld) voor je eigen overlays en legenda.
+
+`shape: "hexagon"` werkt ook alleen met `"force"`- of `"precise"`-plaatsing, en `colorScale` werkt met cirkels: de bouwstenen combineren.
+
+::: tip Wat van jou blijft
+De bibliotheek tekent tegels, spelden en kleuren. Legendatekst, tooltip-tekst, getalnotatie, welk land "thuis" is en welk palet het krijgt zijn van de consument: geef ze door via `colorScale`, `markers` en `tooltipFormatter`.
+:::
 
 ## Breng je eigen coördinaten mee
 

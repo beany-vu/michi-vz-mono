@@ -423,6 +423,10 @@
         <h2>SVG renderer + optional backdrop geography</h2>
         <michi-vz-symbol-map-chart id="symbolBackdrop"></michi-vz-symbol-map-chart>
       </div>
+      <div class="card">
+        <h2>Hexagon tiles on a honeycomb + colorScale + markers</h2>
+        <michi-vz-symbol-map-chart id="symbolHex"></michi-vz-symbol-map-chart>
+      </div>
     </div>
     <h2>
       SymbolMap consumer-CSS fill contract (canvas, single-element circle.symbol[data-label-safe]
@@ -1127,6 +1131,28 @@
           chartTitle: "SymbolMap + backdrop",
           geography: choroGeography,
           ...symbolCommon,
+        });
+        // Hexagon tiles: equal hexagons snapped to a honeycomb, colour by value via a
+        // threshold scale, one item WITHOUT a value (noDataColor), one marker pin.
+        const symbolHexEl = document.getElementById("symbolHex");
+        Object.assign(symbolHexEl, {
+          dataSet: [
+            { id: "Alpha", label: "Alpha", lng: -10, lat: 0, value: 10 },
+            { id: "Beta", label: "Beta", lng: -9.5, lat: 0.3, value: 55 }, // same cell as Alpha -> walks to a neighbour
+            { id: "Gamma", label: "Gamma", lng: 50, lat: 5, value: 90 },
+            { id: "Delta", label: "Delta", lng: 20, lat: -20 }, // no value
+          ],
+          chartTitle: "SymbolMap hexagon tiles",
+          geography: choroGeography,
+          shape: "hexagon",
+          positionMode: "honeycomb",
+          honeycomb: { radius: 14, gap: 2 },
+          colorScale: { domain: [30, 60], range: ["#c6dbef", "#4292c6", "#08306b"] },
+          noDataColor: "#e6e6e6",
+          markers: [{ lng: 0, lat: 40, label: "Home", color: "#b8860b" }],
+          showLabels: false,
+          width: 520,
+          height: 320,
         });
         // De-overlap sanity check: two items at the EXACT same lng/lat must settle to
         // different, non-overlapping pixel positions once the force simulation runs.
@@ -2195,6 +2221,42 @@
           log(
             symbolBackdropEl.querySelectorAll("path.geography").length === 3,
             "SYMBOL: backdrop mode draws 3 muted geography paths",
+          );
+
+          // ---- SymbolMap hexagon / honeycomb checks ----
+          const hexPaths = symbolHexEl.querySelectorAll("path.symbol[data-label-safe]");
+          log(
+            hexPaths.length === 4 && symbolHexEl.querySelectorAll("circle.symbol").length === 0,
+            `SYMBOL HEX: 4 path.symbol hexagons, no circles (got ${hexPaths.length})`,
+          );
+          const hexCtx = symbolHexEl.getContext();
+          const hexCells = new Set((hexCtx ? hexCtx.symbols : []).map((s) => `${s.x},${s.y}`));
+          log(
+            hexCtx && hexCtx.positionMode === "honeycomb" && hexCells.size === 4,
+            "SYMBOL HEX: honeycomb placed 4 tiles on 4 distinct cells (Beta walked off Alpha's cell)",
+          );
+          log(
+            hexCtx && hexCtx.symbols.every((s) => s.radius === 14),
+            "SYMBOL HEX: every tile has the honeycomb radius (14)",
+          );
+          const deltaFill = symbolHexEl.querySelector('path.symbol[data-label="Delta"]');
+          log(
+            deltaFill &&
+              deltaFill.getAttribute("fill") === "#e6e6e6" &&
+              hexCtx.stats.noValueCount === 1,
+            "SYMBOL HEX: the no-value tile paints noDataColor and is counted",
+          );
+          const gammaFill = symbolHexEl.querySelector('path.symbol[data-label="Gamma"]');
+          log(
+            gammaFill && gammaFill.getAttribute("fill") === "#08306b",
+            "SYMBOL HEX: colorScale maps 90 to the top class",
+          );
+          const markerG = symbolHexEl.querySelector("g.symbol-map-content > g:last-child");
+          log(
+            markerG &&
+              markerG.getAttribute("class") === "symbol-map-markers" &&
+              symbolHexEl.querySelectorAll("path.symbol-map-marker").length === 1,
+            "SYMBOL HEX: one marker pin drawn last, above the tiles",
           );
 
           const symCtx = symbolSvgEl.getContext();

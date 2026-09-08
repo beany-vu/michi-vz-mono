@@ -1,6 +1,6 @@
 ---
 title: Bản đồ ký hiệu
-description: "Một bản đồ ký hiệu/bong bóng khử chồng lấn bằng mô phỏng lực d3-force một lần: bạn cung cấp lng/lat cho mỗi mục. Mặc định chỉ có chấm (tương đồng với bản cũ); có tùy chọn nền địa hình mờ nhạt. SVG, canvas và một lớp WebGPU ủy quyền."
+description: "Một bản đồ ký hiệu/bong bóng khử chồng lấn bằng mô phỏng lực d3-force một lần: bạn cung cấp lng/lat cho mỗi mục. Mặc định chỉ có chấm (tương đồng với bản cũ); có tùy chọn nền địa hình mờ nhạt, và các ô lục giác trên lưới tổ ong biến nó thành bản đồ ô. SVG, canvas và một lớp WebGPU ủy quyền."
 ---
 # Bản đồ ký hiệu
 
@@ -30,6 +30,24 @@ Atlas thế giới trên trang này là file GeoJSON đơn giản hóa thuộc p
 :::
 
 > Biểu đồ ở trên là **cùng một engine** trong mọi framework - chỉ mã tích hợp bên dưới là khác.
+
+## Ô lục giác trên lưới tổ ong
+
+Đôi khi mọi địa điểm cần có cùng trọng số và **giá trị nằm ở màu sắc**: một bản đồ ô. Đặt `shape: "hexagon"` và `positionMode: "honeycomb"`, mỗi ký hiệu trở thành một lục giác cùng kích thước bám vào lưới lục giác: các ô lát kín mặt phẳng, không bao giờ chồng lấn, và ô của một quốc gia ở gần trọng tâm của nó nhất có thể trong lưới. `colorScale` (miền/dải `scaleThreshold`, cùng hợp đồng với [Bản đồ choropleth](/charts/choropleth-map)) mang giá trị; các ô được tô ở độ mờ đầy đủ vì màu sắc *chính là* mã hóa.
+
+<ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+- **`honeycomb`** - `{ radius, gap, orientation }`: bán kính ngoại tiếp của ô tính bằng px (mặc định 11), khoảng cách giữa các cạnh ô (mặc định 2), và đỉnh `"flat"` (mặc định, cạnh phẳng ở trên) hoặc `"pointy"`. Hướng chi phối cả đường viền lục giác lẫn lưới, để các ô khớp nhau.
+- **Va chạm** được giải quyết theo thứ tự `dataSet`: ô đến sau mà cell đã bị chiếm sẽ đi ra từng vòng đến cell trống đầu tiên, một cách tất định. Nếu không có cell trống trong sáu vòng, ô sẽ chồng lấn và một `onDataWarning` loại `layout-overflow` nêu tên nó.
+- **Không có giá trị?** Bỏ qua `value`. Mục được tô `noDataColor` (mặc định `#d2d7dd`, truyền `"transparent"` để ẩn), bị loại khỏi thang màu, và không bao giờ chiếm cell: ô "không có dữ liệu" không thể đẩy dữ liệu thật đi.
+- **`offset`** trên một mục dịch chuyển nó theo px sau phép chiếu và trước khi bám lưới: lối thoát cho một nước nhỏ bị nước lớn bên cạnh che khuất.
+- **`markers`** vẽ các ghim trang trí phía trên các ô tại một lng/lat (ví dụ trụ sở chính): ghim bản đồ tích hợp, hoặc `path` của riêng bạn trong hộp `pathSize`, được co giãn tới `size` px và neo ở đầu nhọn. Ghim không được bố trí, không nhận hover và không có tooltip; tạo kiểu qua `.symbol-map-marker`. Ngữ cảnh liệt kê `x`/`y` của mọi ký hiệu đã đặt (và mọi ghim) để bạn tự vẽ lớp phủ và chú giải.
+
+`shape: "hexagon"` cũng dùng được một mình với cách đặt `"force"` hoặc `"precise"`, và `colorScale` dùng được với hình tròn: các mảnh ghép kết hợp với nhau.
+
+::: tip Phần thuộc về bạn
+Thư viện vẽ ô, ghim và màu. Chữ chú giải, nội dung tooltip, định dạng số, nước nào là "nhà" và nhận bảng màu nào thuộc về bên sử dụng: truyền chúng qua `colorScale`, `markers` và `tooltipFormatter`.
+:::
 
 ## Mang theo tọa độ của riêng bạn
 

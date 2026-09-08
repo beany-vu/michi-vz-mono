@@ -6055,10 +6055,50 @@
         },
         {
           "name": "positionMode",
-          "type": "\"force\" | \"precise\"",
+          "type": "\"force\" | \"precise\" | \"honeycomb\"",
           "optional": true,
           "description": "How symbols are placed: \"force\" (default) runs a one-shot de-overlap simulation that pulls colliding circles apart, while \"precise\" keeps every symbol at its exact projected lng/lat (overlaps allowed). - \"force\": a one-shot de-overlap simulation pulls colliding circles apart - readable for dense data, but symbols DRIFT from their true lng/lat (on small plots the drift can be large). Avoid it when the audience will read exact geographic position off the chart: a symbol drawn over the wrong country is a cartographic-accuracy problem and can be politically sensitive. - \"precise\": every symbol stays at its exact projected lng/lat; overlapping circles are allowed. Prefer this whenever a `geography` backdrop is shown, since a visible landmass invites reading positions literally.",
           "default": "\"force\"",
+          "common": false
+        },
+        {
+          "name": "shape",
+          "type": "\"circle\" | \"hexagon\"",
+          "optional": true,
+          "description": "Mark geometry: \"circle\" (default) or a \"hexagon\" whose CIRCUMRADIUS is the mark radius - collision, hit-testing and label fitting stay circle-based on `radius`, only the painted outline changes. Orientation follows `honeycomb.orientation` (default \"flat\"). Pair with `positionMode: \"honeycomb\"` for tessellating tiles.",
+          "default": "\"circle\"",
+          "common": false
+        },
+        {
+          "name": "honeycomb",
+          "type": "{ radius?: number; gap?: number; orientation?: \"flat\" | \"pointy\" }",
+          "optional": true,
+          "description": "Lattice settings for `positionMode: \"honeycomb\"`: tile circumradius in px (default 11), gap between tile edges in px (default 2), and orientation (default \"flat\" = a flat edge on top, columns offset; \"pointy\" = a vertex on top, rows offset). Also sets the hexagon outline orientation for `shape`.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "colorScale",
+          "type": "{ domain: number[]; range: string[] }",
+          "optional": true,
+          "description": "Value-driven colour encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold` (values outside the domain clamp to the first/last colour). Precedence: `colorsMapping[label]` > `colorScale(value)` > the item's `color` > the palette. Same contract as ChoroplethMapChart's `colorScale`. With a colorScale the colour IS the encoding, so marks paint at full opacity (the legacy value->alpha ramp applies only without one).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataColor",
+          "type": "string",
+          "optional": true,
+          "description": "Fill for items without a `value` (default `#d2d7dd`, ChoroplethMap's no-data grey). Pass \"transparent\" to hide them while keeping their tooltip target.",
+          "default": "DEFAULT_NO_DATA_COLOR",
+          "common": false
+        },
+        {
+          "name": "markers",
+          "type": "SymbolMapMarker[]",
+          "optional": true,
+          "description": "Decorative pins drawn above the symbols (a home location, an office). Anchored tip-down at the projected lng/lat; never laid out or hit-tested; no tooltip. Built-in map-pin glyph, or pass your own `path` + `pathSize`.",
+          "default": "",
           "common": false
         },
         {

@@ -1,6 +1,6 @@
 ---
 title: Symbol Map
-description: "A force-de-overlapped symbol/bubble map: you supply lng/lat per item, a one-shot d3-force simulation pulls overlapping circles apart. Dot-only by default (legacy parity); an optional muted backdrop landmass is available. SVG, canvas, and a delegated WebGPU layer."
+description: "A force-de-overlapped symbol/bubble map: you supply lng/lat per item, a one-shot d3-force simulation pulls overlapping circles apart. Dot-only by default (legacy parity); an optional muted backdrop landmass is available, and hexagon tiles on a honeycomb turn it into a tile map. SVG, canvas, and a delegated WebGPU layer."
 ---
 # Symbol Map
 
@@ -30,6 +30,24 @@ The world atlas on this page is a simplified public-domain GeoJSON file bundled 
 :::
 
 > The chart above is the **same engine** in every framework - only the integration code below differs.
+
+## Hexagon tiles on a honeycomb
+
+Sometimes every place should weigh the same and the **value belongs in colour**: a tile map. Set `shape: "hexagon"` and `positionMode: "honeycomb"`, and every symbol becomes an equal-size hexagon snapped to a hex lattice - tiles tessellate, never overlap, and a country's tile stays as close to its centroid as the lattice allows. `colorScale` (a `scaleThreshold` domain/range, the same contract as the [Choropleth Map](/charts/choropleth-map)) carries the value; marks paint at full opacity because the colour *is* the encoding.
+
+<ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+- **`honeycomb`** - `{ radius, gap, orientation }`: tile circumradius in px (default 11), gap between tile edges (default 2), and `"flat"` (default) or `"pointy"` tops. Orientation drives both the hexagon outline and the lattice, so the tiles fit.
+- **Collisions** are resolved in `dataSet` order: a later tile whose cell is taken walks outward ring by ring to the first free cell, deterministically. If no cell is free within six rings the tile overlaps and an `onDataWarning` of type `layout-overflow` names it.
+- **No value?** Omit `value`. The item is painted `noDataColor` (default `#d2d7dd`, pass `"transparent"` to hide it), is excluded from the colour scale, and never claims a cell - so "no data" tiles can never push real data around.
+- **`offset`** on an item nudges it in px after projection and before the snap - the escape hatch for a small country hidden under a large neighbour.
+- **`markers`** draws decorative pins above the tiles at a lng/lat (a home location): the built-in map pin, or your own `path` in its `pathSize` box, scaled to `size` px and anchored tip-down. Pins are not laid out, not hit-tested and have no tooltip; style them via `.symbol-map-marker`. The context lists every placed symbol's `x`/`y` (and each marker) so you can draw your own overlays and legend.
+
+`shape: "hexagon"` also works on its own with `"force"` or `"precise"` placement, and `colorScale` works with circles: the pieces compose.
+
+::: tip What stays yours
+The library draws tiles, pins and colours. Legend text, tooltip copy, number formatting, which country is "home" and which palette it gets are the consumer's - pass them through `colorScale`, `markers` and `tooltipFormatter`.
+:::
 
 ## Bring your own coordinates
 

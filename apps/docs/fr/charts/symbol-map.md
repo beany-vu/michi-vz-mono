@@ -1,6 +1,6 @@
 ---
 title: Carte à symboles
-description: "Une carte à bulles/symboles dont les chevauchements sont résolus par une simulation de force d3-force en une passe : vous fournissez lng/lat par élément. Dot-only par défaut (parité legacy) ; un fond de carte discret optionnel est disponible. SVG, canvas et une couche WebGPU déléguée."
+description: "Une carte à bulles/symboles dont les chevauchements sont résolus par une simulation de force d3-force en une passe : vous fournissez lng/lat par élément. Dot-only par défaut (parité legacy) ; un fond de carte discret optionnel est disponible, et des tuiles hexagonales en nid d'abeille en font une carte à tuiles. SVG, canvas et une couche WebGPU déléguée."
 ---
 # Carte à symboles
 
@@ -30,6 +30,24 @@ L'atlas mondial de cette page est un fichier GeoJSON simplifié du domaine publi
 :::
 
 > Le graphique ci-dessus est le **même moteur** dans chaque framework - seul le code d'intégration ci-dessous diffère.
+
+## Tuiles hexagonales en nid d'abeille
+
+Parfois chaque lieu doit peser autant que les autres et **la valeur appartient à la couleur** : une carte à tuiles. Avec `shape: "hexagon"` et `positionMode: "honeycomb"`, chaque symbole devient un hexagone de taille égale accroché à un réseau hexagonal : les tuiles pavent le plan, ne se chevauchent jamais, et la tuile d'un pays reste aussi proche de son centroïde que le réseau le permet. `colorScale` (un domaine/plage `scaleThreshold`, le même contrat que la [Carte choroplèthe](/charts/choropleth-map)) porte la valeur ; les marques sont peintes à pleine opacité puisque la couleur *est* l'encodage.
+
+<ChartDemo chart="symbol-map-chart" :index="2" :legend="[]" />
+
+- **`honeycomb`** - `{ radius, gap, orientation }` : rayon circonscrit de la tuile en px (11 par défaut), espace entre les bords (2 par défaut), et sommets `"flat"` (défaut, côté plat en haut) ou `"pointy"`. L'orientation régit à la fois le contour de l'hexagone et le réseau, pour que les tuiles s'emboîtent.
+- **Les collisions** se résolvent dans l'ordre de `dataSet` : une tuile dont la cellule est prise avance anneau par anneau jusqu'à la première cellule libre, de façon déterministe. Sans cellule libre dans six anneaux, la tuile chevauche et un `onDataWarning` de type `layout-overflow` la nomme.
+- **Pas de valeur ?** Omettez `value`. L'élément est peint en `noDataColor` (`#d2d7dd` par défaut, passez `"transparent"` pour le masquer), exclu de l'échelle de couleurs, et ne réclame jamais de cellule : une tuile « sans donnée » ne peut jamais déplacer une vraie donnée.
+- **`offset`** sur un élément le décale en px après la projection et avant l'accrochage : la soupape pour un petit pays caché sous un grand voisin.
+- **`markers`** dessine des épingles décoratives au-dessus des tuiles à un lng/lat (un siège, par exemple) : l'épingle intégrée, ou votre propre `path` dans sa boîte `pathSize`, mis à l'échelle `size` px et ancré par la pointe. Les épingles ne sont ni disposées, ni testées au survol, et n'ont pas d'infobulle ; stylez-les via `.symbol-map-marker`. Le contexte liste le `x`/`y` de chaque symbole placé (et chaque épingle) pour vos propres superpositions et légende.
+
+`shape: "hexagon"` fonctionne aussi seul avec un placement `"force"` ou `"precise"`, et `colorScale` fonctionne avec des cercles : les briques se composent.
+
+::: tip Ce qui reste à vous
+La bibliothèque dessine tuiles, épingles et couleurs. Le texte de légende, le contenu de l'infobulle, le format des nombres, quel pays est « chez vous » et quelle palette il reçoit appartiennent au consommateur : passez-les par `colorScale`, `markers` et `tooltipFormatter`.
+:::
 
 ## Apportez vos propres coordonnées
 
