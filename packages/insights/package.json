@@ -94,7 +94,7 @@
   },
   "devDependencies": {
     "jsdom": "^25.0.1",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.7"
   },
   "repository": {
     "type": "git",

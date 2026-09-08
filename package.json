@@ -24,7 +24,8 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
-    "prepare": "husky"
+    "prepare": "husky",
+    "audit": "pnpm audit --audit-level moderate"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
@@ -44,5 +45,19 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,yml,yaml,html,css,vue}": "prettier --write --ignore-unknown"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "^7.3.6",
+      "esbuild": "^0.28.2",
+      "postcss": "^8.5.23",
+      "nanoid@3": "^3.3.18",
+      "js-yaml@3": "^3.15.1",
+      "js-yaml@4": "^4.3.1",
+      "uuid@9": "^11.1.1",
+      "brace-expansion@1": "^1.1.18",
+      "brace-expansion@2": "^2.1.4",
+      "brace-expansion@5": "^5.0.9"
+    }
   }
 }
