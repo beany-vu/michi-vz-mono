@@ -142,6 +142,16 @@ applyRadarChartProps(this.c.nativeElement, {
 - Respecteert `prefers-reduced-motion`: de grafiek verschijnt dan meteen volledig getekend.
 - Onthulanimatie is een eenmalige animatie bij mounten; speel door de jaren hierboven stapt in plaats daarvan jaar voor jaar door de data.
 
+## Hover en tooltips
+
+Hoveren over een pool roept `tooltipFormatter` aan met het datapunt van de pool **plus `date`** - het aslabel van de gehoverde pool - en dat is nu consistent op elke renderer (svg, canvas, webgpu):
+
+```ts
+tooltipFormatter: (item) => `${item.date}: ${item.value}`,
+```
+
+De standaard tooltip-markup (zonder `tooltipFormatter`) blijft ongewijzigd. Hover volgt de cursor terwijl die over een veelhoek beweegt, in plaats van eenmalig te vuren bij binnenkomst, en gedempte series (via `highlightItems` / `disabledItems`) worden niet gehittest - alleen de actieve serie reageert op hover, net als bij canvas en webgpu.
+
 ## Gebruik
 
 ::: code-group

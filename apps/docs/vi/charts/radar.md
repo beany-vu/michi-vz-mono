@@ -142,6 +142,16 @@ applyRadarChartProps(this.c.nativeElement, {
 - Tôn trọng `prefers-reduced-motion`: biểu đồ hiển thị đầy đủ ngay, không animation.
 - Hiệu ứng vẽ dần chỉ chạy một lần khi mount; mục xem dữ liệu chạy theo năm ở trên chạy từng năm một theo yêu cầu.
 
+## Hover và tooltip
+
+Hover vào một cực sẽ gọi `tooltipFormatter` với dữ liệu của cực đó **cộng thêm `date`** - nhãn trục của cực đang hover - và giờ hành vi này nhất quán trên mọi bộ dựng (svg, canvas, webgpu):
+
+```ts
+tooltipFormatter: (item) => `${item.date}: ${item.value}`,
+```
+
+Markup tooltip mặc định (khi không truyền `tooltipFormatter`) không đổi. Hover bám theo con trỏ khi di chuyển trên đa giác thay vì chỉ bắn một lần lúc vừa chạm vào, và các chuỗi bị làm mờ (qua `highlightItems` / `disabledItems`) không được hit-test - chỉ chuỗi đang active mới phản hồi hover, giống hệt canvas và webgpu.
+
 ## Cách dùng
 
 ::: code-group

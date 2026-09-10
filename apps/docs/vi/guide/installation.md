@@ -69,6 +69,36 @@ npm i @michi-vz/angular @angular/core
 
 `@michi-vz/wc` và `@michi-vz/core` **không có peer dependency nào**, mọi thứ chúng cần (d3-scale/d3-shape, DOMPurify) đều đã được bundle sẵn.
 
+## Import một biểu đồ duy nhất
+
+Import một biểu đồ thay vì cả barrel, để bundler có thể loại bỏ 21 biểu đồ còn lại:
+
+::: code-group
+
+```ts [React]
+import { RadarChart } from "@michi-vz/react/radar-chart";
+```
+
+```ts [Vue]
+import { RadarChart } from "@michi-vz/vue/radar-chart";
+```
+
+```ts [Svelte]
+import { radarChart } from "@michi-vz/svelte/radar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRadarChartProps } from "@michi-vz/angular/radar-chart";
+```
+
+```ts [Web component]
+import "@michi-vz/wc/radar-chart"; // chỉ đăng ký <michi-vz-radar-chart>
+```
+
+:::
+
+Barrel trần `@michi-vz/react` / `@michi-vz/vue` / `@michi-vz/svelte` / `@michi-vz/angular` / `@michi-vz/wc` vẫn hoạt động bình thường và vẫn đăng ký mọi biểu đồ - sub-path chỉ là phần bổ sung thêm. Mỗi biểu đồ có sub-path riêng, dạng kebab-case, ví dụ `@michi-vz/vue/comparable-vertical-bar-chart`; xem [Biểu đồ radar](/vi/charts/radar) hoặc duyệt toàn bộ [thư viện biểu đồ](/vi/charts/).
+
 ## CDN / không cần build
 
 Làm prototype, CodePen, hay một trang HTML thuần thì cứ load web component thẳng từ CDN, không cần bundler:

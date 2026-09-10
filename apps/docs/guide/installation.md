@@ -69,6 +69,36 @@ npm i @michi-vz/angular @angular/core
 
 `@michi-vz/wc` and `@michi-vz/core` have **no peer dependencies** - everything they need (the d3 modules, DOMPurify) ships as regular dependencies and installs automatically.
 
+## Importing a single chart
+
+Import one chart instead of the barrel so your bundler can drop the other 21:
+
+::: code-group
+
+```ts [React]
+import { RadarChart } from "@michi-vz/react/radar-chart";
+```
+
+```ts [Vue]
+import { RadarChart } from "@michi-vz/vue/radar-chart";
+```
+
+```ts [Svelte]
+import { radarChart } from "@michi-vz/svelte/radar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRadarChartProps } from "@michi-vz/angular/radar-chart";
+```
+
+```ts [Web component]
+import "@michi-vz/wc/radar-chart"; // registers <michi-vz-radar-chart> only
+```
+
+:::
+
+The bare `@michi-vz/react` / `@michi-vz/vue` / `@michi-vz/svelte` / `@michi-vz/angular` / `@michi-vz/wc` barrel still works and still registers every chart - subpaths are purely additive. Every chart has its own subpath, kebab-case, e.g. `@michi-vz/vue/comparable-vertical-bar-chart`; see [Radar Chart](/charts/radar) or browse the full [gallery](/charts/).
+
 ## CDN / no build
 
 For a prototype, a CodePen, or a plain HTML page, load the web components straight from a CDN - no bundler required:

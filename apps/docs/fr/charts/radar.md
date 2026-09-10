@@ -142,6 +142,16 @@ applyRadarChartProps(this.c.nativeElement, {
 - Respecte `prefers-reduced-motion` : le graphique s'affiche alors entièrement tracé, instantanément.
 - L'animation de révélation est une entrée ponctuelle ; le défilement par année ci-dessus avance plutôt année par année.
 
+## Survol et infobulles
+
+Survoler un pôle appelle `tooltipFormatter` avec l'élément de données du pôle **plus `date`** - le libellé d'axe du pôle survolé - et c'est désormais cohérent sur chaque moteur de rendu (svg, canvas, webgpu) :
+
+```ts
+tooltipFormatter: (item) => `${item.date} : ${item.value}`,
+```
+
+Le balisage par défaut de l'infobulle (sans `tooltipFormatter`) reste inchangé. Le survol suit le curseur pendant qu'il se déplace sur un polygone au lieu de se déclencher une seule fois à l'entrée, et les séries atténuées (via `highlightItems` / `disabledItems`) ne sont pas testées au survol - seule la série active répond, à l'image de canvas et webgpu.
+
 ## Utilisation
 
 ::: code-group

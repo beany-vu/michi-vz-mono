@@ -69,6 +69,36 @@ npm i @michi-vz/angular @angular/core
 
 `@michi-vz/wc` en `@michi-vz/core` hebben **geen peer dependencies** - alles wat ze nodig hebben (d3-scale/d3-shape, DOMPurify) is meegebundeld.
 
+## Eén grafiek importeren
+
+Importeer één grafiek in plaats van de barrel, zodat je bundler de andere 21 kan laten vallen:
+
+::: code-group
+
+```ts [React]
+import { RadarChart } from "@michi-vz/react/radar-chart";
+```
+
+```ts [Vue]
+import { RadarChart } from "@michi-vz/vue/radar-chart";
+```
+
+```ts [Svelte]
+import { radarChart } from "@michi-vz/svelte/radar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRadarChartProps } from "@michi-vz/angular/radar-chart";
+```
+
+```ts [Web component]
+import "@michi-vz/wc/radar-chart"; // registreert alleen <michi-vz-radar-chart>
+```
+
+:::
+
+De kale `@michi-vz/react` / `@michi-vz/vue` / `@michi-vz/svelte` / `@michi-vz/angular` / `@michi-vz/wc` barrel werkt nog steeds en registreert nog steeds elke grafiek - sub-paths zijn puur additief. Elke grafiek heeft zijn eigen sub-path, in kebab-case, bijv. `@michi-vz/vue/comparable-vertical-bar-chart`; zie [Radardiagram](/nl/charts/radar) of blader door de volledige [galerij](/nl/charts/).
+
 ## CDN / geen build
 
 Voor een prototype, een CodePen, of een gewone HTML-pagina, laad de web components rechtstreeks vanaf een CDN - geen bundler nodig:

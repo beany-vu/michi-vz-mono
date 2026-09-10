@@ -69,6 +69,36 @@ npm i @michi-vz/angular @angular/core
 
 `@michi-vz/wc` et `@michi-vz/core` n'ont **aucune dépendance peer** - tout ce dont ils ont besoin (d3-scale/d3-shape, DOMPurify) est embarqué.
 
+## Importer un seul graphique
+
+Importez un seul graphique au lieu du barrel, pour que votre bundler puisse laisser tomber les 21 autres :
+
+::: code-group
+
+```ts [React]
+import { RadarChart } from "@michi-vz/react/radar-chart";
+```
+
+```ts [Vue]
+import { RadarChart } from "@michi-vz/vue/radar-chart";
+```
+
+```ts [Svelte]
+import { radarChart } from "@michi-vz/svelte/radar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRadarChartProps } from "@michi-vz/angular/radar-chart";
+```
+
+```ts [Web component]
+import "@michi-vz/wc/radar-chart"; // n'enregistre que <michi-vz-radar-chart>
+```
+
+:::
+
+Le barrel générique `@michi-vz/react` / `@michi-vz/vue` / `@michi-vz/svelte` / `@michi-vz/angular` / `@michi-vz/wc` fonctionne toujours et enregistre toujours tous les graphiques - les sous-chemins sont purement additifs. Chaque graphique a son propre sous-chemin, en kebab-case, par ex. `@michi-vz/vue/comparable-vertical-bar-chart` ; voir [Graphique radar](/fr/charts/radar) ou parcourir la [galerie](/fr/charts/) complète.
+
 ## CDN / sans build
 
 Pour un prototype, un CodePen, ou une simple page HTML, chargez les web components directement depuis un CDN - aucun bundler requis :

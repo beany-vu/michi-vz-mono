@@ -142,6 +142,16 @@ applyRadarChartProps(this.c.nativeElement, {
 - Respects `prefers-reduced-motion`: the chart renders fully drawn instantly.
 - Reveal animation is a one-shot entrance; play through the years above steps through data year by year instead.
 
+## Hover and tooltips
+
+Hovering a pole calls `tooltipFormatter` with the pole's data item **plus `date`** - the hovered pole's axis label - and this is now consistent across every renderer (svg, canvas, webgpu):
+
+```ts
+tooltipFormatter: (item) => `${item.date}: ${item.value}`,
+```
+
+The default tooltip markup (no `tooltipFormatter` passed) is unchanged. Hover follows the cursor as it moves across a polygon rather than firing once on entering it, and dimmed series (via `highlightItems` / `disabledItems`) are not hit-tested - only the active series responds to hover, matching canvas and webgpu.
+
 ## Usage
 
 ::: code-group
