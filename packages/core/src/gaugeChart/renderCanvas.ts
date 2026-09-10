@@ -37,19 +37,36 @@ export function drawGaugeCanvas(
 
   for (const d of model.rings) {
     ctx.lineWidth = d.thickness;
+    const start = TOP + d.startAngle;
 
-    // Track: the full circle.
+    // Track: spans the same sweep as the arc, not a full circle.
     ctx.globalAlpha = d.trackOpacity;
     ctx.strokeStyle = d.trackColor;
     ctx.beginPath();
-    ctx.arc(model.cx, model.cy, d.radius, 0, Math.PI * 2);
+    ctx.arc(model.cx, model.cy, d.radius, start, start + model.sweepAngle);
     ctx.stroke();
 
-    // Value arc: sweep clockwise from 12 o'clock (+ startAngle).
+    // Value arc: sweep clockwise from 12 o'clock (+ startAngle). d.sweep is
+    // already scaled against the gauge's sweepAngle (not the full circle).
     if (d.sweep > 0) {
-      const start = TOP + d.startAngle;
       ctx.globalAlpha = d.opacity;
-      ctx.strokeStyle = strokeColors.get(d.colorKey) || d.stroke;
+      const colours = d.gradient;
+      if (colours && colours.length === 1) {
+        ctx.strokeStyle = colours[0];
+      } else if (colours && colours.length > 1) {
+        // Anchored to the FULL sweep (fixed across the ring's diameter), never
+        // to the drawn portion - matches the SVG renderer's userSpaceOnUse gradient.
+        const grad = ctx.createLinearGradient(
+          model.cx - d.radius,
+          model.cy,
+          model.cx + d.radius,
+          model.cy,
+        );
+        colours.forEach((c, i) => grad.addColorStop(i / (colours.length - 1), c));
+        ctx.strokeStyle = grad;
+      } else {
+        ctx.strokeStyle = strokeColors.get(d.colorKey) || d.stroke;
+      }
       ctx.beginPath();
       ctx.arc(model.cx, model.cy, d.radius, start, start + d.sweep);
       ctx.stroke();

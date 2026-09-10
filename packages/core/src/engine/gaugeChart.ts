@@ -49,6 +49,12 @@ import type {
 // the host-level hit-test / interaction path. svg does not.
 const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 
+// Per-mount counter for gradient element ids: several gauges can share a page,
+// so a fixed id (e.g. "gaugeGrad") would make every later gauge inherit the
+// first one's stops. Assigned ONCE per mountGaugeChart call (not per render),
+// so re-renders (hover, prop updates) keep the same id.
+let gaugeMountSeq = 0;
+
 interface Resolved {
   width: number;
   height: number;
@@ -59,6 +65,8 @@ interface Resolved {
   ringGap: number;
   outerRadius: number | null;
   startAngle: number;
+  sweepAngle: number;
+  gradient?: string[];
   roundedCaps: boolean;
   ringOpacity: number | number[];
   trackColor: string | string[];
@@ -83,6 +91,8 @@ function resolve(p: GaugeChartProps): Resolved {
     ringGap: p.ringGap ?? 2,
     outerRadius: p.outerRadius ?? null,
     startAngle: p.startAngle ?? 0,
+    sweepAngle: p.sweepAngle ?? 360,
+    gradient: p.gradient,
     roundedCaps: p.roundedCaps ?? false,
     ringOpacity: p.ringOpacity ?? 1,
     trackColor: p.trackColor ?? "#00000014",
@@ -101,6 +111,8 @@ export function mountGaugeChart(
 ): ChartInstance<GaugeChartProps> {
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-gauge-chart");
+
+  const gradientIdBase = `mv-gauge-${++gaugeMountSeq}`;
 
   const svg = svgEl("svg");
   const tooltip = htmlEl("div", { class: "tooltip" });
@@ -310,6 +322,7 @@ export function mountGaugeChart(
       ringThickness: r.ringThickness,
       ringGap: r.ringGap,
       startAngleDeg: r.startAngle,
+      sweepAngleDeg: r.sweepAngle,
       roundedCaps: r.roundedCaps,
       max: processed.max,
       ringOpacity: r.ringOpacity,
@@ -318,6 +331,8 @@ export function mountGaugeChart(
       activeStyle: r.activeStyle,
       activeIndex,
       highlightItems,
+      gradient: r.gradient,
+      gradientIdBase,
     });
 
     clear(svg);

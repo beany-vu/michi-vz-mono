@@ -13,6 +13,8 @@ export interface GaugeRing {
   fraction: number | null;
   color?: string;
   trackColor?: string;
+  /** Multi-stop colour ramp for this ring's arc, overriding `color`. */
+  gradient?: string[];
 }
 
 export interface ProcessedGauge {
@@ -45,6 +47,7 @@ export function processGaugeData(
         fraction: value === null ? null : value / max,
         color: d.color,
         trackColor: d.trackColor,
+        gradient: d.gradient,
       };
     });
 

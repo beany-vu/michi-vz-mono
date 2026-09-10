@@ -32,6 +32,8 @@ export function renderGaugeSvg(
     ? "opacity 0.15s ease-out, stroke-dasharray 0.2s ease-out"
     : "none";
 
+  let defs: SVGDefsElement | null = null;
+
   for (const d of model.rings) {
     const circumference = 2 * Math.PI * d.radius;
     const degrees = (d.startAngle * 180) / Math.PI;
@@ -42,25 +44,69 @@ export function renderGaugeSvg(
     if (!degrees) g.removeAttribute("transform");
 
     const dPath = fullCirclePath(model.cx, model.cy, d.radius);
+    // The track spans the same sweep as the arc (a partial gauge's track is a
+    // partial arc too, not a full circle) - the dash pattern's two numbers sum
+    // to the path length, so a full sweep (sweepLen === circumference) draws
+    // solid with a zero gap, matching pre-sweepAngle rendering exactly.
+    const sweepLen = (model.sweepAngle / (2 * Math.PI)) * circumference;
+    const trackGap = Math.max(0, circumference - sweepLen);
     const track = svgEl("path", {
       class: "gauge-track",
       d: dPath,
       fill: "none",
       stroke: d.trackColor,
       "stroke-width": d.thickness,
+      "stroke-dasharray": `${sweepLen} ${trackGap}`,
       opacity: d.trackOpacity,
     });
     (track as SVGElement).style.transition = transition;
     g.appendChild(track);
 
+    // Arc extent is scaled against the sweep, not the circumference: d.sweep
+    // already carries that scaling (renderModel: fraction * sweepAngle), so
+    // this stays the exact same formula as the full-circle case.
     const arcLen = (d.sweep / (2 * Math.PI)) * circumference;
+
+    // Gradient is anchored to the FULL sweep (fixed x1/x2 across the ring's
+    // diameter), never to the drawn portion - the stroke-dasharray above is
+    // what shortens the visible arc, so a colour always sits at the same value.
+    let stroke = d.stroke;
+    const colours = d.gradient;
+    if (colours && colours.length === 1) {
+      stroke = colours[0];
+    } else if (colours && colours.length > 1) {
+      if (!defs) {
+        defs = svgEl("defs");
+        root.insertBefore(defs, root.firstChild);
+      }
+      const gradientId = `${model.gradientIdBase}-grad-${d.index}`;
+      const gradient = svgEl("linearGradient", {
+        id: gradientId,
+        gradientUnits: "userSpaceOnUse",
+        x1: model.cx - d.radius,
+        x2: model.cx + d.radius,
+        y1: model.cy,
+        y2: model.cy,
+      });
+      colours.forEach((c, i) => {
+        gradient.appendChild(
+          svgEl("stop", {
+            offset: i / (colours.length - 1),
+            "stop-color": c,
+          }),
+        );
+      });
+      defs.appendChild(gradient);
+      stroke = `url(#${gradientId})`;
+    }
+
     const arc = svgEl("path", {
       class: "gauge-arc",
       "data-label": d.colorKey,
       "data-label-safe": d.dataLabelSafe,
       d: dPath,
       fill: "none",
-      stroke: d.stroke,
+      stroke,
       "stroke-width": d.thickness,
       "stroke-linecap": model.roundedCaps ? "round" : "butt",
       "stroke-dasharray": `${arcLen} ${circumference}`,

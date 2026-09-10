@@ -187,4 +187,84 @@ describe("mountGaugeChart (jsdom)", () => {
     chart.destroy();
     host.remove();
   });
+
+  it("defaults to a full circle, so existing consumers are unchanged", () => {
+    const { host, chart } = mount({ dataSet: [{ label: "A", value: 50 }], max: 100 });
+    const track = host.querySelector<SVGPathElement>("path.gauge-track")!;
+    // A full-circle track draws the whole circumference: no visible dash gap.
+    const [drawn, gap] = (track.getAttribute("stroke-dasharray") ?? "0 0").split(" ").map(Number);
+    expect(gap).toBeLessThanOrEqual(0.01);
+    expect(drawn).toBeGreaterThan(0);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("sweepAngle 180 draws a half track, and a full-value arc fills exactly that half", () => {
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 100 }],
+      max: 100,
+      sweepAngle: 180,
+      startAngle: -90,
+    });
+    const track = host.querySelector<SVGPathElement>("path.gauge-track")!;
+    const arc = host.querySelector<SVGPathElement>("path.gauge-arc")!;
+    const trackDrawn = Number(track.getAttribute("stroke-dasharray")!.split(" ")[0]);
+    const arcDrawn = Number(arc.getAttribute("stroke-dasharray")!.split(" ")[0]);
+    // value === max, so the arc covers the whole track.
+    expect(arcDrawn).toBeCloseTo(trackDrawn, 1);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("scales the arc against the SWEEP, not the circumference", () => {
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 50 }],
+      max: 100,
+      sweepAngle: 180,
+      startAngle: -90,
+    });
+    const track = host.querySelector<SVGPathElement>("path.gauge-track")!;
+    const arc = host.querySelector<SVGPathElement>("path.gauge-arc")!;
+    const trackDrawn = Number(track.getAttribute("stroke-dasharray")!.split(" ")[0]);
+    const arcDrawn = Number(arc.getAttribute("stroke-dasharray")!.split(" ")[0]);
+    // Half the value over a half sweep = a quarter of the circle, i.e. half the track.
+    expect(arcDrawn).toBeCloseTo(trackDrawn / 2, 1);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("emits a linearGradient with one stop per colour and strokes the arc with it", () => {
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 70, gradient: ["#c00", "#fd0", "#3a3"] }],
+      max: 100,
+    });
+    const stops = host.querySelectorAll("defs linearGradient stop");
+    expect(stops.length).toBe(3);
+    expect(stops[0].getAttribute("stop-color")).toBe("#c00");
+    expect(host.querySelector("path.gauge-arc")!.getAttribute("stroke")).toMatch(/^url\(#/);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("gives each mounted gauge its own gradient id, so two on a page cannot collide", () => {
+    const a = mount({ dataSet: [{ label: "A", value: 1, gradient: ["#c00", "#3a3"] }], max: 4 });
+    const b = mount({ dataSet: [{ label: "A", value: 1, gradient: ["#00c", "#0c0"] }], max: 4 });
+    const idOf = (h: HTMLElement) => h.querySelector("defs linearGradient")!.getAttribute("id");
+    expect(idOf(a.host)).not.toBe(idOf(b.host));
+    a.chart.destroy();
+    a.host.remove();
+    b.chart.destroy();
+    b.host.remove();
+  });
+
+  it("a ring gradient wins over the chart-level gradient", () => {
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 1, gradient: ["#111", "#222"] }],
+      gradient: ["#999", "#aaa"],
+      max: 4,
+    });
+    expect(host.querySelector("defs linearGradient stop")!.getAttribute("stop-color")).toBe("#111");
+    chart.destroy();
+    host.remove();
+  });
 });

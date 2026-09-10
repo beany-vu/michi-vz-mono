@@ -3048,6 +3048,9 @@ export interface GaugeRingDatum {
   trackColor?: string;
   /** Optional stable identifier carried into the context, not displayed */
   code?: string;
+  /** Multi-stop colour ramp for THIS ring's arc, overriding `color` and the chart-level
+   * `gradient`. See `GaugeChartProps.gradient` for the anchoring rule. */
+  gradient?: string[];
 }
 
 /** Active-ring emphasis applied on hover (and to the `defaultActive` ring). */
@@ -3093,6 +3096,16 @@ export interface GaugeChartProps {
   outerRadius?: number;
   /** Arc start angle in degrees, 0 = 12 o'clock, positive clockwise (default 0). */
   startAngle?: number;
+  /** Angular extent of the gauge in degrees, clockwise from `startAngle` (default 360 = a
+   * full ring). 180 with `startAngle: -90` gives the classic half gauge. Both the track and
+   * the value arc span this range, and a ring's value is measured against it: at
+   * `sweepAngle: 180`, `value === max` fills the whole half. Clamped to (0, 360]. */
+  sweepAngle?: number;
+  /** Multi-stop colour ramp for every ring's arc, as a LINEAR gradient across the plot box
+   * (evenly spaced stops). A ring's own `gradient` wins. The ramp is anchored to the FULL
+   * sweep, not the drawn portion, so a half-full gauge shows the first half of the ramp
+   * rather than the whole ramp compressed. Overrides the resolved solid colour. */
+  gradient?: string[];
   /** Round the arc ends (default false = square caps). */
   roundedCaps?: boolean;
   /** Arc opacity per ring, outer→inner; a single number applies to every ring (default 1). */

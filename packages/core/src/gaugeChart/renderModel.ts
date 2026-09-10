@@ -38,6 +38,9 @@ export interface GaugeRingMark {
   /** Ring index in dataSet order (0 = outermost). */
   index: number;
   active: boolean;
+  /** Multi-stop colour ramp for the arc (ring value wins over the chart-level
+   * default), or undefined for a solid `stroke`. */
+  gradient?: string[];
 }
 
 export interface GaugeRenderModel {
@@ -49,6 +52,12 @@ export interface GaugeRenderModel {
   max: number;
   /** Index (into rings) of the active ring, or null. */
   activeIndex: number | null;
+  /** Angular extent of the gauge in radians, clockwise from startAngle (default TAU
+   * = a full circle). Both the track and every ring's sweep are measured against it. */
+  sweepAngle: number;
+  /** Id prefix unique to this mounted chart, used to namespace generated SVG defs
+   * (e.g. gradients) so multiple gauges on one page never collide. */
+  gradientIdBase: string;
 }
 
 export interface BuildGaugeModelOptions {
@@ -58,6 +67,9 @@ export interface BuildGaugeModelOptions {
   ringThickness: number;
   ringGap: number;
   startAngleDeg: number;
+  /** Angular extent in degrees, clockwise from startAngle (default 360). Clamped
+   * to (0, 360]. */
+  sweepAngleDeg?: number;
   roundedCaps: boolean;
   max: number;
   ringOpacity: number | number[];
@@ -67,14 +79,20 @@ export interface BuildGaugeModelOptions {
   /** Resolved active ring index (hover > highlightItems > defaultActive), or null. */
   activeIndex: number | null;
   highlightItems: string[];
+  /** Chart-level colour ramp; a ring's own `gradient` wins. */
+  gradient?: string[];
+  /** Id prefix unique to this mounted chart (see GaugeRenderModel.gradientIdBase). */
+  gradientIdBase: string;
 }
-
-const TAU = Math.PI * 2;
 
 /** Per-ring value from a scalar-or-array config prop. */
 function perRing<T>(v: T | T[], i: number, fallback: T): T {
   if (Array.isArray(v)) return v[i] ?? fallback;
   return v ?? fallback;
+}
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, n));
 }
 
 export function buildGaugeRenderModel(
@@ -83,6 +101,12 @@ export function buildGaugeRenderModel(
   o: BuildGaugeModelOptions,
 ): GaugeRenderModel {
   const startAngle = (o.startAngleDeg * Math.PI) / 180;
+  // Clamped to (0, 360]: an unset/invalid value falls back to a full circle.
+  const sweepAngleDeg =
+    o.sweepAngleDeg === undefined || !Number.isFinite(o.sweepAngleDeg) || o.sweepAngleDeg <= 0
+      ? 360
+      : clamp(o.sweepAngleDeg, Number.EPSILON, 360);
+  const sweepAngle = (sweepAngleDeg * Math.PI) / 180;
   const highlightSet = new Set(o.highlightItems);
   const marks: GaugeRingMark[] = [];
 
@@ -106,9 +130,10 @@ export function buildGaugeRenderModel(
       value: r.value,
       fraction: r.fraction,
       startAngle,
-      sweep: r.fraction === null ? 0 : r.fraction * TAU,
+      sweep: r.fraction === null ? 0 : r.fraction * sweepAngle,
       index: i,
       active,
+      gradient: r.gradient ?? o.gradient,
     });
   });
 
@@ -120,5 +145,7 @@ export function buildGaugeRenderModel(
     roundedCaps: o.roundedCaps,
     max: o.max,
     activeIndex: o.activeIndex,
+    sweepAngle,
+    gradientIdBase: o.gradientIdBase,
   };
 }
