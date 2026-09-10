@@ -7,14 +7,22 @@
 // Run: `pnpm --filter docs test` (node --test).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { extract, CHARTS } from "./extract-props.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../../..");
-const ANGULAR = readFileSync(resolve(REPO, "packages/angular/src/index.ts"), "utf8");
+// Angular has one module per chart (packages/angular/src/<key>.ts) plus the
+// index.ts barrel, rather than a single file with every applicator body. Read
+// every top-level *.ts file and concatenate them so the applicator regexes
+// below still find each apply<Name>ChartProps body, wherever it now lives.
+const ANGULAR_SRC_DIR = resolve(REPO, "packages/angular/src");
+const ANGULAR = readdirSync(ANGULAR_SRC_DIR)
+  .filter((f) => f.endsWith(".ts"))
+  .map((f) => readFileSync(resolve(ANGULAR_SRC_DIR, f), "utf8"))
+  .join("\n");
 const REACT = readFileSync(resolve(REPO, "packages/react/src/index.tsx"), "utf8");
 const data = extract();
 
