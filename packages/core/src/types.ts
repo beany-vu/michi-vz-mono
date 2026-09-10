@@ -3086,7 +3086,8 @@ export interface GaugeChartProps {
   height?: number;
   /** Inner margins (top/right/bottom/left, in px); default 8 (36 top with a title) */
   margin?: Margin;
-  /** Value corresponding to a full 360° sweep (default 100). */
+  /** Value corresponding to a full sweep - the entire `sweepAngle` (360° by default; e.g.
+   * with `sweepAngle: 180`, `value === max` fills the whole half) (default 100). */
   max?: number;
   /** Ring stroke thickness in px (default 18). */
   ringThickness?: number;
@@ -3099,7 +3100,9 @@ export interface GaugeChartProps {
   /** Angular extent of the gauge in degrees, clockwise from `startAngle` (default 360 = a
    * full ring). 180 with `startAngle: -90` gives the classic half gauge. Both the track and
    * the value arc span this range, and a ring's value is measured against it: at
-   * `sweepAngle: 180`, `value === max` fills the whole half. Clamped to (0, 360]. */
+   * `sweepAngle: 180`, `value === max` fills the whole half. Clamped to (0, 360]: an
+   * unset, zero, or negative value falls back to a full 360° ring, NOT an empty gauge -
+   * a consumer computing `sweepAngle` from a ratio that can hit 0 gets a full circle. */
   sweepAngle?: number;
   /** Multi-stop colour ramp for every ring's arc, as a LINEAR gradient across the plot box
    * (evenly spaced stops). A ring's own `gradient` wins. The ramp is anchored to the FULL

@@ -46,8 +46,10 @@ export function renderGaugeSvg(
     const dPath = fullCirclePath(model.cx, model.cy, d.radius);
     // The track spans the same sweep as the arc (a partial gauge's track is a
     // partial arc too, not a full circle) - the dash pattern's two numbers sum
-    // to the path length, so a full sweep (sweepLen === circumference) draws
-    // solid with a zero gap, matching pre-sweepAngle rendering exactly.
+    // to the path length, so a full sweep (sweepLen === circumference) needs no
+    // dashing at all: omit the attribute rather than emitting a "<circumference>
+    // 0" pattern, which is legal but an avoidable DOM/attribute change on the
+    // default path (some non-browser SVG renderers and snapshot diffs care).
     const sweepLen = (model.sweepAngle / (2 * Math.PI)) * circumference;
     const trackGap = Math.max(0, circumference - sweepLen);
     const track = svgEl("path", {
@@ -56,7 +58,7 @@ export function renderGaugeSvg(
       fill: "none",
       stroke: d.trackColor,
       "stroke-width": d.thickness,
-      "stroke-dasharray": `${sweepLen} ${trackGap}`,
+      "stroke-dasharray": trackGap > 1e-6 ? `${sweepLen} ${trackGap}` : undefined,
       opacity: d.trackOpacity,
     });
     (track as SVGElement).style.transition = transition;
@@ -80,6 +82,13 @@ export function renderGaugeSvg(
         root.insertBefore(defs, root.firstChild);
       }
       const gradientId = `${model.gradientIdBase}-grad-${d.index}`;
+      // The gradient is referenced by the ARC, which lives inside this ring's
+      // rotated <g> (see `degrees` above): userSpaceOnUse resolves in the
+      // REFERENCING element's user space (SVG 1.1 13.2.2), so without
+      // correction a nonzero startAngle would rotate the ramp's axis along
+      // with the ring - making the SVG renderer disagree with canvas/webgpu,
+      // which always paint it horizontal. Cancel the ring's rotation on the
+      // gradient itself so the ramp stays horizontal regardless of startAngle.
       const gradient = svgEl("linearGradient", {
         id: gradientId,
         gradientUnits: "userSpaceOnUse",
@@ -87,6 +96,7 @@ export function renderGaugeSvg(
         x2: model.cx + d.radius,
         y1: model.cy,
         y2: model.cy,
+        gradientTransform: degrees ? `rotate(${-degrees} ${model.cx} ${model.cy})` : undefined,
       });
       colours.forEach((c, i) => {
         gradient.appendChild(

@@ -52,7 +52,11 @@ const isPainted = (rr: Renderer): boolean => rr === "canvas" || rr === "webgpu";
 // Per-mount counter for gradient element ids: several gauges can share a page,
 // so a fixed id (e.g. "gaugeGrad") would make every later gauge inherit the
 // first one's stops. Assigned ONCE per mountGaugeChart call (not per render),
-// so re-renders (hover, prop updates) keep the same id.
+// so re-renders (hover, prop updates) keep the same id. A bare incrementing
+// counter is unique within one copy of this module, but two copies loaded in
+// one document (dual ESM/CJS resolution, two micro-frontends, a version
+// mismatch) each start back at zero and WOULD collide - the random suffix
+// makes that collision-proof regardless of module duplication.
 let gaugeMountSeq = 0;
 
 interface Resolved {
@@ -112,7 +116,7 @@ export function mountGaugeChart(
   ensureStyles();
   host.classList.add("michi-vz", "michi-vz-gauge-chart");
 
-  const gradientIdBase = `mv-gauge-${++gaugeMountSeq}`;
+  const gradientIdBase = `mv-gauge-${++gaugeMountSeq}-${Math.random().toString(36).slice(2, 8)}`;
 
   const svg = svgEl("svg");
   const tooltip = htmlEl("div", { class: "tooltip" });

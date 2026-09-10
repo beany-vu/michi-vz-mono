@@ -191,10 +191,10 @@ describe("mountGaugeChart (jsdom)", () => {
   it("defaults to a full circle, so existing consumers are unchanged", () => {
     const { host, chart } = mount({ dataSet: [{ label: "A", value: 50 }], max: 100 });
     const track = host.querySelector<SVGPathElement>("path.gauge-track")!;
-    // A full-circle track draws the whole circumference: no visible dash gap.
-    const [drawn, gap] = (track.getAttribute("stroke-dasharray") ?? "0 0").split(" ").map(Number);
-    expect(gap).toBeLessThanOrEqual(0.01);
-    expect(drawn).toBeGreaterThan(0);
+    // A full-circle track needs no dashing at all - the attribute is absent,
+    // exactly matching pre-sweepAngle rendering (no avoidable DOM change on
+    // the default path).
+    expect(track.getAttribute("stroke-dasharray")).toBeNull();
     chart.destroy();
     host.remove();
   });
@@ -242,6 +242,30 @@ describe("mountGaugeChart (jsdom)", () => {
     expect(stops.length).toBe(3);
     expect(stops[0].getAttribute("stop-color")).toBe("#c00");
     expect(host.querySelector("path.gauge-arc")!.getAttribute("stroke")).toMatch(/^url\(#/);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("keeps the gradient axis horizontal regardless of startAngle, so SVG matches canvas/webgpu", () => {
+    // The exact recipe the half-gauge use case needs (startAngle: -90, sweepAngle: 180):
+    // the ring's <g> gets rotated, and userSpaceOnUse resolves in that REFERENCING
+    // element's user space, so an uncorrected gradient would rotate along with it -
+    // vertical in SVG while canvas/webgpu (which never rotate) stay horizontal.
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 70, gradient: ["#c00", "#3a3"] }],
+      max: 100,
+      startAngle: -90,
+      sweepAngle: 180,
+    });
+    const ringTransform = host.querySelector("g.gauge-ring-cell")!.getAttribute("transform")!;
+    const ringDeg = Number(ringTransform.match(/rotate\(([-\d.]+)/)![1]);
+    const gradientTransform = host
+      .querySelector("defs linearGradient")!
+      .getAttribute("gradientTransform")!;
+    const gradDeg = Number(gradientTransform.match(/rotate\(([-\d.]+)/)![1]);
+    // The gradient's own rotation must exactly cancel the ring's, so the net
+    // rotation applied to its x1->x2 axis is zero: it stays horizontal.
+    expect(ringDeg + gradDeg).toBeCloseTo(0, 5);
     chart.destroy();
     host.remove();
   });
