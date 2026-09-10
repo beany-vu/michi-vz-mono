@@ -150,7 +150,7 @@
     "@types/react-dom": "^19.0.0",
     "@testing-library/react": "^16.3.0",
     "jsdom": "^25.0.1",
-    "vitest": "^3.2.7"
+    "vitest": "^5.0.0"
   },
   "license": "MIT",
   "author": "Beany Vu",
