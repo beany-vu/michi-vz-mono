@@ -10,6 +10,22 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.0
+
+Phiên bản các gói: core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** ·
+vue, svelte **1.8.0** · examples **1.1.13** · devtools, insights **0.2.28**.
+
+- **Import theo sub-path cho từng biểu đồ** với `@michi-vz/angular`, `@michi-vz/react`,
+  `@michi-vz/vue` và `@michi-vz/svelte`, giống hệt `@michi-vz/wc`: import
+  `@michi-vz/<package>/<khóa-biểu-đồ>` (dạng kebab-case) để chỉ lấy đúng một biểu đồ thay vì cả
+  barrel, ví dụ `@michi-vz/angular/radar-chart`. Barrel trần vẫn hoạt động và vẫn đăng ký mọi
+  biểu đồ - đây chỉ là phần bổ sung thêm. Xem
+  [Import một biểu đồ duy nhất](/vi/guide/installation).
+- **Hover trên [Biểu đồ radar](/vi/charts/radar)**: cực đang hover giờ được xác định trên cả bộ
+  dựng SVG, giống hệt canvas và WebGPU: `tooltipFormatter` nhận thêm `date` (nhãn trục của cực
+  đang hover) trên mọi bộ dựng, hover bám theo con trỏ thay vì chỉ bắn một lần lúc chạm vào, và
+  các chuỗi bị làm mờ không còn được hit-test khi hover nữa.
+
 ## v1.11.12
 
 Phiên bản các gói: core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·

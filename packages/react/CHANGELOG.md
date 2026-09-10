@@ -1,5 +1,17 @@
 # @michi-vz/react
 
+## 1.12.0
+
+### Minor Changes
+
+- Radar resolves the hovered pole on the svg renderer, matching canvas and webgpu; hit-testing is now shared by all three. Per-chart subpath exports added to the angular, react, vue and svelte wrappers, mirroring wc.
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.22.0
+  - @michi-vz/devtools@0.2.28
+
 ## 1.11.12
 
 ### Patch Changes

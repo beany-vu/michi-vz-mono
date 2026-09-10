@@ -12,6 +12,23 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.0
+
+Versions des paquets : core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** ·
+vue, svelte **1.8.0** · examples **1.1.13** · devtools, insights **0.2.28**.
+
+- **Imports par sous-chemin, par graphique** pour `@michi-vz/angular`, `@michi-vz/react`,
+  `@michi-vz/vue` et `@michi-vz/svelte`, à l'image de `@michi-vz/wc` : importez
+  `@michi-vz/<paquet>/<clé-du-graphique>` (kebab-case) pour n'embarquer qu'un seul graphique au
+  lieu du barrel, par ex. `@michi-vz/angular/radar-chart`. Le barrel générique fonctionne
+  toujours et enregistre toujours tous les graphiques - c'est purement additif. Voir
+  [Importer un seul graphique](/fr/guide/installation).
+- **Survol du [Graphique radar](/fr/charts/radar)** : le pôle survolé est désormais résolu sur
+  le moteur SVG aussi, à l'image de canvas et WebGPU : `tooltipFormatter` reçoit `date` (le
+  libellé d'axe du pôle survolé) sur chaque moteur de rendu, le survol suit le curseur au lieu
+  de se déclencher une seule fois à l'entrée, et les séries atténuées ne sont plus testées au
+  survol.
+
 ## v1.11.12
 
 Versions des paquets : core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·

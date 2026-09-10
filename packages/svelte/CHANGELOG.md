@@ -1,5 +1,16 @@
 # @michi-vz/svelte
 
+## 1.8.0
+
+### Minor Changes
+
+- Radar resolves the hovered pole on the svg renderer, matching canvas and webgpu; hit-testing is now shared by all three. Per-chart subpath exports added to the angular, react, vue and svelte wrappers, mirroring wc.
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.22.0
+
 ## 1.7.12
 
 ### Patch Changes

@@ -10,6 +10,22 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.0
+
+Pakketversies: core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** · vue,
+svelte **1.8.0** · examples **1.1.13** · devtools, insights **0.2.28**.
+
+- **Per-grafiek sub-path imports** voor `@michi-vz/angular`, `@michi-vz/react`, `@michi-vz/vue`
+  en `@michi-vz/svelte`, naar het voorbeeld van `@michi-vz/wc`: importeer
+  `@michi-vz/<pakket>/<grafiek-sleutel>` (kebab-case) om maar één grafiek binnen te halen in
+  plaats van de barrel, bijv. `@michi-vz/angular/radar-chart`. De kale barrel werkt nog steeds
+  en registreert nog steeds elke grafiek - puur additief. Zie
+  [Eén grafiek importeren](/nl/guide/installation).
+- **Hover op de [Radardiagram](/nl/charts/radar)**: de gehoverde pool wordt nu ook op de
+  SVG-renderer bepaald, net als bij canvas en WebGPU: `tooltipFormatter` krijgt `date` (het
+  aslabel van de gehoverde pool) op elke renderer, hover volgt de cursor in plaats van eenmalig
+  te vuren bij binnenkomst, en gedempte series worden niet meer gehittest.
+
 ## v1.11.12
 
 Pakketversies: core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·

@@ -10,6 +10,21 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.0
+
+Package versions: core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** · vue, svelte **1.8.0** ·
+examples **1.1.13** · devtools, insights **0.2.28**.
+
+- **Per-chart subpath imports** for `@michi-vz/angular`, `@michi-vz/react`, `@michi-vz/vue` and
+  `@michi-vz/svelte`, mirroring `@michi-vz/wc`: import `@michi-vz/<package>/<chart-key>`
+  (kebab-case) to pull in one chart instead of the barrel, e.g. `@michi-vz/angular/radar-chart`.
+  The bare barrel still works and still registers every chart - purely additive. See
+  [Importing a single chart](/guide/installation).
+- **[Radar Chart](/charts/radar) hover** now resolves the hovered pole on the SVG renderer too,
+  matching canvas and WebGPU: `tooltipFormatter` receives `date` (the hovered pole's axis label)
+  on every renderer, hover follows the cursor instead of firing once on entry, and dimmed series
+  are no longer hit-tested.
+
 ## v1.11.12
 
 Package versions: core **1.21.0** · wc, angular **1.14.0** · react **1.11.12** · vue, svelte **1.7.12** ·
