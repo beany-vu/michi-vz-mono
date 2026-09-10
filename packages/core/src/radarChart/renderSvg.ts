@@ -1,25 +1,19 @@
 // Imperative SVG renderer for RadarChart: polar grid (rings/spokes/labels) then a
 // <polygon class="radar-area"> per series (+ pole circles). data-label-safe on the
-// polygons so the colour contract + canvas probe match. Hover per polygon.
+// polygons so the colour contract + canvas probe match. Hover is bound separately
+// by the engine via setupRadarHover (see ./hover.ts), shared across all renderers.
 import { svgEl } from "../dom";
-import type { RadarRenderModel, RadarSeriesModel } from "./renderModel";
+import type { RadarRenderModel } from "./renderModel";
 
 export interface RadarSvgOptions {
   fillOpacity: number;
   enableTransitions: boolean;
 }
 
-export interface RadarInteractions {
-  onEnter: (s: RadarSeriesModel, ev: MouseEvent) => void;
-  onLeave: (ev: MouseEvent) => void;
-  onClick: (s: RadarSeriesModel, ev: MouseEvent) => void;
-}
-
 export function renderRadarSvg(
   parent: SVGElement,
   model: RadarRenderModel,
   o: RadarSvgOptions,
-  ia: RadarInteractions,
 ): void {
   // The grid (rings/spokes/axis labels) is the polar equivalent of cartesian axes,
   // so it is appended directly to `parent` - a SIBLING of `root`, not nested inside
@@ -98,9 +92,6 @@ export function renderRadarSvg(
       "stroke-width": 2,
     });
     poly.style.cursor = "pointer";
-    poly.addEventListener("mouseenter", (e) => ia.onEnter(s, e));
-    poly.addEventListener("mouseleave", (e) => ia.onLeave(e));
-    poly.addEventListener("click", (e) => ia.onClick(s, e));
     sg.appendChild(poly);
 
     // Pole dots only on the active series - dimmed series are background context.

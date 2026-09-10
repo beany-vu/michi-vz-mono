@@ -44,10 +44,29 @@ describe("radar chart timeline (off by default)", () => {
   it("guard: the tooltip's axis-label `date` semantics still work with `timeline` set", () => {
     // Radar's own `date` meaning (a per-axis label, attached ad hoc to the tooltip
     // datum) is entirely separate machinery from the `period` row tag - hovering a
-    // polygon still renders one line per axis using its label, unaffected.
+    // polygon still renders one line per axis using its label, unaffected. Hover is
+    // hit-tested on the svg element (shared setupRadarHover), not a per-polygon
+    // listener, so drive it via a mousemove positioned on the polygon interior
+    // (non-default rect margin: jsdom's zero rect hides offset bugs).
     const { host, chart } = mount({ timeline: true });
+    const svg = host.querySelector("svg")!;
+    svg.getBoundingClientRect = () =>
+      ({
+        left: 10,
+        top: 10,
+        right: 410,
+        bottom: 410,
+        width: 400,
+        height: 400,
+        x: 10,
+        y: 10,
+        toJSON: () => ({}),
+      }) as DOMRect;
     const poly = host.querySelector<SVGPolygonElement>("polygon.radar-area")!;
-    poly.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    const [px, py] = poly.getAttribute("points")!.trim().split(" ")[0].split(",").map(Number);
+    svg.dispatchEvent(
+      new MouseEvent("mousemove", { clientX: px + 10, clientY: py + 10, bubbles: true }),
+    );
     const tooltip = host.querySelector<HTMLElement>(".tooltip")!;
     for (const axis of axes) expect(tooltip.innerHTML).toContain(axis);
     chart.destroy();

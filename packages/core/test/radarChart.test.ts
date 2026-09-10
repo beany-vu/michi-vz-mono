@@ -200,8 +200,95 @@ describe("mountRadarChart - drop-in features (data shape, colours, hover)", () =
     host.remove();
   });
 
-  it("canvas hover: setupRadarCanvasHover fires onEnter near a vertex of the active series", async () => {
-    const { setupRadarCanvasHover } = await import("../src/radarChart/renderCanvas");
+  it("svg hover: reports the hovered POLE, so tooltipFormatter receives item.date", () => {
+    const margin = { top: 40, right: 90, bottom: 40, left: 90 }; // non-default: jsdom's zero rect hides offset bugs
+    const tooltipFormatter = vi.fn(() => "<b>x</b>");
+    const { host, chart } = mount({ renderer: "svg", margin, tooltipFormatter });
+    const svg = host.querySelector("svg")!;
+    svg.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 500,
+        bottom: 500,
+        width: 500,
+        height: 500,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    // Hover exactly on the first series' first pole vertex.
+    const poly = host.querySelector<SVGPolygonElement>("polygon.radar-area")!;
+    const [px, py] = poly.getAttribute("points")!.trim().split(" ")[0].split(",").map(Number);
+    svg.dispatchEvent(new MouseEvent("mousemove", { clientX: px, clientY: py, bubbles: true }));
+
+    expect(tooltipFormatter).toHaveBeenCalled();
+    const datum = tooltipFormatter.mock.calls[0][0] as { label: string; date?: string };
+    expect(datum.label).toBe("Model A");
+    expect(datum.date).toBe("Speed"); // axes[0]; undefined before this change
+    chart.destroy();
+    host.remove();
+  });
+
+  it("svg hover: a dimmed series is not hit-tested (canvas parity)", () => {
+    const tooltipFormatter = vi.fn(() => "<b>x</b>");
+    const { host, chart } = mount({
+      renderer: "svg",
+      series: [{ label: "Model A", color: "#f00", values: [8, 6, 7, 9, 5], dimmed: true }],
+      tooltipFormatter,
+    });
+    const svg = host.querySelector("svg")!;
+    svg.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 500,
+        bottom: 500,
+        width: 500,
+        height: 500,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+    const poly = host.querySelector<SVGPolygonElement>("polygon.radar-area")!;
+    const [px, py] = poly.getAttribute("points")!.trim().split(" ")[0].split(",").map(Number);
+    svg.dispatchEvent(new MouseEvent("mousemove", { clientX: px, clientY: py, bubbles: true }));
+    expect(tooltipFormatter).not.toHaveBeenCalled();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("svg hover: the DEFAULT tooltip markup is unchanged (no formatter)", () => {
+    const { host, chart } = mount({ renderer: "svg" });
+    const svg = host.querySelector("svg")!;
+    svg.getBoundingClientRect = () =>
+      ({
+        left: 0,
+        top: 0,
+        right: 500,
+        bottom: 500,
+        width: 500,
+        height: 500,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+    const poly = host.querySelector<SVGPolygonElement>("polygon.radar-area")!;
+    const [px, py] = poly.getAttribute("points")!.trim().split(" ")[0].split(",").map(Number);
+    svg.dispatchEvent(new MouseEvent("mousemove", { clientX: px, clientY: py, bubbles: true }));
+
+    const tip = host.querySelector<HTMLElement>(".tooltip")!;
+    // Series heading + one line per axis, exactly as before this change.
+    expect(tip.innerHTML).toContain("Model A");
+    expect(tip.innerHTML).toContain("Speed: 8");
+    expect(tip.innerHTML).toContain("Cost: 5");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("hover: setupRadarHover fires onEnter near a vertex of the active series", async () => {
+    const { setupRadarHover } = await import("../src/radarChart/hover");
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as SVGSVGElement;
     svg.getBoundingClientRect = () =>
       ({
@@ -255,7 +342,7 @@ describe("mountRadarChart - drop-in features (data shape, colours, hover)", () =
         },
       ],
     };
-    const teardown = setupRadarCanvasHover(svg, model as never, {
+    const teardown = setupRadarHover(svg, model as never, {
       onEnter,
       onLeave,
       onClick: vi.fn(),

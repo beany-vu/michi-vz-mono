@@ -7,9 +7,9 @@ import type { RadarChartProps, RadarDataItem } from "../src/types";
 // these tests verify the CAPABILITY GATE and the FALLBACK path: with navigator.gpu
 // absent the engine downgrades to canvas; with it mocked-present the engine enters
 // the webgpu branch, fails to get a device, and paints the canvas-2D stopgap - and
-// crucially the canvas-mode INTERACTION layer (setupRadarCanvasHover on the SVG
-// overlay) is reused. Real GPU pixel output is not testable headless; it is
-// verified in-browser.
+// crucially the shared INTERACTION layer (setupRadarHover on the SVG overlay,
+// bound by the engine for every renderer) is reused. Real GPU pixel output is not
+// testable headless; it is verified in-browser.
 
 const axes = ["Speed", "Power", "Range", "Agility", "Cost"];
 const series: RadarDataItem[] = [

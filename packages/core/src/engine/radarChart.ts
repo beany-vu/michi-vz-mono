@@ -12,7 +12,8 @@ import { processRadarData } from "../radarChart/data";
 import { buildRadarColors } from "../radarChart/colors";
 import { buildRadarRenderModel } from "../radarChart/renderModel";
 import { renderRadarSvg } from "../radarChart/renderSvg";
-import { drawRadarCanvas, setupRadarCanvasHover } from "../radarChart/renderCanvas";
+import { drawRadarCanvas } from "../radarChart/renderCanvas";
+import { setupRadarHover } from "../radarChart/hover";
 import { drawRadarWebgpu } from "../radarChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
@@ -161,9 +162,9 @@ export function mountRadarChart(
   // that dispatches on each call (two-colour-writer indicators). Mirrors VSB.
   let lastContextSig = "";
   let model: ReturnType<typeof buildRadarRenderModel> | null = null;
-  // Canvas hover teardown (rebound each render) + the resolved axes/series the hover
-  // tooltip reads outside render().
-  let canvasHoverTeardown: (() => void) | null = null;
+  // Hover teardown (rebound each render, shared across svg/canvas/webgpu) + the
+  // resolved axes/series the hover tooltip reads outside render().
+  let hoverTeardown: (() => void) | null = null;
   let normalizedSeries: RadarDataItem[] = [];
   let resolvedAxes: string[] = [];
   const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
@@ -277,27 +278,10 @@ export function mountRadarChart(
     // matching LineChart's `dataState !== "nodata"` gating); the overlay covers it.
     if (dataState !== "nodata") {
       if (r.renderer === "svg") {
-        renderRadarSvg(
-          svg,
-          model,
-          { fillOpacity: r.fillOpacity, enableTransitions: r.enableTransitions },
-          {
-            onEnter: (s, ev) => {
-              if (sticky) return;
-              showTooltip(s.label, ev);
-              props.onHighlightItem?.([s.label]);
-            },
-            onLeave: () => {
-              hideTooltip();
-              if (!sticky) props.onHighlightItem?.([]);
-            },
-            onClick: (s, ev) => {
-              sticky = true;
-              tooltip.classList.add("sticky");
-              showTooltip(s.label, ev);
-            },
-          },
-        );
+        renderRadarSvg(svg, model, {
+          fillOpacity: r.fillOpacity,
+          enableTransitions: r.enableTransitions,
+        });
       } else {
         // canvas/webgpu mode still renders the grid + axis labels in SVG for crisp
         // text + to provide the colour-probe template; the series polygons are painted.
@@ -305,9 +289,31 @@ export function mountRadarChart(
           svg,
           { grid: model.grid, series: [] },
           { fillOpacity: r.fillOpacity, enableTransitions: r.enableTransitions },
-          { onEnter: () => {}, onLeave: () => {}, onClick: () => {} },
         );
       }
+
+      // Shared across svg/canvas/webgpu so every renderer resolves the same pole.
+      // Rebound every render because the model's vertex geometry changes. Note this
+      // binds against the FULL model (not the grid-only object passed to
+      // renderRadarSvg above for painted renderers) since hit-testing needs the
+      // series poles.
+      if (hoverTeardown) hoverTeardown();
+      hoverTeardown = setupRadarHover(svg, model, {
+        onEnter: (label, axisIndex, ev) => {
+          if (sticky) return;
+          showTooltip(label, ev, axisIndex);
+          props.onHighlightItem?.([label]);
+        },
+        onLeave: () => {
+          hideTooltip();
+          if (!sticky) props.onHighlightItem?.([]);
+        },
+        onClick: (label, axisIndex, ev) => {
+          sticky = true;
+          tooltip.classList.add("sticky");
+          showTooltip(label, ev, axisIndex);
+        },
+      });
 
       if (isPainted(r.renderer)) {
         if (r.renderer === "webgpu") {
@@ -372,25 +378,6 @@ export function mountRadarChart(
             dimmedFill: r.dimmedFill,
           });
         }
-        // Forgiving hover lives on the SVG above the canvas; rebind every render since
-        // the model (and its vertex geometry) changes (canvas listener-rebind pattern).
-        if (canvasHoverTeardown) canvasHoverTeardown();
-        canvasHoverTeardown = setupRadarCanvasHover(svg, model, {
-          onEnter: (label, axisIndex, ev) => {
-            if (sticky) return;
-            showTooltip(label, ev, axisIndex);
-            props.onHighlightItem?.([label]);
-          },
-          onLeave: () => {
-            hideTooltip();
-            if (!sticky) props.onHighlightItem?.([]);
-          },
-          onClick: (label, axisIndex, ev) => {
-            sticky = true;
-            tooltip.classList.add("sticky");
-            showTooltip(label, ev, axisIndex);
-          },
-        });
       } else {
         if (canvas) {
           canvas.remove();
@@ -399,10 +386,6 @@ export function mountRadarChart(
         if (webgpuCanvas) {
           webgpuCanvas.remove();
           webgpuCanvas = null;
-        }
-        if (canvasHoverTeardown) {
-          canvasHoverTeardown();
-          canvasHoverTeardown = null;
         }
       }
 
@@ -440,9 +423,9 @@ export function mountRadarChart(
         webgpuCanvas.remove();
         webgpuCanvas = null;
       }
-      if (canvasHoverTeardown) {
-        canvasHoverTeardown();
-        canvasHoverTeardown = null;
+      if (hoverTeardown) {
+        hoverTeardown();
+        hoverTeardown = null;
       }
     }
 
@@ -503,9 +486,9 @@ export function mountRadarChart(
       engineRv.stop();
       disposeStickyDismiss();
       for (const t of teardowns) t();
-      if (canvasHoverTeardown) {
-        canvasHoverTeardown();
-        canvasHoverTeardown = null;
+      if (hoverTeardown) {
+        hoverTeardown();
+        hoverTeardown = null;
       }
       canvas = null;
       webgpuCanvas = null;
