@@ -10,6 +10,23 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.1
+
+Pakketversies: core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** · vue,
+svelte **1.8.1** · examples **1.1.14** · devtools, insights **0.2.29**.
+
+- **`sweepAngle` en `gradient` op de [Meter (ringen)](/nl/charts/gauge).** `sweepAngle` (in
+  graden, met de klok mee vanaf `startAngle`, standaard 360) verkleint de meter van een volledige
+  cirkel tot een gedeeltelijke boog - `startAngle: -90, sweepAngle: 180` geeft de klassieke halve
+  meter. Zowel het achtergrondspoor als de waardeboog van elke ring bestrijken dezelfde
+  gedeeltelijke boog, en de waarde van een ring wordt tegen dat bereik gemeten, niet tegen een
+  volledige cirkel; een niet-ingestelde, nul of negatieve waarde valt terug op een volledige
+  cirkel van 360°, geen lege meter. `gradient` (een `string[]` op het diagram, of per ring op de
+  ringdata, die wint) tekent de boog van een ring met een lineair meerkleurig verloop dat
+  verankerd is aan de volledige boogbreedte in plaats van het getekende deel, zodat eenzelfde
+  kleur altijd op dezelfde waarde blijft staan. Alle drie de renderers respecteren beide props, en
+  `@michi-vz/wc` en `@michi-vz/angular` geven ze door.
+
 ## v1.12.0
 
 Pakketversies: core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** · vue,

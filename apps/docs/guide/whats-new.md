@@ -10,6 +10,21 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.1
+
+Package versions: core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** · vue, svelte **1.8.1** ·
+examples **1.1.14** · devtools, insights **0.2.29**.
+
+- **[Gauge (Rings)](/charts/gauge) `sweepAngle` and `gradient`.** `sweepAngle` (degrees, clockwise
+  from `startAngle`, default 360) narrows the gauge from a full circle to a partial arc -
+  `startAngle: -90, sweepAngle: 180` gives the classic half gauge. Both the background track and
+  every ring's value arc span the same partial sweep, and a ring's value is measured against that
+  range rather than a full circle; an unset, zero, or negative value falls back to a full 360°
+  ring, not an empty gauge. `gradient` (a `string[]` on the chart, or per-ring on the ring datum,
+  which wins) paints a ring's arc with a linear multi-stop colour ramp anchored to the full sweep
+  rather than the drawn portion, so a given colour always sits at the same value. All three
+  renderers honour both props, and `@michi-vz/wc` and `@michi-vz/angular` forward them.
+
 ## v1.12.0
 
 Package versions: core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** · vue, svelte **1.8.0** ·

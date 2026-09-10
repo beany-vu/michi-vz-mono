@@ -1398,6 +1398,24 @@ const gauge: Example<GaugeChartProps>[] = [
       noValueLabel: "no data",
     },
   },
+  // [2] Half gauge with a gradient: sweepAngle halves both the track and the
+  // value arc, and the gradient ramp is anchored to the full sweep (not the
+  // drawn portion), so a given colour always sits at the same value.
+  {
+    id: "gauge-half-gradient",
+    title: "Half gauge with gradient",
+    description:
+      "A single ring over half a circle (`startAngle: -90, sweepAngle: 180`), coloured with a multi-stop gradient. The track spans the same half as the arc, and the ramp is anchored to the full sweep rather than the drawn portion.",
+    element: "michi-vz-gauge-chart",
+    props: {
+      width: 300,
+      height: 180,
+      dataSet: [{ label: "Progress", value: 62 }],
+      startAngle: -90,
+      sweepAngle: 180,
+      gradient: [TM_BLUE, TM_TEAL, TM_GOLD],
+    },
+  },
 ];
 
 const pie: Example<PieChartProps>[] = [

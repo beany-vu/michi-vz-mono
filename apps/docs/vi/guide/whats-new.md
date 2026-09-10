@@ -10,6 +10,22 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.1
+
+Phiên bản các gói: core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** ·
+vue, svelte **1.8.1** · examples **1.1.14** · devtools, insights **0.2.29**.
+
+- **`sweepAngle` và `gradient` trên [Biểu đồ vòng cung](/vi/charts/gauge).** `sweepAngle` (đơn vị
+  độ, theo chiều kim đồng hồ từ `startAngle`, mặc định 360) thu hẹp biểu đồ từ một vòng tròn đầy
+  đủ thành một cung một phần - `startAngle: -90, sweepAngle: 180` cho ra nửa biểu đồ kinh điển.
+  Cả rãnh nền lẫn cung giá trị của mỗi vòng đều quét theo cùng góc quét đó, và giá trị của một
+  vòng được đo theo phạm vi đó thay vì cả vòng tròn; giá trị chưa đặt, bằng 0, hoặc âm sẽ quay về
+  vòng tròn đầy đủ 360°, không phải một biểu đồ rỗng. `gradient` (một `string[]` ở cấp biểu đồ,
+  hoặc theo từng vòng trên dữ liệu vòng, giá trị này sẽ được ưu tiên) tô cung của một vòng bằng
+  dải màu chuyển sắc tuyến tính nhiều điểm dừng, neo theo toàn bộ góc quét thay vì phần được vẽ,
+  nên một màu nhất định luôn ứng với cùng một giá trị. Cả ba bộ dựng đều tuân theo hai prop này,
+  và `@michi-vz/wc` cùng `@michi-vz/angular` đều chuyển tiếp chúng.
+
 ## v1.12.0
 
 Phiên bản các gói: core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** ·

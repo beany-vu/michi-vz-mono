@@ -137,7 +137,7 @@
           "name": "max",
           "type": "number",
           "optional": true,
-          "description": "Value corresponding to a full 360° sweep (default 100).",
+          "description": "Value corresponding to a full sweep - the entire `sweepAngle` (360° by default; e.g. with `sweepAngle: 180`, `value === max` fills the whole half) (default 100).",
           "default": "100",
           "common": false
         },
@@ -171,6 +171,22 @@
           "optional": true,
           "description": "Arc start angle in degrees, 0 = 12 o'clock, positive clockwise (default 0).",
           "default": "0",
+          "common": false
+        },
+        {
+          "name": "sweepAngle",
+          "type": "number",
+          "optional": true,
+          "description": "Angular extent of the gauge in degrees, clockwise from `startAngle` (default 360 = a full ring). 180 with `startAngle: -90` gives the classic half gauge. Both the track and the value arc span this range, and a ring's value is measured against it: at `sweepAngle: 180`, `value === max` fills the whole half. Clamped to (0, 360]: an unset, zero, or negative value falls back to a full 360° ring, NOT an empty gauge - a consumer computing `sweepAngle` from a ratio that can hit 0 gets a full circle.",
+          "default": "360",
+          "common": false
+        },
+        {
+          "name": "gradient",
+          "type": "string[]",
+          "optional": true,
+          "description": "Multi-stop colour ramp for every ring's arc, as a LINEAR gradient across the plot box (evenly spaced stops). A ring's own `gradient` wins. The ramp is anchored to the FULL sweep, not the drawn portion, so a half-full gauge shows the first half of the ramp rather than the whole ramp compressed. Overrides the resolved solid colour.",
+          "default": "",
           "common": false
         },
         {

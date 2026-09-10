@@ -18,6 +18,8 @@ export function applyGaugeChartProps(el: GaugeChartElement, props: GaugeChartPro
   if (props.ringGap !== undefined) el.ringGap = props.ringGap;
   if (props.outerRadius !== undefined) el.outerRadius = props.outerRadius;
   if (props.startAngle !== undefined) el.startAngle = props.startAngle;
+  if (props.sweepAngle !== undefined) el.sweepAngle = props.sweepAngle;
+  if (props.gradient !== undefined) el.gradient = props.gradient;
   if (props.roundedCaps !== undefined) el.roundedCaps = props.roundedCaps;
   if (props.ringOpacity !== undefined) el.ringOpacity = props.ringOpacity;
   if (props.trackColor !== undefined) el.trackColor = props.trackColor;

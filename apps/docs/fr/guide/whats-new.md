@@ -12,6 +12,23 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.1
+
+Versions des paquets : core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** ·
+vue, svelte **1.8.1** · examples **1.1.14** · devtools, insights **0.2.29**.
+
+- **`sweepAngle` et `gradient` sur la [Jauge (anneaux)](/fr/charts/gauge).** `sweepAngle` (en
+  degrés, dans le sens horaire depuis `startAngle`, 360 par défaut) réduit la jauge d'un cercle
+  complet à un arc partiel - `startAngle: -90, sweepAngle: 180` donne la demi-jauge classique. La
+  piste de fond et l'arc de valeur de chaque anneau balaient le même arc partiel, et la valeur
+  d'un anneau est mesurée par rapport à cette plage plutôt qu'à un cercle complet ; une valeur non
+  définie, nulle ou négative retombe sur un cercle complet de 360°, pas sur une jauge vide.
+  `gradient` (un `string[]` au niveau du graphique, ou par anneau sur la donnée de l'anneau, qui
+  l'emporte) peint l'arc d'un anneau avec un dégradé linéaire multi-étapes ancré sur le balayage
+  complet plutôt que sur la portion dessinée, de sorte qu'une couleur donnée reste toujours à la
+  même valeur. Les trois moteurs de rendu respectent les deux props, et `@michi-vz/wc` ainsi que
+  `@michi-vz/angular` les transmettent.
+
 ## v1.12.0
 
 Versions des paquets : core **1.22.0** · wc **1.14.1** · angular **1.15.0** · react **1.12.0** ·

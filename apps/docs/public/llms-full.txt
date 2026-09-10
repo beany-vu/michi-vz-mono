@@ -4,7 +4,7 @@
 
 > michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at https://michi-vz.netlify.app/llms.txt.
 
-Package versions this file was generated against: @michi-vz/core 1.22.0, wc 1.14.1, react 1.12.0, vue 1.8.0, svelte 1.8.0, angular 1.15.0, insights 0.2.28, devtools 0.2.28.
+Package versions this file was generated against: @michi-vz/core 1.23.0, wc 1.14.2, react 1.12.1, vue 1.8.1, svelte 1.8.1, angular 1.15.1, insights 0.2.29, devtools 0.2.29.
 
 ## What michi-vz is
 
@@ -19,14 +19,14 @@ AI features live in a separate opt-in package, `@michi-vz/insights`, and are loc
 
 ## Packages
 
-- `@michi-vz/core` 1.22.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
-- `@michi-vz/wc` 1.14.1 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
-- `@michi-vz/react` 1.12.0 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
-- `@michi-vz/vue` 1.8.0 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
-- `@michi-vz/svelte` 1.8.0 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
-- `@michi-vz/angular` 1.15.0 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
-- `@michi-vz/insights` 0.2.28 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
-- `@michi-vz/devtools` 0.2.28 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
+- `@michi-vz/core` 1.23.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
+- `@michi-vz/wc` 1.14.2 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
+- `@michi-vz/react` 1.12.1 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
+- `@michi-vz/vue` 1.8.1 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
+- `@michi-vz/svelte` 1.8.1 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
+- `@michi-vz/angular` 1.15.1 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
+- `@michi-vz/insights` 0.2.29 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
+- `@michi-vz/devtools` 0.2.29 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
 
 The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
 
@@ -188,11 +188,13 @@ Required props:
 Chart-specific props (the shared props above also apply):
 
 - `title`: `string` - Optional chart title rendered above the plot
-- `max`: `number` (default: `100`) - Value corresponding to a full 360° sweep (default 100).
+- `max`: `number` (default: `100`) - Value corresponding to a full sweep - the entire `sweepAngle` (360° by default; e.g. with `sweepAngle: 180`, `value === max` fills the whole half) (default 100).
 - `ringThickness`: `number` (default: `18`) - Ring stroke thickness in px (default 18).
 - `ringGap`: `number` (default: `2`) - Gap between adjacent rings in px (default 2).
 - `outerRadius`: `number` (default: `null`) - Outermost ring's outer edge radius in px; default fills the plot box.
 - `startAngle`: `number` (default: `0`) - Arc start angle in degrees, 0 = 12 o'clock, positive clockwise (default 0).
+- `sweepAngle`: `number` (default: `360`) - Angular extent of the gauge in degrees, clockwise from `startAngle` (default 360 = a full ring).
+- `gradient`: `string[]` - Multi-stop colour ramp for every ring's arc, as a LINEAR gradient across the plot box (evenly spaced stops).
 - `roundedCaps`: `boolean` (default: `false`) - Round the arc ends (default false = square caps).
 - `ringOpacity`: `number | number[]` (default: `1`) - Arc opacity per ring, outer→inner; a single number applies to every ring (default 1).
 - `trackColor`: `string | string[]` (default: `"#00000014"`) - Track colour(s) behind the arcs, outer→inner; per-ring `trackColor` wins (default "#00000014").

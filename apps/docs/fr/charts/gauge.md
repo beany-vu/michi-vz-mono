@@ -16,6 +16,17 @@ Presque tout est configurable : épaisseur et espacement des anneaux, couleurs e
 
 > Les anneaux partagent une seule échelle (`max`, 100 par défaut). Pour des valeurs d'échelles différentes, normalisez d'abord - ou préférez un [graphique à barres comparables](/fr/charts/comparable), plus précis en valeurs absolues.
 
+## Demi-jauge et dégradés
+
+`sweepAngle` réduit la jauge d'un cercle complet à un arc, dans le sens horaire depuis `startAngle` ; `gradient` remplace la couleur unie d'un anneau par un dégradé linéaire multi-étapes. La demi-jauge classique est `startAngle: -90, sweepAngle: 180` :
+
+<ChartDemo chart="gauge-chart" :index="2" :legend="false" />
+
+Deux pièges fréquents à la première lecture :
+
+- **La piste suit aussi le balayage.** La piste de fond d'une demi-jauge est un demi-cercle, pas un cercle complet - `sweepAngle` raccourcit la piste et l'arc de valeur ensemble, il n'y a donc pas d'« autre moitié » cachée qui transparaîtrait.
+- **Le dégradé est ancré sur le balayage complet, pas sur la portion dessinée.** Une couleur donnée reste toujours à la même *valeur*, pas à la même position le long de l'arc effectivement tracé - une jauge à moitié pleine affiche donc la première moitié du dégradé, pas le dégradé entier compressé dans la moitié. Le `gradient` propre à un anneau prime sur celui défini au niveau du graphique.
+
 ## Quand l'utiliser
 
 - **Parts de marché imbriquées.** La part d'un produit sur des périmètres emboîtés (monde, région, marché) en une seule figure compacte.

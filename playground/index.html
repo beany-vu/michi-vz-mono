@@ -502,6 +502,14 @@
       <michi-vz-treemap-chart id="treemapContractChart"></michi-vz-treemap-chart>
     </div>
 
+    <h1 style="margin-top: 36px">@michi-vz/wc - GaugeChart (sweepAngle + gradient)</h1>
+    <div class="row">
+      <div class="card">
+        <h2>Half gauge with gradient (startAngle: -90, sweepAngle: 180)</h2>
+        <michi-vz-gauge-chart id="gaugeHalfGradient"></michi-vz-gauge-chart>
+      </div>
+    </div>
+
     <div id="results">running…</div>
 
     <script type="module">
@@ -1314,6 +1322,20 @@
           showSplit: false,
           skipColorMappingDispatch: true,
           ...treemapCommon,
+        });
+
+        // ---- GaugeChart setup ---- (half gauge: sweepAngle halves both the track
+        // and the value arc; the gradient ramp is anchored to the FULL sweep, not
+        // the drawn portion, so it always shows the first half of the ramp here)
+        const gaugeHalfGradientEl = document.getElementById("gaugeHalfGradient");
+        Object.assign(gaugeHalfGradientEl, {
+          dataSet: [{ label: "Progress", value: 62, code: "PRG" }],
+          chartTitle: "Half gauge + gradient",
+          width: 300,
+          height: 180,
+          startAngle: -90,
+          sweepAngle: 180,
+          gradient: ["#1f6fb2", "#2fae6c", "#e8b63a"],
         });
 
         await nextFrame();
@@ -2576,6 +2598,27 @@
           log(
             treemapContractOk,
             "TREEMAP CANVAS colour contract: consumer CSS rgb(230,60,180) reached canvas pixels",
+          );
+
+          // ---- GaugeChart checks (sweepAngle + gradient) ----
+          const gaugeTrack = gaugeHalfGradientEl.querySelector("path.gauge-track");
+          const gaugeDasharray = gaugeTrack && gaugeTrack.getAttribute("stroke-dasharray");
+          const gaugeDashParts = (gaugeDasharray || "").trim().split(/\s+/).filter(Boolean);
+          log(
+            gaugeDashParts.length === 2 && parseFloat(gaugeDashParts[1]) > 0,
+            `GAUGE: sweepAngle:180 track has a visible dash gap (stroke-dasharray="${gaugeDasharray}")`,
+          );
+          const gaugeArc = gaugeHalfGradientEl.querySelector("path.gauge-arc");
+          log(
+            !!gaugeArc && /^url\(#/.test(gaugeArc.getAttribute("stroke") || ""),
+            `GAUGE: gradient ring's arc stroke references a gradient url() (got "${gaugeArc && gaugeArc.getAttribute("stroke")}")`,
+          );
+          const gaugeGradientStops = gaugeHalfGradientEl.querySelectorAll(
+            "defs linearGradient stop",
+          );
+          log(
+            gaugeGradientStops.length === 3,
+            `GAUGE: gradient defines 3 stops (got ${gaugeGradientStops.length})`,
           );
         } catch (e) {
           log(false, "exception: " + (e && e.message));

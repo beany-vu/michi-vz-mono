@@ -1,5 +1,12 @@
 # @michi-vz/vue
 
+## 1.8.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.23.0
+
 ## 1.8.0
 
 ### Minor Changes

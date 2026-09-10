@@ -28,6 +28,8 @@ export class GaugeChartElement extends LitElement {
     ringGap: { type: Number, attribute: "ring-gap" },
     outerRadius: { type: Number, attribute: "outer-radius" },
     startAngle: { type: Number, attribute: "start-angle" },
+    sweepAngle: { type: Number, attribute: "sweep-angle" },
+    gradient: { attribute: false },
     roundedCaps: { type: Boolean, attribute: "rounded-caps" },
     ringOpacity: { attribute: false },
     trackColor: { attribute: false },
@@ -64,6 +66,8 @@ export class GaugeChartElement extends LitElement {
   ringGap?: number;
   outerRadius?: number;
   startAngle?: number;
+  sweepAngle?: number;
+  gradient?: string[];
   roundedCaps?: boolean;
   ringOpacity?: number | number[];
   trackColor?: string | string[];
@@ -115,6 +119,8 @@ export class GaugeChartElement extends LitElement {
       ringGap: this.ringGap,
       outerRadius: this.outerRadius,
       startAngle: this.startAngle,
+      sweepAngle: this.sweepAngle,
+      gradient: this.gradient,
       roundedCaps: this.roundedCaps,
       ringOpacity: this.ringOpacity,
       trackColor: this.trackColor,

@@ -16,6 +16,17 @@ Vrijwel alles is configureerbaar: ringdikte en tussenruimte, spoorkleuren en -de
 
 > Ringen delen één schaal (`max`, standaard 100). Normaliseer eerst bij verschillende schalen - of kies een [vergelijkende staafgrafiek](/nl/charts/comparable), die absolute waarden preciezer weergeeft.
 
+## Halve meter en verlopen
+
+`sweepAngle` verkleint de meter van een volledige cirkel tot een boog, met de klok mee vanaf `startAngle`; `gradient` vervangt de effen kleur van een ring door een meerkleurig lineair verloop. De klassieke halve meter is `startAngle: -90, sweepAngle: 180`:
+
+<ChartDemo chart="gauge-chart" :index="2" :legend="false" />
+
+Twee dingen die je bij een eerste lezing makkelijk verkeerd begrijpt:
+
+- **Het spoor volgt ook de boogbreedte.** Het achtergrondspoor van een halve meter is een halve cirkel, geen volledige - `sweepAngle` verkort spoor en waardeboog samen, dus er is geen "verborgen" andere helft die erdoorheen schemert.
+- **Het verloop is verankerd aan de volledige boogbreedte, niet aan het getekende deel.** Eenzelfde kleur staat altijd op dezelfde *waarde*, niet op dezelfde positie langs de daadwerkelijk getekende boog - een halfvolle meter toont dus de eerste helft van het verloop, niet het hele verloop samengeperst in de helft. Het eigen `gradient` van een ring wint van het verloop op grafiekniveau.
+
 ## Wanneer te gebruiken
 
 - **Geneste marktaandelen.** Het aandeel van één product in geneste scopes (wereld, regio, markt) in één compacte figuur.

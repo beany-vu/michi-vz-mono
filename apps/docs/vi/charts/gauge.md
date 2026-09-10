@@ -16,6 +16,17 @@ Hầu như mọi thứ đều cấu hình được: độ dày và khoảng các
 
 > Các vòng dùng chung một thang đo (`max`, mặc định 100). Với các giá trị khác thang đo, hãy chuẩn hoá trước - hoặc dùng [biểu đồ thanh so sánh](/vi/charts/comparable), đọc giá trị tuyệt đối chính xác hơn.
 
+## Nửa biểu đồ vòng cung và dải màu chuyển sắc
+
+`sweepAngle` thu hẹp biểu đồ từ một vòng tròn đầy đủ thành một cung, theo chiều kim đồng hồ từ `startAngle`; `gradient` thay màu đặc của một vòng bằng dải màu chuyển sắc tuyến tính nhiều điểm dừng. Nửa biểu đồ vòng cung kinh điển là `startAngle: -90, sweepAngle: 180`:
+
+<ChartDemo chart="gauge-chart" :index="2" :legend="false" />
+
+Hai điều dễ hiểu sai khi đọc lần đầu:
+
+- **Rãnh nền cũng quét theo góc quét.** Rãnh nền của nửa biểu đồ là một nửa vòng tròn, không phải vòng tròn đầy đủ - `sweepAngle` rút ngắn cả rãnh nền lẫn cung giá trị cùng nhau, nên không có "nửa còn lại" nào bị ẩn lộ ra.
+- **Dải màu chuyển sắc được neo theo toàn bộ góc quét, không theo phần được vẽ.** Một màu nhất định luôn ứng với cùng một *giá trị*, không phải cùng một vị trí trên cung thực tế được vẽ - vì vậy một biểu đồ đầy một nửa sẽ hiển thị nửa đầu của dải màu, chứ không phải toàn bộ dải màu bị nén vào nửa đó. `gradient` riêng của một vòng sẽ ghi đè lên `gradient` ở cấp biểu đồ.
+
 ## Khi nào nên dùng
 
 - **Thị phần lồng nhau.** Thị phần của một sản phẩm trên các phạm vi lồng nhau (thế giới, khu vực, thị trường) trong một hình gọn.

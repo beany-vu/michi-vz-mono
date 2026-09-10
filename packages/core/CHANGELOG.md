@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.23.0
+
+### Minor Changes
+
+- GaugeChart `sweepAngle` (degrees, clockwise from `startAngle`; default 360 = a full ring, clamped to (0, 360] so an unset/zero/negative value falls back to a full circle rather than an empty gauge). `startAngle: -90, sweepAngle: 180` gives the classic half gauge: both the background track and every ring's value arc narrow to that partial sweep, and a ring's value is measured against the partial range, not a full circle. GaugeChart `gradient` (`string[]` on the chart, or per-ring on `GaugeRingDatum`, which wins) paints a ring's arc with a linear multi-stop colour ramp across the plot box, anchored to the full sweep rather than the drawn portion, so a given colour always sits at the same value. All three renderers (svg, canvas, webgpu) honour both props; the web component and Angular applicator forward them.
+
 ## 1.22.0
 
 ### Minor Changes
