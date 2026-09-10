@@ -23,7 +23,13 @@ const ANGULAR = readdirSync(ANGULAR_SRC_DIR)
   .filter((f) => f.endsWith(".ts"))
   .map((f) => readFileSync(resolve(ANGULAR_SRC_DIR, f), "utf8"))
   .join("\n");
-const REACT = readFileSync(resolve(REPO, "packages/react/src/index.tsx"), "utf8");
+// React is split the same way (packages/react/src/<key>.tsx plus the index.tsx
+// barrel), so read every top-level *.tsx and concatenate them for the same reason.
+const REACT_SRC_DIR = resolve(REPO, "packages/react/src");
+const REACT = readdirSync(REACT_SRC_DIR)
+  .filter((f) => f.endsWith(".tsx"))
+  .map((f) => readFileSync(resolve(REACT_SRC_DIR, f), "utf8"))
+  .join("\n");
 const data = extract();
 
 // Props the wrappers intentionally do NOT forward as plain data props:
@@ -56,7 +62,7 @@ function angularForwarded(propsType) {
 }
 
 // React: unlike WC/Angular (which enumerate an explicit forwarding object), every
-// React chart component in packages/react/src/index.tsx forwards props via a rest
+// React chart component (packages/react/src/<key>.tsx) forwards props via a rest
 // spread - either the WHOLE `props` object untouched (no destructuring at all:
 // DualHorizontalBarChart, RangeChart, RibbonChart, PieChart, BubbleChart,
 // FountainChart), or `const { <a few names>, ...coreProps } = props;` followed by

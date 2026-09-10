@@ -14,12 +14,123 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./gauge-chart": {
+      "types": "./dist/gauge-chart.d.ts",
+      "import": "./dist/gauge-chart.js",
+      "require": "./dist/gauge-chart.cjs"
+    },
+    "./line-chart": {
+      "types": "./dist/line-chart.d.ts",
+      "import": "./dist/line-chart.js",
+      "require": "./dist/line-chart.cjs"
+    },
+    "./fan-chart": {
+      "types": "./dist/fan-chart.d.ts",
+      "import": "./dist/fan-chart.js",
+      "require": "./dist/fan-chart.cjs"
+    },
+    "./area-chart": {
+      "types": "./dist/area-chart.d.ts",
+      "import": "./dist/area-chart.js",
+      "require": "./dist/area-chart.cjs"
+    },
+    "./scatter-chart": {
+      "types": "./dist/scatter-chart.d.ts",
+      "import": "./dist/scatter-chart.js",
+      "require": "./dist/scatter-chart.cjs"
+    },
+    "./range-chart": {
+      "types": "./dist/range-chart.d.ts",
+      "import": "./dist/range-chart.js",
+      "require": "./dist/range-chart.cjs"
+    },
+    "./ribbon-chart": {
+      "types": "./dist/ribbon-chart.d.ts",
+      "import": "./dist/ribbon-chart.js",
+      "require": "./dist/ribbon-chart.cjs"
+    },
+    "./radar-chart": {
+      "types": "./dist/radar-chart.d.ts",
+      "import": "./dist/radar-chart.js",
+      "require": "./dist/radar-chart.cjs"
+    },
+    "./vertical-stack-bar-chart": {
+      "types": "./dist/vertical-stack-bar-chart.d.ts",
+      "import": "./dist/vertical-stack-bar-chart.js",
+      "require": "./dist/vertical-stack-bar-chart.cjs"
+    },
+    "./comparable-horizontal-bar-chart": {
+      "types": "./dist/comparable-horizontal-bar-chart.d.ts",
+      "import": "./dist/comparable-horizontal-bar-chart.js",
+      "require": "./dist/comparable-horizontal-bar-chart.cjs"
+    },
+    "./comparable-vertical-bar-chart": {
+      "types": "./dist/comparable-vertical-bar-chart.d.ts",
+      "import": "./dist/comparable-vertical-bar-chart.js",
+      "require": "./dist/comparable-vertical-bar-chart.cjs"
+    },
+    "./dual-horizontal-bar-chart": {
+      "types": "./dist/dual-horizontal-bar-chart.d.ts",
+      "import": "./dist/dual-horizontal-bar-chart.js",
+      "require": "./dist/dual-horizontal-bar-chart.cjs"
+    },
+    "./bar-bell-chart": {
+      "types": "./dist/bar-bell-chart.d.ts",
+      "import": "./dist/bar-bell-chart.js",
+      "require": "./dist/bar-bell-chart.cjs"
+    },
+    "./gap-chart": {
+      "types": "./dist/gap-chart.d.ts",
+      "import": "./dist/gap-chart.js",
+      "require": "./dist/gap-chart.cjs"
+    },
+    "./treemap-chart": {
+      "types": "./dist/treemap-chart.d.ts",
+      "import": "./dist/treemap-chart.js",
+      "require": "./dist/treemap-chart.cjs"
+    },
+    "./pie-chart": {
+      "types": "./dist/pie-chart.d.ts",
+      "import": "./dist/pie-chart.js",
+      "require": "./dist/pie-chart.cjs"
+    },
+    "./bubble-chart": {
+      "types": "./dist/bubble-chart.d.ts",
+      "import": "./dist/bubble-chart.js",
+      "require": "./dist/bubble-chart.cjs"
+    },
+    "./sankey-chart": {
+      "types": "./dist/sankey-chart.d.ts",
+      "import": "./dist/sankey-chart.js",
+      "require": "./dist/sankey-chart.cjs"
+    },
+    "./fountain-chart": {
+      "types": "./dist/fountain-chart.d.ts",
+      "import": "./dist/fountain-chart.js",
+      "require": "./dist/fountain-chart.cjs"
+    },
+    "./choropleth-map-chart": {
+      "types": "./dist/choropleth-map-chart.d.ts",
+      "import": "./dist/choropleth-map-chart.js",
+      "require": "./dist/choropleth-map-chart.cjs"
+    },
+    "./symbol-map-chart": {
+      "types": "./dist/symbol-map-chart.d.ts",
+      "import": "./dist/symbol-map-chart.js",
+      "require": "./dist/symbol-map-chart.cjs"
+    },
+    "./radial-tree-chart": {
+      "types": "./dist/radial-tree-chart.d.ts",
+      "import": "./dist/radial-tree-chart.js",
+      "require": "./dist/radial-tree-chart.cjs"
     }
   },
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "vitest run"
   },
   "publishConfig": {
     "access": "public"
@@ -36,7 +147,10 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "@testing-library/react": "^16.3.0",
+    "jsdom": "^25.0.1",
+    "vitest": "^3.2.7"
   },
   "license": "MIT",
   "author": "Beany Vu",
