@@ -27,7 +27,11 @@ vue, svelte **1.8.0** · examples **1.1.13** · devtools, insights **0.2.28**.
   le moteur SVG aussi, à l'image de canvas et WebGPU : `tooltipFormatter` reçoit `date` (le
   libellé d'axe du pôle survolé) sur chaque moteur de rendu, le survol suit le curseur au lieu
   de se déclencher une seule fois à l'entrée, et les séries atténuées ne sont plus testées au
-  survol.
+  survol. Attention si votre code renvoie `onHighlightItem` vers `highlightItems` : quand une
+  série est géométriquement imbriquée dans une autre (typiquement une année antérieure, plus
+  basse sur chaque axe), survoler la série extérieure atténue l'intérieure, et comme les séries
+  atténuées ne sont pas testées au survol, l'intérieure devient impossible à survoler tant que le
+  curseur ne quitte pas entièrement la série extérieure.
 
 ## v1.11.12
 

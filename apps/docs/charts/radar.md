@@ -150,7 +150,9 @@ Hovering a pole calls `tooltipFormatter` with the pole's data item **plus `date`
 tooltipFormatter: (item) => `${item.date}: ${item.value}`,
 ```
 
-The default tooltip markup (no `tooltipFormatter` passed) is unchanged. Hover follows the cursor as it moves across a polygon rather than firing once on entering it, and dimmed series (via `highlightItems` / `disabledItems`) are not hit-tested - only the active series responds to hover, matching canvas and webgpu.
+The default tooltip markup (no `tooltipFormatter` passed) is unchanged. Hover follows the cursor as it moves across a polygon rather than firing once on entering it, and `highlightItems` dims every other series - dimmed series are not hit-tested, so only the active series responds to hover, matching canvas and webgpu. `disabledItems` is a different mechanism: it removes a series from the chart entirely rather than dimming it, so a disabled series was never in the render model to hit-test in the first place. Clicking now pins the tooltip only when the click resolves an actual pole; a click that misses (empty space, or a dimmed series, which is not hit-tested) no longer pins, where previously on svg a click anywhere on a polygon - dimmed included - would.
+
+On svg, `onHighlightItem` now fires on every `mousemove` that resolves a hit, and with `[]` on every move that does not - it is not deduped or throttled. If your `onHighlightItem` handler writes the highlighted label into a store or other state that feeds back into the chart's props, debounce or dedupe it yourself, since every dispatch that reaches props triggers a re-render. This is not new for the library - canvas and webgpu radar hover already fired at this rate, and so do other charts (e.g. Area, Pie) - svg radar hover now simply matches them.
 
 ## Usage
 

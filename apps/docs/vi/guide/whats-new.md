@@ -24,7 +24,11 @@ vue, svelte **1.8.0** · examples **1.1.13** · devtools, insights **0.2.28**.
 - **Hover trên [Biểu đồ radar](/vi/charts/radar)**: cực đang hover giờ được xác định trên cả bộ
   dựng SVG, giống hệt canvas và WebGPU: `tooltipFormatter` nhận thêm `date` (nhãn trục của cực
   đang hover) trên mọi bộ dựng, hover bám theo con trỏ thay vì chỉ bắn một lần lúc chạm vào, và
-  các chuỗi bị làm mờ không còn được hit-test khi hover nữa.
+  các chuỗi bị làm mờ không còn được hit-test khi hover nữa. Cẩn thận nếu code của bạn đưa
+  `onHighlightItem` ngược trở lại `highlightItems`: khi một chuỗi nằm lồng bên trong chuỗi khác
+  về mặt hình học (thường gặp là một năm trước đó, thấp hơn trên mọi trục), hover vào chuỗi bên
+  ngoài sẽ làm mờ chuỗi bên trong, và vì chuỗi bị làm mờ không được hit-test, chuỗi bên trong sẽ
+  không thể hover được cho tới khi con trỏ rời hẳn khỏi chuỗi bên ngoài.
 
 ## v1.11.12
 

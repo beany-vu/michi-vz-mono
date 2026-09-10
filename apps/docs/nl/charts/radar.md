@@ -150,7 +150,9 @@ Hoveren over een pool roept `tooltipFormatter` aan met het datapunt van de pool 
 tooltipFormatter: (item) => `${item.date}: ${item.value}`,
 ```
 
-De standaard tooltip-markup (zonder `tooltipFormatter`) blijft ongewijzigd. Hover volgt de cursor terwijl die over een veelhoek beweegt, in plaats van eenmalig te vuren bij binnenkomst, en gedempte series (via `highlightItems` / `disabledItems`) worden niet gehittest - alleen de actieve serie reageert op hover, net als bij canvas en webgpu.
+De standaard tooltip-markup (zonder `tooltipFormatter`) blijft ongewijzigd. Hover volgt de cursor terwijl die over een veelhoek beweegt, in plaats van eenmalig te vuren bij binnenkomst, en `highlightItems` dempt elke andere serie - gedempte series worden niet gehittest, dus alleen de actieve serie reageert op hover, net als bij canvas en webgpu. `disabledItems` is een ander mechanisme: het verwijdert een serie volledig uit de grafiek in plaats van hem te dempen, dus een uitgeschakelde serie zat nooit in het rendermodel en kon sowieso niet gehittest worden. Klikken pint de tooltip nu alleen nog als de klik een echte pool oplevert; een klik die niets raakt (lege ruimte, of een gedempte serie, die niet gehittest wordt) pint niet meer, terwijl voorheen op svg een klik ergens op een veelhoek - gedempt inbegrepen - de tooltip altijd pinde.
+
+Op svg vuurt `onHighlightItem` nu bij elke `mousemove` die een hit oplevert, en met `[]` bij elke beweging die dat niet doet - zonder deduplicatie of throttling. Als jouw `onHighlightItem`-handler het gehoverde label wegschrijft naar een store of andere state die terugkomt in de props van de grafiek, moet je zelf debouncen of dedupliceren, want elke dispatch die de props bereikt triggert een re-render. Dit is niets nieuws voor de bibliotheek: canvas en webgpu vuurden al in dit tempo bij radar-hover, en andere grafieken ook (bijv. Area, Pie) - svg-radar-hover sluit hier nu gewoon bij aan.
 
 ## Gebruik
 

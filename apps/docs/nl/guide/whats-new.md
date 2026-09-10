@@ -24,7 +24,11 @@ svelte **1.8.0** · examples **1.1.13** · devtools, insights **0.2.28**.
 - **Hover op de [Radardiagram](/nl/charts/radar)**: de gehoverde pool wordt nu ook op de
   SVG-renderer bepaald, net als bij canvas en WebGPU: `tooltipFormatter` krijgt `date` (het
   aslabel van de gehoverde pool) op elke renderer, hover volgt de cursor in plaats van eenmalig
-  te vuren bij binnenkomst, en gedempte series worden niet meer gehittest.
+  te vuren bij binnenkomst, en gedempte series worden niet meer gehittest. Let op als jouw code
+  `onHighlightItem` terugvoert naar `highlightItems`: als een serie geometrisch genest zit in een
+  andere (typisch een eerder jaar, lager op elke as), dempt het hoveren van de buitenste serie de
+  binnenste, en omdat gedempte series niet gehittest worden, is de binnenste niet meer te hoveren
+  totdat de cursor de buitenste serie volledig verlaat.
 
 ## v1.11.12
 

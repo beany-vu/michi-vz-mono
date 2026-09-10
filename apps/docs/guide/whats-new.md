@@ -23,7 +23,11 @@ examples **1.1.13** · devtools, insights **0.2.28**.
 - **[Radar Chart](/charts/radar) hover** now resolves the hovered pole on the SVG renderer too,
   matching canvas and WebGPU: `tooltipFormatter` receives `date` (the hovered pole's axis label)
   on every renderer, hover follows the cursor instead of firing once on entry, and dimmed series
-  are no longer hit-tested.
+  are no longer hit-tested. Careful if a consumer reflects `onHighlightItem` back into
+  `highlightItems`: when one series is geometrically nested inside another (an earlier year lower
+  on every axis is typical), hovering the outer series dims the inner one, and since dimmed series
+  are not hit-tested, the inner series becomes unhoverable until the pointer leaves the outer
+  series entirely.
 
 ## v1.11.12
 

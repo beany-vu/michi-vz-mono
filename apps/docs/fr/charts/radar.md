@@ -150,7 +150,9 @@ Survoler un pôle appelle `tooltipFormatter` avec l'élément de données du pô
 tooltipFormatter: (item) => `${item.date} : ${item.value}`,
 ```
 
-Le balisage par défaut de l'infobulle (sans `tooltipFormatter`) reste inchangé. Le survol suit le curseur pendant qu'il se déplace sur un polygone au lieu de se déclencher une seule fois à l'entrée, et les séries atténuées (via `highlightItems` / `disabledItems`) ne sont pas testées au survol - seule la série active répond, à l'image de canvas et webgpu.
+Le balisage par défaut de l'infobulle (sans `tooltipFormatter`) reste inchangé. Le survol suit le curseur pendant qu'il se déplace sur un polygone au lieu de se déclencher une seule fois à l'entrée, et `highlightItems` atténue toutes les autres séries - les séries atténuées ne sont pas testées au survol, donc seule la série active répond, à l'image de canvas et webgpu. `disabledItems` est un mécanisme différent : il retire une série du graphique au lieu de l'atténuer, une série désactivée n'a donc jamais existé dans le modèle de rendu et ne pouvait pas être testée au survol de toute façon. Le clic n'épingle plus l'infobulle que lorsqu'il résout un pôle réel ; un clic qui ne touche rien (espace vide, ou une série atténuée, qui n'est pas testée) n'épingle plus rien, alors qu'auparavant sur svg un clic n'importe où sur un polygone - y compris atténué - épinglait l'infobulle.
+
+Sur svg, `onHighlightItem` se déclenche désormais à chaque `mousemove` qui résout un pôle, et avec `[]` à chaque déplacement qui n'en résout aucun - sans déduplication ni limitation de fréquence. Si votre gestionnaire `onHighlightItem` écrit le libellé survolé dans un store ou un autre état qui revient dans les props du graphique, il vous appartient de le debouncer ou de le dédupliquer, puisque chaque envoi qui atteint les props déclenche un nouveau rendu. Ce n'est pas nouveau pour la bibliothèque : canvas et webgpu se déclenchaient déjà à ce rythme sur le radar, et d'autres graphiques aussi (par ex. Area, Pie) - le survol svg du radar s'aligne simplement sur eux désormais.
 
 ## Utilisation
 

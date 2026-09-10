@@ -150,7 +150,9 @@ Hover vào một cực sẽ gọi `tooltipFormatter` với dữ liệu của c�
 tooltipFormatter: (item) => `${item.date}: ${item.value}`,
 ```
 
-Markup tooltip mặc định (khi không truyền `tooltipFormatter`) không đổi. Hover bám theo con trỏ khi di chuyển trên đa giác thay vì chỉ bắn một lần lúc vừa chạm vào, và các chuỗi bị làm mờ (qua `highlightItems` / `disabledItems`) không được hit-test - chỉ chuỗi đang active mới phản hồi hover, giống hệt canvas và webgpu.
+Markup tooltip mặc định (khi không truyền `tooltipFormatter`) không đổi. Hover bám theo con trỏ khi di chuyển trên đa giác thay vì chỉ bắn một lần lúc vừa chạm vào, và `highlightItems` làm mờ mọi chuỗi khác - các chuỗi bị làm mờ không được hit-test, nên chỉ chuỗi đang active mới phản hồi hover, giống hệt canvas và webgpu. `disabledItems` là một cơ chế khác: nó loại hẳn một chuỗi khỏi biểu đồ thay vì làm mờ, nên một chuỗi bị disable chưa bao giờ có mặt trong render model để mà hit-test. Click giờ chỉ ghim tooltip khi click đó xác định được đúng một cực; một click trượt (vào khoảng trống, hoặc vào một chuỗi bị làm mờ - vốn không được hit-test) sẽ không còn ghim tooltip nữa, trong khi trước đây trên svg, click vào bất kỳ đâu trên một đa giác - kể cả đa giác bị làm mờ - đều ghim tooltip.
+
+Trên svg, `onHighlightItem` giờ bắn ở mỗi `mousemove` xác định được một hit, và bắn `[]` ở mỗi lần di chuyển không xác định được hit nào - không hề dedupe hay throttle. Nếu handler `onHighlightItem` của bạn ghi nhãn đang hover vào store hoặc state khác rồi phản hồi ngược lại vào props của biểu đồ, bạn cần tự debounce hoặc dedupe, vì mỗi lần dispatch chạm tới props đều kích hoạt re-render. Đây không phải điều mới của thư viện: canvas và webgpu vốn đã bắn với tần suất này trên radar, và các biểu đồ khác cũng vậy (ví dụ Area, Pie) - hover svg của radar giờ chỉ đơn giản là khớp theo chúng.
 
 ## Cách dùng
 
