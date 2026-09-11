@@ -21,6 +21,23 @@ import { mountRadarChart } from "@michi-vz/core";
 const chart = mountRadarChart(el, props);
 ```
 
+```ts [React]
+import { RadarChart } from "@michi-vz/react/radar-chart";
+```
+
+```ts [Vue]
+import { RadarChart } from "@michi-vz/vue/radar-chart";
+```
+
+```ts [Svelte]
+import { radarChart } from "@michi-vz/svelte/radar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRadarChartProps } from "@michi-vz/angular/radar-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-radar-chart>
+```
+
 :::
 
 ## Eigenschappen

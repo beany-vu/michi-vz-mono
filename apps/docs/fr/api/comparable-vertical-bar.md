@@ -21,6 +21,23 @@ import { mountComparableVerticalBarChart } from "@michi-vz/core";
 const chart = mountComparableVerticalBarChart(el, props);
 ```
 
+```ts [React]
+import { ComparableVerticalBarChart } from "@michi-vz/react/comparable-vertical-bar-chart";
+```
+
+```ts [Vue]
+import { ComparableVerticalBarChart } from "@michi-vz/vue/comparable-vertical-bar-chart";
+```
+
+```ts [Svelte]
+import { comparableVerticalBarChart } from "@michi-vz/svelte/comparable-vertical-bar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyComparableVerticalBarChartProps } from "@michi-vz/angular/comparable-vertical-bar-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-comparable-vertical-bar-chart>
+```
+
 :::
 
 ## Props

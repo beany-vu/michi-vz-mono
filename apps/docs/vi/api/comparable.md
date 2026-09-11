@@ -21,6 +21,23 @@ import { mountComparableHorizontalBarChart } from "@michi-vz/core";
 const chart = mountComparableHorizontalBarChart(el, props);
 ```
 
+```ts [React]
+import { ComparableHorizontalBarChart } from "@michi-vz/react/comparable-horizontal-bar-chart";
+```
+
+```ts [Vue]
+import { ComparableHorizontalBarChart } from "@michi-vz/vue/comparable-horizontal-bar-chart";
+```
+
+```ts [Svelte]
+import { comparableHorizontalBarChart } from "@michi-vz/svelte/comparable-horizontal-bar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyComparableHorizontalBarChartProps } from "@michi-vz/angular/comparable-horizontal-bar-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-comparable-horizontal-bar-chart>
+```
+
 :::
 
 ## Thuộc tính

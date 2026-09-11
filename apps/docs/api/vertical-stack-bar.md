@@ -21,6 +21,23 @@ import { mountVerticalStackBarChart } from "@michi-vz/core";
 const chart = mountVerticalStackBarChart(el, props);
 ```
 
+```ts [React]
+import { VerticalStackBarChart } from "@michi-vz/react/vertical-stack-bar-chart";
+```
+
+```ts [Vue]
+import { VerticalStackBarChart } from "@michi-vz/vue/vertical-stack-bar-chart";
+```
+
+```ts [Svelte]
+import { verticalStackBarChart } from "@michi-vz/svelte/vertical-stack-bar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyVerticalStackBarChartProps } from "@michi-vz/angular/vertical-stack-bar-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-vertical-stack-bar-chart>
+```
+
 :::
 
 ## Props

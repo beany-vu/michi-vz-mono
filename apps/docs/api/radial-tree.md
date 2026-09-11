@@ -21,6 +21,23 @@ import { mountRadialTreeChart } from "@michi-vz/core";
 const chart = mountRadialTreeChart(el, props);
 ```
 
+```ts [React]
+import { RadialTreeChart } from "@michi-vz/react/radial-tree-chart";
+```
+
+```ts [Vue]
+import { RadialTreeChart } from "@michi-vz/vue/radial-tree-chart";
+```
+
+```ts [Svelte]
+import { radialTreeChart } from "@michi-vz/svelte/radial-tree-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRadialTreeChartProps } from "@michi-vz/angular/radial-tree-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-radial-tree-chart>
+```
+
 :::
 
 ## Props

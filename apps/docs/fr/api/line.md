@@ -21,6 +21,23 @@ import { mountLineChart } from "@michi-vz/core";
 const chart = mountLineChart(el, props);
 ```
 
+```ts [React]
+import { LineChart } from "@michi-vz/react/line-chart";
+```
+
+```ts [Vue]
+import { LineChart } from "@michi-vz/vue/line-chart";
+```
+
+```ts [Svelte]
+import { lineChart } from "@michi-vz/svelte/line-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyLineChartProps } from "@michi-vz/angular/line-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-line-chart>
+```
+
 :::
 
 ## Propriétés

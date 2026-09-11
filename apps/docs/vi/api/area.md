@@ -21,6 +21,23 @@ import { mountAreaChart } from "@michi-vz/core";
 const chart = mountAreaChart(el, props);
 ```
 
+```ts [React]
+import { AreaChart } from "@michi-vz/react/area-chart";
+```
+
+```ts [Vue]
+import { AreaChart } from "@michi-vz/vue/area-chart";
+```
+
+```ts [Svelte]
+import { areaChart } from "@michi-vz/svelte/area-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyAreaChartProps } from "@michi-vz/angular/area-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-area-chart>
+```
+
 :::
 
 ## Thuộc tính

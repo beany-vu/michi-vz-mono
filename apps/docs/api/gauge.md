@@ -21,6 +21,23 @@ import { mountGaugeChart } from "@michi-vz/core";
 const chart = mountGaugeChart(el, props);
 ```
 
+```ts [React]
+import { GaugeChart } from "@michi-vz/react/gauge-chart";
+```
+
+```ts [Vue]
+import { GaugeChart } from "@michi-vz/vue/gauge-chart";
+```
+
+```ts [Svelte]
+import { gaugeChart } from "@michi-vz/svelte/gauge-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyGaugeChartProps } from "@michi-vz/angular/gauge-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-gauge-chart>
+```
+
 :::
 
 ## Props

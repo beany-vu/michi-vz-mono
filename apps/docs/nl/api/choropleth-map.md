@@ -21,6 +21,23 @@ import { mountChoroplethMapChart } from "@michi-vz/core";
 const chart = mountChoroplethMapChart(el, props);
 ```
 
+```ts [React]
+import { ChoroplethMapChart } from "@michi-vz/react/choropleth-map-chart";
+```
+
+```ts [Vue]
+import { ChoroplethMapChart } from "@michi-vz/vue/choropleth-map-chart";
+```
+
+```ts [Svelte]
+import { choroplethMapChart } from "@michi-vz/svelte/choropleth-map-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyChoroplethMapChartProps } from "@michi-vz/angular/choropleth-map-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-choropleth-map-chart>
+```
+
 :::
 
 ## Props

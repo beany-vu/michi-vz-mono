@@ -21,6 +21,23 @@ import { mountFanChart } from "@michi-vz/core";
 const chart = mountFanChart(el, props);
 ```
 
+```ts [React]
+import { FanChart } from "@michi-vz/react/fan-chart";
+```
+
+```ts [Vue]
+import { FanChart } from "@michi-vz/vue/fan-chart";
+```
+
+```ts [Svelte]
+import { fanChart } from "@michi-vz/svelte/fan-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyFanChartProps } from "@michi-vz/angular/fan-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-fan-chart>
+```
+
 ```ts [Insights helper]
 import { forecastFan } from "@michi-vz/insights/forecast";
 

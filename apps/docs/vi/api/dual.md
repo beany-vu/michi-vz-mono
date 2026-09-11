@@ -21,6 +21,23 @@ import { mountDualHorizontalBarChart } from "@michi-vz/core";
 const chart = mountDualHorizontalBarChart(el, props);
 ```
 
+```ts [React]
+import { DualHorizontalBarChart } from "@michi-vz/react/dual-horizontal-bar-chart";
+```
+
+```ts [Vue]
+import { DualHorizontalBarChart } from "@michi-vz/vue/dual-horizontal-bar-chart";
+```
+
+```ts [Svelte]
+import { dualHorizontalBarChart } from "@michi-vz/svelte/dual-horizontal-bar-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyDualHorizontalBarChartProps } from "@michi-vz/angular/dual-horizontal-bar-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-dual-horizontal-bar-chart>
+```
+
 :::
 
 ## Thuộc tính

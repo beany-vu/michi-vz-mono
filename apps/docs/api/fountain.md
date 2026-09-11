@@ -21,6 +21,23 @@ import { mountFountainChart } from "@michi-vz/core";
 const chart = mountFountainChart(el, props);
 ```
 
+```ts [React]
+import { FountainChart } from "@michi-vz/react/fountain-chart";
+```
+
+```ts [Vue]
+import { FountainChart } from "@michi-vz/vue/fountain-chart";
+```
+
+```ts [Svelte]
+import { fountainChart } from "@michi-vz/svelte/fountain-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyFountainChartProps } from "@michi-vz/angular/fountain-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-fountain-chart>
+```
+
 :::
 
 ## Props

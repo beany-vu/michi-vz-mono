@@ -21,6 +21,23 @@ import { mountBubbleChart } from "@michi-vz/core";
 const chart = mountBubbleChart(el, props);
 ```
 
+```ts [React]
+import { BubbleChart } from "@michi-vz/react/bubble-chart";
+```
+
+```ts [Vue]
+import { BubbleChart } from "@michi-vz/vue/bubble-chart";
+```
+
+```ts [Svelte]
+import { bubbleChart } from "@michi-vz/svelte/bubble-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyBubbleChartProps } from "@michi-vz/angular/bubble-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-bubble-chart>
+```
+
 :::
 
 ## Props

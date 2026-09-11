@@ -21,6 +21,23 @@ import { mountTreemapChart } from "@michi-vz/core";
 const chart = mountTreemapChart(el, props);
 ```
 
+```ts [React]
+import { TreemapChart } from "@michi-vz/react/treemap-chart";
+```
+
+```ts [Vue]
+import { TreemapChart } from "@michi-vz/vue/treemap-chart";
+```
+
+```ts [Svelte]
+import { treemapChart } from "@michi-vz/svelte/treemap-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyTreemapChartProps } from "@michi-vz/angular/treemap-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-treemap-chart>
+```
+
 :::
 
 ## Props

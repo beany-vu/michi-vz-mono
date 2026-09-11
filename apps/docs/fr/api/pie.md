@@ -21,6 +21,23 @@ import { mountPieChart } from "@michi-vz/core";
 const chart = mountPieChart(el, props);
 ```
 
+```ts [React]
+import { PieChart } from "@michi-vz/react/pie-chart";
+```
+
+```ts [Vue]
+import { PieChart } from "@michi-vz/vue/pie-chart";
+```
+
+```ts [Svelte]
+import { pieChart } from "@michi-vz/svelte/pie-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyPieChartProps } from "@michi-vz/angular/pie-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-pie-chart>
+```
+
 :::
 
 ## Propriétés

@@ -21,6 +21,23 @@ import { mountRibbonChart } from "@michi-vz/core";
 const chart = mountRibbonChart(el, props);
 ```
 
+```ts [React]
+import { RibbonChart } from "@michi-vz/react/ribbon-chart";
+```
+
+```ts [Vue]
+import { RibbonChart } from "@michi-vz/vue/ribbon-chart";
+```
+
+```ts [Svelte]
+import { ribbonChart } from "@michi-vz/svelte/ribbon-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRibbonChartProps } from "@michi-vz/angular/ribbon-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-ribbon-chart>
+```
+
 :::
 
 ## Propriétés

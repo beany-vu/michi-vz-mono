@@ -21,6 +21,23 @@ import { mountScatterChart } from "@michi-vz/core";
 const chart = mountScatterChart(el, props);
 ```
 
+```ts [React]
+import { ScatterChart } from "@michi-vz/react/scatter-chart";
+```
+
+```ts [Vue]
+import { ScatterChart } from "@michi-vz/vue/scatter-chart";
+```
+
+```ts [Svelte]
+import { scatterChart } from "@michi-vz/svelte/scatter-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyScatterChartProps } from "@michi-vz/angular/scatter-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-scatter-chart>
+```
+
 :::
 
 ## Props

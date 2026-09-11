@@ -21,6 +21,23 @@ import { mountBarBellChart } from "@michi-vz/core";
 const chart = mountBarBellChart(el, props);
 ```
 
+```ts [React]
+import { BarBellChart } from "@michi-vz/react/bar-bell-chart";
+```
+
+```ts [Vue]
+import { BarBellChart } from "@michi-vz/vue/bar-bell-chart";
+```
+
+```ts [Svelte]
+import { barBellChart } from "@michi-vz/svelte/bar-bell-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyBarBellChartProps } from "@michi-vz/angular/bar-bell-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-bar-bell-chart>
+```
+
 :::
 
 ## Thuộc tính

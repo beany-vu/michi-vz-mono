@@ -21,6 +21,23 @@ import { mountRangeChart } from "@michi-vz/core";
 const chart = mountRangeChart(el, props);
 ```
 
+```ts [React]
+import { RangeChart } from "@michi-vz/react/range-chart";
+```
+
+```ts [Vue]
+import { RangeChart } from "@michi-vz/vue/range-chart";
+```
+
+```ts [Svelte]
+import { rangeChart } from "@michi-vz/svelte/range-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyRangeChartProps } from "@michi-vz/angular/range-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-range-chart>
+```
+
 :::
 
 ## Propriétés

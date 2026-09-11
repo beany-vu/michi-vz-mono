@@ -21,6 +21,23 @@ import { mountGapChart } from "@michi-vz/core";
 const chart = mountGapChart(el, props);
 ```
 
+```ts [React]
+import { GapChart } from "@michi-vz/react/gap-chart";
+```
+
+```ts [Vue]
+import { GapChart } from "@michi-vz/vue/gap-chart";
+```
+
+```ts [Svelte]
+import { gapChart } from "@michi-vz/svelte/gap-chart";
+```
+
+```ts [Angular]
+import { bindChart, applyGapChartProps } from "@michi-vz/angular/gap-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-gap-chart>
+```
+
 :::
 
 ## Props

@@ -21,6 +21,23 @@ import { mountSankeyChart } from "@michi-vz/core";
 const chart = mountSankeyChart(el, props);
 ```
 
+```ts [React]
+import { SankeyChart } from "@michi-vz/react/sankey-chart";
+```
+
+```ts [Vue]
+import { SankeyChart } from "@michi-vz/vue/sankey-chart";
+```
+
+```ts [Svelte]
+import { sankeyChart } from "@michi-vz/svelte/sankey-chart";
+```
+
+```ts [Angular]
+import { bindChart, applySankeyChartProps } from "@michi-vz/angular/sankey-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-sankey-chart>
+```
+
 :::
 
 ## Eigenschappen

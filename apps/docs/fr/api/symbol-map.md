@@ -21,6 +21,23 @@ import { mountSymbolMapChart } from "@michi-vz/core";
 const chart = mountSymbolMapChart(el, props);
 ```
 
+```ts [React]
+import { SymbolMapChart } from "@michi-vz/react/symbol-map-chart";
+```
+
+```ts [Vue]
+import { SymbolMapChart } from "@michi-vz/vue/symbol-map-chart";
+```
+
+```ts [Svelte]
+import { symbolMapChart } from "@michi-vz/svelte/symbol-map-chart";
+```
+
+```ts [Angular]
+import { bindChart, applySymbolMapChartProps } from "@michi-vz/angular/symbol-map-chart";
+// needs CUSTOM_ELEMENTS_SCHEMA on the component that hosts <michi-vz-symbol-map-chart>
+```
+
 :::
 
 ## Props
