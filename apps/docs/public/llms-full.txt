@@ -4,7 +4,7 @@
 
 > michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at https://michi-vz.netlify.app/llms.txt.
 
-Package versions this file was generated against: @michi-vz/core 1.24.0, wc 1.14.3, react 1.12.2, vue 1.8.2, svelte 1.8.2, angular 1.15.2, insights 0.2.30, devtools 0.2.30.
+Package versions this file was generated against: @michi-vz/core 1.25.0, wc 1.15.0, react 1.12.3, vue 1.8.3, svelte 1.8.3, angular 1.15.3, insights 0.2.31, devtools 0.2.31.
 
 ## What michi-vz is
 
@@ -19,14 +19,14 @@ AI features live in a separate opt-in package, `@michi-vz/insights`, and are loc
 
 ## Packages
 
-- `@michi-vz/core` 1.24.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
-- `@michi-vz/wc` 1.14.3 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
-- `@michi-vz/react` 1.12.2 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
-- `@michi-vz/vue` 1.8.2 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
-- `@michi-vz/svelte` 1.8.2 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
-- `@michi-vz/angular` 1.15.2 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
-- `@michi-vz/insights` 0.2.30 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
-- `@michi-vz/devtools` 0.2.30 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
+- `@michi-vz/core` 1.25.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
+- `@michi-vz/wc` 1.15.0 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
+- `@michi-vz/react` 1.12.3 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
+- `@michi-vz/vue` 1.8.3 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
+- `@michi-vz/svelte` 1.8.3 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
+- `@michi-vz/angular` 1.15.3 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
+- `@michi-vz/insights` 0.2.31 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
+- `@michi-vz/devtools` 0.2.31 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
 
 The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
 
@@ -216,6 +216,7 @@ Chart-specific props (the shared props above also apply):
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
 - `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
 - `tooltipFormatter`: `(ring: GaugeRingContext) => string` - Opt-in hover tooltip HTML for a ring (sanitized).
+- `annotationTooltipFormatter`: `(annotation: GaugeAnnotationContext) => string | null` - Opt-in hover tooltip HTML for ONE annotation - a value marker, a reference tick or an end label (sanitized).
 - `onHighlightItem`: `(labels: string[]) => void` - Called with the hovered ring's label (empty array on leave)
 
 ### Line Chart (`line-chart`)

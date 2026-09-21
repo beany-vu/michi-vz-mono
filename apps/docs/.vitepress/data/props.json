@@ -422,6 +422,14 @@
           "common": false
         },
         {
+          "name": "annotationTooltipFormatter",
+          "type": "(annotation: GaugeAnnotationContext) => string | null",
+          "optional": true,
+          "description": "Opt-in hover tooltip HTML for ONE annotation - a value marker, a reference tick or an end label (sanitized). Default: none; the annotations are inert. The drawn annotations take no pointer events, so this is resolved from geometry at the host level and behaves identically in the svg, canvas and webgpu renderers. Hovering an annotation does NOT change which ring is active, so the centre readout stays put while the reader inspects a reference value. Return null or \"\" to show nothing for that annotation - a marker with no value never exists in the first place, while the scale's ticks and end labels stay hoverable.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,

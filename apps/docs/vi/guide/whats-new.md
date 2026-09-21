@@ -10,6 +10,20 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.3
+
+Phiên bản gói: core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·
+examples **1.1.16** · devtools, insights **0.2.31**.
+
+- **[Biểu đồ vòng cung](/vi/charts/gauge): chú giải tự trả lời.**
+  `annotationTooltipFormatter` cho điểm đánh dấu giá trị, từng vạch tham chiếu và từng nhãn
+  đầu mút phần hiển thị riêng khi rê chuột, nhờ đó nhãn trên cung vẫn giữ được ngắn gọn. Rê
+  chuột lên một chú giải không đụng đến vòng đang hoạt động - phần hiển thị trung tâm không
+  dịch chuyển - và trả về `null` thì không hiển thị gì cho chú giải đó. Nó đọc hình học ở cấp
+  phần tử chứa thay vì DOM, nên hoạt động giống nhau ở trình kết xuất svg, canvas và WebGPU,
+  và vòng không có giá trị vẫn giữ vạch cùng nhãn đầu mút của thang đo rê chuột được.
+  `@michi-vz/wc` và `@michi-vz/angular` chuyển tiếp thuộc tính này.
+
 ## v1.12.2
 
 Phiên bản gói: core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·

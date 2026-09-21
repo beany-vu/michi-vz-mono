@@ -1,5 +1,16 @@
 # @michi-vz/wc
 
+## 1.15.0
+
+### Minor Changes
+
+- GaugeChart `annotationTooltipFormatter(annotation)`: a per-annotation hover readout for the value marker, the reference ticks and the end labels, on the SVG, canvas and webgpu renderers. Hovering an annotation leaves the active ring alone, so the centre readout stays put, and returning `null` shows nothing for that one.
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.25.0
+
 ## 1.14.3
 
 ### Patch Changes

@@ -12,6 +12,20 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.3
+
+Versions des paquets : core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·
+examples **1.1.16** · devtools, insights **0.2.31**.
+
+- **[Jauge (anneaux)](/fr/charts/gauge) : les annotations répondent d'elles-mêmes.**
+  `annotationTooltipFormatter` donne au marqueur de valeur, à chaque repère et à chaque
+  extrémité son propre affichage au survol, ce qui permet aux étiquettes de l'arc de rester
+  courtes. Survoler une annotation ne touche pas à l'anneau actif - l'affichage central ne
+  bouge pas - et renvoyer `null` n'affiche rien pour cette annotation. La détection se fait
+  sur la géométrie au niveau de l'hôte plutôt que sur le DOM : le comportement est identique
+  en svg, canvas et WebGPU, et un anneau sans valeur garde les repères et les extrémités de
+  son échelle survolables. `@michi-vz/wc` et `@michi-vz/angular` transmettent la propriété.
+
 ## v1.12.2
 
 Versions des paquets : core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·

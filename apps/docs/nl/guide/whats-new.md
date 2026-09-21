@@ -10,6 +10,20 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.3
+
+Pakketversies: core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·
+examples **1.1.16** · devtools, insights **0.2.31**.
+
+- **[Meter (ringen)](/nl/charts/gauge): annotaties antwoorden zelf.**
+  `annotationTooltipFormatter` geeft de waardemarker, elk referentiestreepje en elk uiteinde
+  een eigen aflezing bij hover, zodat korte labels op de boog kort kunnen blijven. Een
+  annotatie hoveren laat de actieve ring met rust - de centrale aflezing beweegt niet - en
+  `null` teruggeven toont niets voor die annotatie. Het leest de geometrie op hostniveau in
+  plaats van de DOM, dus het gedraagt zich hetzelfde in de svg-, canvas- en WebGPU-renderer,
+  en een ring zonder waarde houdt de streepjes en uiteinden van zijn schaal hoverbaar.
+  `@michi-vz/wc` en `@michi-vz/angular` geven de prop door.
+
 ## v1.12.2
 
 Pakketversies: core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·

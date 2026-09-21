@@ -1,5 +1,13 @@
 # @michi-vz/angular
 
+## 1.15.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.25.0
+  - @michi-vz/wc@1.15.0
+
 ## 1.15.2
 
 ### Patch Changes

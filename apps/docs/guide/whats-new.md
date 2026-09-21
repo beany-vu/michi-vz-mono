@@ -10,6 +10,20 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.3
+
+Package versions: core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·
+examples **1.1.16** · devtools, insights **0.2.31**.
+
+- **[Gauge (Rings)](/charts/gauge) annotations answer for themselves.**
+  `annotationTooltipFormatter` gives the value marker, each reference tick and each end
+  label its own hover readout, so short labels on the arc can stay short. Hovering one
+  leaves the active ring alone - the centre readout does not move - and returning `null`
+  shows nothing for that annotation. It reads the geometry at the host level rather than
+  the DOM, so it behaves the same in the svg, canvas and WebGPU renderers, and a ring with
+  no value keeps its scale's ticks and end labels hoverable. `@michi-vz/wc` and
+  `@michi-vz/angular` forward the prop.
+
 ## v1.12.2
 
 Package versions: core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·
