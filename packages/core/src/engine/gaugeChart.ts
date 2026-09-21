@@ -340,6 +340,11 @@ export function mountGaugeChart(
       highlightItems,
       gradient: r.gradient,
       gradientIdBase,
+      min: processed.min,
+      valueFormatter: props.valueFormatter ?? ((v: number) => `${v}%`),
+      ticks: props.ticks,
+      endLabels: props.endLabels,
+      valueMarker: props.valueMarker,
     });
 
     clear(svg);

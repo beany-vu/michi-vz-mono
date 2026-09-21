@@ -1,7 +1,7 @@
 // onDataWarning checks for Gauge: empty dataset, non-finite non-null values,
 // values outside [0, max] (clamped), and duplicate ring labels (which would
 // collide on the colour key).
-import type { DataWarning, GaugeRingDatum } from "../types";
+import type { DataWarning, GaugeRingDatum, GaugeChartProps, GaugeTick } from "../types";
 
 export function checkGaugeData(dataSet: GaugeRingDatum[], max = 100, min = 0): DataWarning[] {
   const warnings: DataWarning[] = [];
@@ -45,6 +45,40 @@ export function checkGaugeData(dataSet: GaugeRingDatum[], max = 100, min = 0): D
       });
     }
     seen.add(d.label);
+  }
+  return warnings;
+}
+
+/** Warnings for the positioning props: ticks outside [min, max] (clamped) and end
+ *  labels on a full ring (both ends coincide, so they are skipped). */
+export function checkGaugeAnnotations(o: {
+  ticks?: GaugeTick[];
+  endLabels?: GaugeChartProps["endLabels"];
+  min: number;
+  max: number;
+  sweepAngleDeg?: number;
+}): DataWarning[] {
+  const warnings: DataWarning[] = [];
+  for (const t of o.ticks ?? []) {
+    if (Number.isFinite(t.value) && (t.value < o.min || t.value > o.max)) {
+      warnings.push({
+        type: "non-finite-value",
+        message: `Gauge tick "${t.label ?? t.value}" value ${t.value} is outside [${o.min}, ${o.max}]; it is clamped to the nearest end.`,
+        label: t.label,
+      });
+    }
+  }
+  const full =
+    o.sweepAngleDeg === undefined ||
+    !Number.isFinite(o.sweepAngleDeg) ||
+    o.sweepAngleDeg <= 0 ||
+    o.sweepAngleDeg >= 360;
+  if (o.endLabels && full) {
+    warnings.push({
+      type: "layout-overflow",
+      message:
+        "Gauge endLabels are ignored on a full 360 degree ring because both ends coincide; set sweepAngle below 360.",
+    });
   }
   return warnings;
 }

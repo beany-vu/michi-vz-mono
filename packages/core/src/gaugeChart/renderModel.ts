@@ -4,9 +4,10 @@
 // (the pie convention). Active emphasis is resolved HERE so every renderer and
 // the centre label agree on it.
 import { sanitizeForClassName } from "../math/sanitize";
-import type { GaugeActiveStyle } from "../types";
+import type { GaugeActiveStyle, GaugeChartProps, GaugeTick } from "../types";
 import type { GaugeColorResolver } from "./colors";
 import type { GaugeRing } from "./data";
+import { buildGaugeAnnotations, type GaugeAnnotations } from "./annotations";
 
 export interface GaugeRingMark {
   label: string;
@@ -58,6 +59,12 @@ export interface GaugeRenderModel {
   /** Id prefix unique to this mounted chart, used to namespace generated SVG defs
    * (e.g. gradients) so multiple gauges on one page never collide. */
   gradientIdBase: string;
+  /** Outer edge radius of the outermost ring (px); ticks and end labels hang off it. */
+  outerRadius: number;
+  /** Value at the start of the sweep. */
+  min: number;
+  /** Markers, ticks and end labels (empty arrays when none requested). */
+  annotations: GaugeAnnotations;
 }
 
 export interface BuildGaugeModelOptions {
@@ -83,6 +90,13 @@ export interface BuildGaugeModelOptions {
   gradient?: string[];
   /** Id prefix unique to this mounted chart (see GaugeRenderModel.gradientIdBase). */
   gradientIdBase: string;
+  /** Value at the start of the sweep (default 0). */
+  min: number;
+  /** Formats tick / end-label values when the consumer gives no string. */
+  valueFormatter: (v: number) => string;
+  ticks?: GaugeTick[];
+  endLabels?: GaugeChartProps["endLabels"];
+  valueMarker?: GaugeChartProps["valueMarker"];
 }
 
 /** Per-ring value from a scalar-or-array config prop. */
@@ -137,6 +151,28 @@ export function buildGaugeRenderModel(
     });
   });
 
+  const annotations = buildGaugeAnnotations({
+    cx: o.cx,
+    cy: o.cy,
+    outerRadius: o.outerRadius,
+    startAngle,
+    sweepAngle,
+    min: o.min,
+    max: o.max,
+    rings: marks.map((m) => ({
+      index: m.index,
+      radius: m.radius,
+      fraction: m.fraction,
+      stroke: m.stroke,
+      colorKey: m.colorKey,
+      dataLabelSafe: m.dataLabelSafe,
+    })),
+    ticks: o.ticks,
+    endLabels: o.endLabels,
+    valueMarker: o.valueMarker,
+    valueFormatter: o.valueFormatter,
+  });
+
   return {
     cx: o.cx,
     cy: o.cy,
@@ -147,5 +183,8 @@ export function buildGaugeRenderModel(
     activeIndex: o.activeIndex,
     sweepAngle,
     gradientIdBase: o.gradientIdBase,
+    outerRadius: o.outerRadius,
+    min: o.min,
+    annotations,
   };
 }

@@ -121,6 +121,19 @@ export type { SweepBox, FitSweepInput, FitSweepResult } from "./gaugeChart/geome
 export { buildGaugeColors } from "./gaugeChart/colors";
 export { buildGaugeContext } from "./context/buildGaugeContext";
 export { checkGaugeData } from "./validate/gaugeWarnings";
+export {
+  buildGaugeAnnotations,
+  emptyGaugeAnnotations,
+  hasGaugeAnnotations,
+  GAUGE_ANNOTATION_RESERVE,
+} from "./gaugeChart/annotations";
+export type {
+  GaugeAnnotations,
+  GaugeMarkerMark,
+  GaugeTickMark,
+  GaugeEndLabelMark,
+} from "./gaugeChart/annotations";
+export { checkGaugeAnnotations } from "./validate/gaugeWarnings";
 // ScatterPlot pure layer
 export { processScatterData } from "./scatterChart/data";
 export { buildScatterColors } from "./scatterChart/colors";
