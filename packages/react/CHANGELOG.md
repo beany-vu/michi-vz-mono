@@ -1,5 +1,14 @@
 # @michi-vz/react
 
+## 1.12.2
+
+### Patch Changes
+
+- GaugeChart positioning within a range: `min` (scale start), `ticks` (reference marks with consumer-formatted caption + value on the outer ring), `endLabels` (labels under the ends of a partial sweep), `valueMarker` (circle + radial tick at each ring's value) and `sweepFit` (size and centre a partial sweep on its bounding box, readout anchored inside the arc). Annotations are svg in every renderer (overlay above the painted layer for canvas/webgpu) and are folded into svg exports. The gauge now uses the shared `shouldSkipScaffold` gate. `GaugeChartContext.min` added. wc + angular forward the props; angular re-exports `GaugeTick`, `GaugeEndLabel`, `GaugeValueMarker`.
+- Updated dependencies
+  - @michi-vz/core@1.24.0
+  - @michi-vz/devtools@0.2.30
+
 ## 1.12.1
 
 ### Patch Changes

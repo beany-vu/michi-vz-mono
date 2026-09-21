@@ -12,6 +12,26 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.2
+
+Versions des paquets : core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·
+examples **1.1.15** · devtools, insights **0.2.30**.
+
+- **[Jauge (anneaux)](/fr/charts/gauge) : positionnement dans une plage.** Cinq propriétés
+  additives : `min` fait démarrer l'échelle ailleurs qu'à zéro (les valeurs d'anneau et les
+  repères sont ramenés dans `[min, max]` avec un avertissement de données), `valueMarker`
+  épingle la valeur de chaque anneau sur l'arc avec un cercle cerclé de blanc et un trait
+  radial, `ticks` ajoute des repères sur l'anneau extérieur avec une légende et une valeur
+  formatées par le consommateur (`valueFormatter` n'est que le repli), `endLabels` nomme les
+  deux extrémités d'un balayage partiel, et `sweepFit` ajuste une jauge partielle à la boîte
+  englobante de son balayage et ancre l'affichage central à l'intérieur de l'arc. Les
+  annotations sont en svg dans chaque moteur de rendu - un calque au-dessus de la couche
+  peinte en mode canvas et WebGPU - donc le CSS du consommateur les atteint partout et les
+  exports svg les incluent. La jauge ignore désormais son échafaudage selon la règle
+  partagée « chargement à vide » comme les autres graphiques, et le contexte expose `min`.
+  `@michi-vz/wc` et `@michi-vz/angular` transmettent les propriétés ;
+  `@michi-vz/angular/gauge-chart` réexporte `GaugeTick`, `GaugeEndLabel` et `GaugeValueMarker`.
+
 ## v1.12.1
 
 Versions des paquets : core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** ·

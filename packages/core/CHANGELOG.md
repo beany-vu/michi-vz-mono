@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.24.0
+
+### Minor Changes
+
+- GaugeChart positioning within a range: `min` (scale start), `ticks` (reference marks with consumer-formatted caption + value on the outer ring), `endLabels` (labels under the ends of a partial sweep), `valueMarker` (circle + radial tick at each ring's value) and `sweepFit` (size and centre a partial sweep on its bounding box, readout anchored inside the arc). Annotations are svg in every renderer (overlay above the painted layer for canvas/webgpu) and are folded into svg exports. The gauge now uses the shared `shouldSkipScaffold` gate. `GaugeChartContext.min` added. wc + angular forward the props; angular re-exports `GaugeTick`, `GaugeEndLabel`, `GaugeValueMarker`.
+
 ## 1.23.0
 
 ### Minor Changes

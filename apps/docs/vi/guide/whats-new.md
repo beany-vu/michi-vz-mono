@@ -10,6 +10,24 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.2
+
+Phiên bản gói: core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·
+examples **1.1.15** · devtools, insights **0.2.30**.
+
+- **[Biểu đồ vòng cung](/vi/charts/gauge): định vị trong một khoảng.** Năm thuộc tính bổ sung:
+  `min` cho thang đo bắt đầu từ một giá trị khác 0 (giá trị vòng và vạch được kẹp vào
+  `[min, max]` kèm cảnh báo dữ liệu), `valueMarker` ghim giá trị của từng vòng lên cung bằng
+  một vòng tròn viền trắng và một vạch hướng tâm, `ticks` thêm vạch tham chiếu trên vòng ngoài
+  cùng với nhãn và giá trị do bên dùng định dạng (`valueFormatter` chỉ là phương án dự phòng),
+  `endLabels` đặt tên hai đầu của một cung không trọn vòng, và `sweepFit` co giãn biểu đồ không
+  trọn vòng vừa khung bao của cung và neo phần hiển thị trung tâm vào bên trong cung. Các chú
+  giải là svg ở mọi trình kết xuất - một lớp phủ phía trên lớp vẽ ở chế độ canvas và WebGPU -
+  nên CSS của bên dùng chạm tới chúng ở mọi nơi và xuất svg mang theo chúng. Biểu đồ nay bỏ
+  qua khung dựng theo quy tắc chung "đang tải mà rỗng" như các biểu đồ khác, và ngữ cảnh cung
+  cấp `min`. `@michi-vz/wc` và `@michi-vz/angular` chuyển tiếp các thuộc tính;
+  `@michi-vz/angular/gauge-chart` xuất lại `GaugeTick`, `GaugeEndLabel` và `GaugeValueMarker`.
+
 ## v1.12.1
 
 Phiên bản các gói: core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** ·

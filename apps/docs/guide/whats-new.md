@@ -10,6 +10,24 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.2
+
+Package versions: core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·
+examples **1.1.15** · devtools, insights **0.2.30**.
+
+- **[Gauge (Rings)](/charts/gauge) positioning within a range.** Five additive props: `min`
+  starts the scale away from zero (ring values and ticks are clamped into `[min, max]` with a
+  data warning), `valueMarker` pins each ring's value on the arc with a white-ringed circle and
+  a radial tick, `ticks` adds reference marks on the outer ring with a consumer-formatted
+  caption and value (`valueFormatter` is only the fallback), `endLabels` names the two ends of
+  a partial sweep, and `sweepFit` sizes a partial gauge to its swept bounding box and anchors
+  the centre readout inside the arc. The annotations are svg in every renderer - an overlay
+  above the painted layer in canvas and WebGPU mode - so consumer CSS reaches them everywhere
+  and svg exports carry them. The gauge now skips its scaffolding on the shared loading-empty
+  rule like the other charts, and the context exposes `min`. `@michi-vz/wc` and
+  `@michi-vz/angular` forward the props; `@michi-vz/angular/gauge-chart` re-exports
+  `GaugeTick`, `GaugeEndLabel` and `GaugeValueMarker`.
+
 ## v1.12.1
 
 Package versions: core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** · vue, svelte **1.8.1** ·

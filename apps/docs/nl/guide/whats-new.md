@@ -10,6 +10,26 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.2
+
+Pakketversies: core **1.24.0** · wc **1.14.3** · angular **1.15.2** · react **1.12.2** · vue, svelte **1.8.2** ·
+examples **1.1.15** · devtools, insights **0.2.30**.
+
+- **[Meter (ringen)](/nl/charts/gauge): positie binnen een bereik.** Vijf additieve props:
+  `min` laat de schaal ergens anders dan bij nul beginnen (ringwaarden en streepjes worden in
+  `[min, max]` geklemd met een datawaarschuwing), `valueMarker` zet de waarde van elke ring
+  vast op de boog met een wit omrande cirkel en een radiaal streepje, `ticks` voegt
+  referentiestreepjes toe op de buitenste ring met een door de consumer opgemaakt bijschrift
+  en waarde (`valueFormatter` is alleen de terugval), `endLabels` benoemt de twee uiteinden
+  van een gedeeltelijke boog, en `sweepFit` past een gedeeltelijke meter in het omhullende vak
+  van zijn boog en verankert de centrale aflezing binnen de boog. De annotaties zijn svg in
+  elke renderer - een overlay boven de geschilderde laag in canvas- en WebGPU-modus - dus
+  consumer-CSS bereikt ze overal en svg-exports nemen ze mee. De meter slaat zijn steigerwerk
+  nu over volgens de gedeelde laden-zonder-data-regel zoals de andere grafieken, en de context
+  geeft `min` door. `@michi-vz/wc` en `@michi-vz/angular` sturen de props door;
+  `@michi-vz/angular/gauge-chart` exporteert `GaugeTick`, `GaugeEndLabel` en `GaugeValueMarker`
+  opnieuw.
+
 ## v1.12.1
 
 Pakketversies: core **1.23.0** · wc **1.14.2** · angular **1.15.1** · react **1.12.1** · vue,
