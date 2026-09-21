@@ -19,13 +19,14 @@ import {
   type GaugeRenderModel,
 } from "../gaugeChart/renderModel";
 import { renderGaugeSvg } from "../gaugeChart/renderSvg";
+import { renderGaugeAnnotationsSvg } from "../gaugeChart/renderAnnotationsSvg";
 import { drawGaugeCanvas } from "../gaugeChart/renderCanvas";
 import { drawGaugeWebgpu } from "../gaugeChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildGaugeContext } from "../context/buildGaugeContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { contextSignature } from "../context/signature";
-import { checkGaugeData } from "../validate/gaugeWarnings";
+import { checkGaugeData, checkGaugeAnnotations } from "../validate/gaugeWarnings";
 import {
   applyTransformData,
   applyEnrichContext,
@@ -371,6 +372,8 @@ export function mountGaugeChart(
           },
         },
       );
+      const content = svg.querySelector<SVGGElement>("g.gauge-chart-content");
+      if (content) renderGaugeAnnotationsSvg(content, model.annotations);
     }
 
     if (r.renderer === "webgpu" && dataState !== "nodata") {
@@ -445,6 +448,13 @@ export function mountGaugeChart(
     if (baseProps.onDataWarning) {
       const warnings = [
         ...checkGaugeData(baseProps.dataSet, r.max, r.min),
+        ...checkGaugeAnnotations({
+          ticks: baseProps.ticks,
+          endLabels: baseProps.endLabels,
+          min: processed.min,
+          max: processed.max,
+          sweepAngleDeg: r.sweepAngle,
+        }),
         ...collectValidate(pluginList, baseProps, pc),
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);

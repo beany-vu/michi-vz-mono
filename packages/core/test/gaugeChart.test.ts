@@ -305,4 +305,110 @@ describe("mountGaugeChart (jsdom)", () => {
     chart.destroy();
     host.remove();
   });
+
+  // Positioning props. A 360x210 box with margin 0 centres at (180,105) with
+  // outerRadius 105; the single ring's centreline is 105 - 18/2 = 96.
+  const range = { min: 3.3, max: 16, startAngle: -90, sweepAngle: 180, width: 360, height: 210 };
+  const angleAt = (value: number) => ((-90 + ((value - 3.3) / (16 - 3.3)) * 180) * Math.PI) / 180;
+  const at = (r: number, a: number) => [180 + r * Math.sin(a), 105 - r * Math.cos(a)];
+
+  it("draws a value marker on the ring centreline at the min-aware fraction (svg)", () => {
+    const { host, chart } = mount({
+      ...range,
+      dataSet: [{ label: "Greece", value: 7.6, color: "#0d5eaf" }],
+      valueMarker: true,
+    });
+    const marker = host.querySelector<SVGCircleElement>(
+      "g.gauge-chart-content circle.mv-gauge-marker",
+    )!;
+    expect(marker).not.toBeNull();
+    const [x, y] = at(96, angleAt(7.6));
+    expect(Number(marker.getAttribute("cx"))).toBeCloseTo(x, 6);
+    expect(Number(marker.getAttribute("cy"))).toBeCloseTo(y, 6);
+    expect(marker.getAttribute("fill")).toBe("#0d5eaf");
+    expect(marker.getAttribute("data-label")).toBe("Greece");
+    expect(marker.getAttribute("data-label-safe")).toBe("Greece");
+    const tick = host.querySelector<SVGLineElement>("line.mv-gauge-marker-tick")!;
+    expect(tick.getAttribute("stroke")).toBe("#1a1a1a");
+    expect(host.querySelectorAll("svg")).toHaveLength(1); // no overlay in svg mode
+    chart.destroy();
+    host.remove();
+  });
+
+  it("renders ticks and end labels with consumer strings, falling back to valueFormatter", () => {
+    const { host, chart } = mount({
+      ...range,
+      dataSet: [{ label: "Greece", value: 7.6 }],
+      ticks: [{ value: 7.27, label: "AVG" }],
+      endLabels: { min: { label: "MIN" }, max: { label: "MAX", valueLabel: "16.0" } },
+      valueFormatter: (v) => `${v}k`,
+    });
+    const texts = Array.from(host.querySelectorAll("g.gauge-annotations text")).map(
+      (t) => t.textContent,
+    );
+    expect(texts).toEqual(["AVG", "7.27k", "MIN", "3.3k", "MAX", "16.0"]);
+    const line = host.querySelector<SVGLineElement>("line.mv-gauge-tick")!;
+    const [x1, y1] = at(105 + 2, angleAt(7.27));
+    expect(Number(line.getAttribute("x1"))).toBeCloseTo(x1, 6);
+    expect(Number(line.getAttribute("y1"))).toBeCloseTo(y1, 6);
+    const caption = host.querySelector<SVGTextElement>("text.mv-gauge-tick-label")!;
+    expect(caption.getAttribute("text-anchor")).toBe("middle");
+    const [, labelY] = at(105 + 26, angleAt(7.27));
+    expect(Number(caption.getAttribute("y"))).toBeCloseTo(labelY - 6, 6);
+    const endCaption = host.querySelector<SVGTextElement>(
+      "text.mv-gauge-end-label.mv-gauge-tick-label",
+    )!;
+    // Start end of the centreline (96) is (84, 105); the label hangs 20px below.
+    expect(Number(endCaption.getAttribute("x"))).toBeCloseTo(84, 6);
+    expect(Number(endCaption.getAttribute("y"))).toBeCloseTo(125, 6);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("suppresses a value line for an empty valueLabel and draws ticks for a null ring", () => {
+    const { host, chart } = mount({
+      ...range,
+      dataSet: [{ label: "Greece", value: null }],
+      ticks: [{ value: 7.27, label: "AVG", valueLabel: "" }],
+      valueMarker: true,
+    });
+    const texts = Array.from(host.querySelectorAll("g.gauge-annotations text")).map(
+      (t) => t.textContent,
+    );
+    expect(texts).toEqual(["AVG"]);
+    expect(host.querySelector("circle.mv-gauge-marker")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("skips end labels on a full ring and clamps an out-of-range tick, warning for both", () => {
+    const onDataWarning = vi.fn();
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 50 }],
+      max: 100,
+      ticks: [{ value: 150, label: "OVER" }],
+      endLabels: true,
+      onDataWarning,
+    });
+    expect(host.querySelector("text.mv-gauge-end-label")).toBeNull();
+    const line = host.querySelector<SVGLineElement>("line.mv-gauge-tick")!;
+    // Clamped to max on a full ring = back at 12 o'clock: x1 = cx = 100.
+    expect(Number(line.getAttribute("x1"))).toBeCloseTo(100, 6);
+    const types = onDataWarning.mock.calls[0][0].map((w: { type: string }) => w.type);
+    expect(types).toContain("non-finite-value");
+    expect(types).toContain("layout-overflow");
+    chart.destroy();
+    host.remove();
+  });
+
+  it("without the positioning props the DOM is unchanged (no annotation group, one svg)", () => {
+    const { host, chart } = mount();
+    expect(host.querySelector("g.gauge-annotations")).toBeNull();
+    expect(host.querySelector(".mv-gauge-marker")).toBeNull();
+    expect(host.querySelectorAll("svg")).toHaveLength(1);
+    expect(host.querySelectorAll("path.gauge-track")).toHaveLength(3);
+    expect(host.querySelectorAll("path.gauge-arc")).toHaveLength(3);
+    chart.destroy();
+    host.remove();
+  });
 });
