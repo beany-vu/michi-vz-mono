@@ -74,6 +74,14 @@ export function chartToStyledSvgString(el: HTMLElement, opts: StyledSvgOptions =
 
   const clone = svg.cloneNode(true) as SVGSVGElement;
 
+  // Overlay svgs (e.g. the gauge's annotations in canvas/webgpu mode) share the
+  // host's coordinate system and size: fold their CHILDREN into the clone so the
+  // export carries them. Only marked overlays qualify; the hover crosshair
+  // overlay is unmarked on purpose and stays out of exports.
+  el.querySelectorAll(":scope > svg.mv-overlay-svg").forEach((overlay) => {
+    overlay.childNodes.forEach((n) => clone.appendChild(n.cloneNode(true)));
+  });
+
   // CORE_CSS rules are namespaced `.michi-vz ...` (descendant selectors). Standalone,
   // the exported <svg> root must itself be the `.michi-vz` ancestor so those rules
   // match its subtree; carry any chart-type class(es) too for type-scoped rules.

@@ -48,6 +48,12 @@ export const CORE_CSS = `
 }
 .michi-vz .mv-gauge-center .mv-gauge-center-label { display: block; }
 .michi-vz .mv-gauge-center .mv-gauge-center-value { display: block; }
+/* Gauge positioning annotations (value markers, reference ticks, end labels).
+   One svg renderer serves svg, canvas and webgpu; theme via the vars or these
+   classes. Captions are small uppercase muted text, values use the ink colour. */
+.michi-vz .mv-gauge-tick-label { font-family: var(--michi-vz-font-family, inherit); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--michi-vz-muted, #717182); }
+.michi-vz .mv-gauge-tick-value { font-family: var(--michi-vz-font-family, inherit); font-size: 11px; fill: var(--michi-vz-ink, #1a1a1a); }
+.michi-vz .mv-gauge-marker { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.22)); }
 /* Drag-to-zoom selection rectangle (LineChart zoom). Theme via the two vars;
    the default derives from currentColor so it reads on light AND dark. */
 .michi-vz .mv-zoom-rect { fill: var(--michi-vz-zoom-fill, color-mix(in srgb, currentColor 12%, transparent)); stroke: var(--michi-vz-zoom-stroke, color-mix(in srgb, currentColor 30%, transparent)); pointer-events: none; }

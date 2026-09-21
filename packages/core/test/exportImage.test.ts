@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { chartToStyledSvgString, chartToStyledSvgDataUri } from "../src/export/image";
 import { mountRangeChart } from "../src/engine/rangeChart";
 import type { RangeChartProps, RangeDataItem } from "../src/types";
+import { mountGaugeChart } from "../src/engine/gaugeChart";
 
 // NOTE: chartToPngDataUrl is NOT unit-tested here - jsdom lacks a real Image loader and
 // canvas.toDataURL rasterizer, so the PNG path is verified live (Playwright) in the
@@ -71,6 +72,42 @@ describe("chartToStyledSvgDataUri", () => {
     const uri = chartToStyledSvgDataUri(host);
     expect(uri.startsWith("data:image/svg+xml;charset=utf-8,")).toBe(true);
     expect(decodeURIComponent(uri)).toContain(".mv-grid");
+    chart.destroy();
+    host.remove();
+  });
+});
+
+describe("chartToStyledSvgString folds overlay svgs in", () => {
+  const props = {
+    dataSet: [{ label: "Greece", value: 7.6, color: "#0d5eaf" }],
+    min: 3.3,
+    max: 16,
+    startAngle: -90,
+    sweepAngle: 180,
+    valueMarker: true as const,
+    ticks: [{ value: 7.27, label: "AVG" }],
+    width: 300,
+    height: 200,
+  };
+
+  it("carries the gauge annotations from the canvas-mode overlay into the export", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGaugeChart(host, { ...props, renderer: "canvas" });
+    const out = chartToStyledSvgString(host);
+    expect(out).toContain('class="mv-gauge-marker"');
+    expect(out).toContain(">AVG<");
+    // One root only: overlay CHILDREN are folded in, never a nested <svg>.
+    expect(out.match(/<svg/g)).toHaveLength(1);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("svg-mode annotations were already inside the exported svg", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGaugeChart(host, { ...props, renderer: "svg" });
+    expect(chartToStyledSvgString(host)).toContain('class="gauge-annotations"');
     chart.destroy();
     host.remove();
   });

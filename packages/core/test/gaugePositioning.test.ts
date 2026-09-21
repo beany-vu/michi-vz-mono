@@ -4,6 +4,7 @@ import { checkGaugeData } from "../src/validate/gaugeWarnings";
 import { sweepBoundingBox, fitSweep } from "../src/gaugeChart/geometry";
 import { buildGaugeAnnotations } from "../src/gaugeChart/annotations";
 import { checkGaugeAnnotations } from "../src/validate/gaugeWarnings";
+import { CORE_CSS } from "../src/styles";
 
 describe("processGaugeData with min", () => {
   it("maps (value - min) / (max - min) onto the sweep", () => {
@@ -331,5 +332,14 @@ describe("checkGaugeAnnotations", () => {
         sweepAngleDeg: 180,
       }),
     ).toHaveLength(0);
+  });
+});
+
+describe("gauge annotation CSS", () => {
+  it("ships default rules for the tick labels and the marker", () => {
+    expect(CORE_CSS).toContain(".michi-vz .mv-gauge-tick-label");
+    expect(CORE_CSS).toContain(".michi-vz .mv-gauge-tick-value");
+    expect(CORE_CSS).toContain(".michi-vz .mv-gauge-marker");
+    expect(CORE_CSS).toMatch(/mv-gauge-tick-label[^}]*text-transform: uppercase/);
   });
 });
