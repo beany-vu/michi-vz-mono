@@ -507,6 +507,10 @@
       <div class="card">
         <h2>Half gauge with gradient (startAngle: -90, sweepAngle: 180)</h2>
         <michi-vz-gauge-chart id="gaugeHalfGradient"></michi-vz-gauge-chart>
+        <h2>
+          Gauge positioning (canvas renderer: min/max scale, marker, AVG tick, end labels, sweepFit)
+        </h2>
+        <michi-vz-gauge-chart id="gaugePositioning"></michi-vz-gauge-chart>
       </div>
     </div>
 
@@ -1336,6 +1340,31 @@
           startAngle: -90,
           sweepAngle: 180,
           gradient: ["#1f6fb2", "#2fae6c", "#e8b63a"],
+        });
+
+        // ---- GaugeChart positioning (canvas renderer) ---- the annotations are svg
+        // in an overlay above the canvas layer; the centre readout is consumer HTML.
+        const gaugePositioningEl = document.getElementById("gaugePositioning");
+        Object.assign(gaugePositioningEl, {
+          dataSet: [{ label: "Greece", value: 7836.69, color: "#0d5eaf" }],
+          renderer: "canvas",
+          width: 360,
+          height: 220,
+          min: 5377.05,
+          max: 16757.58,
+          startAngle: -90,
+          sweepAngle: 180,
+          sweepFit: true,
+          ringThickness: 10,
+          trackColor: "#5dade2",
+          valueMarker: true,
+          ticks: [{ value: 8376.52, label: "AVG", valueLabel: "8.4 k" }],
+          endLabels: {
+            min: { label: "MIN", valueLabel: "5.4 k" },
+            max: { label: "MAX", valueLabel: "16.8 k" },
+          },
+          centerContent: () =>
+            '<span class="mv-gauge-center-label">GREECE</span><b class="mv-gauge-center-value">7.8 k</b><span>$/T</span>',
         });
 
         await nextFrame();
@@ -2619,6 +2648,34 @@
           log(
             gaugeGradientStops.length === 3,
             `GAUGE: gradient defines 3 stops (got ${gaugeGradientStops.length})`,
+          );
+
+          // ---- GaugeChart positioning checks (canvas renderer + svg annotation overlay) ----
+          const gpOverlay = gaugePositioningEl.querySelector("svg.mv-gauge-annotations");
+          log(!!gpOverlay, "GAUGE POSITIONING: canvas mode renders the annotation overlay svg");
+          const gpMarker = gpOverlay && gpOverlay.querySelector("circle.mv-gauge-marker");
+          log(
+            !!gpMarker && gpMarker.getAttribute("fill") === "#0d5eaf",
+            "GAUGE POSITIONING: marker present and filled with the ring colour",
+          );
+          const gpTexts = gpOverlay
+            ? Array.from(gpOverlay.querySelectorAll("text")).map((t) => t.textContent)
+            : [];
+          log(
+            gpTexts.join("|") === "AVG|8.4 k|MIN|5.4 k|MAX|16.8 k",
+            `GAUGE POSITIONING: tick and end labels read AVG/MIN/MAX with consumer values (got ${gpTexts.join("|")})`,
+          );
+          const gpCanvas = gaugePositioningEl.querySelector("canvas.gauge-chart-canvas");
+          log(
+            !!gpCanvas &&
+              !!gpOverlay &&
+              !!(gpCanvas.compareDocumentPosition(gpOverlay) & Node.DOCUMENT_POSITION_FOLLOWING),
+            "GAUGE POSITIONING: overlay is stacked after the canvas layer",
+          );
+          const gpCentre = gaugePositioningEl.querySelector(".mv-gauge-center");
+          log(
+            !!gpCentre && gpCentre.style.top === "110px",
+            `GAUGE POSITIONING: sweepFit anchors the readout at the swept box middle (top=${gpCentre && gpCentre.style.top})`,
           );
         } catch (e) {
           log(false, "exception: " + (e && e.message));

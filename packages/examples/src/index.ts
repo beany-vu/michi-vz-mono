@@ -1416,6 +1416,35 @@ const gauge: Example<GaugeChartProps>[] = [
       gradient: [TM_BLUE, TM_TEAL, TM_GOLD],
     },
   },
+  // [3] Positioning within a range: min/max set the scale, valueMarker pins the
+  // value on the arc, ticks add the average, endLabels name the ends and
+  // sweepFit sizes the half gauge to its box. The consumer formats every label.
+  {
+    id: "gauge-range-position",
+    title: "Price position within a supplier range",
+    description:
+      "One supplier's unit price against the min, average and max of its market: `min` and `max` set the scale, `valueMarker` pins the value on the arc, `ticks` adds the average, `endLabels` names the ends, and `sweepFit` sizes the half gauge to its box.",
+    element: "michi-vz-gauge-chart",
+    props: {
+      width: 360,
+      height: 220,
+      dataSet: [{ label: "Supplier price", value: 7837, color: TM_BLUE }],
+      min: 5377,
+      max: 16758,
+      startAngle: -90,
+      sweepAngle: 180,
+      sweepFit: true,
+      ringThickness: 10,
+      trackColor: "#cfe3f5",
+      valueMarker: true,
+      ticks: [{ value: 8377, label: "AVG", valueLabel: "8.4 k" }],
+      endLabels: {
+        min: { label: "MIN", valueLabel: "5.4 k" },
+        max: { label: "MAX", valueLabel: "16.8 k" },
+      },
+      showCenterLabel: false,
+    },
+  },
 ];
 
 const pie: Example<PieChartProps>[] = [
