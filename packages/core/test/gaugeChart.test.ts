@@ -480,4 +480,72 @@ describe("mountGaugeChart (jsdom)", () => {
     forced.chart.destroy();
     forced.host.remove();
   });
+
+  const painted = {
+    dataSet: [{ label: "Greece", value: 7.6, color: "#0d5eaf" }],
+    min: 3.3,
+    max: 16,
+    startAngle: -90,
+    sweepAngle: 180,
+    valueMarker: true as const,
+    ticks: [{ value: 7.27, label: "AVG" }],
+  };
+
+  it("canvas mode draws the annotations in an overlay svg stacked above the canvas", () => {
+    const { host, chart } = mount({ ...painted, renderer: "canvas" });
+    const overlay = host.querySelector<SVGSVGElement>(
+      ":scope > svg.mv-overlay-svg.mv-gauge-annotations",
+    )!;
+    expect(overlay).not.toBeNull();
+    expect(overlay.querySelector("circle.mv-gauge-marker")).not.toBeNull();
+    expect(overlay.querySelectorAll("text")).toHaveLength(2); // AVG + 7.27%
+    expect(overlay.style.pointerEvents).toBe("none");
+    expect(overlay.getAttribute("width")).toBe("200");
+    expect(overlay.previousElementSibling!.tagName.toLowerCase()).toBe("canvas");
+    expect(overlay.nextElementSibling!.classList.contains("tooltip")).toBe(true);
+    // The light-DOM svg carries no marks and no annotations in canvas mode.
+    const main = host.querySelector<SVGSVGElement>(":scope > svg")!;
+    expect(main.classList.contains("mv-overlay-svg")).toBe(false);
+    expect(main.querySelector("g.gauge-annotations")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("webgpu mode (canvas stopgap in jsdom) gets the same overlay", () => {
+    const { host, chart } = mount({ ...painted, renderer: "webgpu" });
+    expect(
+      host.querySelector(":scope > svg.mv-gauge-annotations circle.mv-gauge-marker"),
+    ).not.toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("removes the overlay when the annotations go away or the data does", () => {
+    const { host, chart } = mount({ ...painted, renderer: "canvas" });
+    const base = { width: 200, height: 200, margin: { top: 0, right: 0, bottom: 0, left: 0 } };
+    chart.update({ ...base, dataSet: painted.dataSet, renderer: "canvas" });
+    expect(host.querySelector(":scope > svg.mv-gauge-annotations")).toBeNull();
+    chart.update({ ...base, ...painted, renderer: "canvas" });
+    expect(host.querySelector(":scope > svg.mv-gauge-annotations")).not.toBeNull();
+    chart.update({ ...base, ...painted, renderer: "canvas", dataSet: [] });
+    expect(host.getAttribute("data-mv-state")).toBe("nodata");
+    expect(host.querySelector(":scope > svg.mv-gauge-annotations")).toBeNull();
+    expect(host.querySelector("canvas")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("keeps the scaffolding while loading WITH data and skips it while loading an empty set", () => {
+    const withData = mount({ isLoading: true });
+    expect(withData.host.getAttribute("data-mv-state")).toBe("loading");
+    expect(tracks(withData.host)).toHaveLength(3);
+    withData.chart.destroy();
+    withData.host.remove();
+
+    const empty = mount({ isLoading: true, dataSet: [] });
+    expect(empty.host.getAttribute("data-mv-state")).toBe("loading");
+    expect(tracks(empty.host)).toHaveLength(0);
+    empty.chart.destroy();
+    empty.host.remove();
+  });
 });

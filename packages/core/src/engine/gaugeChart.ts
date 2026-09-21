@@ -15,6 +15,7 @@ import { processGaugeData } from "../gaugeChart/data";
 import { buildGaugeColors } from "../gaugeChart/colors";
 import { sweepBoundingBox, fitSweep } from "../gaugeChart/geometry";
 import { GAUGE_ANNOTATION_RESERVE, hasGaugeAnnotations } from "../gaugeChart/annotations";
+import { shouldSkipScaffold } from "../state/dataState";
 import {
   buildGaugeRenderModel,
   type GaugeRingMark,
@@ -142,6 +143,7 @@ export function mountGaugeChart(
   const chrome = createChromeRefs();
   let canvas: HTMLCanvasElement | null = null;
   let webgpuCanvas: HTMLCanvasElement | null = null;
+  let annotationOverlay: SVGSVGElement | null = null;
 
   host.appendChild(svg);
   host.appendChild(centerLabel);
@@ -288,6 +290,7 @@ export function mountGaugeChart(
     // Rings with null values still RENDER (empty tracks); only an empty dataSet
     // (or an explicit isNodata) is "no data".
     const dataState = applyChartChrome(host, props, props.dataSet, chrome);
+    const skipScaffold = shouldSkipScaffold(dataState, props.dataSet);
 
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
@@ -390,7 +393,7 @@ export function mountGaugeChart(
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (r.renderer === "svg" && dataState !== "nodata") {
+    if (r.renderer === "svg" && !skipScaffold) {
       renderGaugeSvg(
         svg,
         model,
@@ -415,7 +418,7 @@ export function mountGaugeChart(
       if (content) renderGaugeAnnotationsSvg(content, model.annotations);
     }
 
-    if (r.renderer === "webgpu" && dataState !== "nodata") {
+    if (r.renderer === "webgpu" && !skipScaffold) {
       if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("gaugeChart-webgpu-canvas");
       const ready = drawGaugeWebgpu(webgpuCanvas, svg, model, {
         width: r.width,
@@ -431,13 +434,35 @@ export function mountGaugeChart(
         if (!canvas) canvas = makeLayerCanvas("gauge-chart-canvas");
         drawGaugeCanvas(canvas, svg, model, { width: r.width, height: r.height });
       }
-    } else if (r.renderer === "canvas" && dataState !== "nodata") {
+    } else if (r.renderer === "canvas" && !skipScaffold) {
       removeWebgpuCanvas();
       if (!canvas) canvas = makeLayerCanvas("gauge-chart-canvas");
       drawGaugeCanvas(canvas, svg, model, { width: r.width, height: r.height });
     } else {
       removeCanvas();
       removeWebgpuCanvas();
+    }
+
+    // Painted modes: annotations live in an overlay svg above the canvas layer,
+    // re-inserted before the tooltip EVERY render - insertBefore MOVES an existing
+    // node, so a canvas recreated after a loading/nodata frame can never end up
+    // stacked above it (same rule as the line engine's crosshair overlay).
+    if (isPainted(r.renderer) && !skipScaffold && hasGaugeAnnotations(model.annotations)) {
+      if (!annotationOverlay) {
+        annotationOverlay = svgEl("svg", { class: "mv-overlay-svg mv-gauge-annotations" });
+        annotationOverlay.style.position = "absolute";
+        annotationOverlay.style.top = getComputedStyle(host).paddingTop;
+        annotationOverlay.style.left = getComputedStyle(host).paddingLeft;
+        annotationOverlay.style.pointerEvents = "none";
+      }
+      annotationOverlay.setAttribute("width", String(r.width));
+      annotationOverlay.setAttribute("height", String(r.height));
+      host.insertBefore(annotationOverlay, tooltip);
+      clear(annotationOverlay);
+      renderGaugeAnnotationsSvg(annotationOverlay, model.annotations);
+    } else if (annotationOverlay) {
+      annotationOverlay.remove();
+      annotationOverlay = null;
     }
 
     // ----- Built-in centre label (the active ring's readout) -----
@@ -528,6 +553,7 @@ export function mountGaugeChart(
       host.removeEventListener("click", onHostClick);
       canvas = null;
       webgpuCanvas = null;
+      annotationOverlay = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-gauge-chart");
     },
