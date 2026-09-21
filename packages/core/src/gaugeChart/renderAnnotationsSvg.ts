@@ -32,7 +32,11 @@ function appendLabel(
 
 export function renderGaugeAnnotationsSvg(parent: SVGElement, a: GaugeAnnotations): void {
   if (a.markers.length === 0 && a.ticks.length === 0 && a.endLabels.length === 0) return;
-  const g = svgEl("g", { class: "gauge-annotations" });
+  // pointer-events:none: in svg mode this group is a later sibling of the
+  // g.gauge-ring-cell groups whose mouseenter/mouseleave drive hover, so a marker
+  // that accepted the pointer would fire mouseleave on the cell underneath - the
+  // emphasis and the centre readout would drop the moment the cursor reached it.
+  const g = svgEl("g", { class: "gauge-annotations", "pointer-events": "none" });
 
   for (const t of a.ticks) {
     g.appendChild(

@@ -331,6 +331,10 @@ describe("mountGaugeChart (jsdom)", () => {
     const tick = host.querySelector<SVGLineElement>("line.mv-gauge-marker-tick")!;
     expect(tick.getAttribute("stroke")).toBe("#1a1a1a");
     expect(host.querySelectorAll("svg")).toHaveLength(1); // no overlay in svg mode
+    // The group sits after the ring cells whose mouseenter/mouseleave drive hover,
+    // so it must never become the pointer target: moving onto the marker would
+    // fire mouseleave on the cell underneath and drop the emphasis.
+    expect(host.querySelector("g.gauge-annotations")!.getAttribute("pointer-events")).toBe("none");
     chart.destroy();
     host.remove();
   });
