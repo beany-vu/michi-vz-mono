@@ -291,4 +291,18 @@ describe("mountGaugeChart (jsdom)", () => {
     chart.destroy();
     host.remove();
   });
+
+  it("exposes min on the context with a min-aware fraction", () => {
+    const { host, chart } = mount({
+      dataSet: [{ label: "Greece", value: 7836.69 }],
+      min: 5377.05,
+      max: 16757.58,
+    });
+    const ctx = chart.getContext() as GaugeChartContext;
+    expect(ctx.min).toBe(5377.05);
+    expect(ctx.max).toBe(16757.58);
+    expect(ctx.rings[0].fraction).toBeCloseTo(0.22, 2);
+    chart.destroy();
+    host.remove();
+  });
 });

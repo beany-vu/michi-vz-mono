@@ -3053,6 +3053,42 @@ export interface GaugeRingDatum {
   gradient?: string[];
 }
 
+/** A reference tick drawn on the OUTER ring of a GaugeChart (see `GaugeChartProps.ticks`). */
+export interface GaugeTick {
+  /** Position on the value scale; clamped into [min, max] with a warning. */
+  value: number;
+  /** Caption line above the value, consumer-translated (e.g. "AVG"). Omit for value only. */
+  label?: string;
+  /** Value line; defaults to `valueFormatter(value)`. An empty string suppresses it. */
+  valueLabel?: string;
+  /** Tick line colour (default "#9ea3ae"). */
+  color?: string;
+}
+
+/** Caption + value text under one end of a partial-sweep gauge (see `GaugeChartProps.endLabels`). */
+export interface GaugeEndLabel {
+  /** Caption line, consumer-translated (e.g. "MIN"). */
+  label?: string;
+  /** Value line; defaults to `valueFormatter(min)` or `valueFormatter(max)`. An empty
+   *  string suppresses it. */
+  valueLabel?: string;
+}
+
+/** Styling for the marker drawn at each ring's value (see `GaugeChartProps.valueMarker`). */
+export interface GaugeValueMarker {
+  /** Circle radius in px (default 8). */
+  radius?: number;
+  /** Circle fill; default = the ring's resolved arc colour. */
+  fill?: string;
+  /** Circle outline colour (default "#fff"). */
+  stroke?: string;
+  /** Circle outline width in px (default 2.5). */
+  strokeWidth?: number;
+  /** Radial tick line through the marker. `false` removes it; an object overrides the
+   *  defaults (length 20px, colour "#1a1a1a", width 1.5). Default true. */
+  tick?: boolean | { length?: number; color?: string; width?: number };
+}
+
 /** Active-ring emphasis applied on hover (and to the `defaultActive` ring). */
 export interface GaugeActiveStyle {
   /** Arc opacity while active (default 1). */
@@ -3089,6 +3125,12 @@ export interface GaugeChartProps {
   /** Value corresponding to a full sweep - the entire `sweepAngle` (360° by default; e.g.
    * with `sweepAngle: 180`, `value === max` fills the whole half) (default 100). */
   max?: number;
+  /** Value at the START of the sweep (default 0). A ring maps
+   *  `(value - min) / (max - min)` onto the sweep and values are clamped into
+   *  [min, max]. When `max <= min` the chart warns and falls back to 0..max, so
+   *  bounds computed from data that collapses never yield an empty or reversed
+   *  gauge. */
+  min?: number;
   /** Ring stroke thickness in px (default 18). */
   ringThickness?: number;
   /** Gap between adjacent rings in px (default 2). */
@@ -3104,6 +3146,28 @@ export interface GaugeChartProps {
    * unset, zero, or negative value falls back to a full 360° ring, NOT an empty gauge -
    * a consumer computing `sweepAngle` from a ratio that can hit 0 gets a full circle. */
   sweepAngle?: number;
+  /** Fit the layout to the SWEPT arc instead of the full circle: the outer
+   *  radius grows until the arc's bounding box fills the plot, the box is
+   *  centred, and the centre readout anchors to the box's middle (inside a
+   *  half gauge, above its baseline). While `ticks` or `endLabels` are present
+   *  a 36px band is reserved on every side for them. An explicit `outerRadius`
+   *  still wins; only the placement is fitted. A full 360° ring is unchanged.
+   *  Default false. */
+  sweepFit?: boolean;
+  /** Reference ticks on the OUTER ring: a short radial line just outside the
+   *  arc plus a two-line label (caption over value) further out. Values are
+   *  clamped into [min, max] with a warning; order is irrelevant. Ticks
+   *  describe the scale, so a multi-ring gauge draws them once. */
+  ticks?: GaugeTick[];
+  /** Labels under the two ends of a PARTIAL sweep: min at the start end, max at
+   *  the end. `true` draws only the formatted values; the object form adds
+   *  captions. Ignored with a warning on a full 360° ring, where both ends
+   *  coincide. */
+  endLabels?: boolean | { min?: GaugeEndLabel; max?: GaugeEndLabel };
+  /** Marker at each ring's value: a circle on the arc centreline with a radial
+   *  tick through it, filled with the ring's colour. Rings whose value is null
+   *  get no marker. `true` uses the defaults in `GaugeValueMarker`. */
+  valueMarker?: boolean | GaugeValueMarker;
   /** Multi-stop colour ramp for every ring's arc, as a LINEAR gradient across the plot box
    * (evenly spaced stops). A ring's own `gradient` wins. The ramp is anchored to the FULL
    * sweep, not the drawn portion, so a half-full gauge shows the first half of the ramp
@@ -3176,6 +3240,8 @@ export interface GaugeChartContext extends BaseChartContext {
   chartType: "gauge-chart";
   /** Value corresponding to a full sweep. */
   max: number;
+  /** Value at the start of the sweep (0 unless `min` is set). */
+  min: number;
   /** Rings in dataSet order (outer to inner). */
   rings: GaugeRingContext[];
   stats: {

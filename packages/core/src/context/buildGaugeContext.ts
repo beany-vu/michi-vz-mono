@@ -11,6 +11,7 @@ export interface BuildGaugeContextInput {
   renderer: "svg" | "canvas" | "webgpu";
   rings: GaugeRing[];
   max: number;
+  min: number;
   colorsMapping: Record<string, string>;
   valueFormatter?: (v: number) => string;
 }
@@ -35,7 +36,8 @@ export function buildGaugeContext(input: BuildGaugeContextInput): GaugeChartCont
   }
 
   const titlePart = input.title ? `"${input.title}" ` : "";
-  let summary = `Gauge chart ${titlePart}with ${rings.length} ring${rings.length === 1 ? "" : "s"} (max ${input.max}).`;
+  const scale = input.min !== 0 ? `scale ${input.min} to ${input.max}` : `max ${input.max}`;
+  let summary = `Gauge chart ${titlePart}with ${rings.length} ring${rings.length === 1 ? "" : "s"} (${scale}).`;
   if (largestRing) {
     summary += ` Largest: ${largestRing.label} (${fmt(largestRing.value)}).`;
   }
@@ -53,6 +55,7 @@ export function buildGaugeContext(input: BuildGaugeContextInput): GaugeChartCont
     title: input.title,
     renderer: input.renderer,
     max: input.max,
+    min: input.min,
     rings,
     legendData,
     stats: {

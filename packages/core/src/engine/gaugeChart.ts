@@ -65,6 +65,7 @@ interface Resolved {
   margin: Margin;
   renderer: Renderer;
   max: number;
+  min: number;
   ringThickness: number;
   ringGap: number;
   outerRadius: number | null;
@@ -91,6 +92,7 @@ function resolve(p: GaugeChartProps): Resolved {
     // reflects what actually painted.
     renderer: resolveRenderer(p.renderer),
     max: p.max ?? 100,
+    min: p.min ?? 0,
     ringThickness: p.ringThickness ?? 18,
     ringGap: p.ringGap ?? 2,
     outerRadius: p.outerRadius ?? null,
@@ -282,6 +284,7 @@ export function mountGaugeChart(
     const processed = processGaugeData(props.dataSet ?? [], {
       disabledItems: props.disabledItems,
       max: r.max,
+      min: r.min,
     });
 
     const seededMapping = { ...processed.groupColors, ...(props.colorsMapping ?? {}) };
@@ -417,6 +420,7 @@ export function mountGaugeChart(
       renderer: r.renderer,
       rings: processed.rings,
       max: processed.max,
+      min: processed.min,
       colorsMapping: colors.generatedColorsMapping,
       valueFormatter: props.valueFormatter,
     });
@@ -435,7 +439,7 @@ export function mountGaugeChart(
     // Plugin hook #2 - validate the USER's data, merged with plugin warnings.
     if (baseProps.onDataWarning) {
       const warnings = [
-        ...checkGaugeData(baseProps.dataSet, r.max),
+        ...checkGaugeData(baseProps.dataSet, r.max, r.min),
         ...collectValidate(pluginList, baseProps, pc),
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);

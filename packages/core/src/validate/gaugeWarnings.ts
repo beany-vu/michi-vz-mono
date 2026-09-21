@@ -3,8 +3,17 @@
 // collide on the colour key).
 import type { DataWarning, GaugeRingDatum } from "../types";
 
-export function checkGaugeData(dataSet: GaugeRingDatum[], max = 100): DataWarning[] {
+export function checkGaugeData(dataSet: GaugeRingDatum[], max = 100, min = 0): DataWarning[] {
   const warnings: DataWarning[] = [];
+  const effectiveMax = Number.isFinite(max) && max > 0 ? max : 100;
+  const domainOk = effectiveMax > min;
+  if (!domainOk) {
+    warnings.push({
+      type: "non-finite-value",
+      message: `Gauge min ${min} is not below max ${max}; the scale falls back to 0..${effectiveMax}.`,
+    });
+  }
+  const lo = domainOk ? min : 0;
   if (!dataSet || dataSet.length === 0) {
     warnings.push({ type: "empty-dataset", message: "Gauge chart received an empty dataSet." });
     return warnings;
@@ -17,10 +26,14 @@ export function checkGaugeData(dataSet: GaugeRingDatum[], max = 100): DataWarnin
         message: `Gauge ring "${d.label}" has a non-finite value; it renders as no data.`,
         label: d.label,
       });
-    } else if (d.value !== null && d.value !== undefined && (d.value < 0 || d.value > max)) {
+    } else if (
+      d.value !== null &&
+      d.value !== undefined &&
+      (d.value < lo || d.value > effectiveMax)
+    ) {
       warnings.push({
         type: "non-finite-value",
-        message: `Gauge ring "${d.label}" value ${d.value} is outside [0, ${max}]; it is clamped.`,
+        message: `Gauge ring "${d.label}" value ${d.value} is outside [${lo}, ${effectiveMax}]; it is clamped.`,
         label: d.label,
       });
     }
