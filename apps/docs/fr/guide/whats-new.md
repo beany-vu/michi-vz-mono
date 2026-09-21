@@ -27,7 +27,7 @@ examples **1.1.15** · devtools, insights **0.2.30**.
   englobante de son balayage et ancre l'affichage central à l'intérieur de l'arc. Les
   annotations sont en svg dans chaque moteur de rendu - un calque au-dessus de la couche
   peinte en mode canvas et WebGPU - donc le CSS du consommateur les atteint partout et les
-  exports svg les incluent. La jauge ignore désormais son échafaudage selon la règle
+  exports svg et PNG les incluent. La jauge ignore désormais son échafaudage selon la règle
   partagée « chargement à vide » comme les autres graphiques, et le contexte expose `min`.
   `@michi-vz/wc` et `@michi-vz/angular` transmettent les propriétés ;
   `@michi-vz/angular/gauge-chart` réexporte `GaugeTick`, `GaugeEndLabel` et `GaugeValueMarker`.

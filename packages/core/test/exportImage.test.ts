@@ -111,4 +111,32 @@ describe("chartToStyledSvgString folds overlay svgs in", () => {
     chart.destroy();
     host.remove();
   });
+
+  it("overlays: 'skip' leaves the overlay out and 'only' exports nothing but the overlay", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGaugeChart(host, { ...props, renderer: "canvas" });
+    const base = chartToStyledSvgString(host, { overlays: "skip" });
+    // The ELEMENT is gone; the inlined CORE_CSS still carries its `.mv-gauge-marker`
+    // rule (every variant is standalone-styled), so assert on the markup.
+    expect(base).not.toContain('class="mv-gauge-marker"');
+    expect(base).toContain("michi-vz-gauge-chart"); // still the styled, classed root
+    const only = chartToStyledSvgString(host, { overlays: "only" });
+    expect(only).toContain('class="mv-gauge-marker"');
+    expect(only).not.toContain("gauge-track");
+    expect(only.match(/<svg/g)).toHaveLength(1);
+    expect(only).toContain("<style"); // CSS inlined so the standalone overlay is styled
+    chart.destroy();
+    host.remove();
+  });
+
+  it("svg mode folds annotations exactly once", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const chart = mountGaugeChart(host, { ...props, renderer: "svg" });
+    const out = chartToStyledSvgString(host);
+    expect(out.match(/class="gauge-annotations"/g)).toHaveLength(1);
+    chart.destroy();
+    host.remove();
+  });
 });

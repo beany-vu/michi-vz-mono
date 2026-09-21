@@ -23,7 +23,7 @@ examples **1.1.15** · devtools, insights **0.2.30**.
   a partial sweep, and `sweepFit` sizes a partial gauge to its swept bounding box and anchors
   the centre readout inside the arc. The annotations are svg in every renderer - an overlay
   above the painted layer in canvas and WebGPU mode - so consumer CSS reaches them everywhere
-  and svg exports carry them. The gauge now skips its scaffolding on the shared loading-empty
+  and svg and PNG exports carry them. The gauge now skips its scaffolding on the shared loading-empty
   rule like the other charts, and the context exposes `min`. `@michi-vz/wc` and
   `@michi-vz/angular` forward the props; `@michi-vz/angular/gauge-chart` re-exports
   `GaugeTick`, `GaugeEndLabel` and `GaugeValueMarker`.

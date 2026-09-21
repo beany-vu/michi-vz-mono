@@ -31,6 +31,11 @@ export interface StyledSvgOptions {
   height?: number;
   /** Prepend an XML prolog (<?xml ...?>). Default false (unneeeded for data URIs). */
   xmlProlog?: boolean;
+  /** @internal How marked overlay svgs (`:scope > svg.mv-overlay-svg`) are treated: "fold" (default)
+   *  appends their children to the exported root; "skip" leaves them out; "only" exports a root that
+   *  carries nothing but those children (same size, class and inlined CSS). The PNG exporter uses
+   *  "skip" + "only" to composite the live canvas between the two. */
+  overlays?: "fold" | "skip" | "only";
 }
 
 function numericAttr(el: Element, name: string): number | undefined {
@@ -73,14 +78,24 @@ export function chartToStyledSvgString(el: HTMLElement, opts: StyledSvgOptions =
   if (!svg) return "";
 
   const clone = svg.cloneNode(true) as SVGSVGElement;
+  const overlays = opts.overlays ?? "fold";
+
+  // "only": keep the root (its size, classes and inlined CSS below) but drop the
+  // chart itself, so the caller gets a transparent layer carrying nothing but the
+  // overlay children - what the PNG exporter draws ABOVE the painted canvas.
+  if (overlays === "only") {
+    while (clone.firstChild) clone.removeChild(clone.firstChild);
+  }
 
   // Overlay svgs (e.g. the gauge's annotations in canvas/webgpu mode) share the
   // host's coordinate system and size: fold their CHILDREN into the clone so the
   // export carries them. Only marked overlays qualify; the hover crosshair
   // overlay is unmarked on purpose and stays out of exports.
-  el.querySelectorAll(":scope > svg.mv-overlay-svg").forEach((overlay) => {
-    overlay.childNodes.forEach((n) => clone.appendChild(n.cloneNode(true)));
-  });
+  if (overlays !== "skip") {
+    el.querySelectorAll(":scope > svg.mv-overlay-svg").forEach((overlay) => {
+      overlay.childNodes.forEach((n) => clone.appendChild(n.cloneNode(true)));
+    });
+  }
 
   // CORE_CSS rules are namespaced `.michi-vz ...` (descendant selectors). Standalone,
   // the exported <svg> root must itself be the `.michi-vz` ancestor so those rules
@@ -180,11 +195,23 @@ function wrapLines(cx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines;
 }
 
+/** One rasterized layer. Rejects with the message the PNG path has always used. */
+function loadImage(uri: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("michi-vz: failed to rasterize chart SVG"));
+    img.src = uri;
+  });
+}
+
 /**
  * Rasterize a mounted chart to a PNG data URL. Handles pure-SVG charts (inlines
- * CORE_CSS as above) and canvas-renderer charts (composites the live <canvas> marks
- * on top of the SVG axes). Browser-only and async (image load); jsdom lacks real
- * Image/canvas rasterization, so this path is verified live, not in unit tests.
+ * CORE_CSS as above) and canvas-renderer charts, compositing three layers in DOM
+ * order: the base SVG (axes), the live <canvas> marks, then the marked overlay
+ * SVGs (e.g. the gauge's annotations) - which the painted layer would otherwise
+ * bury. Browser-only and async (image load); jsdom lacks real Image/canvas
+ * rasterization, so this path is verified live, not in unit tests.
  */
 export function chartToPngDataUrl(el: HTMLElement, opts: PngOptions = {}): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -195,11 +222,15 @@ export function chartToPngDataUrl(el: HTMLElement, opts: PngOptions = {}): Promi
     }
     const { w, h } = measure(el, svgSurface, opts);
     const scale = opts.scale ?? (typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
-    const dataUri = chartToStyledSvgDataUri(el, { width: w, height: h });
-    if (!dataUri) {
+    const hasOverlay = !!el.querySelector(":scope > svg.mv-overlay-svg");
+    const baseUri = chartToStyledSvgDataUri(el, { width: w, height: h, overlays: "skip" });
+    if (!baseUri) {
       resolve("");
       return;
     }
+    const overlayUri = hasOverlay
+      ? chartToStyledSvgDataUri(el, { width: w, height: h, overlays: "only" })
+      : "";
 
     const canvasSurface = el.querySelector(":scope > canvas") as HTMLCanvasElement | null;
 
@@ -223,9 +254,8 @@ export function chartToPngDataUrl(el: HTMLElement, opts: PngOptions = {}): Promi
       bold: false,
     });
 
-    const img = new Image();
-    img.onload = () => {
-      try {
+    Promise.all([loadImage(baseUri), overlayUri ? loadImage(overlayUri) : Promise.resolve(null)])
+      .then(([baseImg, overlayImg]) => {
         const out = document.createElement("canvas");
         const cx = out.getContext("2d");
         if (!cx) {
@@ -277,7 +307,7 @@ export function chartToPngDataUrl(el: HTMLElement, opts: PngOptions = {}): Promi
         };
         if (title) drawBlock(title, 10);
         cx.translate(0, titleH);
-        cx.drawImage(img, 0, 0, w, h);
+        cx.drawImage(baseImg, 0, 0, w, h);
         // Composite canvas-renderer marks: draw the live <canvas> at its on-screen
         // offset relative to the host so it lines up with the SVG axes underneath.
         if (canvasSurface && canvasSurface.width > 0) {
@@ -291,13 +321,12 @@ export function chartToPngDataUrl(el: HTMLElement, opts: PngOptions = {}): Promi
             cBox.height,
           );
         }
+        // Overlay layer last, at the base image's own rect: it shares the host's
+        // coordinate system, and it is what the painted marks would otherwise bury.
+        if (overlayImg) cx.drawImage(overlayImg, 0, 0, w, h);
         if (caption) drawBlock(caption, h + 6);
         resolve(out.toDataURL("image/png"));
-      } catch (err) {
-        reject(err);
-      }
-    };
-    img.onerror = () => reject(new Error("michi-vz: failed to rasterize chart SVG"));
-    img.src = dataUri;
+      })
+      .catch(reject);
   });
 }

@@ -24,7 +24,7 @@ examples **1.1.15** · devtools, insights **0.2.30**.
   van een gedeeltelijke boog, en `sweepFit` past een gedeeltelijke meter in het omhullende vak
   van zijn boog en verankert de centrale aflezing binnen de boog. De annotaties zijn svg in
   elke renderer - een overlay boven de geschilderde laag in canvas- en WebGPU-modus - dus
-  consumer-CSS bereikt ze overal en svg-exports nemen ze mee. De meter slaat zijn steigerwerk
+  consumer-CSS bereikt ze overal en svg- en PNG-exports nemen ze mee. De meter slaat zijn steigerwerk
   nu over volgens de gedeelde laden-zonder-data-regel zoals de andere grafieken, en de context
   geeft `min` door. `@michi-vz/wc` en `@michi-vz/angular` sturen de props door;
   `@michi-vz/angular/gauge-chart` exporteert `GaugeTick`, `GaugeEndLabel` en `GaugeValueMarker`

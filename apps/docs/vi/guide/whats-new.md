@@ -23,7 +23,7 @@ examples **1.1.15** · devtools, insights **0.2.30**.
   `endLabels` đặt tên hai đầu của một cung không trọn vòng, và `sweepFit` co giãn biểu đồ không
   trọn vòng vừa khung bao của cung và neo phần hiển thị trung tâm vào bên trong cung. Các chú
   giải là svg ở mọi trình kết xuất - một lớp phủ phía trên lớp vẽ ở chế độ canvas và WebGPU -
-  nên CSS của bên dùng chạm tới chúng ở mọi nơi và xuất svg mang theo chúng. Biểu đồ nay bỏ
+  nên CSS của bên dùng chạm tới chúng ở mọi nơi và xuất svg và PNG mang theo chúng. Biểu đồ nay bỏ
   qua khung dựng theo quy tắc chung "đang tải mà rỗng" như các biểu đồ khác, và ngữ cảnh cung
   cấp `min`. `@michi-vz/wc` và `@michi-vz/angular` chuyển tiếp các thuộc tính;
   `@michi-vz/angular/gauge-chart` xuất lại `GaugeTick`, `GaugeEndLabel` và `GaugeValueMarker`.

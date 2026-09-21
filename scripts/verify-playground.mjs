@@ -15,6 +15,9 @@ const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const MIME = {
   ".html": "text/html",
   ".js": "text/javascript",
+  // dompurify ships its ESM build as .mjs; browsers refuse a module script served
+  // as application/octet-stream, and the page's import map points core at it.
+  ".mjs": "text/javascript",
   ".css": "text/css",
   ".map": "application/json",
 };

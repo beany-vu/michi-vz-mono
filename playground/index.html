@@ -4,6 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@michi-vz/wc - GapChart PoC playground</title>
+    <!-- The wc bundle is self-contained, but @michi-vz/core's own dist (used below for
+         the chartToPngDataUrl export check) keeps d3 + dompurify external, so the browser
+         needs these specifiers resolved. Paths point at pnpm's version-free virtual store. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "dompurify": "../node_modules/.pnpm/node_modules/dompurify/dist/purify.es.mjs",
+          "internmap": "../node_modules/.pnpm/node_modules/internmap/src/index.js",
+          "d3-array": "../node_modules/.pnpm/node_modules/d3-array/src/index.js",
+          "d3-color": "../node_modules/.pnpm/node_modules/d3-color/src/index.js",
+          "d3-dispatch": "../node_modules/.pnpm/node_modules/d3-dispatch/src/index.js",
+          "d3-force": "../node_modules/.pnpm/node_modules/d3-force/src/index.js",
+          "d3-format": "../node_modules/.pnpm/node_modules/d3-format/src/index.js",
+          "d3-geo": "../node_modules/.pnpm/node_modules/d3-geo/src/index.js",
+          "d3-geo-projection": "../node_modules/.pnpm/node_modules/d3-geo-projection/src/index.js",
+          "d3-hierarchy": "../node_modules/.pnpm/node_modules/d3-hierarchy/src/index.js",
+          "d3-interpolate": "../node_modules/.pnpm/node_modules/d3-interpolate/src/index.js",
+          "d3-path": "../node_modules/.pnpm/node_modules/d3-path/src/index.js",
+          "d3-quadtree": "../node_modules/.pnpm/node_modules/d3-quadtree/src/index.js",
+          "d3-sankey": "../node_modules/.pnpm/node_modules/d3-sankey/src/index.js",
+          "d3-scale": "../node_modules/.pnpm/node_modules/d3-scale/src/index.js",
+          "d3-shape": "../node_modules/.pnpm/node_modules/d3-shape/src/index.js",
+          "d3-time": "../node_modules/.pnpm/node_modules/d3-time/src/index.js",
+          "d3-time-format": "../node_modules/.pnpm/node_modules/d3-time-format/src/index.js",
+          "d3-timer": "../node_modules/.pnpm/node_modules/d3-timer/src/index.js"
+        }
+      }
+    </script>
     <style>
       body {
         font-family: system-ui, sans-serif;
@@ -520,6 +548,9 @@
       const __RESULTS = document.getElementById("results");
       async function runPlayground() {
         await import("../packages/wc/dist/michi-vz-wc.bundle.js");
+        // The image exporters are not part of the element API, so the PNG check below
+        // reaches them through @michi-vz/core's own dist (see the import map above).
+        const { chartToPngDataUrl } = await import("../packages/core/dist/index.js");
 
         const data = [
           { label: "Alpha One", value1: 12, value2: 34 },
@@ -2676,6 +2707,43 @@
           log(
             !!gpCentre && gpCentre.style.top === "110px",
             `GAUGE POSITIONING: sweepFit anchors the readout at the swept box middle (top=${gpCentre && gpCentre.style.top})`,
+          );
+
+          // PNG export composite (browser-only path). The exporter draws three layers:
+          // base svg, the live canvas, then the annotation overlay. Sample the PNG 8px
+          // along the TANGENT from the marker centre - that is where the marker's white
+          // stroke ring crosses the arc centreline, so the painted arc (#0d5eaf) or the
+          // track (#5dade2) would win there if the overlay were not composited last.
+          const gpTick = gpOverlay && gpOverlay.querySelector("line.mv-gauge-marker-tick");
+          let gpLum = -1;
+          if (gpMarker && gpTick) {
+            const png = await chartToPngDataUrl(gaugePositioningEl.querySelector(".mv-host"), {
+              scale: 1,
+            });
+            const pngImg = new Image();
+            await new Promise((res, rej) => {
+              pngImg.onload = res;
+              pngImg.onerror = rej;
+              pngImg.src = png;
+            });
+            const scratch = document.createElement("canvas");
+            scratch.width = pngImg.naturalWidth;
+            scratch.height = pngImg.naturalHeight;
+            const sctx = scratch.getContext("2d");
+            sctx.drawImage(pngImg, 0, 0);
+            const rx = Number(gpTick.getAttribute("x2")) - Number(gpTick.getAttribute("x1"));
+            const ry = Number(gpTick.getAttribute("y2")) - Number(gpTick.getAttribute("y1"));
+            const rlen = Math.hypot(rx, ry) || 1;
+            const tx = -(ry / rlen);
+            const ty = rx / rlen;
+            const sx = Math.round(Number(gpMarker.getAttribute("cx")) + 8 * tx);
+            const sy = Math.round(Number(gpMarker.getAttribute("cy")) + 8 * ty);
+            const p = sctx.getImageData(sx, sy, 1, 1).data;
+            gpLum = 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2];
+          }
+          log(
+            gpLum > 200,
+            `GAUGE POSITIONING: PNG export draws the marker above the painted arc (luminance=${gpLum.toFixed(1)})`,
           );
         } catch (e) {
           log(false, "exception: " + (e && e.message));
