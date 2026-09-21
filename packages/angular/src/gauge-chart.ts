@@ -4,7 +4,7 @@ import type { GaugeChartProps } from "@michi-vz/core";
 
 export { bindChart } from "./internal/bind";
 export type { GaugeChartElement } from "@michi-vz/wc";
-export type { GaugeChartProps } from "@michi-vz/core";
+export type { GaugeChartProps, GaugeTick, GaugeEndLabel, GaugeValueMarker } from "@michi-vz/core";
 
 /** Apply engine props onto a <michi-vz-gauge-chart> element (property binding). */
 export function applyGaugeChartProps(el: GaugeChartElement, props: GaugeChartProps): void {
@@ -19,6 +19,11 @@ export function applyGaugeChartProps(el: GaugeChartElement, props: GaugeChartPro
   if (props.outerRadius !== undefined) el.outerRadius = props.outerRadius;
   if (props.startAngle !== undefined) el.startAngle = props.startAngle;
   if (props.sweepAngle !== undefined) el.sweepAngle = props.sweepAngle;
+  if (props.min !== undefined) el.min = props.min;
+  if (props.sweepFit !== undefined) el.sweepFit = props.sweepFit;
+  if (props.ticks !== undefined) el.ticks = props.ticks;
+  if (props.endLabels !== undefined) el.endLabels = props.endLabels;
+  if (props.valueMarker !== undefined) el.valueMarker = props.valueMarker;
   if (props.gradient !== undefined) el.gradient = props.gradient;
   if (props.roundedCaps !== undefined) el.roundedCaps = props.roundedCaps;
   if (props.ringOpacity !== undefined) el.ringOpacity = props.ringOpacity;

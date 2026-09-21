@@ -10,6 +10,9 @@ import type {
   GaugeChartProps,
   GaugeRingContext,
   GaugeRingDatum,
+  GaugeTick,
+  GaugeEndLabel,
+  GaugeValueMarker,
   ChartContext,
   ChartInstance,
   MichiVzPlugin,
@@ -29,6 +32,11 @@ export class GaugeChartElement extends LitElement {
     outerRadius: { type: Number, attribute: "outer-radius" },
     startAngle: { type: Number, attribute: "start-angle" },
     sweepAngle: { type: Number, attribute: "sweep-angle" },
+    min: { type: Number },
+    sweepFit: { type: Boolean, attribute: "sweep-fit" },
+    ticks: { attribute: false },
+    endLabels: { attribute: false },
+    valueMarker: { attribute: false },
     gradient: { attribute: false },
     roundedCaps: { type: Boolean, attribute: "rounded-caps" },
     ringOpacity: { attribute: false },
@@ -67,6 +75,11 @@ export class GaugeChartElement extends LitElement {
   outerRadius?: number;
   startAngle?: number;
   sweepAngle?: number;
+  min?: number;
+  sweepFit?: boolean;
+  ticks?: GaugeTick[];
+  endLabels?: boolean | { min?: GaugeEndLabel; max?: GaugeEndLabel };
+  valueMarker?: boolean | GaugeValueMarker;
   gradient?: string[];
   roundedCaps?: boolean;
   ringOpacity?: number | number[];
@@ -120,6 +133,11 @@ export class GaugeChartElement extends LitElement {
       outerRadius: this.outerRadius,
       startAngle: this.startAngle,
       sweepAngle: this.sweepAngle,
+      min: this.min,
+      sweepFit: this.sweepFit,
+      ticks: this.ticks,
+      endLabels: this.endLabels,
+      valueMarker: this.valueMarker,
       gradient: this.gradient,
       roundedCaps: this.roundedCaps,
       ringOpacity: this.ringOpacity,
