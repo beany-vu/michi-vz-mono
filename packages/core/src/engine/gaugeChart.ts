@@ -13,6 +13,8 @@ import { renderTitle } from "../render/svg";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processGaugeData } from "../gaugeChart/data";
 import { buildGaugeColors } from "../gaugeChart/colors";
+import { sweepBoundingBox, fitSweep } from "../gaugeChart/geometry";
+import { GAUGE_ANNOTATION_RESERVE, hasGaugeAnnotations } from "../gaugeChart/annotations";
 import {
   buildGaugeRenderModel,
   type GaugeRingMark,
@@ -41,6 +43,7 @@ import type {
   GaugeActiveStyle,
   GaugeChartProps,
   GaugeRingContext,
+  GaugeTick,
   Margin,
   MountOptions,
   Renderer,
@@ -81,6 +84,10 @@ interface Resolved {
   activeStyle: GaugeActiveStyle;
   showCenterLabel: boolean;
   enableTransitions: boolean;
+  sweepFit: boolean;
+  ticks?: GaugeTick[];
+  endLabels?: GaugeChartProps["endLabels"];
+  valueMarker?: GaugeChartProps["valueMarker"];
 }
 
 function resolve(p: GaugeChartProps): Resolved {
@@ -108,6 +115,10 @@ function resolve(p: GaugeChartProps): Resolved {
     activeStyle: p.activeStyle ?? {},
     showCenterLabel: p.showCenterLabel ?? true,
     enableTransitions: p.enableTransitions ?? true,
+    sweepFit: p.sweepFit ?? false,
+    ticks: p.ticks,
+    endLabels: p.endLabels,
+    valueMarker: p.valueMarker,
   };
 }
 
@@ -305,9 +316,37 @@ export function mountGaugeChart(
 
     const plotW = Math.max(0, r.width - r.margin.left - r.margin.right);
     const plotH = Math.max(0, r.height - r.margin.top - r.margin.bottom);
-    const cx = r.margin.left + plotW / 2;
-    const cy = r.margin.top + plotH / 2;
-    const outerRadius = r.outerRadius ?? Math.min(plotW, plotH) / 2;
+    // Layout: plain centring (today's behaviour), or fitted to the swept arc's
+    // bounding box. The readout anchor is the ring centre when plain and the box
+    // midpoint when fitted (inside a half gauge, above its baseline).
+    const hasScaleAnnotations = (r.ticks?.length ?? 0) > 0 || !!r.endLabels;
+    let cx: number;
+    let cy: number;
+    let outerRadius: number;
+    let anchorX: number;
+    let anchorY: number;
+    if (r.sweepFit) {
+      const fit = fitSweep({
+        plotLeft: r.margin.left,
+        plotTop: r.margin.top,
+        plotW,
+        plotH,
+        reserve: hasScaleAnnotations ? GAUGE_ANNOTATION_RESERVE : 0,
+        box: sweepBoundingBox(r.startAngle, r.sweepAngle),
+        outerRadius: r.outerRadius,
+      });
+      cx = fit.cx;
+      cy = fit.cy;
+      outerRadius = fit.outerRadius;
+      anchorX = fit.anchorX;
+      anchorY = fit.anchorY;
+    } else {
+      cx = r.margin.left + plotW / 2;
+      cy = r.margin.top + plotH / 2;
+      outerRadius = r.outerRadius ?? Math.min(plotW, plotH) / 2;
+      anchorX = cx;
+      anchorY = cy;
+    }
 
     // Resting active ring: hover > first highlightItems match > defaultActive.
     const highlightItems = props.highlightItems ?? [];
@@ -343,9 +382,9 @@ export function mountGaugeChart(
       gradientIdBase,
       min: processed.min,
       valueFormatter: props.valueFormatter ?? ((v: number) => `${v}%`),
-      ticks: props.ticks,
-      endLabels: props.endLabels,
-      valueMarker: props.valueMarker,
+      ticks: r.ticks,
+      endLabels: r.endLabels,
+      valueMarker: r.valueMarker,
     });
 
     clear(svg);
@@ -415,8 +454,8 @@ export function mountGaugeChart(
             }</b>`
           : "";
       centerLabel.innerHTML = DOMPurify.sanitize(html);
-      centerLabel.style.left = `${cx}px`;
-      centerLabel.style.top = `${cy}px`;
+      centerLabel.style.left = `${anchorX}px`;
+      centerLabel.style.top = `${anchorY}px`;
       centerLabel.style.display = html ? "" : "none";
     } else {
       centerLabel.style.display = "none";

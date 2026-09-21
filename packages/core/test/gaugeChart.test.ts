@@ -411,4 +411,73 @@ describe("mountGaugeChart (jsdom)", () => {
     chart.destroy();
     host.remove();
   });
+
+  // The track path starts at the ring's top point: "M cx (cy - centrelineRadius) ...".
+  const trackTop = (host: HTMLElement) => {
+    const d = host.querySelector<SVGPathElement>("path.gauge-track")!.getAttribute("d")!;
+    const m = d.match(/^M (\S+) (\S+)/)!;
+    return { x: Number(m[1]), y: Number(m[2]) };
+  };
+
+  it("sweepFit moves the ring centre onto the swept box while the readout stays at the box middle", () => {
+    const base = {
+      dataSet: [{ label: "A", value: 50 }],
+      startAngle: -90,
+      sweepAngle: 180,
+      width: 360,
+      height: 300,
+    };
+    const plain = mount(base);
+    // Plain centring: cy 150, outerRadius 150, centreline 141 -> top y 9; readout at 150.
+    expect(trackTop(plain.host)).toEqual({ x: 180, y: 9 });
+    expect(plain.host.querySelector<HTMLElement>(".mv-gauge-center")!.style.top).toBe("150px");
+    plain.chart.destroy();
+    plain.host.remove();
+
+    const fitted = mount({ ...base, sweepFit: true });
+    // Fitted: outerRadius 180, box top 60, cy 240, centreline 171 -> top y 69; readout at 60 + 90.
+    expect(trackTop(fitted.host)).toEqual({ x: 180, y: 69 });
+    expect(fitted.host.querySelector<HTMLElement>(".mv-gauge-center")!.style.top).toBe("150px");
+    expect(fitted.host.querySelector<HTMLElement>(".mv-gauge-center")!.style.left).toBe("180px");
+    fitted.chart.destroy();
+    fitted.host.remove();
+  });
+
+  it("sweepFit reserves 36px on every side while ticks or end labels exist", () => {
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 50 }],
+      startAngle: -90,
+      sweepAngle: 180,
+      width: 360,
+      height: 300,
+      sweepFit: true,
+      ticks: [{ value: 25 }],
+    });
+    // availW 288, availH 228 -> outerRadius 144; box top 36 + (228 - 144) / 2 = 78; cy 222;
+    // centreline 135 -> top y 87.
+    expect(trackTop(host)).toEqual({ x: 180, y: 87 });
+    chart.destroy();
+    host.remove();
+  });
+
+  it("sweepFit is a no-op for a full ring and lets an explicit outerRadius win", () => {
+    const full = mount({ dataSet: [{ label: "A", value: 50 }], sweepFit: true });
+    expect(trackTop(full.host)).toEqual({ x: 100, y: 9 }); // identical to plain centring
+    full.chart.destroy();
+    full.host.remove();
+
+    const forced = mount({
+      dataSet: [{ label: "A", value: 50 }],
+      startAngle: -90,
+      sweepAngle: 180,
+      width: 360,
+      height: 300,
+      sweepFit: true,
+      outerRadius: 100,
+    });
+    // Box 200x100 centred: left 80, top 100 -> cx 180, cy 200, centreline 91 -> top y 109.
+    expect(trackTop(forced.host)).toEqual({ x: 180, y: 109 });
+    forced.chart.destroy();
+    forced.host.remove();
+  });
 });
