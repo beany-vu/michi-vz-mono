@@ -37,7 +37,7 @@ Le consommateur possède chaque texte : passez `label` et `valueLabel` sur un re
 
 - **L'échelle est `[min, max]`.** Une valeur d'anneau ou un repère hors de l'échelle est ramené à l'extrémité la plus proche (avec un avertissement de données) : un fournisseur moins cher que toutes les références reste visible, épinglé au début.
 - **Les repères et les extrémités décrivent l'échelle, les marqueurs décrivent les anneaux.** Une jauge à plusieurs anneaux trace les repères une seule fois, sur l'anneau extérieur, et un marqueur par anneau avec donnée ; un anneau `null` garde les repères et perd son marqueur.
-- **`sweepFit` réserve une bande de 36 px** de chaque côté tant que des repères ou des extrémités existent, et ancre l'affichage central (`centerContent`) au milieu de la boîte balayée. Un anneau complet de 360° n'est pas affecté.
+- **`sweepFit` réserve une bande de 36 px** de chaque côté tant que des repères ou des extrémités existent, et ancre l'affichage central (`centerContent`) au milieu de la boîte balayée. Sur un anneau complet de 360°, seule la réserve pour les repères s'applique.
 
 Les trois moteurs de rendu affichent les mêmes annotations : en mode canvas et WebGPU elles vivent dans un calque au-dessus des arcs peints, donc le CSS du consommateur sur `.mv-gauge-tick-label`, `.mv-gauge-tick-value` et `.mv-gauge-marker` s'applique partout.
 

@@ -116,7 +116,7 @@ export { buildAreaContext } from "./context/buildAreaContext";
 export { checkAreaData } from "./validate/areaWarnings";
 // GaugeChart pure layer
 export { processGaugeData } from "./gaugeChart/data";
-export { sweepBoundingBox, fitSweep } from "./gaugeChart/geometry";
+export { sweepBoundingBox, fitSweep, isFullSweepDeg } from "./gaugeChart/geometry";
 export type { SweepBox, FitSweepInput, FitSweepResult } from "./gaugeChart/geometry";
 export { buildGaugeColors } from "./gaugeChart/colors";
 export { buildGaugeContext } from "./context/buildGaugeContext";

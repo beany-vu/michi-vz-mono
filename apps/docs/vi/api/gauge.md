@@ -4,7 +4,7 @@ title: API Biểu đồ vòng cung
 
 # API Biểu đồ vòng cung
 
-Các vòng đồng tâm, từ ngoài vào trong, mỗi vòng quét `value / max` của một vòng tròn đầy đủ trên rãnh nền - xem **[demo Biểu đồ vòng cung](/vi/charts/gauge)**.
+Các vòng đồng tâm, từ ngoài vào trong, mỗi vòng quét `(value - min) / (max - min)` của một vòng tròn đầy đủ trên rãnh nền - xem **[demo Biểu đồ vòng cung](/vi/charts/gauge)**.
 
 ## Import
 

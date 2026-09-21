@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { processGaugeData, gaugeFraction } from "../src/gaugeChart/data";
 import { checkGaugeData } from "../src/validate/gaugeWarnings";
-import { sweepBoundingBox, fitSweep } from "../src/gaugeChart/geometry";
+import { sweepBoundingBox, fitSweep, isFullSweepDeg } from "../src/gaugeChart/geometry";
 import { buildGaugeAnnotations } from "../src/gaugeChart/annotations";
 import { checkGaugeAnnotations } from "../src/validate/gaugeWarnings";
 import { CORE_CSS } from "../src/styles";
@@ -66,6 +66,13 @@ describe("checkGaugeData with min", () => {
 
   it("does not warn for a value inside [min, max]", () => {
     expect(checkGaugeData([{ label: "A", value: 15 }], 20, 10)).toHaveLength(0);
+  });
+
+  it("mirrors the data layer: a non-finite min is simply 0, not a collapsed domain", () => {
+    const w = checkGaugeData([{ label: "A", value: -1 }], 20, Number.NaN);
+    expect(w).toHaveLength(1);
+    expect(w[0].message).toMatch(/outside \[0, 20\]/);
+    expect(w.some((x) => /not below max/.test(x.message))).toBe(false);
   });
 });
 
@@ -303,6 +310,53 @@ describe("buildGaugeAnnotations", () => {
   });
 });
 
+describe("isFullSweepDeg", () => {
+  const nearlyFull = 359.9999999999;
+
+  it("is the one full-ring rule: unset, non-finite, <= 0 and >= 360 within 1e-9", () => {
+    expect(isFullSweepDeg(undefined)).toBe(true);
+    expect(isFullSweepDeg(Number.NaN)).toBe(true);
+    expect(isFullSweepDeg(0)).toBe(true);
+    expect(isFullSweepDeg(-90)).toBe(true);
+    expect(isFullSweepDeg(360)).toBe(true);
+    expect(isFullSweepDeg(nearlyFull)).toBe(true);
+    expect(isFullSweepDeg(359.9)).toBe(false);
+    expect(isFullSweepDeg(180)).toBe(false);
+  });
+
+  it("a sweep 1e-10 short of 360 is full for the box, the end labels AND the warnings", () => {
+    expect(sweepBoundingBox(0, nearlyFull)).toEqual({ minX: -1, minY: -1, maxX: 1, maxY: 1 });
+    const a = buildGaugeAnnotations({
+      ...mockup,
+      sweepAngle: (nearlyFull * Math.PI) / 180,
+      endLabels: true,
+    });
+    expect(a.endLabels).toHaveLength(0);
+    const w = checkGaugeAnnotations({
+      endLabels: true,
+      min: 3.3,
+      max: 16,
+      sweepAngleDeg: nearlyFull,
+    });
+    expect(w.map((x) => x.type)).toEqual(["layout-overflow"]);
+  });
+
+  it("359.9 is partial for all three", () => {
+    // Every compass point is still inside a 359.9 sweep, so the box is the unit
+    // square either way - what differs is that it is measured, not short-circuited.
+    expect(sweepBoundingBox(0, 359.9)).toEqual({ minX: -1, minY: -1, maxX: 1, maxY: 1 });
+    const a = buildGaugeAnnotations({
+      ...mockup,
+      sweepAngle: (359.9 * Math.PI) / 180,
+      endLabels: true,
+    });
+    expect(a.endLabels).toHaveLength(2);
+    expect(
+      checkGaugeAnnotations({ endLabels: true, min: 3.3, max: 16, sweepAngleDeg: 359.9 }),
+    ).toHaveLength(0);
+  });
+});
+
 describe("checkGaugeAnnotations", () => {
   it("warns per out-of-range tick and for endLabels on a full ring", () => {
     const w = checkGaugeAnnotations({
@@ -320,6 +374,19 @@ describe("checkGaugeAnnotations", () => {
     expect(w[0].label).toBe("LOW");
     expect(w[0].message).toMatch(/outside \[3.3, 16\]/);
     expect(w[2].message).toMatch(/full 360/);
+  });
+
+  it("warns once for a non-finite tick value, instead of range-checking it", () => {
+    const w = checkGaugeAnnotations({
+      ticks: [{ value: Number.NaN, label: "X" }],
+      min: 0,
+      max: 10,
+      sweepAngleDeg: 180,
+    });
+    expect(w).toHaveLength(1);
+    expect(w[0].type).toBe("non-finite-value");
+    expect(w[0].message).toBe('Gauge tick "X" has a non-finite value; it is skipped.');
+    expect(w[0].label).toBe("X");
   });
 
   it("is silent for in-range ticks on a partial sweep", () => {

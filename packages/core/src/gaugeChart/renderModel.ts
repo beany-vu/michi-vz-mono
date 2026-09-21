@@ -8,6 +8,7 @@ import type { GaugeActiveStyle, GaugeChartProps, GaugeTick } from "../types";
 import type { GaugeColorResolver } from "./colors";
 import type { GaugeRing } from "./data";
 import { buildGaugeAnnotations, type GaugeAnnotations } from "./annotations";
+import { isFullSweepDeg } from "./geometry";
 
 export interface GaugeRingMark {
   label: string;
@@ -115,11 +116,10 @@ export function buildGaugeRenderModel(
   o: BuildGaugeModelOptions,
 ): GaugeRenderModel {
   const startAngle = (o.startAngleDeg * Math.PI) / 180;
-  // Clamped to (0, 360]: an unset/invalid value falls back to a full circle.
-  const sweepAngleDeg =
-    o.sweepAngleDeg === undefined || !Number.isFinite(o.sweepAngleDeg) || o.sweepAngleDeg <= 0
-      ? 360
-      : clamp(o.sweepAngleDeg, Number.EPSILON, 360);
+  // Clamped to (0, 360]: an unset/invalid/full value is a full circle.
+  const sweepAngleDeg = isFullSweepDeg(o.sweepAngleDeg)
+    ? 360
+    : clamp(Number(o.sweepAngleDeg), Number.EPSILON, 360);
   const sweepAngle = (sweepAngleDeg * Math.PI) / 180;
   const highlightSet = new Set(o.highlightItems);
   const marks: GaugeRingMark[] = [];

@@ -464,6 +464,22 @@ describe("mountGaugeChart (jsdom)", () => {
     host.remove();
   });
 
+  it("a full ring reserves nothing for end labels (they are skipped there), only for ticks", () => {
+    const base = { dataSet: [{ label: "A", value: 50 }], sweepFit: true as const };
+    const ends = mount({ ...base, endLabels: true });
+    // No end labels exist on a full ring, so the 36px band would only shrink the
+    // gauge for nothing: outerRadius stays 100, centreline 91 -> top y 9.
+    expect(trackTop(ends.host)).toEqual({ x: 100, y: 9 });
+    ends.chart.destroy();
+    ends.host.remove();
+
+    const ticked = mount({ ...base, endLabels: true, ticks: [{ value: 25 }] });
+    // Ticks DO render on a full ring: avail 128 -> outerRadius 64, centreline 55 -> top y 45.
+    expect(trackTop(ticked.host)).toEqual({ x: 100, y: 45 });
+    ticked.chart.destroy();
+    ticked.host.remove();
+  });
+
   it("sweepFit is a no-op for a full ring and lets an explicit outerRadius win", () => {
     const full = mount({ dataSet: [{ label: "A", value: 50 }], sweepFit: true });
     expect(trackTop(full.host)).toEqual({ x: 100, y: 9 }); // identical to plain centring
@@ -551,5 +567,44 @@ describe("mountGaugeChart (jsdom)", () => {
     expect(tracks(empty.host)).toHaveLength(0);
     empty.chart.destroy();
     empty.host.remove();
+  });
+
+  it("canvas mode paints no canvas at all while loading an empty set", () => {
+    const { host, chart } = mount({ renderer: "canvas", isLoading: true, dataSet: [] });
+    expect(host.getAttribute("data-mv-state")).toBe("loading");
+    expect(host.querySelector("canvas")).toBeNull();
+    chart.destroy();
+    host.remove();
+  });
+
+  it("a hover re-render keeps ONE overlay, still directly under the tooltip", () => {
+    const { host, chart } = mount({ ...painted, renderer: "canvas" });
+    // Outer ring centreline is at y = 100 - 91 = 9; (100, 5) is within the 9 + 2 band.
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 100, clientY: 5, bubbles: true }));
+    expect(host.querySelectorAll("svg.mv-gauge-annotations")).toHaveLength(1);
+    const tooltip = host.querySelector(".tooltip")!;
+    expect(tooltip.previousElementSibling).toBe(host.querySelector("svg.mv-gauge-annotations"));
+    chart.destroy();
+    host.remove();
+  });
+
+  it("canvas hit-testing follows the sweepFit centre, not the plain one", () => {
+    const onHighlightItem = vi.fn();
+    const { host, chart } = mount({
+      dataSet: [{ label: "A", value: 50 }],
+      renderer: "canvas",
+      startAngle: -90,
+      sweepAngle: 180,
+      width: 360,
+      height: 300,
+      sweepFit: true,
+      onHighlightItem,
+    });
+    // Fitted: cy 240, centreline 171 -> the ring's top point is (180, 69). jsdom
+    // reports a zero-origin bounding rect, so client coords are the same numbers.
+    host.dispatchEvent(new MouseEvent("mousemove", { clientX: 180, clientY: 69, bubbles: true }));
+    expect(onHighlightItem).toHaveBeenCalledWith(["A"]);
+    chart.destroy();
+    host.remove();
   });
 });

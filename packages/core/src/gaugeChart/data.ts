@@ -1,5 +1,5 @@
 // Gauge data layer: normalize the dataSet into rings (outer to inner), clamp
-// values into [0, max], keep null values as "no data" (track-only rings), and
+// values into [min, max], keep null values as "no data" (track-only rings), and
 // drop disabledItems. Pure + DOM-free, so SVG, canvas, and webgpu share one
 // source of truth.
 import type { GaugeRingDatum } from "../types";

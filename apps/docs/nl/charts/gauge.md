@@ -37,7 +37,7 @@ De consumer bezit elke tekst: geef `label` en `valueLabel` mee op een streepje o
 
 - **De schaal is `[min, max]`.** Een ringwaarde of streepje erbuiten wordt naar het dichtstbijzijnde uiteinde geklemd (met een datawaarschuwing), zodat een leverancier die goedkoper is dan elke referentie zichtbaar blijft, vastgezet aan het begin.
 - **Streepjes en uiteinden beschrijven de schaal, markers beschrijven ringen.** Een meter met meerdere ringen tekent de streepjes één keer, op de buitenste ring, en één marker per ring met data; een `null`-ring houdt de streepjes en verliest zijn marker.
-- **`sweepFit` reserveert een band van 36 px** aan elke kant zolang er streepjes of uiteinden zijn, en verankert de centrale aflezing (`centerContent`) in het midden van het bestreken vak. Een volledige ring van 360° blijft onveranderd.
+- **`sweepFit` reserveert een band van 36 px** aan elke kant zolang er streepjes of uiteinden zijn, en verankert de centrale aflezing (`centerContent`) in het midden van het bestreken vak. Op een volledige ring van 360° geldt alleen de reservering voor streepjes.
 
 Alle drie de renderers tonen dezelfde annotaties: in canvas- en WebGPU-modus staan ze in een overlay boven de geschilderde bogen, dus consumer-CSS op `.mv-gauge-tick-label`, `.mv-gauge-tick-value` en `.mv-gauge-marker` werkt overal.
 

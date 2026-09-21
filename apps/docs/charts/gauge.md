@@ -37,7 +37,7 @@ The consumer owns every string: pass `label` and `valueLabel` on a tick or an en
 
 - **The scale is `[min, max]`.** A ring value or a tick outside it is clamped to the nearest end (with a data warning), so a supplier priced below every reference still shows, pinned at the start.
 - **Ticks and end labels describe the scale, markers describe rings.** A multi-ring gauge draws the ticks once, on the outer ring, and one marker per ring with data; a `null` ring keeps the ticks and drops its marker.
-- **`sweepFit` reserves a 36px band** on every side while ticks or end labels exist, and anchors the centre readout (`centerContent`) to the middle of the swept box. A full 360° ring is unaffected.
+- **`sweepFit` reserves a 36px band** on every side while ticks or end labels exist, and anchors the centre readout (`centerContent`) to the middle of the swept box. On a full 360° ring only the reserve for ticks applies.
 
 All three renderers show the same annotations: in canvas and WebGPU mode they live in an overlay above the painted arcs, so consumer CSS on `.mv-gauge-tick-label`, `.mv-gauge-tick-value` and `.mv-gauge-marker` applies everywhere.
 

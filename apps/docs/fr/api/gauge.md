@@ -4,7 +4,7 @@ title: API Jauge (anneaux)
 
 # API Jauge (anneaux)
 
-Des anneaux concentriques, de l'extérieur vers l'intérieur, chacun balayant `value / max` d'un cercle complet sur une piste de fond - voir la **[démo Jauge](/fr/charts/gauge)**.
+Des anneaux concentriques, de l'extérieur vers l'intérieur, chacun balayant `(value - min) / (max - min)` d'un cercle complet sur une piste de fond - voir la **[démo Jauge](/fr/charts/gauge)**.
 
 ## Import
 

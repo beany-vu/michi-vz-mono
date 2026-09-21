@@ -1,5 +1,5 @@
 // Gauge engine: mount/update/getContext/destroy. Concentric rings (outer to
-// inner), each sweeping value/max of a full circle clockwise from `startAngle`
+// inner), each sweeping (value - min) / (max - min) of a full circle clockwise from `startAngle`
 // over a background track. LIGHT DOM (SVG), canvas, or webgpu. Hovering a ring
 // activates it (emphasis + the optional built-in centre label); `defaultActive`
 // picks the resting ring. Mirrors the pie engine's plugin wiring + colour
@@ -13,7 +13,7 @@ import { renderTitle } from "../render/svg";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processGaugeData } from "../gaugeChart/data";
 import { buildGaugeColors } from "../gaugeChart/colors";
-import { sweepBoundingBox, fitSweep } from "../gaugeChart/geometry";
+import { sweepBoundingBox, fitSweep, isFullSweepDeg } from "../gaugeChart/geometry";
 import { GAUGE_ANNOTATION_RESERVE, hasGaugeAnnotations } from "../gaugeChart/annotations";
 import { shouldSkipScaffold } from "../state/dataState";
 import {
@@ -322,7 +322,10 @@ export function mountGaugeChart(
     // Layout: plain centring (today's behaviour), or fitted to the swept arc's
     // bounding box. The readout anchor is the ring centre when plain and the box
     // midpoint when fitted (inside a half gauge, above its baseline).
-    const hasScaleAnnotations = (r.ticks?.length ?? 0) > 0 || !!r.endLabels;
+    // End labels are skipped on a full ring (both ends coincide), so reserving a
+    // band for them there would only shrink the gauge for nothing.
+    const hasScaleAnnotations =
+      (r.ticks?.length ?? 0) > 0 || (!!r.endLabels && !isFullSweepDeg(r.sweepAngle));
     let cx: number;
     let cy: number;
     let outerRadius: number;

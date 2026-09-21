@@ -193,7 +193,7 @@
           "name": "sweepFit",
           "type": "boolean",
           "optional": true,
-          "description": "Fit the layout to the SWEPT arc instead of the full circle: the outer radius grows until the arc's bounding box fills the plot, the box is centred, and the centre readout anchors to the box's middle (inside a half gauge, above its baseline). While `ticks` or `endLabels` are present a 36px band is reserved on every side for them. An explicit `outerRadius` still wins; only the placement is fitted. A full 360° ring is unchanged. Default false.",
+          "description": "Fit the layout to the SWEPT arc instead of the full circle: the outer radius grows until the arc's bounding box fills the plot, the box is centred, and the centre readout anchors to the box's middle (inside a half gauge, above its baseline). While `ticks` or `endLabels` are present a 36px band is reserved on every side for them. An explicit `outerRadius` still wins; only the placement is fitted. On a full 360° ring only the reserve for ticks applies (end labels are skipped there). Default false.",
           "default": "false",
           "common": false
         },

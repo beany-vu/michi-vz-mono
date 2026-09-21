@@ -1,19 +1,23 @@
 // onDataWarning checks for Gauge: empty dataset, non-finite non-null values,
-// values outside [0, max] (clamped), and duplicate ring labels (which would
+// values outside [min, max] (clamped), and duplicate ring labels (which would
 // collide on the colour key).
+import { isFullSweepDeg } from "../gaugeChart/geometry";
 import type { DataWarning, GaugeRingDatum, GaugeChartProps, GaugeTick } from "../types";
 
 export function checkGaugeData(dataSet: GaugeRingDatum[], max = 100, min = 0): DataWarning[] {
   const warnings: DataWarning[] = [];
   const effectiveMax = Number.isFinite(max) && max > 0 ? max : 100;
-  const domainOk = effectiveMax > min;
+  // Mirror the data layer (gaugeChart/data.ts): a non-finite min is not a broken
+  // domain, it is simply 0 - so it must not raise the "not below max" warning.
+  const requestedMin = Number.isFinite(min) ? min : 0;
+  const domainOk = effectiveMax > requestedMin;
   if (!domainOk) {
     warnings.push({
       type: "non-finite-value",
       message: `Gauge min ${min} is not below max ${max}; the scale falls back to 0..${effectiveMax}.`,
     });
   }
-  const lo = domainOk ? min : 0;
+  const lo = domainOk ? requestedMin : 0;
   if (!dataSet || dataSet.length === 0) {
     warnings.push({ type: "empty-dataset", message: "Gauge chart received an empty dataSet." });
     return warnings;
@@ -60,7 +64,13 @@ export function checkGaugeAnnotations(o: {
 }): DataWarning[] {
   const warnings: DataWarning[] = [];
   for (const t of o.ticks ?? []) {
-    if (Number.isFinite(t.value) && (t.value < o.min || t.value > o.max)) {
+    if (!Number.isFinite(t.value)) {
+      warnings.push({
+        type: "non-finite-value",
+        message: `Gauge tick "${t.label ?? t.value}" has a non-finite value; it is skipped.`,
+        label: t.label,
+      });
+    } else if (t.value < o.min || t.value > o.max) {
       warnings.push({
         type: "non-finite-value",
         message: `Gauge tick "${t.label ?? t.value}" value ${t.value} is outside [${o.min}, ${o.max}]; it is clamped to the nearest end.`,
@@ -68,12 +78,7 @@ export function checkGaugeAnnotations(o: {
       });
     }
   }
-  const full =
-    o.sweepAngleDeg === undefined ||
-    !Number.isFinite(o.sweepAngleDeg) ||
-    o.sweepAngleDeg <= 0 ||
-    o.sweepAngleDeg >= 360;
-  if (o.endLabels && full) {
+  if (o.endLabels && isFullSweepDeg(o.sweepAngleDeg)) {
     warnings.push({
       type: "layout-overflow",
       message:

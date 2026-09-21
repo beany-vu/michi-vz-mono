@@ -25,15 +25,26 @@ function unitPoint(deg: number): [number, number] {
 /** Snap floating-point noise (and -0) to a clean 0 so boxes compare exactly. */
 const snap = (v: number): number => (Math.abs(v) < EPS ? 0 : v);
 
+/** A sweep that is unset, non-finite, <= 0 or >= 360 (within 1e-9) is a full ring. Every
+ *  full-ring decision in the gauge (bounding box, end labels, warnings, model clamp) uses this. */
+export function isFullSweepDeg(sweepAngleDeg: number | undefined): boolean {
+  return (
+    sweepAngleDeg === undefined ||
+    !Number.isFinite(sweepAngleDeg) ||
+    sweepAngleDeg <= 0 ||
+    sweepAngleDeg >= FULL - EPS
+  );
+}
+
 /**
  * Bounding box, at radius 1, of the arc swept clockwise from `startAngleDeg`
  * over `sweepAngleDeg`. The candidates are the two end points plus every
- * compass point (top, right, bottom, left) inside the sweep. A sweep <= 0 or
- * >= 360 is a full ring and returns the unit square, so a fit on a full ring
+ * compass point (top, right, bottom, left) inside the sweep. A full ring
+ * (see isFullSweepDeg) returns the unit square, so a fit on a full ring
  * reproduces the plain centred layout by construction.
  */
 export function sweepBoundingBox(startAngleDeg: number, sweepAngleDeg: number): SweepBox {
-  if (!Number.isFinite(sweepAngleDeg) || sweepAngleDeg <= 0 || sweepAngleDeg >= FULL - EPS) {
+  if (isFullSweepDeg(sweepAngleDeg)) {
     return { minX: -1, minY: -1, maxX: 1, maxY: 1 };
   }
   const start = normDeg(startAngleDeg);

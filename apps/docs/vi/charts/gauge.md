@@ -37,7 +37,7 @@ Bên dùng sở hữu mọi chuỗi văn bản: truyền `label` và `valueLabel
 
 - **Thang đo là `[min, max]`.** Giá trị vòng hoặc vạch nằm ngoài thang sẽ được kẹp về đầu gần nhất (kèm cảnh báo dữ liệu), nên một nhà cung cấp rẻ hơn mọi mức tham chiếu vẫn hiển thị, ghim ở điểm đầu.
 - **Vạch và nhãn đầu mút mô tả thang đo, điểm đánh dấu mô tả từng vòng.** Biểu đồ nhiều vòng vẽ vạch một lần trên vòng ngoài cùng, và một điểm đánh dấu cho mỗi vòng có dữ liệu; vòng `null` vẫn giữ vạch nhưng không có điểm đánh dấu.
-- **`sweepFit` dành một dải 36 px** ở mỗi cạnh khi có vạch hoặc nhãn đầu mút, và neo phần hiển thị trung tâm (`centerContent`) vào giữa khung được quét. Vòng tròn 360° đầy đủ không bị ảnh hưởng.
+- **`sweepFit` dành một dải 36 px** ở mỗi cạnh khi có vạch hoặc nhãn đầu mút, và neo phần hiển thị trung tâm (`centerContent`) vào giữa khung được quét. Trên vòng tròn 360° đầy đủ chỉ áp dụng phần dải dành cho vạch.
 
 Cả ba trình kết xuất hiển thị cùng các chú giải: ở chế độ canvas và WebGPU chúng nằm trong lớp phủ phía trên các cung được vẽ, nên CSS của bên dùng trên `.mv-gauge-tick-label`, `.mv-gauge-tick-value` và `.mv-gauge-marker` áp dụng ở mọi nơi.
 

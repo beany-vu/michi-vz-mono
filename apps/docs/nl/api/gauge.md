@@ -4,7 +4,7 @@ title: Meter (ringen) API
 
 # Meter (ringen) API
 
-Concentrische ringen, van buiten naar binnen, die elk `value / max` van een volledige cirkel over een achtergrondspoor bestrijken - zie de **[Meter-demo](/nl/charts/gauge)**.
+Concentrische ringen, van buiten naar binnen, die elk `(value - min) / (max - min)` van een volledige cirkel over een achtergrondspoor bestrijken - zie de **[Meter-demo](/nl/charts/gauge)**.
 
 ## Import
 

@@ -3,7 +3,8 @@
 // annotation renderer in every renderer mode. Angles in RADIANS clockwise from
 // 12 o'clock; a point at radius r and angle a is (cx + r sin a, cy - r cos a).
 import { gaugeFraction } from "./data";
-import type { GaugeEndLabel, GaugeTick, GaugeValueMarker } from "../types";
+import { isFullSweepDeg } from "./geometry";
+import type { GaugeChartProps, GaugeTick, GaugeValueMarker } from "../types";
 
 /** Tick line: from the outer edge + inner to + outer (px). */
 export const GAUGE_TICK_INNER = 2;
@@ -15,7 +16,6 @@ export const GAUGE_END_LABEL_OFFSET = 20;
 /** Band reserved around a sweep-fitted gauge while ticks or end labels exist (px). */
 export const GAUGE_ANNOTATION_RESERVE = 36;
 
-const TAU = Math.PI * 2;
 const MARKER_DEFAULTS = { radius: 8, stroke: "#fff", strokeWidth: 2.5 };
 const MARKER_TICK_DEFAULTS = { length: 20, color: "#1a1a1a", width: 1.5 };
 const TICK_COLOR = "#9ea3ae";
@@ -95,7 +95,7 @@ export interface BuildGaugeAnnotationsInput {
   max: number;
   rings: GaugeAnnotationRing[];
   ticks?: GaugeTick[];
-  endLabels?: boolean | { min?: GaugeEndLabel; max?: GaugeEndLabel };
+  endLabels?: GaugeChartProps["endLabels"];
   valueMarker?: boolean | GaugeValueMarker;
   valueFormatter: (v: number) => string;
 }
@@ -176,7 +176,7 @@ export function buildGaugeAnnotations(i: BuildGaugeAnnotationsInput): GaugeAnnot
   }
 
   // ----- End labels: only on a partial sweep, on the OUTER centreline -----
-  const isFull = i.sweepAngle >= TAU - 1e-9;
+  const isFull = isFullSweepDeg((i.sweepAngle * 180) / Math.PI);
   if (i.endLabels && !isFull) {
     const cfg = i.endLabels === true ? {} : i.endLabels;
     const centreline = i.rings.length ? Math.max(...i.rings.map((r) => r.radius)) : i.outerRadius;

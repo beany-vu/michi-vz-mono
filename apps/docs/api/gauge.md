@@ -4,7 +4,7 @@ title: Gauge (Rings) API
 
 # Gauge (Rings) API
 
-Concentric rings, outer to inner, each sweeping `value / max` of a full circle over a background track - see the **[Gauge demo](/charts/gauge)**.
+Concentric rings, outer to inner, each sweeping `(value - min) / (max - min)` of a full circle over a background track - see the **[Gauge demo](/charts/gauge)**.
 
 ## Import
 

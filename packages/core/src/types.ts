@@ -3151,8 +3151,8 @@ export interface GaugeChartProps {
    *  centred, and the centre readout anchors to the box's middle (inside a
    *  half gauge, above its baseline). While `ticks` or `endLabels` are present
    *  a 36px band is reserved on every side for them. An explicit `outerRadius`
-   *  still wins; only the placement is fitted. A full 360° ring is unchanged.
-   *  Default false. */
+   *  still wins; only the placement is fitted. On a full 360° ring only the
+   *  reserve for ticks applies (end labels are skipped there). Default false. */
   sweepFit?: boolean;
   /** Reference ticks on the OUTER ring: a short radial line just outside the
    *  arc plus a two-line label (caption over value) further out. Values are
