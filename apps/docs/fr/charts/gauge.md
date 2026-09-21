@@ -27,6 +27,20 @@ Deux pièges fréquents à la première lecture :
 - **La piste suit aussi le balayage.** La piste de fond d'une demi-jauge est un demi-cercle, pas un cercle complet - `sweepAngle` raccourcit la piste et l'arc de valeur ensemble, il n'y a donc pas d'« autre moitié » cachée qui transparaîtrait.
 - **Le dégradé est ancré sur le balayage complet, pas sur la portion dessinée.** Une couleur donnée reste toujours à la même *valeur*, pas à la même position le long de l'arc effectivement tracé - une jauge à moitié pleine affiche donc la première moitié du dégradé, pas le dégradé entier compressé dans la moitié. Le `gradient` propre à un anneau prime sur celui défini au niveau du graphique.
 
+## Positionnement dans une plage
+
+Une jauge peut aussi répondre à « où se situe cette valeur entre un minimum et un maximum ? » : `min` déplace le début du balayage hors du zéro, `valueMarker` épingle la valeur de chaque anneau sur l'arc, `ticks` ajoute des repères avec une légende et une valeur, `endLabels` nomme les deux extrémités d'un balayage partiel, et `sweepFit` ajuste une demi-jauge à sa boîte au lieu de centrer un cercle complet :
+
+<ChartDemo chart="gauge-chart" :index="3" :legend="false" />
+
+Le consommateur possède chaque texte : passez `label` et `valueLabel` sur un repère ou une extrémité, déjà traduits et formatés ; seul un `valueLabel` absent retombe sur `valueFormatter`. Trois détails à connaître :
+
+- **L'échelle est `[min, max]`.** Une valeur d'anneau ou un repère hors de l'échelle est ramené à l'extrémité la plus proche (avec un avertissement de données) : un fournisseur moins cher que toutes les références reste visible, épinglé au début.
+- **Les repères et les extrémités décrivent l'échelle, les marqueurs décrivent les anneaux.** Une jauge à plusieurs anneaux trace les repères une seule fois, sur l'anneau extérieur, et un marqueur par anneau avec donnée ; un anneau `null` garde les repères et perd son marqueur.
+- **`sweepFit` réserve une bande de 36 px** de chaque côté tant que des repères ou des extrémités existent, et ancre l'affichage central (`centerContent`) au milieu de la boîte balayée. Un anneau complet de 360° n'est pas affecté.
+
+Les trois moteurs de rendu affichent les mêmes annotations : en mode canvas et WebGPU elles vivent dans un calque au-dessus des arcs peints, donc le CSS du consommateur sur `.mv-gauge-tick-label`, `.mv-gauge-tick-value` et `.mv-gauge-marker` s'applique partout.
+
 ## Quand l'utiliser
 
 - **Parts de marché imbriquées.** La part d'un produit sur des périmètres emboîtés (monde, région, marché) en une seule figure compacte.

@@ -142,6 +142,14 @@
           "common": false
         },
         {
+          "name": "min",
+          "type": "number",
+          "optional": true,
+          "description": "Value at the START of the sweep (default 0). A ring maps `(value - min) / (max - min)` onto the sweep and values are clamped into [min, max]. When `max <= min` the chart warns and falls back to 0..max, so bounds computed from data that collapses never yield an empty or reversed gauge.",
+          "default": "0",
+          "common": false
+        },
+        {
           "name": "ringThickness",
           "type": "number",
           "optional": true,
@@ -179,6 +187,38 @@
           "optional": true,
           "description": "Angular extent of the gauge in degrees, clockwise from `startAngle` (default 360 = a full ring). 180 with `startAngle: -90` gives the classic half gauge. Both the track and the value arc span this range, and a ring's value is measured against it: at `sweepAngle: 180`, `value === max` fills the whole half. Clamped to (0, 360]: an unset, zero, or negative value falls back to a full 360° ring, NOT an empty gauge - a consumer computing `sweepAngle` from a ratio that can hit 0 gets a full circle.",
           "default": "360",
+          "common": false
+        },
+        {
+          "name": "sweepFit",
+          "type": "boolean",
+          "optional": true,
+          "description": "Fit the layout to the SWEPT arc instead of the full circle: the outer radius grows until the arc's bounding box fills the plot, the box is centred, and the centre readout anchors to the box's middle (inside a half gauge, above its baseline). While `ticks` or `endLabels` are present a 36px band is reserved on every side for them. An explicit `outerRadius` still wins; only the placement is fitted. A full 360° ring is unchanged. Default false.",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "ticks",
+          "type": "GaugeTick[]",
+          "optional": true,
+          "description": "Reference ticks on the OUTER ring: a short radial line just outside the arc plus a two-line label (caption over value) further out. Values are clamped into [min, max] with a warning; order is irrelevant. Ticks describe the scale, so a multi-ring gauge draws them once.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "endLabels",
+          "type": "boolean | { min?: GaugeEndLabel; max?: GaugeEndLabel }",
+          "optional": true,
+          "description": "Labels under the two ends of a PARTIAL sweep: min at the start end, max at the end. `true` draws only the formatted values; the object form adds captions. Ignored with a warning on a full 360° ring, where both ends coincide.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "valueMarker",
+          "type": "boolean | GaugeValueMarker",
+          "optional": true,
+          "description": "Marker at each ring's value: a circle on the arc centreline with a radial tick through it, filled with the ring's colour. Rings whose value is null get no marker. `true` uses the defaults in `GaugeValueMarker`.",
+          "default": "",
           "common": false
         },
         {

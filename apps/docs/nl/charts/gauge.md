@@ -27,6 +27,20 @@ Twee dingen die je bij een eerste lezing makkelijk verkeerd begrijpt:
 - **Het spoor volgt ook de boogbreedte.** Het achtergrondspoor van een halve meter is een halve cirkel, geen volledige - `sweepAngle` verkort spoor en waardeboog samen, dus er is geen "verborgen" andere helft die erdoorheen schemert.
 - **Het verloop is verankerd aan de volledige boogbreedte, niet aan het getekende deel.** Eenzelfde kleur staat altijd op dezelfde *waarde*, niet op dezelfde positie langs de daadwerkelijk getekende boog - een halfvolle meter toont dus de eerste helft van het verloop, niet het hele verloop samengeperst in de helft. Het eigen `gradient` van een ring wint van het verloop op grafiekniveau.
 
+## Positie binnen een bereik
+
+Een meter kan ook antwoorden op "waar zit deze waarde tussen een minimum en een maximum?": `min` verschuift het begin van de boog weg van nul, `valueMarker` zet de waarde van elke ring vast op de boog, `ticks` voegt referentiestreepjes toe met een bijschrift en een waarde, `endLabels` benoemt de twee uiteinden van een gedeeltelijke boog, en `sweepFit` past een halve meter in zijn vak in plaats van een volledige cirkel te centreren:
+
+<ChartDemo chart="gauge-chart" :index="3" :legend="false" />
+
+De consumer bezit elke tekst: geef `label` en `valueLabel` mee op een streepje of uiteinde, al vertaald en opgemaakt; alleen een ontbrekend `valueLabel` valt terug op `valueFormatter`. Drie details om te weten:
+
+- **De schaal is `[min, max]`.** Een ringwaarde of streepje erbuiten wordt naar het dichtstbijzijnde uiteinde geklemd (met een datawaarschuwing), zodat een leverancier die goedkoper is dan elke referentie zichtbaar blijft, vastgezet aan het begin.
+- **Streepjes en uiteinden beschrijven de schaal, markers beschrijven ringen.** Een meter met meerdere ringen tekent de streepjes één keer, op de buitenste ring, en één marker per ring met data; een `null`-ring houdt de streepjes en verliest zijn marker.
+- **`sweepFit` reserveert een band van 36 px** aan elke kant zolang er streepjes of uiteinden zijn, en verankert de centrale aflezing (`centerContent`) in het midden van het bestreken vak. Een volledige ring van 360° blijft onveranderd.
+
+Alle drie de renderers tonen dezelfde annotaties: in canvas- en WebGPU-modus staan ze in een overlay boven de geschilderde bogen, dus consumer-CSS op `.mv-gauge-tick-label`, `.mv-gauge-tick-value` en `.mv-gauge-marker` werkt overal.
+
 ## Wanneer te gebruiken
 
 - **Geneste marktaandelen.** Het aandeel van één product in geneste scopes (wereld, regio, markt) in één compacte figuur.

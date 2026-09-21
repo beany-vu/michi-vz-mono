@@ -189,11 +189,16 @@ Chart-specific props (the shared props above also apply):
 
 - `title`: `string` - Optional chart title rendered above the plot
 - `max`: `number` (default: `100`) - Value corresponding to a full sweep - the entire `sweepAngle` (360° by default; e.g. with `sweepAngle: 180`, `value === max` fills the whole half) (default 100).
+- `min`: `number` (default: `0`) - Value at the START of the sweep (default 0).
 - `ringThickness`: `number` (default: `18`) - Ring stroke thickness in px (default 18).
 - `ringGap`: `number` (default: `2`) - Gap between adjacent rings in px (default 2).
 - `outerRadius`: `number` (default: `null`) - Outermost ring's outer edge radius in px; default fills the plot box.
 - `startAngle`: `number` (default: `0`) - Arc start angle in degrees, 0 = 12 o'clock, positive clockwise (default 0).
 - `sweepAngle`: `number` (default: `360`) - Angular extent of the gauge in degrees, clockwise from `startAngle` (default 360 = a full ring).
+- `sweepFit`: `boolean` (default: `false`) - Fit the layout to the SWEPT arc instead of the full circle: the outer radius grows until the arc's bounding box fills the plot, the box is centred, and the centre readout anchors to the box's middle (inside a half gauge, above its baseline).
+- `ticks`: `GaugeTick[]` - Reference ticks on the OUTER ring: a short radial line just outside the arc plus a two-line label (caption over value) further out.
+- `endLabels`: `boolean | { min?: GaugeEndLabel; max?: GaugeEndLabel }` - Labels under the two ends of a PARTIAL sweep: min at the start end, max at the end.
+- `valueMarker`: `boolean | GaugeValueMarker` - Marker at each ring's value: a circle on the arc centreline with a radial tick through it, filled with the ring's colour.
 - `gradient`: `string[]` - Multi-stop colour ramp for every ring's arc, as a LINEAR gradient across the plot box (evenly spaced stops).
 - `roundedCaps`: `boolean` (default: `false`) - Round the arc ends (default false = square caps).
 - `ringOpacity`: `number | number[]` (default: `1`) - Arc opacity per ring, outer→inner; a single number applies to every ring (default 1).

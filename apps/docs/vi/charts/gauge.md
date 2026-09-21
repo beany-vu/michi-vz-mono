@@ -27,6 +27,20 @@ Hai điều dễ hiểu sai khi đọc lần đầu:
 - **Rãnh nền cũng quét theo góc quét.** Rãnh nền của nửa biểu đồ là một nửa vòng tròn, không phải vòng tròn đầy đủ - `sweepAngle` rút ngắn cả rãnh nền lẫn cung giá trị cùng nhau, nên không có "nửa còn lại" nào bị ẩn lộ ra.
 - **Dải màu chuyển sắc được neo theo toàn bộ góc quét, không theo phần được vẽ.** Một màu nhất định luôn ứng với cùng một *giá trị*, không phải cùng một vị trí trên cung thực tế được vẽ - vì vậy một biểu đồ đầy một nửa sẽ hiển thị nửa đầu của dải màu, chứ không phải toàn bộ dải màu bị nén vào nửa đó. `gradient` riêng của một vòng sẽ ghi đè lên `gradient` ở cấp biểu đồ.
 
+## Định vị trong một khoảng
+
+Biểu đồ vòng cung cũng trả lời được câu hỏi "giá trị này nằm ở đâu giữa mức tối thiểu và tối đa?": `min` dời điểm bắt đầu của cung khỏi số 0, `valueMarker` ghim giá trị của từng vòng lên cung, `ticks` thêm các vạch tham chiếu với nhãn và giá trị, `endLabels` đặt tên hai đầu của một cung không trọn vòng, và `sweepFit` co giãn nửa biểu đồ vừa khung của nó thay vì căn giữa một vòng tròn đầy đủ:
+
+<ChartDemo chart="gauge-chart" :index="3" :legend="false" />
+
+Bên dùng sở hữu mọi chuỗi văn bản: truyền `label` và `valueLabel` cho vạch hoặc nhãn đầu mút, đã dịch và định dạng sẵn; chỉ khi thiếu `valueLabel` mới dùng đến `valueFormatter`. Ba chi tiết đáng lưu ý:
+
+- **Thang đo là `[min, max]`.** Giá trị vòng hoặc vạch nằm ngoài thang sẽ được kẹp về đầu gần nhất (kèm cảnh báo dữ liệu), nên một nhà cung cấp rẻ hơn mọi mức tham chiếu vẫn hiển thị, ghim ở điểm đầu.
+- **Vạch và nhãn đầu mút mô tả thang đo, điểm đánh dấu mô tả từng vòng.** Biểu đồ nhiều vòng vẽ vạch một lần trên vòng ngoài cùng, và một điểm đánh dấu cho mỗi vòng có dữ liệu; vòng `null` vẫn giữ vạch nhưng không có điểm đánh dấu.
+- **`sweepFit` dành một dải 36 px** ở mỗi cạnh khi có vạch hoặc nhãn đầu mút, và neo phần hiển thị trung tâm (`centerContent`) vào giữa khung được quét. Vòng tròn 360° đầy đủ không bị ảnh hưởng.
+
+Cả ba trình kết xuất hiển thị cùng các chú giải: ở chế độ canvas và WebGPU chúng nằm trong lớp phủ phía trên các cung được vẽ, nên CSS của bên dùng trên `.mv-gauge-tick-label`, `.mv-gauge-tick-value` và `.mv-gauge-marker` áp dụng ở mọi nơi.
+
 ## Khi nào nên dùng
 
 - **Thị phần lồng nhau.** Thị phần của một sản phẩm trên các phạm vi lồng nhau (thế giới, khu vực, thị trường) trong một hình gọn.
