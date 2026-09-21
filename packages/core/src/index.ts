@@ -125,13 +125,17 @@ export {
   buildGaugeAnnotations,
   emptyGaugeAnnotations,
   hasGaugeAnnotations,
+  hitTestGaugeAnnotations,
   GAUGE_ANNOTATION_RESERVE,
+  GAUGE_ANNOTATION_HIT,
+  GAUGE_MARKER_HIT_PAD,
 } from "./gaugeChart/annotations";
 export type {
   GaugeAnnotations,
   GaugeMarkerMark,
   GaugeTickMark,
   GaugeEndLabelMark,
+  GaugeAnnotationHit,
 } from "./gaugeChart/annotations";
 export { checkGaugeAnnotations } from "./validate/gaugeWarnings";
 // ScatterPlot pure layer
@@ -394,6 +398,7 @@ export type {
   GaugeActiveStyle,
   GaugeChartProps,
   GaugeRingContext,
+  GaugeAnnotationContext,
   GaugeChartContext,
   BubbleDataItem,
   BubbleChartProps,

@@ -49,4 +49,6 @@ export function applyGaugeChartProps(el: GaugeChartElement, props: GaugeChartPro
   if (props.isNodata !== undefined) el.isNodata = props.isNodata;
   if (props.noDataLabel !== undefined) el.noDataLabel = props.noDataLabel;
   if (props.tooltipFormatter !== undefined) el.tooltipFormatter = props.tooltipFormatter;
+  if (props.annotationTooltipFormatter !== undefined)
+    el.annotationTooltipFormatter = props.annotationTooltipFormatter;
 }

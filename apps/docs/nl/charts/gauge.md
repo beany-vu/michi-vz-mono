@@ -41,6 +41,32 @@ De consumer bezit elke tekst: geef `label` en `valueLabel` mee op een streepje o
 
 Alle drie de renderers tonen dezelfde annotaties: in canvas- en WebGPU-modus staan ze in een overlay boven de geschilderde bogen, dus consumer-CSS op `.mv-gauge-tick-label`, `.mv-gauge-tick-value` en `.mv-gauge-marker` werkt overal.
 
+## Referentiewaarden bij hover
+
+De labels op de boog zijn bewust kort. `annotationTooltipFormatter` geeft elke annotatie — de
+waardemarker, een referentiestreepje, elk van beide uiteinden — een eigen aflezing, zodat het
+precieze cijfer één hover ver is zonder de grafiek vol te zetten:
+
+<ChartDemo chart="gauge-chart" :index="4" :legend="false" />
+
+De formatter krijgt welke annotatie onder de aanwijzer ligt (`kind`, plus `end` voor een
+uiteinde), de positie op de schaal, de `label` en `valueLabel` zoals getekend, en de `ring`
+waar een marker bij hoort (`null` voor streepjes en uiteinden, die de schaal beschrijven en
+niet één ring). Geef `null` of `""` terug om voor die annotatie niets te tonen.
+
+Twee gevolgen van deze opzet:
+
+- **Een annotatie hoveren verandert niet welke ring actief is.** De centrale aflezing blijft
+  staan terwijl een referentiewaarde wordt bekeken — de twee aflezingen beantwoorden
+  verschillende vragen.
+- **Het werkt in elke renderer.** De getekende annotaties nemen geen pointer events aan (een
+  marker die dat wel deed zou `mouseleave` afvuren op de ringcel eronder en zowel de nadruk
+  als de centrale aflezing laten vallen), dus de hover wordt op hostniveau uit de geometrie
+  afgeleid in plaats van uit de DOM.
+
+Een ring zonder waarde heeft geen marker om te hoveren, maar de streepjes en uiteinden van
+zijn schaal blijven hoverbaar — het bereik is nog steeds echt, ook als één reeks leeg is.
+
 ## Wanneer te gebruiken
 
 - **Geneste marktaandelen.** Het aandeel van één product in geneste scopes (wereld, regio, markt) in één compacte figuur.

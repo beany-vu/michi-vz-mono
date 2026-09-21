@@ -1445,6 +1445,40 @@ const gauge: Example<GaugeChartProps>[] = [
       showCenterLabel: false,
     },
   },
+  // [4] Per-annotation hover: annotationTooltipFormatter gives each marker, tick and
+  // end label its own readout. The annotations are drawn pointer-events:none, so the
+  // engine resolves this from geometry and it behaves the same in every renderer -
+  // and hovering one does NOT change which ring is active.
+  {
+    id: "gauge-annotation-hover",
+    title: "Reference values on hover",
+    description:
+      "The same positioning gauge with `annotationTooltipFormatter`: hover the marker, the AVG tick or either end label for its own readout. Hovering an annotation leaves the active ring untouched, so the centre stays put while a reference value is inspected.",
+    element: "michi-vz-gauge-chart",
+    props: {
+      width: 360,
+      height: 220,
+      dataSet: [{ label: "Supplier price", value: 7837, color: TM_BLUE }],
+      min: 5377,
+      max: 16758,
+      startAngle: -90,
+      sweepAngle: 180,
+      sweepFit: true,
+      ringThickness: 10,
+      trackColor: "#cfe3f5",
+      valueMarker: true,
+      ticks: [{ value: 8377, label: "AVG", valueLabel: "8.4 k" }],
+      endLabels: {
+        min: { label: "MIN", valueLabel: "5.4 k" },
+        max: { label: "MAX", valueLabel: "16.8 k" },
+      },
+      showCenterLabel: false,
+      annotationTooltipFormatter: (a) =>
+        a.kind === "marker"
+          ? `<b>${a.ring?.label ?? ""}</b> ${a.value.toFixed(0)}`
+          : `<b>${a.label ?? a.kind}</b> ${a.value.toFixed(0)}`,
+    },
+  },
 ];
 
 const pie: Example<PieChartProps>[] = [

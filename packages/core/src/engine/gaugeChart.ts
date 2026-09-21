@@ -14,7 +14,11 @@ import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { processGaugeData } from "../gaugeChart/data";
 import { buildGaugeColors } from "../gaugeChart/colors";
 import { sweepBoundingBox, fitSweep, isFullSweepDeg } from "../gaugeChart/geometry";
-import { GAUGE_ANNOTATION_RESERVE, hasGaugeAnnotations } from "../gaugeChart/annotations";
+import {
+  GAUGE_ANNOTATION_RESERVE,
+  hasGaugeAnnotations,
+  hitTestGaugeAnnotations,
+} from "../gaugeChart/annotations";
 import { shouldSkipScaffold } from "../state/dataState";
 import {
   buildGaugeRenderModel,
@@ -40,6 +44,7 @@ import {
 import type { AgentTool, MichiVzPlugin, PluginContext } from "../plugins/types";
 import type {
   ChartContext,
+  GaugeAnnotationContext,
   ChartInstance,
   GaugeActiveStyle,
   GaugeChartProps,
@@ -164,6 +169,9 @@ export function mountGaugeChart(
   };
 
   let sticky = false;
+  // True while the tooltip is showing an ANNOTATION rather than a ring, so leaving the
+  // annotation hides it again without disturbing the ring hover state.
+  let annotationActive = false;
   let lastColorMappingSent: Record<string, string> = {};
   let lastContextSig = "";
   let model: GaugeRenderModel | null = null;
@@ -201,13 +209,65 @@ export function mountGaugeChart(
     index: m.index,
   });
 
-  const showTooltip = (m: GaugeRingMark, ev: MouseEvent): void => {
-    if (!baseProps.tooltipFormatter) return; // opt-in: the centre label is the readout
+  const placeTooltip = (ev: MouseEvent, html: string): void => {
     const r = host.getBoundingClientRect();
     tooltip.style.left = `${ev.clientX - r.left + 10}px`;
     tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    tooltip.innerHTML = DOMPurify.sanitize(baseProps.tooltipFormatter(ringToContext(m)));
+    tooltip.innerHTML = DOMPurify.sanitize(html);
     tooltip.style.visibility = "visible";
+  };
+
+  const showTooltip = (m: GaugeRingMark, ev: MouseEvent): void => {
+    if (!baseProps.tooltipFormatter) return; // opt-in: the centre label is the readout
+    placeTooltip(ev, baseProps.tooltipFormatter(ringToContext(m)));
+  };
+
+  /** The annotation under the pointer, as the consumer-facing context. */
+  const annotationAt = (ev: MouseEvent): GaugeAnnotationContext | null => {
+    if (!model || !baseProps.annotationTooltipFormatter) return null;
+    const svgRect = svg.getBoundingClientRect();
+    const hit = hitTestGaugeAnnotations(
+      model.annotations,
+      ev.clientX - svgRect.left,
+      ev.clientY - svgRect.top,
+    );
+    if (!hit) return null;
+
+    if (hit.kind === "marker") {
+      const marker = model.annotations.markers[hit.index];
+      const ring = model.rings.find((x) => x.index === marker.ringIndex) ?? null;
+      // A marker only exists for a ring WITH a value, so this is defensive only.
+      if (!ring || ring.value === null) return null;
+      return {
+        kind: "marker",
+        end: null,
+        value: ring.value,
+        ring: ringToContext(ring),
+        index: hit.index,
+      };
+    }
+    if (hit.kind === "tick") {
+      const tick = model.annotations.ticks[hit.index];
+      return {
+        kind: "tick",
+        end: null,
+        value: tick.value,
+        label: tick.label,
+        valueLabel: tick.valueLabel,
+        ring: null,
+        index: hit.index,
+      };
+    }
+    const endLabel = model.annotations.endLabels[hit.index];
+    return {
+      kind: "endLabel",
+      end: endLabel.end,
+      value: endLabel.end === "min" ? model.min : model.max,
+      label: endLabel.label,
+      valueLabel: endLabel.valueLabel,
+      ring: null,
+      index: hit.index,
+    };
   };
   const hideTooltip = (): void => {
     if (sticky) return;
@@ -236,10 +296,29 @@ export function mountGaugeChart(
     baseProps.onHighlightItem?.([]);
   };
 
-  // Canvas/webgpu-mode hit-test: distance from centre against each ring's
+  // Annotations first, in EVERY renderer: they are drawn pointer-events:none so that a
+  // marker cannot fire mouseleave on the ring cell beneath it, which means their hover
+  // has to be resolved from geometry here. A hit deliberately leaves the ring hover
+  // alone, so the centre readout stays put while a reference value is inspected.
+  //
+  // Then the canvas/webgpu ring hit-test: distance from centre against each ring's
   // annulus (centreline ± thickness/2, +2px forgiveness); nearest wins.
   const onHostMove = (ev: MouseEvent): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
+    if (!model || sticky) return;
+    const annotation = annotationAt(ev);
+    if (annotation) {
+      const html = baseProps.annotationTooltipFormatter?.(annotation);
+      if (html) {
+        placeTooltip(ev, html);
+        annotationActive = true;
+        return;
+      }
+    }
+    if (annotationActive) {
+      annotationActive = false;
+      hideTooltip();
+    }
+    if (!isPainted(resolve(baseProps).renderer)) return;
     const svgRect = svg.getBoundingClientRect();
     const dx = ev.clientX - svgRect.left - model.cx;
     const dy = ev.clientY - svgRect.top - model.cy;
@@ -256,12 +335,20 @@ export function mountGaugeChart(
     setHover(best ? best.index : null, ev);
   };
   const onHostLeave = (): void => {
+    if (annotationActive) {
+      annotationActive = false;
+      hideTooltip();
+    }
     if (!isPainted(resolve(baseProps).renderer)) return;
     setHover(null);
   };
   // Canvas-mode click-to-pin for the opt-in tooltip (mirrors the pie engine).
   const onHostClick = (): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !baseProps.tooltipFormatter) return;
+    // An annotation tooltip is resolved in every renderer, so it pins in every renderer.
+    const painted = isPainted(resolve(baseProps).renderer);
+    const pinnable =
+      (painted && baseProps.tooltipFormatter) || baseProps.annotationTooltipFormatter;
+    if (!pinnable) return;
     if (sticky) {
       sticky = false;
       tooltip.classList.remove("sticky");

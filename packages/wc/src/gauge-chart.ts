@@ -8,6 +8,7 @@ import type {
   AgentTool,
   GaugeActiveStyle,
   GaugeChartProps,
+  GaugeAnnotationContext,
   GaugeRingContext,
   GaugeRingDatum,
   GaugeTick,
@@ -61,6 +62,7 @@ export class GaugeChartElement extends LitElement {
     isNodata: { attribute: false },
     noDataLabel: { type: String, attribute: "no-data-label" },
     tooltipFormatter: { attribute: false },
+    annotationTooltipFormatter: { attribute: false },
     plugins: { attribute: false },
   };
 
@@ -104,6 +106,7 @@ export class GaugeChartElement extends LitElement {
   isNodata?: boolean | ((dataSet: GaugeRingDatum[] | null | undefined) => boolean);
   noDataLabel?: string;
   tooltipFormatter?: (ring: GaugeRingContext) => string;
+  annotationTooltipFormatter?: (annotation: GaugeAnnotationContext) => string | null;
   plugins?: MichiVzPlugin<GaugeChartProps>[];
 
   private chart?: ChartInstance<GaugeChartProps>;
@@ -162,6 +165,7 @@ export class GaugeChartElement extends LitElement {
       isNodata: this.isNodata,
       noDataLabel: this.noDataLabel,
       tooltipFormatter: this.tooltipFormatter,
+      annotationTooltipFormatter: this.annotationTooltipFormatter,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),
       onChartDataProcessed: (c) => this.emit("michi-vz:dataprocessed", c),

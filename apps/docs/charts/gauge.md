@@ -41,6 +41,31 @@ The consumer owns every string: pass `label` and `valueLabel` on a tick or an en
 
 All three renderers show the same annotations: in canvas and WebGPU mode they live in an overlay above the painted arcs, so consumer CSS on `.mv-gauge-tick-label`, `.mv-gauge-tick-value` and `.mv-gauge-marker` applies everywhere.
 
+## Reference values on hover
+
+The labels on the arc are short by design. `annotationTooltipFormatter` gives each
+annotation — the value marker, a reference tick, either end label — its own readout, so the
+precise figure is one hover away without crowding the chart:
+
+<ChartDemo chart="gauge-chart" :index="4" :legend="false" />
+
+The formatter receives which annotation is under the pointer (`kind`, plus `end` for an end
+label), its position on the scale, the `label` and `valueLabel` as drawn, and the `ring` a
+marker belongs to (`null` for ticks and end labels, which describe the scale rather than
+any one ring). Return `null` or `""` to show nothing for that annotation.
+
+Two things follow from how it is wired:
+
+- **Hovering an annotation does not change which ring is active.** The centre readout stays
+  put while a reference value is inspected — the two readouts answer different questions.
+- **It works in every renderer.** The drawn annotations take no pointer events (a marker
+  that accepted the pointer would fire `mouseleave` on the ring cell beneath it and drop
+  both the emphasis and the centre readout), so the hover is resolved from geometry at the
+  host level rather than from the DOM.
+
+A ring with no value has no marker to hover, but its scale's ticks and end labels stay
+hoverable — the spread is still real even when one series has nothing in it.
+
 ## When to reach for it
 
 - **Share-of-market rings.** One product's share of nested scopes (world, region, market) in a single compact figure.

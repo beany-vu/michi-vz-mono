@@ -3074,6 +3074,26 @@ export interface GaugeEndLabel {
   valueLabel?: string;
 }
 
+/** One annotation under the pointer (see `GaugeChartProps.annotationTooltipFormatter`). */
+export interface GaugeAnnotationContext {
+  /** Which annotation the pointer is over. */
+  kind: "marker" | "tick" | "endLabel";
+  /** "min" or "max" for an end label; null for a tick or a marker. */
+  end: "min" | "max" | null;
+  /** Position on the scale: a tick's clamped value, the scale end for an end label, or
+   *  the ring's clamped value for a marker. */
+  value: number;
+  /** Caption as drawn ("AVG", "MIN"), when the consumer gave one. */
+  label?: string;
+  /** Value line as drawn ("$8.4 k"), when one is shown. */
+  valueLabel?: string;
+  /** The ring a marker belongs to. null for ticks and end labels, which describe the
+   *  SCALE rather than any one ring. */
+  ring: GaugeRingContext | null;
+  /** Position within its own kind; ticks keep the order the consumer gave. */
+  index: number;
+}
+
 /** Styling for the marker drawn at each ring's value (see `GaugeChartProps.valueMarker`). */
 export interface GaugeValueMarker {
   /** Circle radius in px (default 8). */
@@ -3226,6 +3246,17 @@ export interface GaugeChartProps {
   /** Opt-in hover tooltip HTML for a ring (sanitized). Default: no tooltip - the
    * centre label is the built-in readout. */
   tooltipFormatter?: (ring: GaugeRingContext) => string;
+  /** Opt-in hover tooltip HTML for ONE annotation - a value marker, a reference tick or
+   *  an end label (sanitized). Default: none; the annotations are inert.
+   *
+   *  The drawn annotations take no pointer events, so this is resolved from geometry at
+   *  the host level and behaves identically in the svg, canvas and webgpu renderers.
+   *  Hovering an annotation does NOT change which ring is active, so the centre readout
+   *  stays put while the reader inspects a reference value.
+   *
+   *  Return null or "" to show nothing for that annotation - a marker with no value never
+   *  exists in the first place, while the scale's ticks and end labels stay hoverable. */
+  annotationTooltipFormatter?: (annotation: GaugeAnnotationContext) => string | null;
   /** Called with the hovered ring's label (empty array on leave) */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */

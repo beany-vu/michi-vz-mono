@@ -41,6 +41,34 @@ Le consommateur possède chaque texte : passez `label` et `valueLabel` sur un re
 
 Les trois moteurs de rendu affichent les mêmes annotations : en mode canvas et WebGPU elles vivent dans un calque au-dessus des arcs peints, donc le CSS du consommateur sur `.mv-gauge-tick-label`, `.mv-gauge-tick-value` et `.mv-gauge-marker` s'applique partout.
 
+## Valeurs de référence au survol
+
+Les étiquettes sur l'arc sont volontairement courtes. `annotationTooltipFormatter` donne à
+chaque annotation — le marqueur de valeur, un repère, l'une ou l'autre extrémité — son
+propre affichage, de sorte que le chiffre précis est à un survol de distance sans surcharger
+le graphique :
+
+<ChartDemo chart="gauge-chart" :index="4" :legend="false" />
+
+La fonction reçoit l'annotation survolée (`kind`, plus `end` pour une extrémité), sa position
+sur l'échelle, les `label` et `valueLabel` tels qu'ils sont dessinés, et l'anneau (`ring`)
+auquel appartient un marqueur (`null` pour les repères et les extrémités, qui décrivent
+l'échelle et non un anneau en particulier). Renvoyez `null` ou `""` pour n'afficher
+rien pour cette annotation.
+
+Deux conséquences de ce câblage :
+
+- **Survoler une annotation ne change pas l'anneau actif.** L'affichage central reste en
+  place pendant l'inspection d'une valeur de référence : les deux affichages répondent à des
+  questions différentes.
+- **Cela fonctionne dans tous les moteurs de rendu.** Les annotations dessinées ne reçoivent
+  aucun événement de pointeur (un marqueur qui l'accepterait déclencherait `mouseleave` sur
+  la cellule d'anneau en dessous et ferait disparaître à la fois l'emphase et l'affichage
+  central), le survol est donc résolu à partir de la géométrie au niveau de l'hôte, pas du DOM.
+
+Un anneau sans valeur n'a aucun marqueur à survoler, mais les repères et les extrémités de
+son échelle restent survolables : la plage reste réelle même quand une série n'a rien.
+
 ## Quand l'utiliser
 
 - **Parts de marché imbriquées.** La part d'un produit sur des périmètres emboîtés (monde, région, marché) en une seule figure compacte.

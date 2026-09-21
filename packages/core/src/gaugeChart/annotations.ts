@@ -15,6 +15,11 @@ export const GAUGE_TICK_LABEL = 26;
 export const GAUGE_END_LABEL_OFFSET = 20;
 /** Band reserved around a sweep-fitted gauge while ticks or end labels exist (px). */
 export const GAUGE_ANNOTATION_RESERVE = 36;
+/** Pointer tolerance around a tick or end-label ANCHOR (px). Large enough to cover both
+ *  label lines (caption 6px above, value 7px below) without swallowing neighbours. */
+export const GAUGE_ANNOTATION_HIT = 16;
+/** Extra pointer tolerance around a value marker, on top of its own radius (px). */
+export const GAUGE_MARKER_HIT_PAD = 4;
 
 const MARKER_DEFAULTS = { radius: 8, stroke: "#fff", strokeWidth: 2.5 };
 const MARKER_TICK_DEFAULTS = { length: 20, color: "#1a1a1a", width: 1.5 };
@@ -51,6 +56,9 @@ export interface GaugeTickMark {
   y1: number;
   x2: number;
   y2: number;
+  /** The tick's position on the scale, CLAMPED into [min, max] - the same number the
+   *  default valueLabel formats, so a hover readout never quotes an off-scale value. */
+  value: number;
   /** Label anchor (caption goes 6px above, value 7px below). */
   labelX: number;
   labelY: number;
@@ -81,6 +89,75 @@ export function emptyGaugeAnnotations(): GaugeAnnotations {
 
 export function hasGaugeAnnotations(a: GaugeAnnotations): boolean {
   return a.markers.length > 0 || a.ticks.length > 0 || a.endLabels.length > 0;
+}
+
+/** Which annotation the pointer is over (see `hitTestGaugeAnnotations`). */
+export interface GaugeAnnotationHit {
+  kind: "marker" | "tick" | "endLabel";
+  /** Position within that kind's array: ticks keep the order the consumer gave. */
+  index: number;
+}
+
+const nearest = (
+  points: { x: number; y: number; tolerance: number }[],
+  x: number,
+  y: number,
+): number | null => {
+  let best: number | null = null;
+  let bestDist = Infinity;
+  points.forEach((p, index) => {
+    const dist = Math.hypot(x - p.x, y - p.y);
+    if (dist <= p.tolerance && dist < bestDist) {
+      best = index;
+      bestDist = dist;
+    }
+  });
+  return best;
+};
+
+/**
+ * Which annotation, if any, sits under a point in SVG coordinates.
+ *
+ * The drawn annotations take no pointer events - a marker that accepted the pointer would
+ * fire mouseleave on the ring cell underneath and drop both the ring emphasis and the
+ * centre readout - so hover is resolved here, from geometry, at the host level. That also
+ * makes it identical in the svg, canvas and webgpu renderers.
+ *
+ * Ticks and end labels are matched on their LABEL anchor, which is what a pointer aims at;
+ * the short radial line is not a target. Markers are matched on their own circle and win
+ * over a label that overlaps them: they are smaller and more deliberate. A ring with no
+ * value contributes no marker, but its scale's ticks and end labels stay hoverable.
+ *
+ * @param hitRadius pointer tolerance around a label anchor (default GAUGE_ANNOTATION_HIT).
+ */
+export function hitTestGaugeAnnotations(
+  a: GaugeAnnotations,
+  x: number,
+  y: number,
+  hitRadius: number = GAUGE_ANNOTATION_HIT,
+): GaugeAnnotationHit | null {
+  const marker = nearest(
+    a.markers.map((m) => ({ x: m.x, y: m.y, tolerance: m.radius + GAUGE_MARKER_HIT_PAD })),
+    x,
+    y,
+  );
+  if (marker !== null) return { kind: "marker", index: marker };
+
+  const tick = nearest(
+    a.ticks.map((t) => ({ x: t.labelX, y: t.labelY, tolerance: hitRadius })),
+    x,
+    y,
+  );
+  if (tick !== null) return { kind: "tick", index: tick };
+
+  const endLabel = nearest(
+    a.endLabels.map((e) => ({ x: e.x, y: e.y, tolerance: hitRadius })),
+    x,
+    y,
+  );
+  if (endLabel !== null) return { kind: "endLabel", index: endLabel };
+
+  return null;
 }
 
 export interface BuildGaugeAnnotationsInput {
@@ -166,6 +243,7 @@ export function buildGaugeAnnotations(i: BuildGaugeAnnotationsInput): GaugeAnnot
       y1,
       x2,
       y2,
+      value: clamped,
       labelX,
       labelY,
       angle: a,

@@ -1396,6 +1396,12 @@
           },
           centerContent: () =>
             '<span class="mv-gauge-center-label">GREECE</span><b class="mv-gauge-center-value">7.8 k</b><span>$/T</span>',
+          // Per-annotation hover: the drawn annotations take no pointer events, so the
+          // engine resolves this from geometry - identically in svg, canvas and webgpu.
+          annotationTooltipFormatter: (a) =>
+            a.kind === "marker"
+              ? `<b>${a.ring.label}</b> ${a.value.toFixed(2)} $/T`
+              : `<b>${a.label || a.kind}</b> ${a.value.toFixed(2)} $/T`,
         });
 
         await nextFrame();
@@ -2707,6 +2713,39 @@
           log(
             !!gpCentre && gpCentre.style.top === "110px",
             `GAUGE POSITIONING: sweepFit anchors the readout at the swept box middle (top=${gpCentre && gpCentre.style.top})`,
+          );
+
+          // Per-annotation hover. The AVG caption is drawn 6px ABOVE the anchor the hit
+          // test uses, so aim at the anchor itself. The centre readout must NOT move:
+          // inspecting a reference value does not change which ring is active.
+          const gpHost = gaugePositioningEl.querySelector(".mv-host");
+          const gpBaseSvg = gaugePositioningEl.querySelector("svg:not(.mv-overlay-svg)");
+          const gpAvg = gpOverlay
+            ? Array.from(gpOverlay.querySelectorAll("text")).find((t) => t.textContent === "AVG")
+            : null;
+          const gpTip = gaugePositioningEl.querySelector(".tooltip");
+          let gpTipText = "";
+          let gpCentreAfter = "";
+          if (gpHost && gpBaseSvg && gpAvg && gpTip) {
+            const svgRect = gpBaseSvg.getBoundingClientRect();
+            gpHost.dispatchEvent(
+              new MouseEvent("mousemove", {
+                clientX: svgRect.left + Number(gpAvg.getAttribute("x")),
+                clientY: svgRect.top + Number(gpAvg.getAttribute("y")) + 6,
+                bubbles: true,
+              }),
+            );
+            await nextFrame();
+            gpTipText = gpTip.style.visibility === "visible" ? gpTip.textContent : "";
+            gpCentreAfter = gpCentre ? gpCentre.textContent : "";
+          }
+          log(
+            gpTipText === "AVG 8376.52 $/T",
+            `GAUGE POSITIONING: hovering the AVG tick shows its own tooltip (got "${gpTipText}")`,
+          );
+          log(
+            gpCentreAfter === "GREECE7.8 k$/T",
+            `GAUGE POSITIONING: annotation hover leaves the centre readout alone (got "${gpCentreAfter}")`,
           );
 
           // PNG export composite (browser-only path). The exporter draws three layers:

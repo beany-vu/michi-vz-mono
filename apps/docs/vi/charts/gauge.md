@@ -41,6 +41,32 @@ Bên dùng sở hữu mọi chuỗi văn bản: truyền `label` và `valueLabel
 
 Cả ba trình kết xuất hiển thị cùng các chú giải: ở chế độ canvas và WebGPU chúng nằm trong lớp phủ phía trên các cung được vẽ, nên CSS của bên dùng trên `.mv-gauge-tick-label`, `.mv-gauge-tick-value` và `.mv-gauge-marker` áp dụng ở mọi nơi.
 
+## Giá trị tham chiếu khi rê chuột
+
+Các nhãn trên cung được rút gọn có chủ đích. `annotationTooltipFormatter` cho mỗi chú giải —
+điểm đánh dấu giá trị, một vạch tham chiếu, hoặc nhãn ở hai đầu mút — phần hiển thị riêng, nên
+con số chính xác chỉ cách một lần rê chuột mà không làm rối biểu đồ:
+
+<ChartDemo chart="gauge-chart" :index="4" :legend="false" />
+
+Hàm này nhận chú giải đang nằm dưới con trỏ (`kind`, kèm `end` cho nhãn đầu mút), vị trí của
+nó trên thang đo, `label` và `valueLabel` đúng như được vẽ, và `ring` mà điểm đánh dấu thuộc
+về (`null` với vạch và nhãn đầu mút, vốn mô tả thang đo chứ không phải một vòng cụ thể). Trả
+về `null` hoặc `""` để không hiển thị gì cho chú giải đó.
+
+Hai hệ quả từ cách nối dây này:
+
+- **Rê chuột lên một chú giải không làm đổi vòng đang hoạt động.** Phần hiển thị trung tâm
+  giữ nguyên trong lúc xem một giá trị tham chiếu — hai phần hiển thị trả lời hai câu hỏi
+  khác nhau.
+- **Nó hoạt động ở mọi trình kết xuất.** Các chú giải được vẽ không nhận sự kiện con trỏ (một
+  điểm đánh dấu nhận sự kiện sẽ kích hoạt `mouseleave` trên ô vòng bên dưới và làm mất cả
+  phần nhấn mạnh lẫn phần hiển thị trung tâm), nên thao tác rê chuột được suy ra từ hình học
+  ở cấp phần tử chứa, thay vì từ DOM.
+
+Vòng không có giá trị thì không có điểm đánh dấu để rê chuột, nhưng vạch và nhãn đầu mút của
+thang đo vẫn rê được — khoảng giá trị vẫn có thật ngay cả khi một chuỗi không có dữ liệu.
+
 ## Khi nào nên dùng
 
 - **Thị phần lồng nhau.** Thị phần của một sản phẩm trên các phạm vi lồng nhau (thế giới, khu vực, thị trường) trong một hình gọn.
