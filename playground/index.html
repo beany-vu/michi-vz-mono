@@ -303,6 +303,21 @@
         id="cmpDescendantContractChart"
       ></michi-vz-comparable-horizontal-bar-chart>
     </div>
+    <h2>Comparable barRadius: 0 = square corners (grouped half-bands, svg + canvas)</h2>
+    <div class="row" id="cmpRadius">
+      <div class="card">
+        <h2>SVG, barRadius 0</h2>
+        <michi-vz-comparable-horizontal-bar-chart
+          id="cmpRadiusSvg"
+        ></michi-vz-comparable-horizontal-bar-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas, barRadius 0</h2>
+        <michi-vz-comparable-horizontal-bar-chart
+          id="cmpRadiusCanvas"
+        ></michi-vz-comparable-horizontal-bar-chart>
+      </div>
+    </div>
 
     <h1 style="margin-top: 36px">
       @michi-vz/wc - ComparableVerticalBar (fixed z-order, full-bandwidth overlay)
@@ -333,6 +348,12 @@
     <div class="card" id="cmpVDescendantContract">
       <michi-vz-comparable-vertical-bar-chart
         id="cmpVDescendantContractChart"
+      ></michi-vz-comparable-vertical-bar-chart>
+    </div>
+    <h2>ComparableVerticalBar barRadius: 2 (svg)</h2>
+    <div class="card" id="cmpVRadius">
+      <michi-vz-comparable-vertical-bar-chart
+        id="cmpVRadiusSvg"
       ></michi-vz-comparable-vertical-bar-chart>
     </div>
 
@@ -828,6 +849,28 @@
           valueComparedOpacity: 1,
           ...cmpCommon,
         });
+        // barRadius: 0 on grouped half-bands - the thin-bar case the prop exists for.
+        // Same props on both so the svg twin tells the pixel check where each bar is.
+        const cmpRadiusCommon = {
+          dataSet: cmpData,
+          layout: "grouped",
+          barRadius: 0,
+          valueBasedOpacity: 1,
+          valueComparedOpacity: 1,
+          ...cmpCommon,
+        };
+        const cmpRadiusSvgEl = document.getElementById("cmpRadiusSvg");
+        const cmpRadiusCanvasEl = document.getElementById("cmpRadiusCanvas");
+        Object.assign(cmpRadiusSvgEl, {
+          ...cmpRadiusCommon,
+          chartTitle: "barRadius 0",
+          renderer: "svg",
+        });
+        Object.assign(cmpRadiusCanvasEl, {
+          ...cmpRadiusCommon,
+          chartTitle: "barRadius 0",
+          renderer: "canvas",
+        });
 
         // ---- ComparableVerticalBar setup ----
         const cmpVData = [
@@ -868,6 +911,14 @@
           skipColorMappingDispatch: true,
           valueBasedOpacity: 1,
           valueComparedOpacity: 1,
+          ...cmpVCommon,
+        });
+        const cmpVRadiusSvgEl = document.getElementById("cmpVRadiusSvg");
+        Object.assign(cmpVRadiusSvgEl, {
+          dataSet: cmpVData,
+          chartTitle: "barRadius 2",
+          renderer: "svg",
+          barRadius: 2,
           ...cmpVCommon,
         });
 
@@ -1931,6 +1982,55 @@
           log(
             cmpVDescendantComparedOk,
             'CMPV DESCENDANT CANVAS colour contract: `.bar[data-label-safe="Beta"] .value-compared { fill: rgb(220,20,140) }` reached canvas pixels',
+          );
+
+          // ---- Comparable barRadius checks ----
+          const radiusRects = Array.from(cmpRadiusSvgEl.querySelectorAll("rect.bar"));
+          log(
+            radiusRects.length === 6 &&
+              radiusRects.every(
+                (r) => r.getAttribute("rx") === "0" && r.getAttribute("ry") === "0",
+              ),
+            `CMP barRadius 0: every svg bar has rx/ry 0 (got ${radiusRects.map((r) => r.getAttribute("rx")).join(",")})`,
+          );
+          const defaultRects = Array.from(cmpSvgEl.querySelectorAll("rect.bar"));
+          log(
+            defaultRects.length === 6 && defaultRects.every((r) => r.getAttribute("rx") === "5"),
+            "CMP barRadius omitted: svg bars keep the default rx 5",
+          );
+          const cmpVRadiusRects = Array.from(cmpVRadiusSvgEl.querySelectorAll("rect.bar"));
+          log(
+            cmpVRadiusRects.length === 6 &&
+              cmpVRadiusRects.every(
+                (r) => r.getAttribute("rx") === "2" && r.getAttribute("ry") === "2",
+              ),
+            `CMPV barRadius 2: every svg column has rx/ry 2 (got ${cmpVRadiusRects.map((r) => r.getAttribute("rx")).join(",")})`,
+          );
+          // Canvas pixels: the pixel just inside a bar's top-left corner is painted
+          // when the corners are square, and left empty by the default 5px rounding.
+          // The svg twin (same props) says where the bar is; the canvas backing store
+          // is scaled by devicePixelRatio.
+          const cornerAlpha = (chartEl, twinEl) => {
+            const cnv = chartEl.querySelector("canvas");
+            const rect = twinEl.querySelector("rect.bar");
+            if (!cnv || !rect) return -1;
+            const dpr = window.devicePixelRatio || 1;
+            const x = Number(rect.getAttribute("x"));
+            const y = Number(rect.getAttribute("y"));
+            const { data } = cnv
+              .getContext("2d")
+              .getImageData(Math.floor((x + 0.5) * dpr), Math.floor((y + 0.5) * dpr), 1, 1);
+            return data[3];
+          };
+          const squareAlpha = cornerAlpha(cmpRadiusCanvasEl, cmpRadiusSvgEl);
+          log(
+            squareAlpha > 200,
+            `CMP CANVAS barRadius 0: a bar's top-left corner pixel is painted (alpha ${squareAlpha})`,
+          );
+          const roundAlpha = cornerAlpha(cmpCanvasEl, cmpSvgEl);
+          log(
+            roundAlpha >= 0 && roundAlpha < 40,
+            `CMP CANVAS default radius: the same corner pixel stays empty (alpha ${roundAlpha})`,
           );
 
           // ---- DualHorizontalBar checks ----

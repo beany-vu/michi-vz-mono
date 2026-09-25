@@ -4,6 +4,7 @@
 // per-row z-order (see renderModel.ts's comparableVerticalDrawOrder). Hover per
 // sub-bar rect.
 import { svgEl } from "../dom";
+import { clampBarRadius } from "../comparableBar/barRadius";
 import { comparableVerticalDrawOrder } from "./renderModel";
 import type { ComparableVerticalBarModel, ComparableVerticalRenderModel } from "./renderModel";
 
@@ -11,6 +12,9 @@ export interface ComparableVerticalSvgOptions {
   valueBasedOpacity: number;
   valueComparedOpacity: number;
   enableTransitions: boolean;
+  /** Resolved `barRadius` prop (px). Clamped per bar to half its width or height,
+   * exactly like the canvas renderer's roundRectPath. */
+  barRadius: number;
   /** label (or its data-label-safe form) -> a `<pattern>` element id already
    * present in the SVG's `<defs>` (see render/svg/patternDefs.ts). When set for
    * a label, its value-based sub-bar fills with `url(#id)` instead of a flat colour. */
@@ -57,6 +61,7 @@ export function renderComparableVerticalSvg(
               fill: bar.color,
             };
       const patternId = type === "based" ? o.patternIdFor?.(bar.label, bar.safe) : undefined;
+      const radius = clampBarRadius(o.barRadius, part.seg.width, part.seg.height);
       const rect = svgEl("rect", {
         class: `bar ${part.cls}`,
         "data-label": bar.label,
@@ -67,8 +72,8 @@ export function renderComparableVerticalSvg(
         height: part.seg.height,
         fill: patternId ? `url(#${patternId})` : part.fill,
         opacity: part.opacity,
-        rx: 5,
-        ry: 5,
+        rx: radius,
+        ry: radius,
         "stroke-width": 1,
       });
       rect.style.cursor = "pointer";

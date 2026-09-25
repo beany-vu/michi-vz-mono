@@ -5,6 +5,7 @@ import { renderElement } from "./render";
 
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const base = reg["comparable-horizontal-bar-chart"][0].props; // 7 economies, two periods
+const grouped = reg["comparable-horizontal-bar-chart"][1].props; // grouped half-bands, barRadius 2
 
 const meta: Meta = {
   title: "Charts/ComparableHorizontalBar",
@@ -12,6 +13,8 @@ const meta: Meta = {
   argTypes: {
     renderer: { control: "inline-radio", options: ["svg", "canvas"] },
     maxBarHeight: { control: { type: "range", min: 8, max: 80, step: 2 } },
+    barRadius: { control: { type: "range", min: 0, max: 12, step: 1 } },
+    layout: { control: "inline-radio", options: ["overlay", "grouped"] },
     symmetricXDomain: { control: "boolean" },
     width: { control: { type: "range", min: 320, max: 1100, step: 20 } },
     height: { control: { type: "range", min: 200, max: 760, step: 20 } },
@@ -62,6 +65,16 @@ const signed = {
  */
 export const SymmetricXDomain: Story = {
   args: { ...signed, symmetricXDomain: true, width: 760, height: 420, renderer: "svg" },
+};
+
+/**
+ * `barRadius` sets every bar's corner radius in px (default 5; 0 = square). On a
+ * small screen the grouped half-bands are only a few px thick, and 5 rounds each one
+ * into a pill; 2 keeps them crisp. The drawn radius never exceeds half the bar's
+ * width or height, identically in svg and canvas. Drag the control to compare.
+ */
+export const BarRadius: Story = {
+  args: { ...grouped, width: 420, height: 320, renderer: "svg" },
 };
 
 /** Canvas renderer - same two-period comparison, painted to a <canvas>. */

@@ -2,6 +2,7 @@
 // label (based behind at valueBasedOpacity, compared in front at
 // valueComparedOpacity), each with data-label + data-label-safe. Hover per group.
 import { svgEl } from "../dom";
+import { clampBarRadius } from "./barRadius";
 import { comparableDrawOrder } from "./renderModel";
 import type { ComparableBarModel, ComparableRenderModel } from "./renderModel";
 
@@ -9,6 +10,9 @@ export interface ComparableSvgOptions {
   valueBasedOpacity: number;
   valueComparedOpacity: number;
   enableTransitions: boolean;
+  /** Resolved `barRadius` prop (px). Clamped per bar to half its width or height,
+   * exactly like the canvas renderer's roundRectPath. */
+  barRadius: number;
   /** label (or its data-label-safe form) -> a `<pattern>` element id already
    * present in the SVG's `<defs>` (see render/svg/patternDefs.ts, backported
    * from ComparableVerticalBarChart). When set for a label, its value-based
@@ -57,6 +61,7 @@ export function renderComparableSvg(
               fill: bar.color,
             };
       const patternId = type === "based" ? o.patternIdFor?.(bar.label, bar.safe) : undefined;
+      const radius = clampBarRadius(o.barRadius, part.seg.width, part.seg.height);
       const rect = svgEl("rect", {
         class: `bar ${part.cls}`,
         "data-label": bar.label,
@@ -67,8 +72,8 @@ export function renderComparableSvg(
         height: part.seg.height,
         fill: patternId ? `url(#${patternId})` : part.fill,
         opacity: part.opacity,
-        rx: 5,
-        ry: 5,
+        rx: radius,
+        ry: radius,
         "stroke-width": 1,
       });
       rect.style.cursor = "pointer";

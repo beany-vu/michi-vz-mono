@@ -1243,6 +1243,13 @@ export interface ComparableBarChartProps {
    * the band range shrinks to yield exactly this thickness and is centred in the plot.
    * No-op for dense charts whose natural bandwidth is already below the cap. */
   maxBarHeight?: number;
+  /** Corner radius of every bar, in px (default 5, the historical look). `0` draws
+   * square corners. The drawn radius never exceeds half the bar's width or height, so
+   * a bar only 10px thick (a `layout: "grouped"` half-band on a phone, say) turns into
+   * a pill at the default 5 - lower it (2-4) for square-ish corners there. Applies to
+   * the svg and canvas renderers alike; the experimental webgpu renderer draws square
+   * corners regardless. Negative values draw square corners; NaN falls back to 5. */
+  barRadius?: number;
   /** Force a symmetric x-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits
    * centred and the negative/positive sides mirror (e.g. ± growth %). Wins over
    * xAxisDomain / xAxisPredefinedDomain. */
@@ -1406,6 +1413,13 @@ export interface ComparableVerticalBarChartProps {
    * bandwidth, the band range shrinks to yield exactly this thickness and is centred in
    * the plot. No-op for dense charts whose natural bandwidth is already below the cap. */
   maxBarWidth?: number;
+  /** Corner radius of every column, in px (default 5, the historical look). `0` draws
+   * square corners. The drawn radius never exceeds half the column's width or height, so
+   * a narrow column (many categories on a phone, say) turns into a pill at the default
+   * 5 - lower it (2-4) for square-ish corners there. Applies to the svg and canvas
+   * renderers alike; the experimental webgpu renderer draws square corners regardless.
+   * Negative values draw square corners; NaN falls back to 5. */
+  barRadius?: number;
   /** Row-level change indicator (arrow + formatted diff label) comparing valueCompared to
    * valueBased, drawn above each column pair. Omitted, or `{ show: false }`, is a provable no-op (zero geometry, zero
    * `.mv-delta` DOM). Unlike ComparableHorizontalBarChart, THIS chart's context DOES

@@ -48,6 +48,7 @@ export function applyComparableHorizontalBarChartProps(
   if (props.horizontalTickPosition !== undefined)
     el.horizontalTickPosition = props.horizontalTickPosition;
   if (props.maxBarHeight !== undefined) el.maxBarHeight = props.maxBarHeight;
+  if (props.barRadius !== undefined) el.barRadius = props.barRadius;
   if (props.symmetricXDomain !== undefined) el.symmetricXDomain = props.symmetricXDomain;
   if (props.layout !== undefined) el.layout = props.layout;
   if (props.deltaIndicator !== undefined) el.deltaIndicator = props.deltaIndicator;

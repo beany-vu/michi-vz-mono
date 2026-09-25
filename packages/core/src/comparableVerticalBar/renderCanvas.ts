@@ -8,6 +8,7 @@
 // ctx.createPattern. jsdom -> no-op.
 import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSubBarProbe } from "../canvas/resolveMarkColors";
+import { clampBarRadius } from "../comparableBar/barRadius";
 import { comparableVerticalDrawOrder } from "./renderModel";
 import type { ComparableVerticalRenderModel } from "./renderModel";
 
@@ -16,6 +17,9 @@ export interface ComparableVerticalCanvasOptions {
   height: number;
   valueBasedOpacity: number;
   valueComparedOpacity: number;
+  /** Resolved `barRadius` prop (px); clamped per bar by clampBarRadius, the same
+   * clamp the svg renderer applies to rx/ry. */
+  barRadius: number;
   /** label -> image source (data-URI) used to fill the value-based sub-bar. */
   patternsMapping?: Record<string, string>;
 }
@@ -38,8 +42,9 @@ function getPatternImage(src: string, onLoad: () => void): HTMLImageElement | nu
 const isTransparent = (c: string): boolean =>
   c === "transparent" || c === "rgba(0, 0, 0, 0)" || c === "rgba(0,0,0,0)";
 
-// Rounded-rect path (radius clamped to half the smaller side). Uses
-// ctx.roundRect where available, else arcTo.
+// Rounded-rect path (radius clamped to half the smaller side by clampBarRadius,
+// the same clamp the svg renderer uses for rx/ry). Uses ctx.roundRect where
+// available, else arcTo.
 function roundRectPath(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -48,7 +53,7 @@ function roundRectPath(
   h: number,
   r: number,
 ): void {
-  const rad = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2));
+  const rad = clampBarRadius(r, w, h);
   ctx.beginPath();
   if (typeof (ctx as unknown as { roundRect?: unknown }).roundRect === "function") {
     (
@@ -124,7 +129,7 @@ export function drawComparableVerticalCanvas(
       }
       ctx.globalAlpha = groupAlpha * part.opacity;
       ctx.fillStyle = fillStyle;
-      roundRectPath(ctx, part.seg.x, part.seg.y, part.seg.width, part.seg.height, 5);
+      roundRectPath(ctx, part.seg.x, part.seg.y, part.seg.width, part.seg.height, o.barRadius);
       ctx.fill();
       // 1px border in the resolved colour, so the bar reads as an outlined
       // rounded rect (and the hatch fill gets a clean edge).

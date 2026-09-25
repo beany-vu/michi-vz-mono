@@ -42,6 +42,7 @@ export function applyComparableVerticalBarChartProps(
   if (props.hideTickLabels !== undefined) el.hideTickLabels = props.hideTickLabels;
   if (props.minBarHeight !== undefined) el.minBarHeight = props.minBarHeight;
   if (props.maxBarWidth !== undefined) el.maxBarWidth = props.maxBarWidth;
+  if (props.barRadius !== undefined) el.barRadius = props.barRadius;
   if (props.symmetricYDomain !== undefined) el.symmetricYDomain = props.symmetricYDomain;
   if (props.deltaIndicator !== undefined) el.deltaIndicator = props.deltaIndicator;
   if (props.isLoading !== undefined) el.isLoading = props.isLoading;

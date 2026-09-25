@@ -700,6 +700,41 @@ const comparable: Example<ComparableBarChartProps>[] = [
       ],
     },
   },
+  {
+    id: "comparable-grouped-bar-radius",
+    title: "Services exports by sector: grouped, 2px corners",
+    description:
+      "Grouped layout (before on the top half-band, after on the bottom) with barRadius: 2. Half-bands are thin on a small screen, and the default 5px radius would round each one into a pill; a 2px radius keeps them crisp. barRadius: 0 gives square corners.",
+    element: "michi-vz-comparable-horizontal-bar-chart",
+    props: {
+      title: "Services exports by sector: 2019 vs 2024, US$ bn (illustrative)",
+      layout: "grouped",
+      barRadius: 2,
+      valueBasedOpacity: 1,
+      valueComparedOpacity: 1,
+      tooltipFormatter: (d) =>
+        `<strong>${d.label}</strong><br/>2019: ${d.valueBased.toLocaleString()} bn<br/>2024: ${d.valueCompared.toLocaleString()} bn`,
+      colorsBasedMapping: {
+        Transport: "#b5cde7",
+        Travel: "#f4d1ba",
+        "ICT services": "#d7bee2",
+        "Financial services": "#b6d6c4",
+        "Other business services": "#c6c9cd",
+      },
+      dataSet: [
+        { label: "Transport", valueBased: 1030, valueCompared: 1240, color: "#2c6fbb" },
+        { label: "Travel", valueBased: 1440, valueCompared: 1510, color: "#e07b39" },
+        { label: "ICT services", valueBased: 680, valueCompared: 1090, color: "#8e44ad" },
+        { label: "Financial services", valueBased: 560, valueCompared: 710, color: "#2e8b57" },
+        {
+          label: "Other business services",
+          valueBased: 1510,
+          valueCompared: 1920,
+          color: "#5b6470",
+        },
+      ],
+    },
+  },
 ];
 
 const comparableVertical: Example<ComparableVerticalBarChartProps>[] = [
@@ -729,6 +764,45 @@ const comparableVertical: Example<ComparableVerticalBarChartProps>[] = [
         { label: "Machinery", valueBased: 540, valueCompared: 612, color: "#2c6fbb" },
         { label: "Chemicals", valueBased: 265, valueCompared: 251, color: "#e07b39" },
         { label: "Electronics", valueBased: 690, valueCompared: 845, color: "#8e44ad" },
+      ],
+    },
+  },
+  {
+    id: "comparable-vertical-bar-radius",
+    title: "Monthly output index: square corners",
+    description:
+      "Twelve categories make narrow columns on a small screen, where the default 5px radius rounds each one into a pill. barRadius: 0 draws square corners; any value in between (2-4) gives square-ish ones.",
+    element: "michi-vz-comparable-vertical-bar-chart",
+    props: {
+      title: "Monthly output index: 2023 vs 2024 (illustrative)",
+      barRadius: 0,
+      valueBasedOpacity: 1,
+      valueComparedOpacity: 1,
+      colorsMapping: Object.fromEntries(
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(
+          (m) => [m, "#2c6fbb"],
+        ),
+      ),
+      colorsBasedMapping: Object.fromEntries(
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(
+          (m) => [m, "#b5cde7"],
+        ),
+      ),
+      tooltipFormatter: (d) =>
+        `<strong>${d.label}</strong><br/>2023: ${d.valueBased}<br/>2024: ${d.valueCompared}`,
+      dataSet: [
+        { label: "Jan", valueBased: 98, valueCompared: 101 },
+        { label: "Feb", valueBased: 97, valueCompared: 103 },
+        { label: "Mar", valueBased: 101, valueCompared: 104 },
+        { label: "Apr", valueBased: 100, valueCompared: 99 },
+        { label: "May", valueBased: 102, valueCompared: 106 },
+        { label: "Jun", valueBased: 104, valueCompared: 105 },
+        { label: "Jul", valueBased: 103, valueCompared: 108 },
+        { label: "Aug", valueBased: 99, valueCompared: 102 },
+        { label: "Sep", valueBased: 101, valueCompared: 100 },
+        { label: "Oct", valueBased: 105, valueCompared: 109 },
+        { label: "Nov", valueBased: 106, valueCompared: 110 },
+        { label: "Dec", valueBased: 108, valueCompared: 113 },
       ],
     },
   },

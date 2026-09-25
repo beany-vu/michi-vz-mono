@@ -86,6 +86,40 @@ applyComparableHorizontalBarChartProps(this.c.nativeElement, { ...props, timelin
 - Een `filter` (top-N, sortering) blijft binnen elke periode gelden, dus een "top 5 per jaar" werkt meteen.
 - Rijen zonder `date` blijven in elke periode zichtbaar.
 
+## Hoekradius
+
+Elke balk krijgt standaard hoeken van 5px. Op een klein scherm worden de balken dun - de halve banden van de `grouped`-layout zijn soms maar zo'n 10px dik - en een radius van 5px op een balk van 10px maakt er een pil van. `barRadius` stelt de radius in px in: `0` voor vierkante hoeken, 2-4 voor bijna vierkante.
+
+<BarRadiusDemo chart="comparable-horizontal-bar-chart" default-label="standaard" hint="Dezelfde grafiek, dezelfde data; alleen barRadius verandert. Wissel van renderer: svg en canvas ronden de hoeken identiek af." />
+
+::: code-group
+
+```tsx [React]
+<ComparableHorizontalBarChart {...props} layout="grouped" barRadius={2} />
+```
+
+```vue [Vue]
+<ComparableHorizontalBarChart :options="{ ...props, layout: 'grouped', barRadius: 2 }" />
+```
+
+```svelte [Svelte]
+<div use:comparableHorizontalBarChart={{ ...props, layout: "grouped", barRadius: 2 }}></div>
+```
+
+```ts [Angular]
+applyComparableHorizontalBarChartProps(this.c.nativeElement, { ...props, layout: "grouped", barRadius: 2 });
+```
+
+```html [Web component]
+<michi-vz-comparable-horizontal-bar-chart layout="grouped" bar-radius="2"></michi-vz-comparable-horizontal-bar-chart>
+```
+
+:::
+
+- De getekende radius is nooit groter dan de helft van de breedte of hoogte van de balk, in svg en canvas gelijk.
+- Zonder `barRadius` blijft het vertrouwde uiterlijk van 5px behouden. Een negatieve waarde geeft vierkante hoeken.
+- De experimentele `webgpu`-renderer tekent vierkante hoeken, wat de waarde ook is.
+
 ## Gebruik
 
 ::: code-group
@@ -172,6 +206,6 @@ De categorielabels van de y-as staan in een linkerkolom van `tickHtmlWidth` px b
 
 ### Laden / geen data + interactie
 
-`isLoading` en `isNodata` sturen de overlay aan (React: `isLoadingComponent` / `isNodataComponent`). Hoveren markeert een rij (andere dimmen) en `mouseleave` maakt dit ongedaan; de balken zijn afgerond (radius 5) met een rand van 1px.
+`isLoading` en `isNodata` sturen de overlay aan (React: `isLoadingComponent` / `isNodataComponent`). Hoveren markeert een rij (andere dimmen) en `mouseleave` maakt dit ongedaan; de balken zijn afgerond (standaard radius 5, in te stellen met `barRadius`) met een rand van 1px.
 
 > **Kleurautoriteit van de consument:** de context bevat `legendData` (`{ label, color, dataLabelSafe }`) zodat een CSS-injectie-kleursysteem regels per label kan koppelen; `onChartDataProcessed` wordt alleen uitgezonden wanneer de context **verandert** (het opnieuw uitzenden van een ongewijzigde context bij elke render kan een consument die op elke aanroep dispatcht in een lus laten belanden).

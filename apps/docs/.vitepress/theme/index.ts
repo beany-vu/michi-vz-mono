@@ -8,6 +8,7 @@ import ProgressiveDrawDemo from "./ProgressiveDrawDemo.vue";
 import TimelinePlayDemo from "./TimelinePlayDemo.vue";
 import RevealDemo from "./RevealDemo.vue";
 import PositionModeDemo from "./PositionModeDemo.vue";
+import BarRadiusDemo from "./BarRadiusDemo.vue";
 import InsightsDemo from "./InsightsDemo.vue";
 import EmbeddingsLab from "./EmbeddingsLab.vue";
 import MatchLab from "./MatchLab.vue";
@@ -35,6 +36,7 @@ export default {
     app.component("TimelinePlayDemo", TimelinePlayDemo);
     app.component("RevealDemo", RevealDemo);
     app.component("PositionModeDemo", PositionModeDemo);
+    app.component("BarRadiusDemo", BarRadiusDemo);
     app.component("InsightsDemo", InsightsDemo);
     app.component("EmbeddingsLab", EmbeddingsLab);
     app.component("MatchLab", MatchLab);

@@ -86,6 +86,40 @@ applyComparableVerticalBarChartProps(this.c.nativeElement, { ...props, timeline:
 - A `filter` (top-N, sorting) still applies inside each period, so a top 5 per year race works out of the box.
 - Columns without a `date` stay visible in every period.
 
+## Corner radius
+
+Every column is drawn with 5px corners by default. On a small screen with many categories the columns get narrow - a few px each - and a 5px radius turns them into pills. `barRadius` sets the radius in px: `0` for square corners, 2-4 for square-ish ones.
+
+<BarRadiusDemo chart="comparable-vertical-bar-chart" default-label="default" hint="Same chart, same data; only barRadius changes. Switch the renderer: svg and canvas round the corners identically." />
+
+::: code-group
+
+```tsx [React]
+<ComparableVerticalBarChart {...props} barRadius={0} />
+```
+
+```vue [Vue]
+<ComparableVerticalBarChart :options="{ ...props, barRadius: 0 }" />
+```
+
+```svelte [Svelte]
+<div use:comparableVerticalBarChart={{ ...props, barRadius: 0 }}></div>
+```
+
+```ts [Angular]
+applyComparableVerticalBarChartProps(this.c.nativeElement, { ...props, barRadius: 0 });
+```
+
+```html [Web component]
+<michi-vz-comparable-vertical-bar-chart bar-radius="0"></michi-vz-comparable-vertical-bar-chart>
+```
+
+:::
+
+- The drawn radius never exceeds half the bar's width or height, in svg and canvas alike.
+- Leaving `barRadius` out keeps the historical 5px look. A negative value draws square corners.
+- The experimental `webgpu` renderer draws square corners whatever the value.
+
 ## Usage
 
 ::: code-group
@@ -176,6 +210,6 @@ Column labels fit horizontally when there's room; otherwise they tilt -45° (or 
 
 ### Loading / no-data + interaction
 
-`isLoading` and `isNodata` drive the overlay (React: `isLoadingComponent` / `isNodataComponent`). Hovering highlights a column (others dim) and `mouseleave` clears it; the bars are rounded (radius 5) with a 1px border.
+`isLoading` and `isNodata` drive the overlay (React: `isLoadingComponent` / `isNodataComponent`). Hovering highlights a column (others dim) and `mouseleave` clears it; the bars are rounded (radius 5 by default, set by `barRadius`) with a 1px border.
 
 > **Consumer colour authorities:** the context carries `legendData` (`{ label, color, dataLabelSafe }`) so a CSS-injection colour system can key per-label rules; `onChartDataProcessed` is only emitted when the context **changes** (re-emitting an unchanged context every render can loop a consumer that dispatches on each call).

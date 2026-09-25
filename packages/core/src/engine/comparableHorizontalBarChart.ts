@@ -17,6 +17,7 @@ import { buildComparableRenderModel } from "../comparableBar/renderModel";
 import type { ComparableBarModel } from "../comparableBar/renderModel";
 import { renderComparableSvg } from "../comparableBar/renderSvg";
 import { drawComparableCanvas } from "../comparableBar/renderCanvas";
+import { resolveBarRadius } from "../comparableBar/barRadius";
 import { drawComparableBarWebgpu } from "../comparableBar/renderWebgpu";
 import { renderComparableDeltaSvg } from "../comparableBar/renderDeltaSvg";
 import type { ComparableDeltaGeometryOptions } from "../comparableBar/delta";
@@ -69,6 +70,9 @@ interface Resolved {
   hideTickLabels: boolean;
   horizontalTickPosition?: { x: number; y: number };
   maxBarHeight?: number;
+  /** Resolved `barRadius` (px, default 5): the corner radius every renderer that
+   * rounds its bars (svg, canvas) draws with, clamped per bar. */
+  barRadius: number;
   layout: "overlay" | "grouped";
   /** Resolved from props.deltaIndicator; undefined when the prop is omitted or
    * `show: false` (provable no-op - no geometry computed, no DOM painted). */
@@ -112,6 +116,7 @@ function resolve(p: ComparableBarChartProps): Resolved {
     hideTickLabels: p.hideTickLabels ?? false,
     horizontalTickPosition: p.horizontalTickPosition,
     maxBarHeight: p.maxBarHeight,
+    barRadius: resolveBarRadius(p.barRadius ?? 5),
     layout: p.layout ?? "overlay",
     deltaIndicator: p.deltaIndicator?.show
       ? {
@@ -509,6 +514,7 @@ export function mountComparableHorizontalBarChart(
         {
           valueBasedOpacity: r.valueBasedOpacity,
           valueComparedOpacity: r.valueComparedOpacity,
+          barRadius: r.barRadius,
           enableTransitions: r.enableTransitions,
           patternIdFor: (label, safe) => patternIds.get(label) ?? patternIds.get(safe),
         },
@@ -558,6 +564,7 @@ export function mountComparableHorizontalBarChart(
             height: r.height,
             valueBasedOpacity: r.valueBasedOpacity,
             valueComparedOpacity: r.valueComparedOpacity,
+            barRadius: r.barRadius,
             patternsMapping: props.patternsMapping,
           },
           // Re-render once a hatch pattern image finishes loading so it paints.
@@ -576,6 +583,7 @@ export function mountComparableHorizontalBarChart(
           height: r.height,
           valueBasedOpacity: r.valueBasedOpacity,
           valueComparedOpacity: r.valueComparedOpacity,
+          barRadius: r.barRadius,
           patternsMapping: props.patternsMapping,
         },
         // Re-render once a hatch pattern image finishes loading so it paints.

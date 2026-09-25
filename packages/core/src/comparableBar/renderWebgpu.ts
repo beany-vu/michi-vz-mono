@@ -4,9 +4,10 @@
 // value-compared in front) are drawn as GPU rects via the shared marks.ts layer.
 // Sub-bar fill colours are resolved through the SAME dual nested probes canvas
 // mode uses, so consumer CSS still reaches GPU pixels. Text/axes/title stay on
-// the SVG layer. PoC scope: bars are flat rects (no rounded corners, no hatch
-// PATTERN fill - pattern-filled value-based bars are omitted in webgpu mode;
-// use renderer="canvas"/"svg" for exact rounded-rect + pattern rendering).
+// the SVG layer. PoC scope: bars are flat rects (no rounded corners, so the
+// `barRadius` prop does not apply here; no hatch PATTERN fill - pattern-filled
+// value-based bars are omitted in webgpu mode; use renderer="canvas"/"svg" for
+// exact rounded-rect + pattern rendering).
 import { emptyBatch, pushRect, markColor, drawMarksWebgpu } from "../webgpu/marks";
 import { resolveMarkColors, makeSubBarProbe } from "../canvas/resolveMarkColors";
 import { comparableDrawOrder } from "./renderModel";

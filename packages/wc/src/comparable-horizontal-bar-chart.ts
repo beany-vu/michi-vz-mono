@@ -49,6 +49,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
     padding: { attribute: false },
     horizontalTickPosition: { attribute: false },
     maxBarHeight: { type: Number, attribute: "max-bar-height" },
+    barRadius: { type: Number, attribute: "bar-radius" },
     symmetricXDomain: { type: Boolean, attribute: "symmetric-x-domain" },
     layout: { type: String },
     deltaIndicator: { attribute: false },
@@ -92,6 +93,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
   padding?: { top: number; right: number; bottom: number; left: number };
   horizontalTickPosition?: { x: number; y: number };
   maxBarHeight?: number;
+  barRadius?: number;
   symmetricXDomain?: boolean;
   layout?: "overlay" | "grouped";
   deltaIndicator?: DeltaIndicatorConfig;
@@ -149,6 +151,7 @@ export class ComparableHorizontalBarChartElement extends LitElement {
       padding: this.padding,
       horizontalTickPosition: this.horizontalTickPosition,
       maxBarHeight: this.maxBarHeight,
+      barRadius: this.barRadius,
       symmetricXDomain: this.symmetricXDomain,
       layout: this.layout,
       deltaIndicator: this.deltaIndicator,

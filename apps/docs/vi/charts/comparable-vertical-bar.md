@@ -86,6 +86,40 @@ applyComparableVerticalBarChartProps(this.c.nativeElement, { ...props, timeline:
 - `filter` (top-N, sắp xếp) vẫn áp dụng bên trong từng giai đoạn, nên "top 5 mỗi năm" chạy được ngay.
 - Cột không có `date` hiển thị ở mọi giai đoạn.
 
+## Bán kính góc
+
+Mặc định mỗi cột được vẽ với góc bo 5px. Trên màn hình nhỏ với nhiều danh mục, các cột trở nên hẹp - mỗi cột chỉ vài px - và bán kính 5px biến chúng thành hình viên thuốc. `barRadius` đặt bán kính theo px: `0` cho góc vuông, 2-4 cho góc gần vuông.
+
+<BarRadiusDemo chart="comparable-vertical-bar-chart" default-label="mặc định" hint="Cùng biểu đồ, cùng dữ liệu; chỉ barRadius thay đổi. Hãy đổi renderer: svg và canvas bo góc giống hệt nhau." />
+
+::: code-group
+
+```tsx [React]
+<ComparableVerticalBarChart {...props} barRadius={0} />
+```
+
+```vue [Vue]
+<ComparableVerticalBarChart :options="{ ...props, barRadius: 0 }" />
+```
+
+```svelte [Svelte]
+<div use:comparableVerticalBarChart={{ ...props, barRadius: 0 }}></div>
+```
+
+```ts [Angular]
+applyComparableVerticalBarChartProps(this.c.nativeElement, { ...props, barRadius: 0 });
+```
+
+```html [Web component]
+<michi-vz-comparable-vertical-bar-chart bar-radius="0"></michi-vz-comparable-vertical-bar-chart>
+```
+
+:::
+
+- Bán kính được vẽ không bao giờ vượt quá một nửa bề rộng hoặc chiều cao của cột, ở cả svg lẫn canvas.
+- Không truyền `barRadius` thì giữ nguyên giao diện 5px như trước. Giá trị âm cho góc vuông.
+- Renderer thử nghiệm `webgpu` luôn vẽ góc vuông, bất kể giá trị.
+
 ## Cách dùng
 
 ::: code-group
@@ -176,6 +210,6 @@ Nhãn cột vừa vặn theo chiều ngang khi có đủ không gian; nếu khô
 
 ### Đang tải / không có dữ liệu + tương tác
 
-`isLoading` và `isNodata` điều khiển lớp phủ (React: `isLoadingComponent` / `isNodataComponent`). Di chuột làm nổi bật một cột (các cột khác mờ đi) và `mouseleave` xóa trạng thái đó; các cột được bo tròn (bán kính 5) với viền 1px.
+`isLoading` và `isNodata` điều khiển lớp phủ (React: `isLoadingComponent` / `isNodataComponent`). Di chuột làm nổi bật một cột (các cột khác mờ đi) và `mouseleave` xóa trạng thái đó; các cột được bo tròn (mặc định bán kính 5, chỉnh bằng `barRadius`) với viền 1px.
 
 > **Cơ quan quyết định màu sắc của consumer:** ngữ cảnh mang theo `legendData` (`{ label, color, dataLabelSafe }`) để một hệ thống màu tiêm CSS có thể dùng làm khóa cho các quy tắc theo từng nhãn; `onChartDataProcessed` chỉ được phát ra khi ngữ cảnh **thay đổi** (phát lại một ngữ cảnh không đổi ở mỗi lần render có thể tạo vòng lặp cho một consumer dispatch ở mỗi lần gọi).

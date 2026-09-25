@@ -86,6 +86,40 @@ applyComparableHorizontalBarChartProps(this.c.nativeElement, { ...props, timelin
 - Un `filter` (top-N, tri) s'applique toujours à l'intérieur de chaque période : un « top 5 par an » fonctionne d'emblée.
 - Les lignes sans `date` restent visibles à chaque période.
 
+## Rayon des coins
+
+Chaque barre est dessinée avec des coins de 5px par défaut. Sur un petit écran, les barres s'amincissent - les demi-bandes de la mise en page `grouped` peuvent ne faire qu'environ 10px d'épaisseur - et un rayon de 5px sur une barre de 10px en fait une pilule. `barRadius` fixe le rayon en px : `0` pour des coins carrés, de 2 à 4 pour des coins presque carrés.
+
+<BarRadiusDemo chart="comparable-horizontal-bar-chart" default-label="par défaut" hint="Même graphique, mêmes données ; seul barRadius change. Changez de moteur de rendu : svg et canvas arrondissent les coins de façon identique." />
+
+::: code-group
+
+```tsx [React]
+<ComparableHorizontalBarChart {...props} layout="grouped" barRadius={2} />
+```
+
+```vue [Vue]
+<ComparableHorizontalBarChart :options="{ ...props, layout: 'grouped', barRadius: 2 }" />
+```
+
+```svelte [Svelte]
+<div use:comparableHorizontalBarChart={{ ...props, layout: "grouped", barRadius: 2 }}></div>
+```
+
+```ts [Angular]
+applyComparableHorizontalBarChartProps(this.c.nativeElement, { ...props, layout: "grouped", barRadius: 2 });
+```
+
+```html [Web component]
+<michi-vz-comparable-horizontal-bar-chart layout="grouped" bar-radius="2"></michi-vz-comparable-horizontal-bar-chart>
+```
+
+:::
+
+- Le rayon dessiné ne dépasse jamais la moitié de la largeur ou de la hauteur de la barre, en svg comme en canvas.
+- Sans `barRadius`, l'aspect historique de 5px est conservé. Une valeur négative donne des coins carrés.
+- Le moteur de rendu expérimental `webgpu` dessine des coins carrés, quelle que soit la valeur.
+
 ## Usage
 
 ::: code-group
@@ -172,6 +206,6 @@ Les étiquettes de catégorie de l'axe des y vivent dans une colonne gauche de `
 
 ### Chargement / absence de données + interaction
 
-`isLoading` et `isNodata` pilotent la superposition (React : `isLoadingComponent` / `isNodataComponent`). Survoler met en évidence une ligne (les autres s'estompent) et `mouseleave` la réinitialise ; les barres sont arrondies (rayon 5) avec une bordure de 1px.
+`isLoading` et `isNodata` pilotent la superposition (React : `isLoadingComponent` / `isNodataComponent`). Survoler met en évidence une ligne (les autres s'estompent) et `mouseleave` la réinitialise ; les barres sont arrondies (rayon 5 par défaut, réglé par `barRadius`) avec une bordure de 1px.
 
 > **Autorités de couleur côté consommateur :** le contexte porte `legendData` (`{ label, color, dataLabelSafe }`) pour qu'un système de couleur par injection CSS puisse indexer des règles par étiquette ; `onChartDataProcessed` n'est émis que lorsque le contexte **change** (réémettre un contexte inchangé à chaque rendu peut boucler un consommateur qui déclenche une action à chaque appel).

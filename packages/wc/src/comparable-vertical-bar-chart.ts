@@ -46,6 +46,7 @@ export class ComparableVerticalBarChartElement extends LitElement {
     hideTickLabels: { type: Boolean, attribute: "hide-tick-labels" },
     minBarHeight: { type: Number, attribute: "min-bar-height" },
     maxBarWidth: { type: Number, attribute: "max-bar-width" },
+    barRadius: { type: Number, attribute: "bar-radius" },
     symmetricYDomain: { type: Boolean, attribute: "symmetric-y-domain" },
     deltaIndicator: { attribute: false },
     isLoading: { type: Boolean, attribute: "is-loading" },
@@ -85,6 +86,7 @@ export class ComparableVerticalBarChartElement extends LitElement {
   hideTickLabels?: boolean;
   minBarHeight?: number;
   maxBarWidth?: number;
+  barRadius?: number;
   symmetricYDomain?: boolean;
   deltaIndicator?: DeltaIndicatorConfig;
   isLoading?: boolean;
@@ -138,6 +140,7 @@ export class ComparableVerticalBarChartElement extends LitElement {
       hideTickLabels: this.hideTickLabels,
       minBarHeight: this.minBarHeight,
       maxBarWidth: this.maxBarWidth,
+      barRadius: this.barRadius,
       symmetricYDomain: this.symmetricYDomain,
       deltaIndicator: this.deltaIndicator,
       isLoading: this.isLoading,

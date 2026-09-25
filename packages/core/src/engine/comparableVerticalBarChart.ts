@@ -22,6 +22,7 @@ import { buildComparableVerticalRenderModel } from "../comparableVerticalBar/ren
 import type { ComparableVerticalBarModel } from "../comparableVerticalBar/renderModel";
 import { renderComparableVerticalSvg } from "../comparableVerticalBar/renderSvg";
 import { drawComparableVerticalCanvas } from "../comparableVerticalBar/renderCanvas";
+import { resolveBarRadius } from "../comparableBar/barRadius";
 import { drawComparableVerticalBarWebgpu } from "../comparableVerticalBar/renderWebgpu";
 import { renderComparableVerticalDeltaSvg } from "../comparableVerticalBar/renderDeltaSvg";
 import type { ComparableDeltaGeometryOptions } from "../comparableBar/delta";
@@ -75,6 +76,9 @@ interface Resolved {
   hideTickLabels: boolean;
   minBarHeight: number;
   maxBarWidth?: number;
+  /** Resolved `barRadius` (px, default 5): the corner radius every renderer that
+   * rounds its bars (svg, canvas) draws with, clamped per bar. */
+  barRadius: number;
   xAxisLabelPadding?: number;
   xAxisMode?: "auto" | "horizontal";
   /** Resolved from props.deltaIndicator; undefined when the prop is omitted or
@@ -111,6 +115,7 @@ function resolve(p: ComparableVerticalBarChartProps): Resolved {
     hideTickLabels: p.hideTickLabels ?? false,
     minBarHeight: p.minBarHeight ?? 5,
     maxBarWidth: p.maxBarWidth,
+    barRadius: resolveBarRadius(p.barRadius ?? 5),
     xAxisLabelPadding: p.xAxisLabelPadding,
     xAxisMode: p.xAxisMode,
     deltaIndicator: p.deltaIndicator?.show
@@ -431,6 +436,7 @@ export function mountComparableVerticalBarChart(
           {
             valueBasedOpacity: r.valueBasedOpacity,
             valueComparedOpacity: r.valueComparedOpacity,
+            barRadius: r.barRadius,
             enableTransitions: r.enableTransitions,
             patternIdFor: (label, safe) => patternIds.get(label) ?? patternIds.get(safe),
           },
@@ -480,6 +486,7 @@ export function mountComparableVerticalBarChart(
               height: r.height,
               valueBasedOpacity: r.valueBasedOpacity,
               valueComparedOpacity: r.valueComparedOpacity,
+              barRadius: r.barRadius,
               patternsMapping: props.patternsMapping,
             },
             // Re-render once a hatch pattern image finishes loading so it paints.
@@ -498,6 +505,7 @@ export function mountComparableVerticalBarChart(
             height: r.height,
             valueBasedOpacity: r.valueBasedOpacity,
             valueComparedOpacity: r.valueComparedOpacity,
+            barRadius: r.barRadius,
             patternsMapping: props.patternsMapping,
           },
           () => render(),
