@@ -3086,6 +3086,14 @@
           "common": false
         },
         {
+          "name": "barRadius",
+          "type": "number",
+          "optional": true,
+          "description": "Corner radius of every bar, in px (default 5, the historical look). `0` draws square corners. The drawn radius never exceeds half the bar's width or height, so a bar only 10px thick (a `layout: \"grouped\"` half-band on a phone, say) turns into a pill at the default 5 - lower it (2-4) for square-ish corners there. Applies to the svg and canvas renderers alike; the experimental webgpu renderer draws square corners regardless. Negative values draw square corners; NaN falls back to 5.",
+          "default": "5",
+          "common": false
+        },
+        {
           "name": "symmetricXDomain",
           "type": "boolean",
           "optional": true,
@@ -3435,6 +3443,14 @@
           "optional": true,
           "description": "Cap each column's thickness (px). When few categories would otherwise balloon the bandwidth, the band range shrinks to yield exactly this thickness and is centred in the plot. No-op for dense charts whose natural bandwidth is already below the cap.",
           "default": "",
+          "common": false
+        },
+        {
+          "name": "barRadius",
+          "type": "number",
+          "optional": true,
+          "description": "Corner radius of every column, in px (default 5, the historical look). `0` draws square corners. The drawn radius never exceeds half the column's width or height, so a narrow column (many categories on a phone, say) turns into a pill at the default 5 - lower it (2-4) for square-ish corners there. Applies to the svg and canvas renderers alike; the experimental webgpu renderer draws square corners regardless. Negative values draw square corners; NaN falls back to 5.",
+          "default": "5",
           "common": false
         },
         {

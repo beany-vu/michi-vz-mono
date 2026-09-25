@@ -12,6 +12,24 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.4
+
+Versions des paquets : core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·
+examples **1.1.17** · devtools, insights **0.2.32**.
+
+- **Rayon des coins pour [Barres comparables](/fr/charts/comparable) et
+  [Barres comparables verticales](/fr/charts/comparable-vertical-bar).** `barRadius` fixe le
+  rayon des coins de chaque barre, en px. La valeur par défaut reste 5 : rien ne change tant
+  que vous ne la réglez pas ; `0` donne des coins carrés, 2 à 4 des coins presque carrés.
+  C'est utile sur petit écran, où les demi-bandes groupées et les colonnes étroites ne font
+  plus que quelques px d'épaisseur et où un rayon de 5px transforme chacune en pilule. Le
+  rayon dessiné ne dépasse jamais la moitié de la largeur ou de la hauteur de la barre, et le
+  svg le borne désormais exactement comme le canvas - auparavant, le svg laissait le
+  navigateur borner rx et ry séparément, ce qui donnait aux barres de moins de 10px des coins
+  légèrement elliptiques. Le moteur de rendu expérimental WebGPU dessine toujours des coins
+  carrés. `@michi-vz/wc` accepte un attribut `bar-radius` et `@michi-vz/angular` transmet la
+  propriété.
+
 ## v1.12.3
 
 Versions des paquets : core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·

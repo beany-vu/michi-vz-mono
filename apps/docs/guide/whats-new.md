@@ -10,6 +10,22 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.4
+
+Package versions: core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·
+examples **1.1.17** · devtools, insights **0.2.32**.
+
+- **Corner radius on [Comparable Horizontal Bar](/charts/comparable) and
+  [Comparable Vertical Bar](/charts/comparable-vertical-bar).** `barRadius` sets every bar's
+  corner radius in px. The default stays 5, so nothing changes unless you set it; `0` draws
+  square corners and 2-4 square-ish ones. It matters on small screens, where grouped
+  half-bands and narrow columns get only a few px thick and a 5px radius turns each one into
+  a pill. The drawn radius never exceeds half the bar's width or height, and svg now clamps
+  exactly like canvas - before, svg let the browser clamp rx and ry separately, which gave
+  bars thinner than 10px slightly elliptical corners. The experimental WebGPU renderer still
+  draws square corners. `@michi-vz/wc` takes a `bar-radius` attribute and
+  `@michi-vz/angular` forwards the prop.
+
 ## v1.12.3
 
 Package versions: core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·

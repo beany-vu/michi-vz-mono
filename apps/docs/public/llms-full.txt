@@ -4,7 +4,7 @@
 
 > michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at https://michi-vz.netlify.app/llms.txt.
 
-Package versions this file was generated against: @michi-vz/core 1.25.0, wc 1.15.0, react 1.12.3, vue 1.8.3, svelte 1.8.3, angular 1.15.3, insights 0.2.31, devtools 0.2.31.
+Package versions this file was generated against: @michi-vz/core 1.26.0, wc 1.16.0, react 1.12.4, vue 1.8.4, svelte 1.8.4, angular 1.15.4, insights 0.2.32, devtools 0.2.32.
 
 ## What michi-vz is
 
@@ -19,14 +19,14 @@ AI features live in a separate opt-in package, `@michi-vz/insights`, and are loc
 
 ## Packages
 
-- `@michi-vz/core` 1.25.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
-- `@michi-vz/wc` 1.15.0 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
-- `@michi-vz/react` 1.12.3 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
-- `@michi-vz/vue` 1.8.3 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
-- `@michi-vz/svelte` 1.8.3 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
-- `@michi-vz/angular` 1.15.3 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
-- `@michi-vz/insights` 0.2.31 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
-- `@michi-vz/devtools` 0.2.31 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
+- `@michi-vz/core` 1.26.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
+- `@michi-vz/wc` 1.16.0 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
+- `@michi-vz/react` 1.12.4 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
+- `@michi-vz/vue` 1.8.4 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
+- `@michi-vz/svelte` 1.8.4 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
+- `@michi-vz/angular` 1.15.4 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
+- `@michi-vz/insights` 0.2.32 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
+- `@michi-vz/devtools` 0.2.32 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
 
 The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
 
@@ -555,6 +555,7 @@ Chart-specific props (the shared props above also apply):
 - `padding`: `{ top: number; right: number; bottom: number; left: number }` (default: `ZERO_PADDING`) - Extra plot-area inset (px); padding.left opens a left column for the y-axis label chips without moving the labels themselves (which stay anchored to margin.left)
 - `horizontalTickPosition`: `{ x: number; y: number }` - Offset (px) applied to the y-axis category labels so they align with the legend column
 - `maxBarHeight`: `number` - Cap each bar's thickness (px).
+- `barRadius`: `number` (default: `5`) - Corner radius of every bar, in px (default 5, the historical look).
 - `symmetricXDomain`: `boolean` - Force a symmetric x-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits centred and the negative/positive sides mirror (e.g. ± growth %).
 - `layout`: `"overlay" | "grouped"` (default: `"overlay"`) - How the two sub-bars (valueBased, valueCompared) share a row's band.
 - `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased.
@@ -599,6 +600,7 @@ Chart-specific props (the shared props above also apply):
 - `hideTickLabels`: `boolean` (default: `false`) - Hide the x-axis category labels
 - `minBarHeight`: `number` (default: `5`) - Floor for a sub-bar's pixel height so near-zero values stay visible (default 5)
 - `maxBarWidth`: `number` - Cap each column's thickness (px).
+- `barRadius`: `number` (default: `5`) - Corner radius of every column, in px (default 5, the historical look).
 - `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased, drawn above each column pair.
 - `isLoading`: `boolean` - Loading overlay (stale bars hidden while true)
 - `isNodata`: `boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet

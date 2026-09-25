@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.26.0
+
+### Minor Changes
+
+- ComparableHorizontalBarChart and ComparableVerticalBarChart `barRadius`: the corner radius of every bar, in px. The default stays 5, so nothing changes unless you set it; `0` draws square corners. The drawn radius never exceeds half the bar's width or height, and svg now clamps exactly like canvas (it used to let the browser clamp rx and ry separately, which gave bars thinner than 10px slightly elliptical corners). The experimental webgpu renderer still draws square corners. The wc elements take a `bar-radius` attribute and angular's applicators forward the prop; react, vue and svelte pass it through.
+
 ## 1.25.0
 
 ### Minor Changes

@@ -10,6 +10,22 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.4
+
+Phiên bản gói: core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·
+examples **1.1.17** · devtools, insights **0.2.32**.
+
+- **Bán kính góc cho [Biểu đồ cột so sánh](/vi/charts/comparable) và
+  [Biểu đồ cột dọc so sánh](/vi/charts/comparable-vertical-bar).** `barRadius` đặt bán kính
+  góc của mọi cột, tính bằng px. Mặc định vẫn là 5, nên không có gì thay đổi nếu bạn không
+  đặt; `0` cho góc vuông, 2-4 cho góc gần vuông. Điều này quan trọng trên màn hình nhỏ, nơi
+  nửa dải của layout grouped và các cột hẹp chỉ dày vài px và bán kính 5px biến mỗi cột
+  thành hình viên thuốc. Bán kính được vẽ không bao giờ vượt quá một nửa bề rộng hoặc chiều
+  cao của cột, và svg giờ giới hạn đúng như canvas - trước đây svg để trình duyệt giới hạn
+  rx và ry riêng rẽ, khiến các cột mỏng hơn 10px có góc hơi elip. Trình kết xuất thử nghiệm
+  WebGPU vẫn vẽ góc vuông. `@michi-vz/wc` nhận thuộc tính `bar-radius` và
+  `@michi-vz/angular` chuyển tiếp prop này.
+
 ## v1.12.3
 
 Phiên bản gói: core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·

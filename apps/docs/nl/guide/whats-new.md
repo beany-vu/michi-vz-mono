@@ -10,6 +10,23 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.4
+
+Pakketversies: core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·
+examples **1.1.17** · devtools, insights **0.2.32**.
+
+- **Hoekradius voor [Vergelijkbare staven](/nl/charts/comparable) en
+  [Vergelijkbare verticale staven](/nl/charts/comparable-vertical-bar).** `barRadius` stelt
+  de hoekradius van elke balk in px in. De standaard blijft 5, dus er verandert niets zolang
+  je hem niet instelt; `0` geeft vierkante hoeken, 2-4 bijna vierkante. Dat telt op kleine
+  schermen, waar gegroepeerde halve banden en smalle kolommen maar een paar px dik zijn en
+  een radius van 5px er pillen van maakt. De getekende radius is nooit groter dan de helft
+  van de breedte of hoogte van de balk, en svg begrenst hem nu precies zoals canvas -
+  voorheen liet svg de browser rx en ry apart begrenzen, waardoor balken dunner dan 10px
+  licht elliptische hoeken kregen. De experimentele WebGPU-renderer tekent nog steeds
+  vierkante hoeken. `@michi-vz/wc` accepteert een `bar-radius`-attribuut en
+  `@michi-vz/angular` geeft de prop door.
+
 ## v1.12.3
 
 Pakketversies: core **1.25.0** · wc **1.15.0** · angular **1.15.3** · react **1.12.3** · vue, svelte **1.8.3** ·

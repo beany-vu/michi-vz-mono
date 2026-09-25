@@ -4,7 +4,7 @@
 
 > Framework-agnostic charting for the web: a plain TypeScript engine, light-DOM web components, and first-class React, Vue, Svelte, and Angular wrappers. 22 chart types, svg and canvas renderers, a structured ChartContext on every chart for accessibility and tool use, and an opt-in, local-first insights layer for forecasting, anomaly detection, narration, agents, and MCP.
 
-Package versions: @michi-vz/core 1.25.0, wc 1.15.0, react 1.12.3, vue 1.8.3, svelte 1.8.3, angular 1.15.3, insights 0.2.31, devtools 0.2.31.
+Package versions: @michi-vz/core 1.26.0, wc 1.16.0, react 1.12.4, vue 1.8.4, svelte 1.8.4, angular 1.15.4, insights 0.2.32, devtools 0.2.32.
 
 ## Guides
 
