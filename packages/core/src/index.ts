@@ -89,6 +89,8 @@ export { defaultNumberFormatter, defaultXAxisFormatter } from "./i18n/formatters
 
 // ---- Theme ----
 export { DEFAULT_COLORS } from "./theme/colors";
+export { sequentialScheme, SEQUENTIAL_SCHEME_NAMES } from "./theme/schemes";
+export type { SequentialSchemeName } from "./theme/schemes";
 
 // ---- Pure utilities (reused by wrappers, insights, tests) ----
 export { sanitizeForClassName } from "./math/sanitize";
@@ -176,7 +178,7 @@ export { processRibbonData } from "./ribbonChart/data";
 export { buildRibbonColors } from "./ribbonChart/colors";
 export { buildRibbonContext } from "./context/buildRibbonContext";
 // RadarChart pure layer
-export { processRadarData } from "./radarChart/data";
+export { processRadarData, niceRadarMax } from "./radarChart/data";
 export { buildRadarColors } from "./radarChart/colors";
 export { buildRadarContext } from "./context/buildRadarContext";
 // FanChart (composes Line + Range; forecast fan)

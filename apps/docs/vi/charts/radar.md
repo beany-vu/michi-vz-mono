@@ -18,6 +18,45 @@ Lựa chọn nào thắng, và thắng ở đâu? Đặt vài ứng viên chồn
 - **Cân bằng hay chuyên biệt.** Đa giác càng tròn đều càng toàn diện; đa giác nhọn hoắt đặt cược tất cả vào vài trục. Câu chuyện hình dáng ấy là thứ bảng số liệu không kể được.
 - **Giữ ở mức vài thực thể và 5-12 trục.** Cần so sánh chính xác trên một tiêu chí, [biểu đồ cột so sánh](/vi/charts/comparable) cho đọc đúng từng giá trị; radar dành cho cái nhìn tổng thể.
 
+## Làm tròn vòng ngoài cùng thành một giá trị đẹp
+
+Khi không có `maxValue`, vòng ngoài cùng nằm ở giá trị lớn nhất trong dữ liệu, nên với giá trị lớn nhất là 73 các vòng được ghi nhãn 18, 37, 55 và 73. Đặt `niceMaxValue` thì vòng ngoài cùng được làm tròn lên vạch "đẹp" kế tiếp, theo cùng các bước 1, 2 và 5 × 10ⁿ mà một trục d3 sử dụng, nên các vòng hiển thị 20, 40, 60 và 80.
+
+<ChartDemo chart="radar-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<RadarChart {...props} niceMaxValue />
+```
+
+```vue [Vue]
+<RadarChart :options="{ ...props, niceMaxValue: true }" />
+```
+
+```svelte [Svelte]
+<div use:radarChart={{ ...props, niceMaxValue: true }}></div>
+```
+
+```ts [Angular]
+applyRadarChartProps(this.c.nativeElement, { ...props, niceMaxValue: true });
+```
+
+```html [Web component]
+<michi-vz-radar-chart id="c"></michi-vz-radar-chart>
+<script>
+  // là property, không phải attribute: nhận true hoặc một số vạch chia
+  document.getElementById("c").niceMaxValue = true;
+</script>
+```
+
+:::
+
+- `true` dùng `rings` (mặc định 4) làm số vạch chia. Một con số sẽ tự đặt số vạch chia, ví dụ `niceMaxValue: 5` để khớp với một trục năm vạch ở chỗ khác trên trang.
+- `maxValue` được đặt tường minh luôn được ưu tiên: `niceMaxValue` chỉ làm tròn vòng ngoài cùng mà biểu đồ vốn lấy từ dữ liệu. Giá trị lớn nhất đã nằm đúng trên một vạch thì giữ nguyên (100 vẫn là 100), và dữ liệu toàn số 0 hoặc số âm giữ vòng ngoài cùng mặc định là 1.
+- Chỉ vòng ngoài cùng được bảo đảm là số tròn. Các vòng bên trong là các phần bằng nhau của nó, nên chúng chỉ tròn khi giá trị lớn nhất đã làm tròn chia hết cho `rings`. 80 chia cho 4 vòng cho 20, 40, 60, 80, còn 50 chia cho 4 vòng cho 12,5, 25, 37,5, 50.
+- `getContext().maxValue` trả về giá trị đã làm tròn. Phép làm tròn cũng được export dưới dạng hàm thuần, `niceRadarMax(dataMax, tickCount)` từ `@michi-vz/core`.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

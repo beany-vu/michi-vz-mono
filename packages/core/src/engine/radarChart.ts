@@ -52,6 +52,7 @@ interface Resolved {
   height: number;
   margin: Margin;
   rings: number;
+  niceMaxValue: boolean | number;
   fillOpacity: number;
   dimmedFill: boolean;
   renderer: RadarRenderer;
@@ -70,6 +71,7 @@ function resolve(p: RadarChartProps): Resolved {
     height: p.height ?? 600,
     margin: p.margin ?? DEFAULT_MARGIN,
     rings: p.rings ?? 4,
+    niceMaxValue: p.niceMaxValue ?? false,
     // showFilled=false → stroke-only (fill opacity 0).
     fillOpacity: p.showFilled === false ? 0 : (p.fillOpacity ?? 0.2),
     dimmedFill: p.showDimmedFill ?? true,
@@ -81,6 +83,13 @@ function resolve(p: RadarChartProps): Resolved {
     progressiveDraw: resolveReveal(p.progressiveDraw),
     timeline: resolveTimeline(p.timeline),
   };
+}
+
+/** Tick count for the nice outer ring: `true` -> `rings`, a number -> itself,
+ *  `false` -> undefined (off: the outer ring stays the raw data max). */
+function niceTickCount(r: Resolved): number | undefined {
+  if (r.niceMaxValue === true) return r.rings;
+  return typeof r.niceMaxValue === "number" ? r.niceMaxValue : undefined;
 }
 
 /** Resolve the axes (prefer `axes`, fall back to the legacy `poles.labels`). */
@@ -240,6 +249,7 @@ export function mountRadarChart(
       normalizedSeries,
       props.disabledItems,
       props.maxValue,
+      niceTickCount(r),
     );
     const colors = buildRadarColors(
       normalizedSeries,

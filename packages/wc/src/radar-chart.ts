@@ -26,6 +26,7 @@ export class RadarChartElement extends LitElement {
     highlightItems: { attribute: false },
     disabledItems: { attribute: false },
     maxValue: { type: Number, attribute: "max-value" },
+    niceMaxValue: { attribute: false },
     rings: { type: Number },
     fillOpacity: { type: Number, attribute: "fill-opacity" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
@@ -58,6 +59,7 @@ export class RadarChartElement extends LitElement {
   highlightItems?: string[];
   disabledItems?: string[];
   maxValue?: number;
+  niceMaxValue?: boolean | number;
   rings?: number;
   fillOpacity?: number;
   skipColorMappingDispatch = false;
@@ -105,6 +107,7 @@ export class RadarChartElement extends LitElement {
       highlightItems: this.highlightItems,
       disabledItems: this.disabledItems,
       maxValue: this.maxValue,
+      niceMaxValue: this.niceMaxValue,
       rings: this.rings,
       fillOpacity: this.fillOpacity,
       skipColorMappingDispatch: this.skipColorMappingDispatch,

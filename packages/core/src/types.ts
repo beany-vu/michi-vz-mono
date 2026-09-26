@@ -2198,10 +2198,10 @@ export interface ChoroplethMapChartProps {
    * geography extent (e.g. a single-region subset). */
   projectionConfig?: GeoProjectionConfig;
   /** Continuous choropleth encoding: a resolved hex `range` keyed to a numeric
-   * `domain`, built into a d3 `scaleThreshold`. Pass already-resolved colours
-   * (NOT a d3-scale-chromatic scheme name - core stays free of that dependency);
-   * generate the range yourself (e.g. via `d3-scale-chromatic` in your app) if you
-   * want a named scheme. Loses to `colorsMapping`. */
+   * `domain`, built into a d3 `scaleThreshold` (n thresholds -> n + 1 colours).
+   * Pass already-resolved colours, not a scheme name; for a named ColorBrewer ramp
+   * use core's `sequentialScheme` (`range: sequentialScheme("purples", 5)` with 4
+   * thresholds - no d3-scale-chromatic dependency). Loses to `colorsMapping`. */
   colorScale?: { domain: number[]; range: string[] };
   /** Categorical encoding: explicit label -> colour map: takes precedence over
    * `colorScale`, `ChoroplethDataItem.color`, and the palette (the sdg-trade Data
@@ -2592,6 +2592,16 @@ export interface RadarChartProps {
   colorsMapping?: Record<string, string>;
   /** Value mapped to the outer ring (full radius), shared by every spoke; defaults to the largest value across all series and axes (or 1 when all are zero) */
   maxValue?: number;
+  /** Round the default outer ring UP to the last "nice" tick of [0, data max]
+   * (d3-array `tickStep`: 1/2/5 x 10^n steps), so the outer ring label reads 80
+   * or 1 400 000 instead of 73 or 1 234 567. `true` uses `rings` as the tick
+   * count; a number sets the tick count itself (e.g. 5). A max already on a tick
+   * stays put. Only applies while `maxValue` is unset (an explicit `maxValue`
+   * always wins); all-zero or negative data keeps the default outer ring of 1.
+   * Inner rings are equal fractions of the nice max, so they are round only when
+   * it divides evenly by `rings`. The context `maxValue` reports the rounded
+   * value. Default false: the outer ring is the raw data max. */
+  niceMaxValue?: boolean | number;
   /** number of concentric grid rings (default 4). */
   rings?: number;
   /** polygon fill opacity (default 0.2). */
@@ -2635,6 +2645,8 @@ export interface RadarSeriesContext {
 export interface RadarChartContext extends BaseChartContext {
   chartType: "radar-chart";
   axes: string[];
+  /** Value at the outer ring as drawn: `maxValue` when set, else the data max
+   * (rounded up to a nice tick under `niceMaxValue`), else 1; rounded to 2 decimals. */
   maxValue: number;
   series: RadarSeriesContext[];
   stats: { seriesCount: number; axisCount: number };

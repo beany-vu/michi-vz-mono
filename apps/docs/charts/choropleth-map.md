@@ -41,6 +41,30 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 A `FeatureCollection`'s per-feature `id` is read from the GeoJSON `Feature.id` (falling back to `properties.id`); `name` from `properties.name`. Popular sources: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - convert with `topojson-client`'s `feature()`), [Natural Earth](https://www.naturalearthdata.com/), or a region-specific file your own team maintains. The demo above, and this package's own examples, use a real 176-country world atlas (ISO-A3 ids) so the shapes on screen are actual coastlines - `@michi-vz/core` itself still bundles no topology data; the GeoJSON lives only in `@michi-vz/examples`, one directory up from your own app's copy.
 
+## Named colour schemes
+
+`colorScale.range` takes resolved colours. For a named light-to-dark ramp, `@michi-vz/core` exports `sequentialScheme(name, count)`: the ColorBrewer single-hue sequential schemes, with exactly the colour lists d3-scale-chromatic ships as `schemePurples[k]` and its siblings, and no d3 dependency.
+
+<ChartDemo chart="choropleth-map-chart" :index="2" :legend="[]" />
+
+```ts
+import { sequentialScheme } from "@michi-vz/core";
+
+const props = {
+  geography: worldJson,
+  dataSet,
+  // a threshold scale takes one more colour than thresholds: 4 thresholds, 5 colours
+  colorScale: { domain: [200, 500, 1000, 2000], range: sequentialScheme("purples", 5) },
+};
+```
+
+- Six names: `"blues"`, `"greens"`, `"greys"`, `"oranges"`, `"purples"` and `"reds"`, also exported as `SEQUENTIAL_SCHEME_NAMES` (type `SequentialSchemeName`). An unknown name throws an error that lists them.
+- `count` runs from 3 to 9 colours, light to dark: a smaller count returns 3 colours, a larger one 9, and a fraction rounds.
+- Every call returns a fresh array, so you can `.reverse()` it for a dark-to-light ramp without affecting other charts.
+- The framework wrappers install `@michi-vz/core` for you; with a strict package manager such as pnpm, add it to your own dependencies before importing from it.
+- `SymbolMapChart`'s `colorScale` takes the same `{ domain, range }` shape, so the helper works there too.
+- Colours from [ColorBrewer 2.0](https://colorbrewer2.org) by Cynthia A. Brewer, Pennsylvania State University, under the Apache License 2.0.
+
 ## Play through the years
 
 Give every region a `date` and flip on `timeline`: the map becomes a year-by-year story with its own play button and scrubber, shading one period at a time. Off by default - nothing changes until a chart opts in.
@@ -154,7 +178,7 @@ Each `dataSet` row (`{ id, label, value?, color? }`) is matched against a geogra
 
 ### Colour resolution precedence
 
-`colorsMapping[label]` (categorical, explicit) wins over `colorScale` (continuous - a resolved hex `range` + numeric `domain`, built into a d3 `scaleThreshold`; values outside the domain clamp to the first/last range colour) wins over the row's own `color` wins over the auto-assigned `colors` palette. Core stays free of `d3-scale-chromatic` - pass already-resolved hex colours to `colorScale.range`, generating them from a named scheme (or anywhere else) in your own app if you want one.
+`colorsMapping[label]` (categorical, explicit) wins over `colorScale` (continuous - a resolved hex `range` + numeric `domain`, built into a d3 `scaleThreshold`; values outside the domain clamp to the first/last range colour) wins over the row's own `color` wins over the auto-assigned `colors` palette. Core stays free of `d3-scale-chromatic` - pass already-resolved hex colours to `colorScale.range`, from core's own [`sequentialScheme`](#named-colour-schemes) or from anywhere else in your app.
 
 ### Projections - all 13, one default
 

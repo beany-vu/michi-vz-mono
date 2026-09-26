@@ -2422,6 +2422,14 @@
           "common": false
         },
         {
+          "name": "niceMaxValue",
+          "type": "boolean | number",
+          "optional": true,
+          "description": "Round the default outer ring UP to the last \"nice\" tick of [0, data max] (d3-array `tickStep`: 1/2/5 x 10^n steps), so the outer ring label reads 80 or 1 400 000 instead of 73 or 1 234 567. `true` uses `rings` as the tick count; a number sets the tick count itself (e.g. 5). A max already on a tick stays put. Only applies while `maxValue` is unset (an explicit `maxValue` always wins); all-zero or negative data keeps the default outer ring of 1. Inner rings are equal fractions of the nice max, so they are round only when it divides evenly by `rings`. The context `maxValue` reports the rounded value. Default false: the outer ring is the raw data max.",
+          "default": "false",
+          "common": false
+        },
+        {
           "name": "rings",
           "type": "number",
           "optional": true,
@@ -5881,7 +5889,7 @@
           "name": "colorScale",
           "type": "{ domain: number[]; range: string[] }",
           "optional": true,
-          "description": "Continuous choropleth encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold`. Pass already-resolved colours (NOT a d3-scale-chromatic scheme name - core stays free of that dependency); generate the range yourself (e.g. via `d3-scale-chromatic` in your app) if you want a named scheme. Loses to `colorsMapping`.",
+          "description": "Continuous choropleth encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold` (n thresholds -> n + 1 colours). Pass already-resolved colours, not a scheme name; for a named ColorBrewer ramp use core's `sequentialScheme` (`range: sequentialScheme(\"purples\", 5)` with 4 thresholds - no d3-scale-chromatic dependency). Loses to `colorsMapping`.",
           "default": "",
           "common": false
         },

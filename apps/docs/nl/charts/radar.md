@@ -18,6 +18,45 @@ Welke optie wint, en waar? Leg een paar kandidaten over dezelfde set criteria en
 - **Balans versus specialisatie.** Een rondere veelhoek is de allrounder; een puntige zet alles op twee assen. Dat vormverhaal is wat tabellen niet kunnen vertellen.
 - **Houd het bij een paar entiteiten en 5 tot 12 assen.** Voor een precieze vergelijking op één criterium leest een [staafdiagram](/nl/charts/comparable) de exacte waarden af; de radar leest profielen.
 
+## De buitenste ring afronden naar een mooie waarde
+
+Zonder `maxValue` ligt de buitenste ring op de grootste waarde in de data, dus een maximum van 73 labelt de ringen 18, 37, 55 en 73. Zet `niceMaxValue` aan en de buitenste ring rondt in plaats daarvan naar boven af tot de volgende "mooie" tick, op dezelfde stappen van 1, 2 en 5 × 10ⁿ die een d3-as gebruikt, zodat de ringen 20, 40, 60 en 80 tonen.
+
+<ChartDemo chart="radar-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<RadarChart {...props} niceMaxValue />
+```
+
+```vue [Vue]
+<RadarChart :options="{ ...props, niceMaxValue: true }" />
+```
+
+```svelte [Svelte]
+<div use:radarChart={{ ...props, niceMaxValue: true }}></div>
+```
+
+```ts [Angular]
+applyRadarChartProps(this.c.nativeElement, { ...props, niceMaxValue: true });
+```
+
+```html [Web component]
+<michi-vz-radar-chart id="c"></michi-vz-radar-chart>
+<script>
+  // een property, geen attribuut: accepteert true of een aantal ticks
+  document.getElementById("c").niceMaxValue = true;
+</script>
+```
+
+:::
+
+- `true` gebruikt `rings` (standaard 4) als aantal ticks. Een getal bepaalt het aantal ticks zelf, bijvoorbeeld `niceMaxValue: 5` om aan te sluiten bij een as met vijf ticks elders op de pagina.
+- Een expliciete `maxValue` wint altijd: `niceMaxValue` rondt alleen de buitenste ring af die de grafiek anders uit de data zou halen. Een maximum dat al op een tick ligt blijft staan (100 blijft 100), en data die volledig nul of negatief is houdt de standaard buitenste ring van 1.
+- Alleen de buitenste ring is gegarandeerd rond. De binnenste ringen zijn gelijke delen ervan, dus ze zijn rond wanneer het afgeronde maximum deelbaar is door `rings`. 80 over 4 ringen geeft 20, 40, 60, 80, terwijl 50 over 4 ringen 12,5, 25, 37,5, 50 geeft.
+- `getContext().maxValue` geeft de afgeronde waarde terug. De afronding is ook geëxporteerd als pure helper, `niceRadarMax(dataMax, tickCount)` uit `@michi-vz/core`.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

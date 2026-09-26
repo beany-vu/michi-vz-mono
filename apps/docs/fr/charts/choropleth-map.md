@@ -41,6 +41,30 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 L'`id` de chaque feature d'une `FeatureCollection` est lu depuis le `Feature.id` GeoJSON (repli sur `properties.id`) ; `name` depuis `properties.name`. Sources courantes : [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - convertissez avec `feature()` de `topojson-client`), [Natural Earth](https://www.naturalearthdata.com/), ou un fichier régional maintenu par votre équipe. Les docs/exemples de ce package n'embarquent qu'un petit échantillon illustratif de 12 formes - pas de vraies côtes - pour que la bibliothèque reste libre de toute dépendance à des données topologiques.
 
+## Schémas de couleurs nommés {#named-colour-schemes}
+
+`colorScale.range` attend des couleurs résolues. Pour une rampe nommée du clair au foncé, `@michi-vz/core` exporte `sequentialScheme(name, count)` : les schémas séquentiels monochromes de ColorBrewer, avec exactement les listes de couleurs que d3-scale-chromatic fournit sous `schemePurples[k]` et ses voisins, sans dépendance à d3.
+
+<ChartDemo chart="choropleth-map-chart" :index="2" :legend="[]" />
+
+```ts
+import { sequentialScheme } from "@michi-vz/core";
+
+const props = {
+  geography: worldJson,
+  dataSet,
+  // une échelle à seuils prend une couleur de plus que de seuils : 4 seuils, 5 couleurs
+  colorScale: { domain: [200, 500, 1000, 2000], range: sequentialScheme("purples", 5) },
+};
+```
+
+- Six noms : `"blues"`, `"greens"`, `"greys"`, `"oranges"`, `"purples"` et `"reds"`, aussi exportés sous `SEQUENTIAL_SCHEME_NAMES` (type `SequentialSchemeName`). Un nom inconnu lève une erreur qui les liste.
+- `count` va de 3 à 9 couleurs, du clair au foncé : un nombre plus petit renvoie 3 couleurs, un plus grand 9, et une valeur décimale est arrondie.
+- Chaque appel renvoie un nouveau tableau : vous pouvez l'inverser avec `.reverse()` pour une rampe du foncé au clair sans toucher aux autres graphiques.
+- Les wrappers de framework installent `@michi-vz/core` pour vous ; avec un gestionnaire de paquets strict comme pnpm, ajoutez-le à vos propres dépendances avant d'en importer quoi que ce soit.
+- Le `colorScale` de `SymbolMapChart` prend la même forme `{ domain, range }`, la fonction y sert donc aussi.
+- Couleurs issues de [ColorBrewer 2.0](https://colorbrewer2.org) par Cynthia A. Brewer, Pennsylvania State University, sous licence Apache 2.0.
+
 ## Faire defiler les annees
 
 Donnez un `date` à chaque région et activez `timeline` : la carte devient un récit année par année, avec son propre bouton lecture et son curseur, une période colorée à la fois. Désactivé par défaut - sans opt-in, rien ne change.
@@ -154,7 +178,7 @@ Chaque ligne de `dataSet` (`{ id, label, value?, color? }`) est mise en correspo
 
 ### Priorité de résolution des couleurs
 
-`colorsMapping[label]` (catégoriel, explicite) l'emporte sur `colorScale` (continu - un `range` hexadécimal résolu + un `domain` numérique, construit dans un `scaleThreshold` d3 ; les valeurs hors domaine se calent sur la première/dernière couleur du range) qui l'emporte sur la `color` propre à la ligne qui l'emporte sur la palette auto-assignée `colors`. Le cœur reste libre de `d3-scale-chromatic` - passez des couleurs hexadécimales déjà résolues à `colorScale.range`, en les générant depuis un schéma nommé (ou ailleurs) dans votre propre application si vous le souhaitez.
+`colorsMapping[label]` (catégoriel, explicite) l'emporte sur `colorScale` (continu - un `range` hexadécimal résolu + un `domain` numérique, construit dans un `scaleThreshold` d3 ; les valeurs hors domaine se calent sur la première/dernière couleur du range) qui l'emporte sur la `color` propre à la ligne qui l'emporte sur la palette auto-assignée `colors`. Le cœur reste libre de `d3-scale-chromatic` - passez des couleurs hexadécimales déjà résolues à `colorScale.range`, depuis le [`sequentialScheme`](#named-colour-schemes) du cœur ou depuis n'importe où ailleurs dans votre application.
 
 ### Projections - les 13, un défaut
 

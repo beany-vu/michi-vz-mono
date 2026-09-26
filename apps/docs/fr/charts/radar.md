@@ -18,6 +18,45 @@ Quelle option l'emporte, et sur quels points ? Superposez quelques candidats sur
 - **Équilibre contre spécialisation.** Un polygone plus rond est le généraliste ; un polygone pointu mise tout sur deux axes. Cette histoire de forme, aucun tableau ne peut la raconter.
 - **Limitez-vous à quelques entités et 5 à 12 axes.** Pour une comparaison précise sur un seul critère, une [barre comparable](/fr/charts/comparable) donne des valeurs exactes ; le radar donne des profils.
 
+## Arrondir l'anneau extérieur à une valeur ronde
+
+Sans `maxValue`, l'anneau extérieur se place sur la plus grande valeur des données : un maximum de 73 étiquette les anneaux 18, 37, 55 et 73. Avec `niceMaxValue`, l'anneau extérieur est arrondi vers le haut à la graduation « ronde » suivante, sur les mêmes pas de 1, 2 et 5 × 10ⁿ qu'un axe d3, et les anneaux affichent 20, 40, 60 et 80.
+
+<ChartDemo chart="radar-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<RadarChart {...props} niceMaxValue />
+```
+
+```vue [Vue]
+<RadarChart :options="{ ...props, niceMaxValue: true }" />
+```
+
+```svelte [Svelte]
+<div use:radarChart={{ ...props, niceMaxValue: true }}></div>
+```
+
+```ts [Angular]
+applyRadarChartProps(this.c.nativeElement, { ...props, niceMaxValue: true });
+```
+
+```html [Web component]
+<michi-vz-radar-chart id="c"></michi-vz-radar-chart>
+<script>
+  // une propriété, pas un attribut : elle accepte true ou un nombre de graduations
+  document.getElementById("c").niceMaxValue = true;
+</script>
+```
+
+:::
+
+- `true` utilise `rings` (4 par défaut) comme nombre de graduations. Un nombre fixe lui-même le nombre de graduations, par exemple `niceMaxValue: 5` pour s'aligner sur un axe à cinq graduations ailleurs sur la page.
+- Un `maxValue` explicite l'emporte toujours : `niceMaxValue` n'arrondit que l'anneau extérieur que le graphique tirerait sinon des données. Un maximum déjà sur une graduation ne bouge pas (100 reste 100), et des données toutes nulles ou négatives gardent l'anneau extérieur par défaut de 1.
+- Seul l'anneau extérieur est garanti rond. Les anneaux intérieurs en sont des fractions égales : ils sont ronds quand le maximum arrondi se divise exactement par `rings`. 80 sur 4 anneaux donne 20, 40, 60, 80, alors que 50 sur 4 anneaux donne 12,5, 25, 37,5, 50.
+- `getContext().maxValue` renvoie la valeur arrondie. L'arrondi est aussi exporté comme fonction pure, `niceRadarMax(dataMax, tickCount)` depuis `@michi-vz/core`.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

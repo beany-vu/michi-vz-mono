@@ -454,6 +454,17 @@
     <div class="card" id="radarContract">
       <michi-vz-radar-chart id="radarContractChart"></michi-vz-radar-chart>
     </div>
+    <h2>Radar niceMaxValue (outer ring rounded up to a nice tick)</h2>
+    <div class="row">
+      <div class="card">
+        <h2>SVG, niceMaxValue: true (data max 73, outer ring 80)</h2>
+        <michi-vz-radar-chart id="radarNice"></michi-vz-radar-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas, niceMaxValue: 5 (data max 1234, outer ring 1400)</h2>
+        <michi-vz-radar-chart id="radarNiceCanvas"></michi-vz-radar-chart>
+      </div>
+    </div>
 
     <h1 style="margin-top: 36px">@michi-vz/wc - ChoroplethMap (geo, first geo chart)</h1>
     <div class="row">
@@ -472,6 +483,10 @@
     </h2>
     <div class="card" id="choroContract">
       <michi-vz-choropleth-map-chart id="choroContractChart"></michi-vz-choropleth-map-chart>
+    </div>
+    <h2>ChoroplethMap colorScale.range from core's sequentialScheme("purples", 3)</h2>
+    <div class="card">
+      <michi-vz-choropleth-map-chart id="choroScheme"></michi-vz-choropleth-map-chart>
     </div>
 
     <h1 style="margin-top: 36px">@michi-vz/wc - SymbolMap (geo, force-de-overlapped bubble map)</h1>
@@ -599,7 +614,8 @@
         await import("../packages/wc/dist/michi-vz-wc.bundle.js");
         // The image exporters are not part of the element API, so the PNG check below
         // reaches them through @michi-vz/core's own dist (see the import map above).
-        const { chartToPngDataUrl } = await import("../packages/core/dist/index.js");
+        const { chartToPngDataUrl, sequentialScheme } =
+          await import("../packages/core/dist/index.js");
 
         const data = [
           { label: "Alpha One", value1: 12, value2: 34 },
@@ -1160,6 +1176,30 @@
           skipColorMappingDispatch: true,
           ...radarCommon,
         });
+        // niceMaxValue: no maxValue, so the outer ring rounds UP from the data max to the
+        // last nice tick (d3-array tickStep). true -> `rings` (4) ticks: 73 -> step 20 -> 80;
+        // 5 -> five ticks: 1234 -> step 200 -> 1400.
+        const radarNiceEl = document.getElementById("radarNice");
+        const radarNiceCanvasEl = document.getElementById("radarNiceCanvas");
+        Object.assign(radarNiceEl, {
+          series: [
+            { label: "Week 1", color: "#1f77b4", values: [45, 30, 73, 20, 35] },
+            { label: "Week 2", color: "#ff7f0e", values: [52, 38, 64, 28, 30] },
+          ],
+          axes: radarAxes,
+          chartTitle: "Radar niceMaxValue: true",
+          renderer: "svg",
+          niceMaxValue: true,
+          ...radarCommon,
+        });
+        Object.assign(radarNiceCanvasEl, {
+          series: [{ label: "Visits", color: "#2ca02c", values: [980, 1234, 610, 875, 432] }],
+          axes: radarAxes,
+          chartTitle: "Radar niceMaxValue: 5",
+          renderer: "canvas",
+          niceMaxValue: 5,
+          ...radarCommon,
+        });
 
         // ---- ChoroplethMap setup ---- (geography is ALWAYS a prop - a tiny inline
         // GeoFeatureItem[] sample here, same spirit as @michi-vz/examples' hand-curated
@@ -1247,6 +1287,15 @@
           renderer: "canvas",
           skipColorMappingDispatch: true,
           ...choroCommon,
+        });
+        // Named palette from core (no d3-scale-chromatic): 2 thresholds -> 3 colours.
+        const choroSchemeEl = document.getElementById("choroScheme");
+        Object.assign(choroSchemeEl, {
+          dataSet: choroData,
+          chartTitle: "Choropleth + sequentialScheme",
+          renderer: "svg",
+          ...choroCommon,
+          colorScale: { domain: [50, 80], range: sequentialScheme("purples", 3) },
         });
 
         // ---- SymbolMap setup ---- (dataSet items each supply their own lng/lat - core
@@ -2485,6 +2534,27 @@
             "RADAR CANVAS colour contract: consumer CSS rgb(20,170,90) reached canvas pixels",
           );
 
+          // ---- RadarChart niceMaxValue checks ----
+          const outerRing = (el) => {
+            const labels = el.querySelectorAll("text.radial-label");
+            return labels.length ? labels[labels.length - 1].textContent : null;
+          };
+          log(
+            radarSvgEl.getContext().maxValue === 9 && outerRing(radarSvgEl) === "9",
+            `RADAR NICE: default (unset) keeps the raw data max 9 on the outer ring (got ${outerRing(radarSvgEl)})`,
+          );
+          log(
+            outerRing(radarNiceEl) === "80" && radarNiceEl.getContext().maxValue === 80,
+            `RADAR NICE (svg, true): data max 73 -> outer ring label is the round 80 (got ${outerRing(radarNiceEl)})`,
+          );
+          const niceCanvasLabel = outerRing(radarNiceCanvasEl);
+          log(
+            niceCanvasLabel === "1400" &&
+              Number(niceCanvasLabel) % 100 === 0 &&
+              radarNiceCanvasEl.getContext().maxValue === 1400,
+            `RADAR NICE (canvas, 5): data max 1234 -> outer ring label is the round 1400 (got ${niceCanvasLabel})`,
+          );
+
           // ---- ChoroplethMap checks ----
           const choroPaths = choroSvgEl.querySelectorAll("path.region");
           log(
@@ -2562,6 +2632,22 @@
           log(
             choroContractOk,
             "CHORO CANVAS colour contract: consumer CSS rgb(215,40,150) reached canvas pixels",
+          );
+
+          // ---- sequentialScheme (core palette helper) ----
+          log(
+            JSON.stringify(sequentialScheme("purples", 5)) ===
+              JSON.stringify(["#f2f0f7", "#cbc9e2", "#9e9ac8", "#756bb1", "#54278f"]),
+            "PALETTE: sequentialScheme('purples', 5) from the core dist is ColorBrewer Purples 5",
+          );
+          const schemeAlpha = choroSchemeEl.querySelector('path.region[data-label="Alpha"]');
+          const schemeBeta = choroSchemeEl.querySelector('path.region[data-label="Beta"]');
+          log(
+            !!schemeAlpha &&
+              schemeAlpha.getAttribute("fill") === "#efedf5" &&
+              !!schemeBeta &&
+              schemeBeta.getAttribute("fill") === "#756bb1",
+            `PALETTE: choropleth colorScale.range from sequentialScheme('purples', 3) paints the lightest (value 10) and darkest (value 90) Purples (got ${schemeAlpha && schemeAlpha.getAttribute("fill")}, ${schemeBeta && schemeBeta.getAttribute("fill")})`,
           );
 
           // ---- SymbolMap checks ----

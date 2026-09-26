@@ -20,6 +20,7 @@ export function applyRadarChartProps(el: RadarChartElement, props: RadarChartPro
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.maxValue !== undefined) el.maxValue = props.maxValue;
+  if (props.niceMaxValue !== undefined) el.niceMaxValue = props.niceMaxValue;
   if (props.rings !== undefined) el.rings = props.rings;
   if (props.fillOpacity !== undefined) el.fillOpacity = props.fillOpacity;
   if (props.skipColorMappingDispatch !== undefined)

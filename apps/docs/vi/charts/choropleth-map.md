@@ -41,6 +41,30 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 `id` của mỗi feature trong một `FeatureCollection` được đọc từ `Feature.id` GeoJSON cấp cao nhất (dự phòng bằng `properties.id`); `name` từ `properties.name`. Các nguồn phổ biến: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - chuyển đổi bằng `feature()` của `topojson-client`), [Natural Earth](https://www.naturalearthdata.com/), hoặc một tệp khu vực do chính đội của bạn duy trì. Docs/ví dụ của gói này chỉ đóng gói một mẫu minh họa nhỏ gồm 12 hình dạng - không phải đường bờ biển thật - để giữ cho thư viện không phụ thuộc vào bất kỳ dữ liệu topology nào.
 
+## Bảng màu có tên {#named-colour-schemes}
+
+`colorScale.range` nhận các màu đã phân giải sẵn. Để có một dải màu có tên từ nhạt đến đậm, `@michi-vz/core` export `sequentialScheme(name, count)`: các scheme tuần tự đơn sắc của ColorBrewer, với đúng các danh sách màu mà d3-scale-chromatic cung cấp dưới dạng `schemePurples[k]` và các scheme cùng loại, mà không cần phụ thuộc vào d3.
+
+<ChartDemo chart="choropleth-map-chart" :index="2" :legend="[]" />
+
+```ts
+import { sequentialScheme } from "@michi-vz/core";
+
+const props = {
+  geography: worldJson,
+  dataSet,
+  // thang ngưỡng cần nhiều hơn số ngưỡng một màu: 4 ngưỡng, 5 màu
+  colorScale: { domain: [200, 500, 1000, 2000], range: sequentialScheme("purples", 5) },
+};
+```
+
+- Sáu tên: `"blues"`, `"greens"`, `"greys"`, `"oranges"`, `"purples"` và `"reds"`, cũng được export dưới tên `SEQUENTIAL_SCHEME_NAMES` (kiểu `SequentialSchemeName`). Tên không hợp lệ sẽ ném ra lỗi liệt kê các tên này.
+- `count` từ 3 đến 9 màu, từ nhạt đến đậm: số nhỏ hơn trả về 3 màu, số lớn hơn trả về 9 màu, và số thập phân được làm tròn.
+- Mỗi lần gọi trả về một mảng mới, nên bạn có thể đảo ngược nó bằng `.reverse()` để có dải từ đậm đến nhạt mà không ảnh hưởng tới biểu đồ khác.
+- Các wrapper framework tự cài `@michi-vz/core` cho bạn; với trình quản lý gói nghiêm ngặt như pnpm, hãy thêm nó vào dependencies của chính bạn trước khi import từ nó.
+- `colorScale` của `SymbolMapChart` có cùng dạng `{ domain, range }`, nên hàm này cũng dùng được ở đó.
+- Màu lấy từ [ColorBrewer 2.0](https://colorbrewer2.org) của Cynthia A. Brewer, Pennsylvania State University, theo giấy phép Apache License 2.0.
+
 ## Xem dữ liệu chạy theo năm
 
 Gắn `date` cho từng khu vực rồi bật `timeline`: bản đồ thành câu chuyện theo từng năm với nút play và thanh tua riêng, mỗi lần tô màu một giai đoạn. Mặc định tắt - không bật thì biểu đồ giữ nguyên.
@@ -154,7 +178,7 @@ Mỗi hàng `dataSet` (`{ id, label, value?, color? }`) được khớp với m�
 
 ### Thứ tự ưu tiên khi phân giải màu
 
-`colorsMapping[label]` (danh mục, rõ ràng) thắng `colorScale` (liên tục - một `range` hex đã phân giải + một `domain` số, được xây dựng trong một `scaleThreshold` của d3; các giá trị ngoài domain sẽ kẹp về màu đầu/cuối của range) thắng `color` riêng của hàng thắng bảng màu `colors` được tự động gán. Core không phụ thuộc vào `d3-scale-chromatic` - hãy truyền các màu hex đã phân giải sẵn vào `colorScale.range`, tự tạo chúng từ một scheme có tên (hoặc ở bất cứ đâu khác) trong ứng dụng của riêng bạn nếu muốn.
+`colorsMapping[label]` (danh mục, rõ ràng) thắng `colorScale` (liên tục - một `range` hex đã phân giải + một `domain` số, được xây dựng trong một `scaleThreshold` của d3; các giá trị ngoài domain sẽ kẹp về màu đầu/cuối của range) thắng `color` riêng của hàng thắng bảng màu `colors` được tự động gán. Core không phụ thuộc vào `d3-scale-chromatic` - hãy truyền các màu hex đã phân giải sẵn vào `colorScale.range`, lấy từ [`sequentialScheme`](#named-colour-schemes) có sẵn trong core hoặc từ bất cứ đâu khác trong ứng dụng của bạn.
 
 ### Các phép chiếu - đủ 13, một mặc định
 

@@ -472,6 +472,7 @@ Chart-specific props (the shared props above also apply):
 - `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
 - `title`: `string` - Optional chart title rendered above the plot
 - `maxValue`: `number` - Value mapped to the outer ring (full radius), shared by every spoke; defaults to the largest value across all series and axes (or 1 when all are zero)
+- `niceMaxValue`: `boolean | number` (default: `false`) - Round the default outer ring UP to the last "nice" tick of [0, data max] (d3-array `tickStep`: 1/2/5 x 10^n steps), so the outer ring label reads 80 or 1 400 000 instead of 73 or 1 234 567.
 - `rings`: `number` (default: `4`) - number of concentric grid rings (default 4).
 - `fillOpacity`: `number` (default: `0.2`) - polygon fill opacity (default 0.2).
 - `tooltipFormatter`: `(item: RadarDataItem & { date?: string }) => string` - Returns custom tooltip HTML for a hovered datum (sanitized before it is inserted).
@@ -906,7 +907,7 @@ Chart-specific props (the shared props above also apply):
 - `title`: `string` - Optional chart title rendered above the map
 - `projection`: `GeoProjectionName` - d3-geo / d3-geo-projection projection to use (default "geoRobinson", the legacy sdg-trade MapChoropleth default).
 - `projectionConfig`: `GeoProjectionConfig` - Fine-tunes the chosen projection.
-- `colorScale`: `{ domain: number[]; range: string[] }` - Continuous choropleth encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold`.
+- `colorScale`: `{ domain: number[]; range: string[] }` - Continuous choropleth encoding: a resolved hex `range` keyed to a numeric `domain`, built into a d3 `scaleThreshold` (n thresholds -> n + 1 colours).
 - `noDataColor`: `string` (default: `DEFAULT_NO_DATA_COLOR`) - Fill for features with no matching `dataSet` row (default `#d2d7dd`).
 - `joinBy`: `"id" | "name"` (default: `"id"`) - How `dataSet` rows join `geography` features: "id" (default) matches `ChoroplethDataItem.id` against `GeoFeatureItem.id` / GeoJSON `Feature.id` (stable codes such as ISO-A3), while "name" matches `label` against `GeoFeatureItem.name` / `properties.name` for data keyed by display name.
 - `strokeColor`: `string` (default: `DEFAULT_STROKE_COLOR`) - Country border colour (legacy default: `#F4F7FC`, `colors.WHITE_SMOKE`)

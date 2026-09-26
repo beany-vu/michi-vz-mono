@@ -18,6 +18,45 @@ Which option wins, and where? Lay a few candidates over the same set of criteria
 - **Balance vs specialisation.** A rounder polygon is the all-rounder; a spiky one bets everything on two axes. That shape story is what tables cannot tell.
 - **Keep it to a few entities and 5-12 axes.** For a precise comparison on one criterion, a [Comparable bar](/charts/comparable) reads exact values; the radar reads profiles.
 
+## Round the outer ring to a nice value
+
+Without `maxValue`, the outer ring sits at the largest value in the data, so a data max of 73 labels the rings 18, 37, 55 and 73. Set `niceMaxValue` and the outer ring rounds up to the next "nice" tick instead, on the same 1, 2 and 5 × 10ⁿ steps a d3 axis uses, so the rings read 20, 40, 60 and 80.
+
+<ChartDemo chart="radar-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<RadarChart {...props} niceMaxValue />
+```
+
+```vue [Vue]
+<RadarChart :options="{ ...props, niceMaxValue: true }" />
+```
+
+```svelte [Svelte]
+<div use:radarChart={{ ...props, niceMaxValue: true }}></div>
+```
+
+```ts [Angular]
+applyRadarChartProps(this.c.nativeElement, { ...props, niceMaxValue: true });
+```
+
+```html [Web component]
+<michi-vz-radar-chart id="c"></michi-vz-radar-chart>
+<script>
+  // a property, not an attribute: it takes true or a tick count
+  document.getElementById("c").niceMaxValue = true;
+</script>
+```
+
+:::
+
+- `true` uses `rings` (default 4) as the tick count. A number sets the tick count itself, e.g. `niceMaxValue: 5` to match a five-tick axis elsewhere on the page.
+- An explicit `maxValue` always wins: `niceMaxValue` only rounds the outer ring the chart would otherwise take from the data. A max already on a tick stays put (100 stays 100), and all-zero or negative data keeps the default outer ring of 1.
+- Only the outer ring is guaranteed to be round. The inner rings are equal fractions of it, so they are round when the nice max divides evenly by `rings`: 80 over 4 rings gives 20, 40, 60, 80, while 50 over 4 rings gives 12.5, 25, 37.5, 50.
+- `getContext().maxValue` reports the rounded value. The rounding is also exported as a pure helper, `niceRadarMax(dataMax, tickCount)` from `@michi-vz/core`.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>

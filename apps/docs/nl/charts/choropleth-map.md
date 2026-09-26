@@ -41,6 +41,30 @@ import { ChoroplethMapChart } from "@michi-vz/react";
 
 De `id` van elke feature in een `FeatureCollection` wordt gelezen uit de GeoJSON `Feature.id` (met terugval op `properties.id`); `name` uit `properties.name`. Populaire bronnen: [world-atlas](https://github.com/topojson/world-atlas) (TopoJSON - converteer met `feature()` van `topojson-client`), [Natural Earth](https://www.naturalearthdata.com/), of een regiobestand dat je eigen team onderhoudt. De docs/voorbeelden van dit package bevatten slechts een klein illustratief voorbeeld van 12 vormen - geen echte kustlijnen - zodat de bibliotheek vrij blijft van elke afhankelijkheid van topologiegegevens.
 
+## Kleurschema's op naam {#named-colour-schemes}
+
+`colorScale.range` verwacht opgeloste kleuren. Voor een benoemde reeks van licht naar donker exporteert `@michi-vz/core` `sequentialScheme(name, count)`: de sequentiële eenkleurige schema's van ColorBrewer, met precies de kleurlijsten die d3-scale-chromatic levert als `schemePurples[k]` en verwanten, zonder d3-afhankelijkheid.
+
+<ChartDemo chart="choropleth-map-chart" :index="2" :legend="[]" />
+
+```ts
+import { sequentialScheme } from "@michi-vz/core";
+
+const props = {
+  geography: worldJson,
+  dataSet,
+  // een drempelschaal neemt één kleur meer dan drempels: 4 drempels, 5 kleuren
+  colorScale: { domain: [200, 500, 1000, 2000], range: sequentialScheme("purples", 5) },
+};
+```
+
+- Zes namen: `"blues"`, `"greens"`, `"greys"`, `"oranges"`, `"purples"` en `"reds"`, ook geëxporteerd als `SEQUENTIAL_SCHEME_NAMES` (type `SequentialSchemeName`). Een onbekende naam gooit een fout die ze opsomt.
+- `count` loopt van 3 tot 9 kleuren, van licht naar donker: een kleiner aantal geeft 3 kleuren, een groter aantal 9, en een breuk wordt afgerond.
+- Elke aanroep geeft een nieuwe array terug, dus je kunt hem met `.reverse()` omdraaien voor een reeks van donker naar licht zonder andere grafieken te raken.
+- De framework-wrappers installeren `@michi-vz/core` voor je; met een strikte package manager zoals pnpm voeg je het aan je eigen dependencies toe voordat je eruit importeert.
+- De `colorScale` van `SymbolMapChart` heeft dezelfde vorm `{ domain, range }`, dus de helper werkt daar ook.
+- Kleuren uit [ColorBrewer 2.0](https://colorbrewer2.org) van Cynthia A. Brewer, Pennsylvania State University, onder de Apache License 2.0.
+
 ## Speel door de jaren heen
 
 Geef elke regio een `date` en zet `timeline` aan: de kaart wordt een verhaal per jaar, met een eigen afspeelknop en scrubber die telkens één periode inkleurt. Standaard uit - zonder opt-in verandert er niets.
@@ -154,7 +178,7 @@ Elke `dataSet`-rij (`{ id, label, value?, color? }`) wordt gekoppeld aan een geo
 
 ### Prioriteit van kleurresolutie
 
-`colorsMapping[label]` (categorisch, expliciet) wint van `colorScale` (continu - een opgeloste hex-`range` + numeriek `domain`, gebouwd in een d3-`scaleThreshold`; waarden buiten het domein klemmen aan de eerste/laatste kleur van de range) die wint van de eigen `color` van de rij die wint van het automatisch toegewezen `colors`-palet. De kern blijft vrij van `d3-scale-chromatic` - geef al opgeloste hexkleuren door aan `colorScale.range`, gegenereerd vanuit een genoemd schema (of elders) in je eigen app als je dat wilt.
+`colorsMapping[label]` (categorisch, expliciet) wint van `colorScale` (continu - een opgeloste hex-`range` + numeriek `domain`, gebouwd in een d3-`scaleThreshold`; waarden buiten het domein klemmen aan de eerste/laatste kleur van de range) die wint van de eigen `color` van de rij die wint van het automatisch toegewezen `colors`-palet. De kern blijft vrij van `d3-scale-chromatic` - geef al opgeloste hexkleuren door aan `colorScale.range`, uit de eigen [`sequentialScheme`](#named-colour-schemes) van de kern of van waar dan ook in je app.
 
 ### Projecties - alle 13, één standaard
 

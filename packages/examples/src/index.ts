@@ -31,6 +31,7 @@ import type {
   SymbolMapChartProps,
   RadialTreeChartProps,
 } from "@michi-vz/core";
+import { sequentialScheme } from "@michi-vz/core";
 // Real-world geography for the geo charts (ChoroplethMapChart, SymbolMapChart's
 // optional backdrop): the SAME 110m-resolution world atlas the sdg-trade
 // production consumer uses (176 countries, id = ISO-A3, properties.name),
@@ -1311,6 +1312,31 @@ const radar: Example<RadarChartProps>[] = [
       ],
     },
   },
+  {
+    id: "radar-nice-max",
+    title: "Weekly practice minutes by skill (nice outer ring)",
+    description:
+      "No maxValue: niceMaxValue rounds the outer ring up from the data max (73) to the next nice tick (80), so the ring labels read 20, 40, 60, 80 instead of 18, 37, 55, 73.",
+    element: "michi-vz-radar-chart",
+    props: {
+      title: "Weekly practice, minutes",
+      axes: ["Scales", "Sight-reading", "Repertoire", "Ear training", "Theory", "Improvisation"],
+      niceMaxValue: true,
+      fillOpacity: 0.2,
+      series: [
+        {
+          label: "Week 1",
+          color: "#1f77b4",
+          values: [28, 45, 73, 20, 35, 15],
+        },
+        {
+          label: "Week 2",
+          color: "#ff7f0e",
+          values: [33, 52, 64, 28, 30, 24],
+        },
+      ],
+    },
+  },
 ];
 
 const fan: Example<FanChartProps>[] = [
@@ -2046,6 +2072,40 @@ const fountain: Example<FountainChartProps>[] = [
   },
 ];
 
+// Illustrative merchandise export values (US$ bn), shared by the continuous
+// choropleth examples below.
+const exportValue2024: ChoroplethMapChartProps["dataSet"] = [
+  { id: "USA", label: "United States", value: 2064 },
+  { id: "CHN", label: "China", value: 3380 },
+  { id: "DEU", label: "Germany", value: 1690 },
+  { id: "JPN", label: "Japan", value: 717 },
+  { id: "GBR", label: "United Kingdom", value: 460 },
+  { id: "FRA", label: "France", value: 617 },
+  { id: "KOR", label: "South Korea", value: 683 },
+  { id: "NLD", label: "Netherlands", value: 870 },
+  { id: "ITA", label: "Italy", value: 620 },
+  { id: "BRA", label: "Brazil", value: 340 },
+  { id: "IND", label: "India", value: 450 },
+  { id: "RUS", label: "Russia", value: 425 },
+  { id: "MEX", label: "Mexico", value: 593 },
+  { id: "CAN", label: "Canada", value: 594 },
+  { id: "AUS", label: "Australia", value: 344 },
+  { id: "ZAF", label: "South Africa", value: 123 },
+  { id: "NGA", label: "Nigeria", value: 62 },
+  { id: "EGY", label: "Egypt", value: 43 },
+  { id: "SAU", label: "Saudi Arabia", value: 340 },
+  { id: "ARE", label: "United Arab Emirates", value: 599 },
+  { id: "IDN", label: "Indonesia", value: 292 },
+  { id: "VNM", label: "Vietnam", value: 371 },
+  { id: "MYS", label: "Malaysia", value: 351 },
+  { id: "CHE", label: "Switzerland", value: 420 },
+  { id: "ESP", label: "Spain", value: 425 },
+  { id: "TUR", label: "Turkey", value: 262 },
+  { id: "POL", label: "Poland", value: 351 },
+  { id: "SWE", label: "Sweden", value: 195 },
+  { id: "KEN", label: "Kenya", value: 8 },
+];
+
 // ChoroplethMapChart's `geography` is ALWAYS a consumer-supplied prop (core
 // bundles no topology data); `world` above is the real geography, imported
 // from the examples/docs layer only (see this chart's docs page for the
@@ -2068,39 +2128,9 @@ const choroplethMap: Example<ChoroplethMapChartProps>[] = [
         "value" in d && d.value !== undefined
           ? `<strong>${d.label}</strong><br/>${d.value.toLocaleString()} bn`
           : `<strong>${"name" in d ? (d.name ?? d.id) : d.id}</strong><br/>No data`,
-      dataSet: [
-        { id: "USA", label: "United States", value: 2064 },
-        { id: "CHN", label: "China", value: 3380 },
-        { id: "DEU", label: "Germany", value: 1690 },
-        { id: "JPN", label: "Japan", value: 717 },
-        { id: "GBR", label: "United Kingdom", value: 460 },
-        { id: "FRA", label: "France", value: 617 },
-        { id: "KOR", label: "South Korea", value: 683 },
-        { id: "NLD", label: "Netherlands", value: 870 },
-        { id: "ITA", label: "Italy", value: 620 },
-        { id: "BRA", label: "Brazil", value: 340 },
-        { id: "IND", label: "India", value: 450 },
-        { id: "RUS", label: "Russia", value: 425 },
-        { id: "MEX", label: "Mexico", value: 593 },
-        { id: "CAN", label: "Canada", value: 594 },
-        { id: "AUS", label: "Australia", value: 344 },
-        { id: "ZAF", label: "South Africa", value: 123 },
-        { id: "NGA", label: "Nigeria", value: 62 },
-        { id: "EGY", label: "Egypt", value: 43 },
-        { id: "SAU", label: "Saudi Arabia", value: 340 },
-        { id: "ARE", label: "United Arab Emirates", value: 599 },
-        { id: "IDN", label: "Indonesia", value: 292 },
-        { id: "VNM", label: "Vietnam", value: 371 },
-        { id: "MYS", label: "Malaysia", value: 351 },
-        { id: "CHE", label: "Switzerland", value: 420 },
-        { id: "ESP", label: "Spain", value: 425 },
-        { id: "TUR", label: "Turkey", value: 262 },
-        { id: "POL", label: "Poland", value: 351 },
-        { id: "SWE", label: "Sweden", value: 195 },
-        { id: "KEN", label: "Kenya", value: 8 },
-        // Every other country in `geography` is intentionally left unmatched
-        // to show noDataColor across the rest of the world atlas.
-      ],
+      // Every other country in `geography` is intentionally left unmatched to show
+      // noDataColor across the rest of the world atlas.
+      dataSet: exportValue2024,
     },
   },
   {
@@ -2166,6 +2196,26 @@ const choroplethMap: Example<ChoroplethMapChartProps>[] = [
         { id: "TZA", label: "2021 or earlier" },
         { id: "UGA", label: "2021 or earlier" },
       ],
+    },
+  },
+  {
+    id: "choropleth-map-purples-scheme",
+    title: "Merchandise export value by region, 2024 (US$ bn), ColorBrewer Purples",
+    description:
+      'The same continuous encoding with a named palette: sequentialScheme("purples", 5) from @michi-vz/core returns the 5-colour ColorBrewer Purples ramp (d3-scale-chromatic\'s schemePurples[5]) for colorScale.range - 4 thresholds, 5 colours, no d3 dependency.',
+    element: "michi-vz-choropleth-map-chart",
+    props: {
+      title: "Merchandise export value by region, 2024 (US$ bn)",
+      geography: world,
+      colorScale: {
+        domain: [200, 500, 1000, 2000],
+        range: sequentialScheme("purples", 5),
+      },
+      tooltipFormatter: (d) =>
+        "value" in d && d.value !== undefined
+          ? `<strong>${d.label}</strong><br/>${d.value.toLocaleString()} bn`
+          : `<strong>${"name" in d ? (d.name ?? d.id) : d.id}</strong><br/>No data`,
+      dataSet: exportValue2024,
     },
   },
 ];
