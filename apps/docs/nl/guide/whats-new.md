@@ -10,6 +10,34 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.5
+
+Pakketversies: core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·
+examples **1.1.18** · devtools, insights **0.2.33**.
+
+- **Overlappende vlakken voor [Vlakdiagram](/nl/charts/area).** `stacked: false` tekent elke
+  reeks van nul tot haar eigen waarde in plaats van haar op de vorige te stapelen: een
+  doorschijnende vulling met een lijn langs de bovenrand, in svg, canvas en WebGPU. Gebruik het
+  voor reeksen die niet optellen - aandelen, percentages, indexen - waar de bovenrand van een
+  stapel een totaal zou tonen dat niets betekent. De y-as loopt tot de grootste afzonderlijke
+  waarde, grotere vlakken worden eerst getekend zodat kleinere zichtbaar blijven, en hover
+  kiest de reeks waarvan de bovenrand het dichtst bij de aanwijzer ligt. `stackOffset:
+  "expand"` wordt ermee genegeerd en gemeld als een `ignored-option`-datawaarschuwing. De
+  standaard blijft `true`. `@michi-vz/wc` neemt het als property en `@michi-vz/angular` geeft
+  het door.
+- **Nadruk bij hover voor [Sankey](/nl/charts/sankey).** Met `hoverHighlight` brengt hoveren
+  over een knoop die knoop naar voren, samen met elke stroom erin of eruit en de knopen aan hun
+  andere uiteinde; hoveren over een stroom brengt die stroom en zijn twee knopen naar voren. Al
+  het andere dimt tot het niveau dat `highlightItems` gebruikt. In svg worden de markeringen
+  ter plekke bijgewerkt, zodat het element onder de aanwijzer nooit wordt vervangen. Weggaan
+  herstelt de normale toestand, en een vastgezette tooltip houdt zijn nadruk tot hij wordt
+  losgemaakt. Standaard uit. `@michi-vz/wc` accepteert een `hover-highlight`-attribuut en
+  `@michi-vz/angular` geeft de prop door. Met de WebGPU-renderer toont hoveren over een stroom
+  nu ook zijn tooltip.
+- **Links van de [Radiale boom](/nl/charts/radial-tree) in svg zijn dunne grijze lijnen**,
+  zoals in canvas. De linkpaden hadden geen vulling, dus de browser vulde elke spaak zwart en
+  de boom verscheen als donkere wiggen.
+
 ## v1.12.4
 
 Pakketversies: core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·

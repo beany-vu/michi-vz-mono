@@ -10,6 +10,31 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.5
+
+Phiên bản gói: core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·
+examples **1.1.18** · devtools, insights **0.2.33**.
+
+- **Vùng chồng lấn cho [Biểu đồ vùng](/vi/charts/area).** `stacked: false` vẽ mỗi chuỗi từ 0
+  đến giá trị của chính nó thay vì chồng lên các chuỗi bên dưới: phần tô trong mờ cùng một
+  đường dọc theo cạnh trên, trên svg, canvas và WebGPU. Dùng cho các chuỗi không cộng dồn được
+  - tỷ trọng, tỷ lệ, chỉ số - khi cạnh trên của một biểu đồ chồng sẽ hiện một tổng không có ý
+  nghĩa. Trục y chạy tới giá trị đơn lẻ lớn nhất, vùng lớn được vẽ trước để vùng nhỏ vẫn nhìn
+  thấy, và khi rê chuột, chuỗi có cạnh trên gần con trỏ nhất được chọn. `stackOffset: "expand"`
+  bị bỏ qua ở chế độ này và được báo bằng cảnh báo dữ liệu `ignored-option`. Mặc định vẫn là
+  `true`. `@michi-vz/wc` nhận nó dưới dạng property và `@michi-vz/angular` chuyển tiếp nó.
+- **Làm nổi bật khi rê chuột cho [Sankey](/vi/charts/sankey).** Với `hoverHighlight`, rê chuột
+  lên một nút sẽ làm nổi bật nút đó, mọi luồng đi vào hoặc đi ra khỏi nó và các nút ở đầu kia;
+  rê chuột lên một luồng sẽ làm nổi bật luồng đó và hai nút của nó. Mọi thứ còn lại mờ đi đúng
+  mức mà `highlightItems` dùng. Trên svg, các phần tử được cập nhật tại chỗ nên phần tử dưới
+  con trỏ không bao giờ bị thay thế. Rời chuột sẽ khôi phục trạng thái bình thường, và tooltip
+  đã ghim giữ phần nổi bật cho tới khi được bỏ ghim. Mặc định tắt. `@michi-vz/wc` nhận thuộc
+  tính `hover-highlight` và `@michi-vz/angular` chuyển tiếp prop này. Với trình kết xuất
+  WebGPU, rê chuột lên một luồng giờ cũng hiện tooltip của nó.
+- **Các liên kết của [Cây tỏa tròn](/vi/charts/radial-tree) trên svg là nét mảnh màu xám**, như
+  trên canvas. Các path liên kết không đặt thuộc tính fill, nên trình duyệt tô đen từng nhánh
+  và cây hiện thành những hình nêm tối màu.
+
 ## v1.12.4
 
 Phiên bản gói: core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·

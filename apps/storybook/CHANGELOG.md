@@ -1,5 +1,15 @@
 # @michi-vz/storybook
 
+## 1.1.39
+
+### Patch Changes
+
+- Updated dependencies [7915560]
+- Updated dependencies [01751c7]
+  - @michi-vz/wc@1.17.0
+  - @michi-vz/devtools@0.2.33
+  - @michi-vz/examples@1.1.18
+
 ## 1.1.38
 
 ### Patch Changes

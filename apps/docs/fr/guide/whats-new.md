@@ -12,6 +12,34 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.5
+
+Versions des paquets : core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·
+examples **1.1.18** · devtools, insights **0.2.33**.
+
+- **Aires superposées pour [Graphique en aires](/fr/charts/area).** `stacked: false` dessine
+  chaque série de zéro jusqu'à sa propre valeur au lieu de l'empiler sur les précédentes : un
+  remplissage translucide avec une ligne le long de son bord supérieur, en svg, canvas et
+  WebGPU. À utiliser pour des séries qui ne s'additionnent pas - parts, taux, indices - où le
+  bord supérieur d'un empilement afficherait un total qui ne veut rien dire. L'axe y va jusqu'à
+  la plus grande valeur isolée, les grandes aires sont dessinées en premier pour que les
+  petites restent visibles, et le survol retient la série dont le bord supérieur est le plus
+  proche du pointeur. `stackOffset: "expand"` est ignoré dans ce mode et signalé par un
+  avertissement de données `ignored-option`. La valeur par défaut reste `true`. `@michi-vz/wc`
+  l'accepte comme propriété et `@michi-vz/angular` la transmet.
+- **Mise en avant au survol pour [Sankey](/fr/charts/sankey).** Avec `hoverHighlight`, survoler
+  un nœud met en avant ce nœud, chaque flux qui y entre ou en sort et les nœuds à leur autre
+  extrémité ; survoler un flux met en avant ce flux et ses deux nœuds. Tout le reste s'estompe
+  au niveau qu'utilise `highlightItems`. En svg, les marques sont mises à jour sur place :
+  l'élément sous le pointeur n'est jamais remplacé. Quitter rétablit l'état normal, et une
+  infobulle épinglée garde sa mise en avant jusqu'à ce qu'elle soit détachée. Désactivé par
+  défaut. `@michi-vz/wc` accepte un attribut `hover-highlight` et `@michi-vz/angular` transmet
+  la propriété. Avec le moteur de rendu WebGPU, survoler un flux affiche désormais aussi son
+  infobulle.
+- **Les liens de l'[Arbre radial](/fr/charts/radial-tree) en svg sont de fins traits gris**,
+  comme en canvas. Les chemins des liens n'avaient pas de remplissage défini : le navigateur
+  remplissait chaque rayon en noir et l'arbre apparaissait en coins sombres.
+
 ## v1.12.4
 
 Versions des paquets : core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·

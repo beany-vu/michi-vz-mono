@@ -1,5 +1,16 @@
 # @michi-vz/core
 
+## 1.27.0
+
+### Minor Changes
+
+- 7915560: AreaChart `stacked: false`: overlapping areas for series that don't add up (shares, rates, indices). Every key runs from zero to its own value, as a translucent fill with a line in the series colour along its top edge, in the svg, canvas and webgpu renderers. The y axis runs to the largest single value, larger areas draw first so smaller ones stay visible, and hover picks the series whose top edge is nearest the pointer. `stackOffset: "expand"` is ignored with it and reported as an `ignored-option` data warning. The default stays `true`. The web component takes it as a property, and `@michi-vz/angular` forwards it.
+- 01751c7: SankeyChart `hoverHighlight`: hovering a node brings forward the node, every flow into or out of it and the nodes at their other ends; hovering a flow brings forward that flow and its two nodes. Everything else dims to the same level `highlightItems` uses. It works in the svg, canvas and webgpu renderers; on svg the marks update in place, so the element under the pointer is never replaced. Leaving restores the normal state, a pinned tooltip keeps its emphasis until it is unpinned, and `onHighlightItem` fires as before. Default off. The web component takes a `hover-highlight` attribute and `@michi-vz/angular` forwards the prop. Also: with the webgpu renderer, hovering a flow now shows its tooltip (it showed nothing once the GPU was painting).
+
+### Patch Changes
+
+- RadialTreeChart: on the svg renderer each link is now a thin grey stroke, as the canvas renderer draws it. The link paths had no fill set, so the browser filled every spoke black and the tree drew as dark wedges.
+
 ## 1.26.0
 
 ### Minor Changes

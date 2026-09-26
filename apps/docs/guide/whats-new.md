@@ -10,6 +10,31 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.5
+
+Package versions: core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·
+examples **1.1.18** · devtools, insights **0.2.33**.
+
+- **Overlapping areas on [Area Chart](/charts/area).** `stacked: false` draws every series from
+  zero to its own value instead of stacking it on the ones below: a translucent fill with a
+  line along its top edge, in svg, canvas and WebGPU. Use it for series that don't add up -
+  shares, rates, indices - where the top edge of a stack would show a total that means nothing.
+  The y axis runs to the largest single value, larger areas draw first so smaller ones stay
+  visible, and hover picks the series whose top edge is nearest the pointer. `stackOffset:
+  "expand"` is ignored with it and reported as an `ignored-option` data warning. The default
+  stays `true`. `@michi-vz/wc` takes it as a property and `@michi-vz/angular` forwards it.
+- **Hover emphasis on [Sankey](/charts/sankey).** With `hoverHighlight`, hovering a node brings
+  forward the node, every flow into or out of it and the nodes at their other ends; hovering a
+  flow brings forward that flow and its two nodes. Everything else dims to the level
+  `highlightItems` uses. On svg the marks update in place, so the element under the pointer is
+  never replaced. Leaving restores the normal state, and a pinned tooltip keeps its emphasis
+  until it is unpinned. Off by default. `@michi-vz/wc` takes a `hover-highlight` attribute and
+  `@michi-vz/angular` forwards the prop. With the WebGPU renderer, hovering a flow now shows
+  its tooltip too.
+- **[Radial Tree](/charts/radial-tree) links on svg are thin grey strokes**, as on canvas. The
+  link paths had no fill set, so the browser filled every spoke black and the tree drew as dark
+  wedges.
+
 ## v1.12.4
 
 Package versions: core **1.26.0** · wc **1.16.0** · angular **1.15.4** · react **1.12.4** · vue, svelte **1.8.4** ·
