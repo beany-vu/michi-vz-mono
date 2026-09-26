@@ -10,6 +10,24 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.6
+
+Package versions: core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·
+examples **1.1.19** · devtools, insights **0.2.34**.
+
+- **A round outer ring on [Radar Chart](/charts/radar).** `niceMaxValue` rounds the outer ring
+  up to a round number when `maxValue` is not set: the last "nice" tick of [0, the largest
+  value], the same 1/2/5 × 10ⁿ steps d3 axes use, so the outer label reads 80 rather than 73.
+  `true` uses `rings` as the tick count and a number sets it. An explicit `maxValue` still
+  wins. The rounding is also exported as `niceRadarMax(dataMax, tickCount)`, for a consumer
+  that wants a fixed ring across legend toggles. `@michi-vz/wc` takes it as a property and
+  `@michi-vz/angular` forwards it.
+- **Named colour schemes for [Choropleth Map](/charts/choropleth-map) and anything else.**
+  `sequentialScheme(name, count)` returns ColorBrewer's single-hue sequential palettes - blues,
+  greens, greys, oranges, purples, reds - with 3 to 9 colours (clamped), the same lists
+  d3-scale-chromatic ships, so a `colorScale.range` no longer needs a d3 dependency.
+  `SEQUENTIAL_SCHEME_NAMES` lists the names.
+
 ## v1.12.5
 
 Package versions: core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·

@@ -12,6 +12,25 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.6
+
+Versions des paquets : core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·
+examples **1.1.19** · devtools, insights **0.2.34**.
+
+- **Un anneau extérieur arrondi pour [Graphique radar](/fr/charts/radar).** `niceMaxValue`
+  arrondit l'anneau extérieur à un nombre rond lorsque `maxValue` n'est pas défini : la
+  dernière graduation « ronde » de [0, la plus grande valeur], avec les mêmes pas 1/2/5 × 10ⁿ
+  que les axes d3, pour que l'étiquette extérieure indique 80 plutôt que 73. `true` prend
+  `rings` comme nombre de graduations et un nombre le fixe. Un `maxValue` explicite l'emporte
+  toujours. L'arrondi est aussi exporté sous le nom `niceRadarMax(dataMax, tickCount)`, pour
+  qui veut un anneau fixe quand on masque des séries dans la légende. `@michi-vz/wc` l'accepte
+  comme propriété et `@michi-vz/angular` la transmet.
+- **Des palettes nommées pour [Carte choroplèthe](/fr/charts/choropleth-map) et ailleurs.**
+  `sequentialScheme(name, count)` renvoie les palettes séquentielles à une teinte de
+  ColorBrewer - blues, greens, greys, oranges, purples, reds - de 3 à 9 couleurs (borné), les
+  mêmes listes que d3-scale-chromatic, si bien qu'un `colorScale.range` n'a plus besoin de d3.
+  `SEQUENTIAL_SCHEME_NAMES` liste les noms.
+
 ## v1.12.5
 
 Versions des paquets : core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·

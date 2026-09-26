@@ -10,6 +10,24 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.6
+
+Phiên bản gói: core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·
+examples **1.1.19** · devtools, insights **0.2.34**.
+
+- **Vòng ngoài tròn số cho [Biểu đồ radar](/vi/charts/radar).** `niceMaxValue` làm tròn vòng
+  ngoài lên một số tròn khi không đặt `maxValue`: mốc "đẹp" cuối cùng của [0, giá trị lớn
+  nhất], theo cùng các bước 1/2/5 × 10ⁿ mà trục d3 dùng, nên nhãn vòng ngoài là 80 thay vì 73.
+  `true` dùng `rings` làm số mốc, còn một số sẽ đặt số mốc đó. `maxValue` đặt tường minh vẫn
+  được ưu tiên. Phép làm tròn cũng được export là `niceRadarMax(dataMax, tickCount)`, cho ai
+  muốn vòng cố định khi ẩn chuỗi trong chú giải. `@michi-vz/wc` nhận nó dưới dạng property và
+  `@michi-vz/angular` chuyển tiếp nó.
+- **Bảng màu có tên cho [Bản đồ phân cấp màu](/vi/charts/choropleth-map) và nơi khác.**
+  `sequentialScheme(name, count)` trả về các bảng màu tuần tự một sắc độ của ColorBrewer -
+  blues, greens, greys, oranges, purples, reds - từ 3 đến 9 màu (có giới hạn), đúng các danh
+  sách mà d3-scale-chromatic cung cấp, nên `colorScale.range` không còn cần phụ thuộc d3.
+  `SEQUENTIAL_SCHEME_NAMES` liệt kê các tên.
+
 ## v1.12.5
 
 Phiên bản gói: core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·

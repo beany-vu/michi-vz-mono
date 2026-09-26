@@ -10,6 +10,25 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.6
+
+Pakketversies: core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·
+examples **1.1.19** · devtools, insights **0.2.34**.
+
+- **Een ronde buitenring voor [Radardiagram](/nl/charts/radar).** `niceMaxValue` rondt de
+  buitenring af naar een rond getal als `maxValue` niet is ingesteld: de laatste "mooie" tick
+  van [0, de grootste waarde], met dezelfde stappen van 1/2/5 × 10ⁿ als d3-assen, zodat het
+  buitenste label 80 toont in plaats van 73. `true` gebruikt `rings` als aantal ticks en een
+  getal stelt het in. Een expliciete `maxValue` wint altijd. De afronding is ook geëxporteerd
+  als `niceRadarMax(dataMax, tickCount)`, voor wie een vaste ring wil terwijl reeksen in de
+  legenda worden verborgen. `@michi-vz/wc` neemt het als property en `@michi-vz/angular` geeft
+  het door.
+- **Paletten met een naam voor [Choroplethenkaart](/nl/charts/choropleth-map) en elders.**
+  `sequentialScheme(name, count)` geeft de sequentiële ColorBrewer-paletten met één tint -
+  blues, greens, greys, oranges, purples, reds - met 3 tot 9 kleuren (begrensd), dezelfde
+  lijsten als d3-scale-chromatic, zodat een `colorScale.range` geen d3 meer nodig heeft.
+  `SEQUENTIAL_SCHEME_NAMES` somt de namen op.
+
 ## v1.12.5
 
 Pakketversies: core **1.27.0** · wc **1.17.0** · angular **1.15.5** · react **1.12.5** · vue, svelte **1.8.5** ·
