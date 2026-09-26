@@ -1,4 +1,4 @@
-// Renderer-agnostic semantic context for AreaChart (stacked). Per-key totals +
+// Renderer-agnostic semantic context for AreaChart (stacked or overlapping). Per-key totals +
 // chart-agnostic a11yTable + deterministic NL summary, derived from the data
 // (identical in SVG and canvas).
 import type { AreaChartContext, AreaDataRow, AreaSeriesContext, XaxisDataType } from "../types";
@@ -21,6 +21,9 @@ export interface BuildAreaContextInput {
   legendKeys?: string[];
   colorsMapping: Record<string, string>;
   disabledItems?: string[];
+  /** false = overlapping areas: the summary names that mode and omits the combined
+   * total (series that do not add up have no meaningful sum). Default true. */
+  stacked?: boolean;
 }
 
 function keyContext(key: string, series: AreaDataRow[], color: string): AreaSeriesContext {
@@ -51,12 +54,13 @@ export function buildAreaContext(input: BuildAreaContextInput): AreaChartContext
     forecastStart,
   } = provenanceCounts(input.series);
 
+  const overlap = input.stacked === false;
   const titlePart = input.title ? `"${input.title}" ` : "";
-  let summary = `Stacked area chart ${titlePart}with ${series.length} series over ${input.series.length} row${
+  let summary = `${overlap ? "Overlapping" : "Stacked"} area chart ${titlePart}with ${series.length} series over ${input.series.length} row${
     input.series.length === 1 ? "" : "s"
   }.`;
   if (largestKey) summary += ` Largest series: ${largestKey.key} (total ${largestKey.total}).`;
-  summary += ` Combined total ${grandTotal}.`;
+  if (!overlap) summary += ` Combined total ${grandTotal}.`;
   if (predictedRows > 0)
     summary += ` ${predictedRows} forecast row${predictedRows === 1 ? "" : "s"} from ${String(forecastStart)}.`;
 

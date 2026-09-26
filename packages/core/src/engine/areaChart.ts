@@ -1,7 +1,8 @@
 // AreaChart engine: imperative mount/update/getContext/destroy. Stacked areas via
-// d3.stack/d3.area; renders into LIGHT DOM. Hover uses a transparent overlay rect
-// (shared renderOverlay) + a vertical hover line, with row/key hit-testing shared
-// across SVG and canvas modes.
+// d3.stack/d3.area (or, with stacked:false, overlapping baseline-to-value areas);
+// renders into LIGHT DOM. Hover uses a transparent overlay rect (shared
+// renderOverlay) + a vertical hover line, with row/key hit-testing shared across
+// SVG and canvas modes.
 import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
@@ -21,7 +22,7 @@ import { parseXValue, enumeratePeriods, periodValue } from "../lineChart/lineUti
 import { buildAreaRenderModel } from "../areaChart/renderModel";
 import { renderAreaSvg } from "../areaChart/renderSvg";
 import { placeTooltip } from "../render/placeTooltip";
-import { drawAreaCanvas } from "../areaChart/renderCanvas";
+import { drawAreaCanvas, resolveAreaColors } from "../areaChart/renderCanvas";
 import { drawAreaWebgpu } from "../areaChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
@@ -30,7 +31,7 @@ import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cu
 import { buildAreaContext } from "../context/buildAreaContext";
 import { renderA11yMirror } from "../context/a11yMirror";
 import { contextSignature } from "../context/signature";
-import { checkAreaData } from "../validate/areaWarnings";
+import { checkAreaData, checkAreaOptions } from "../validate/areaWarnings";
 import {
   applyTransformData,
   applyEnrichContext,
@@ -65,6 +66,9 @@ interface Resolved {
   renderer: Renderer;
   enableTransitions: boolean;
   forcePercentageScale: boolean;
+  /** false = overlapping areas (stacked:false). */
+  stacked: boolean;
+  /** EFFECTIVE offset: "expand" only applies while stacked (ignored when overlapping). */
   stackOffset: "none" | "expand";
   progressiveDraw: ResolvedReveal | null;
   timeline: ResolvedTimeline | null;
@@ -82,7 +86,10 @@ function resolve(p: AreaChartProps): Resolved {
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
     forcePercentageScale: p.forcePercentageScale ?? false,
-    stackOffset: p.stackOffset ?? "none",
+    stacked: p.stacked ?? true,
+    // expand normalizes a STACK; overlapping areas have none, so it is ignored there
+    // (checkAreaOptions reports it as an ignored-option warning).
+    stackOffset: p.stacked === false ? "none" : (p.stackOffset ?? "none"),
     progressiveDraw: resolveReveal(p.progressiveDraw),
     timeline: resolveTimeline(p.timeline),
   };
@@ -91,7 +98,8 @@ function resolve(p: AreaChartProps): Resolved {
 interface HitRow {
   x: number;
   row: AreaDataRow;
-  bands: Array<{ key: string; y0: number; y1: number }>;
+  /** One per key, in layer order. `missing` = the row has no finite value for it. */
+  bands: Array<{ key: string; y0: number; y1: number; missing: boolean }>;
 }
 
 export function mountAreaChart(
@@ -149,6 +157,10 @@ export function mountAreaChart(
   // inside it; an unconditional re-fire loops "Maximum update depth". Mirrors VSB.
   let lastContextSig = "";
   let hitRows: HitRow[] = [];
+  // Hit-test mode + the plot's vertical extent, refreshed every render.
+  let hitOverlap = false;
+  let plotTop = 0;
+  let plotBottom = 0;
   let hoverLine: SVGLineElement | null = null;
 
   const showTooltip = (row: AreaDataRow, key: string, ev: MouseEvent): void => {
@@ -168,7 +180,9 @@ export function mountAreaChart(
     if (hoverLine) hoverLine.style.visibility = "hidden";
   };
 
-  // Hit-test: nearest row by x, then the key whose [y1,y0] band contains y.
+  // Hit-test: nearest row by x, then (stacked) the key whose [y1,y0] band contains y,
+  // or (overlapping) the key whose TOP edge y1 is nearest y - every overlapping area
+  // contains the low part of the plot, so containment would always pick the biggest.
   const hitTest = (
     x: number,
     y: number,
@@ -176,6 +190,19 @@ export function mountAreaChart(
     if (hitRows.length === 0) return null;
     let nearest = hitRows[0];
     for (const h of hitRows) if (Math.abs(h.x - x) < Math.abs(nearest.x - x)) nearest = h;
+    if (hitOverlap) {
+      // Only inside the plot (not over the axis labels or the title), and never a key
+      // with no value at this row: a missing value is not a zero share.
+      if (y < plotTop || y > plotBottom) return null;
+      let best: { key: string; d: number } | null = null;
+      for (const band of nearest.bands) {
+        if (band.missing) continue;
+        const d = Math.abs(band.y1 - y);
+        // <= : on a tie the later-drawn (visually on top, smaller) area wins.
+        if (!best || d <= best.d) best = { key: band.key, d };
+      }
+      return best ? { row: nearest.row, key: best.key, rowX: nearest.x } : null;
+    }
     for (const band of nearest.bands) {
       if (y >= band.y1 && y <= band.y0) return { row: nearest.row, key: band.key, rowX: nearest.x };
     }
@@ -254,6 +281,7 @@ export function mountAreaChart(
       yAxisDomain: props.yAxisDomain,
       forcePercentageScale: r.forcePercentageScale,
       stackOffset: r.stackOffset,
+      stacked: r.stacked,
     });
 
     const colors = buildAreaColors(
@@ -286,6 +314,7 @@ export function mountAreaChart(
       xAxisDataType,
       curve: props.curve,
       highlightItems,
+      stacked: r.stacked,
     });
 
     // Build hit-test bands per row from the stacked model.
@@ -297,14 +326,19 @@ export function mountAreaChart(
           hr = { x: areaProjectX(p.data, scales.xScale, xAxisDataType), row: p.data, bands: [] };
           rowMap.set(p.data, hr);
         }
+        const raw = p.data[layer.key];
         hr.bands.push({
           key: layer.key,
           y0: scales.yScale(p[0] || 0),
           y1: scales.yScale(p[1] || 0),
+          missing: raw == null || !Number.isFinite(Number(raw)),
         });
       }
     }
     hitRows = [...rowMap.values()];
+    hitOverlap = !r.stacked;
+    plotTop = r.margin.top;
+    plotBottom = r.height - r.margin.bottom;
 
     const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
     // expand mode's y domain is [0,1] fractions - default to percentage display,
@@ -386,7 +420,12 @@ export function mountAreaChart(
     });
 
     if (r.renderer === "svg") {
-      renderAreaSvg(svg, model, { enableTransitions: r.enableTransitions });
+      renderAreaSvg(svg, model, {
+        enableTransitions: r.enableTransitions,
+        // Overlapping top lines take the colour the browser resolves for the area
+        // fill (consumer `.area` CSS included), exactly as canvas/webgpu do.
+        lineColors: model.mode === "overlap" ? resolveAreaColors(svg, model) : undefined,
+      });
     }
 
     // Hover line (above areas) + transparent capture overlay (topmost).
@@ -568,6 +607,7 @@ export function mountAreaChart(
       legendKeys: props.keys,
       colorsMapping: colors.generatedColorsMapping,
       disabledItems: props.disabledItems,
+      stacked: r.stacked,
     });
     // Plugin hook #3 - enrichContext: rewrite summary BEFORE the a11y mirror + the
     // dataprocessed event, so narration flows to both for free.
@@ -584,6 +624,7 @@ export function mountAreaChart(
     if (baseProps.onDataWarning) {
       const warnings = [
         ...checkAreaData(baseProps.series, baseProps.keys),
+        ...checkAreaOptions(baseProps),
         ...collectValidate(pluginList, baseProps, pc),
       ];
       if (warnings.length > 0) baseProps.onDataWarning(warnings);

@@ -327,6 +327,7 @@ Chart-specific props (the shared props above also apply):
 - `yAxisDomain`: `[number, number]` - Fix the y-axis range as [min, max] instead of deriving it from the data
 - `forcePercentageScale`: `boolean` (default: `false`) - Fix the y-axis to [0,100] regardless of data (display only; data not normalized).
 - `stackOffset`: `"none" | "expand"` (default: `"none"`) - Stacking normalization, named after d3-shape's own `stackOffsetExpand`.
+- `stacked`: `boolean` (default: `true`) - `false` draws the areas OVERLAPPING instead of stacked, for series that do not add up (shares, rates, indices) where a stacked total means nothing.
 - `ticks`: `number` (default: `10`) - Approximate number of axis ticks to generate
 - `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones
 - `fillPeriodTicks`: `boolean` - Draw a tick for EVERY period across the axis range (every month/year), not just the periods present in the data.

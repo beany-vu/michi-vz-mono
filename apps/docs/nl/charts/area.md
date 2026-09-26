@@ -17,6 +17,47 @@ Het totaal groeit, maar welk deel is daarvan de drijvende kracht? Stapel je cate
 - **Samenstelling in de tijd, wanneer het totaal ook telt.** De gestapelde banden tonen het aandeel van elke categorie terwijl de bovenrand de som traceert - een stijgend totaal en een verschuivende mix in één beeld.
 - **"De mix verandert"-verhalen.** Een segment dat dunner wordt terwijl het totaal groeit, is een boodschap die geen spreadsheet zo snel overbrengt - ideaal voor overzichten van omzet per product of verkeer per kanaal.
 - **Wisselen de rangordes, wissel dan van grafiek.** Als het verhaal is wie wie inhaalde, maakt het [lintdiagram](/nl/charts/ribbon) die wissels expliciet; voor één enkel moment in de tijd volstaat een [cirkeldiagram](/nl/charts/pie).
+- **Aandelen, percentages of indices die niet optellen.** Houd de vlakken, maar laat ze overlappen in plaats van te stapelen: `stacked: false`, hieronder uitgelegd.
+
+## Overlappende vlakken
+
+Stapelen heeft alleen zin als de reeksen samen een betekenisvol geheel vormen. Aandelen, percentages en indices doen dat niet: een huishouden kan een laptop *en* een smartphone hebben, dus de bezitsaandelen tellen op tot boven de 100% en een gestapelde bovenrand zou een totaal tekenen dat niemand kan lezen. Met `stacked: false` loopt elk vlak in plaats daarvan van nul tot zijn eigen waarde, als doorschijnende vulling met een lijn langs de bovenrand.
+
+<ChartDemo chart="area-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<AreaChart {...props} stacked={false} />
+```
+
+```vue [Vue]
+<AreaChart :options="{ ...props, stacked: false }" />
+```
+
+```svelte [Svelte]
+<div use:areaChart={{ ...props, stacked: false }}></div>
+```
+
+```ts [Angular]
+applyAreaChartProps(this.c.nativeElement, { ...props, stacked: false });
+```
+
+```html [Web component]
+<michi-vz-area-chart id="c"></michi-vz-area-chart>
+<script>
+  // een HTML-attribuut kan stapelen alleen aanzetten: gebruik de property om het uit te zetten
+  document.getElementById("c").stacked = false;
+</script>
+```
+
+:::
+
+- De y-as loopt tot de grootste afzonderlijke waarde (afgerond op een mooie tick), niet tot de som van een rij, en heeft geen ondergrens van 100, zodat aandelen van slechts 0,9 hun hoogte houden. Een expliciete `yAxisDomain` of `forcePercentageScale` wint nog steeds.
+- Grotere vlakken worden eerst getekend, zodat de kleinere er zichtbaar bovenop liggen. De volgorde van de legenda en de kleuren veranderen niet.
+- Elk vlak bedekt de onderkant van de grafiek, dus hover kiest de reeks waarvan de bovenrand het dichtst bij de aanwijzer ligt.
+- De bovenlijn krijgt de kleur van het vlak, ook een kleur die je CSS op `.area[data-label-safe]` zet, in alle drie de renderers.
+- `stackOffset: "expand"` normaliseert een stapel en heeft hier dus niets te doen: het wordt genegeerd, met een datawaarschuwing `ignored-option`.
 
 ## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
 

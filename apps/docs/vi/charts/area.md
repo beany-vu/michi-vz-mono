@@ -17,6 +17,47 @@ Tổng đang tăng, nhưng lát nào đang thúc đẩy điều đó? Chồng c�
 - **Cơ cấu theo thời gian, khi tổng thể cũng quan trọng.** Các dải chồng lên nhau cho thấy tỷ trọng từng nhóm, còn mép trên vẽ ra tổng: vừa thấy nước lên, vừa thấy cơ cấu dịch chuyển, tất cả trong một hình.
 - **Kể câu chuyện "cơ cấu đang thay đổi".** Một dải mỏng dần trong khi tổng vẫn tăng là thông điệp không bảng tính nào truyền đạt nhanh bằng: rất hợp với báo cáo doanh thu theo sản phẩm hay lưu lượng theo kênh.
 - **Khi thứ hạng đổi chỗ, hãy đổi biểu đồ.** Nếu câu chuyện là ai vượt ai, [biểu đồ dải](/vi/charts/ribbon) thể hiện các cú hoán đổi rõ ràng hơn; còn nếu chỉ xét một thời điểm, [biểu đồ tròn](/vi/charts/pie) là đủ.
+- **Tỷ phần, tỷ lệ hay chỉ số không cộng dồn được.** Vẫn dùng vùng, nhưng cho chúng chồng lấn thay vì xếp chồng: `stacked: false`, trình bày bên dưới.
+
+## Vùng chồng lấn
+
+Xếp chồng chỉ có ý nghĩa khi các chuỗi cộng lại thành một tổng thể có nghĩa. Tỷ phần, tỷ lệ và chỉ số thì không: một hộ gia đình có thể có cả máy tính xách tay *lẫn* điện thoại thông minh, nên tỷ lệ sở hữu cộng lại vượt quá 100% và mép trên của biểu đồ chồng sẽ vẽ ra một con số tổng chẳng ai đọc được. Đặt `stacked: false`, mỗi vùng sẽ đi từ 0 lên đến giá trị của chính nó, dưới dạng một lớp tô trong mờ với một đường chạy dọc mép trên.
+
+<ChartDemo chart="area-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<AreaChart {...props} stacked={false} />
+```
+
+```vue [Vue]
+<AreaChart :options="{ ...props, stacked: false }" />
+```
+
+```svelte [Svelte]
+<div use:areaChart={{ ...props, stacked: false }}></div>
+```
+
+```ts [Angular]
+applyAreaChartProps(this.c.nativeElement, { ...props, stacked: false });
+```
+
+```html [Web component]
+<michi-vz-area-chart id="c"></michi-vz-area-chart>
+<script>
+  // thuộc tính HTML chỉ bật được chế độ xếp chồng: hãy đặt property để tắt nó
+  document.getElementById("c").stacked = false;
+</script>
+```
+
+:::
+
+- Trục y chạy đến giá trị đơn lẻ lớn nhất (làm tròn theo một mốc đẹp), không phải tổng của một hàng, và không bị nâng sàn lên 100, nên các tỷ phần nhỏ như 0,9 vẫn giữ được chiều cao. `yAxisDomain` tường minh hoặc `forcePercentageScale` vẫn được ưu tiên.
+- Vùng lớn hơn được vẽ trước, để vùng nhỏ hơn nằm phía trên và vẫn nhìn thấy được. Thứ tự chú giải và màu sắc không đổi.
+- Vùng nào cũng phủ phần đáy của biểu đồ, nên khi di chuột, biểu đồ chọn chuỗi có mép trên gần con trỏ nhất.
+- Đường mép trên lấy màu của vùng, kể cả màu mà CSS của bạn đặt trên `.area[data-label-safe]`, ở cả ba trình kết xuất.
+- `stackOffset: "expand"` chuẩn hóa một chồng, nên ở đây nó không có việc gì để làm: nó bị bỏ qua, kèm một cảnh báo dữ liệu `ignored-option`.
 
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 

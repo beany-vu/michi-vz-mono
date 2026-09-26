@@ -32,6 +32,7 @@ export class AreaChartElement extends LitElement {
     curve: { type: String },
     forcePercentageScale: { type: Boolean, attribute: "force-percentage-scale" },
     stackOffset: { type: String, attribute: "stack-offset" },
+    stacked: { type: Boolean, attribute: "stacked" },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     tooltipFormatter: { attribute: false },
     plugins: { attribute: false },
@@ -67,6 +68,9 @@ export class AreaChartElement extends LitElement {
   curve?: CurveType;
   forcePercentageScale = false;
   stackOffset?: "none" | "expand";
+  // Left undefined so the core default (true) applies: a boolean attribute can only
+  // switch ON, so turn stacking off with the PROPERTY, `el.stacked = false`.
+  stacked?: boolean;
   skipColorMappingDispatch = false;
   tooltipFormatter?: (row: AreaDataRow, series: AreaDataRow[], key: string) => string;
   plugins?: MichiVzPlugin<AreaChartProps>[];
@@ -117,6 +121,7 @@ export class AreaChartElement extends LitElement {
       curve: this.curve,
       forcePercentageScale: this.forcePercentageScale,
       stackOffset: this.stackOffset,
+      stacked: this.stacked,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       tooltipFormatter: this.tooltipFormatter,
       locale: this.locale,

@@ -453,6 +453,38 @@ const area: Example<AreaChartProps>[] = [
       ],
     },
   },
+  // [1] Overlapping areas: shares that do NOT add up (a household can own several
+  // devices), so a stacked total would be meaningless. Illustrative figures.
+  {
+    id: "area-overlap",
+    title: "Households owning each device, %",
+    description:
+      "Illustrative device-ownership shares, 2012-2023. A household can own several devices, so the shares overlap instead of adding up (they sum past 200%). `stacked: false` draws each area from zero to its own value, larger areas first, with a line along each top edge.",
+    element: "michi-vz-area-chart",
+    props: {
+      title: "Households owning each device, %",
+      xAxisDataType: "date_annual",
+      stacked: false,
+      keys: ["Laptop", "Smartphone", "Tablet", "Smart speaker"],
+      yAxisFormat: (d) => `${d}%`,
+      tooltipFormatter: (row, _series, key) =>
+        `<strong>${key}</strong><br/>${row.date}: ${row[key]}%`,
+      series: [
+        { date: 2012, Laptop: 58, Smartphone: 35, Tablet: 8, "Smart speaker": 0 },
+        { date: 2013, Laptop: 60, Smartphone: 44, Tablet: 15, "Smart speaker": 0 },
+        { date: 2014, Laptop: 62, Smartphone: 52, Tablet: 22, "Smart speaker": 1 },
+        { date: 2015, Laptop: 63, Smartphone: 60, Tablet: 28, "Smart speaker": 2 },
+        { date: 2016, Laptop: 64, Smartphone: 66, Tablet: 32, "Smart speaker": 5 },
+        { date: 2017, Laptop: 65, Smartphone: 71, Tablet: 35, "Smart speaker": 9 },
+        { date: 2018, Laptop: 66, Smartphone: 76, Tablet: 37, "Smart speaker": 14 },
+        { date: 2019, Laptop: 67, Smartphone: 80, Tablet: 39, "Smart speaker": 18 },
+        { date: 2020, Laptop: 70, Smartphone: 84, Tablet: 43, "Smart speaker": 21 },
+        { date: 2021, Laptop: 71, Smartphone: 86, Tablet: 44, "Smart speaker": 23 },
+        { date: 2022, Laptop: 71, Smartphone: 88, Tablet: 44, "Smart speaker": 24 },
+        { date: 2023, Laptop: 72, Smartphone: 90, Tablet: 45, "Smart speaker": 25 },
+      ],
+    },
+  },
 ];
 
 const scatter: Example<ScatterChartProps>[] = [

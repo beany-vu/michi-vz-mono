@@ -17,6 +17,47 @@ The total is growing, but which slice is driving it? Stack your categories and w
 - **Composition over time when the total matters too.** The stacked bands show each category's share while the top edge traces the sum - a rising tide and a shifting mix in one picture.
 - **"The mix is changing" stories.** A slice that thins while the total grows is a message no spreadsheet delivers as fast - ideal for revenue-by-product or traffic-by-channel reviews.
 - **When ranks reshuffle, switch charts.** If the story is who overtook whom, the [Ribbon chart](/charts/ribbon) makes the swaps explicit; for a single moment in time, a [Pie](/charts/pie) is enough.
+- **Shares, rates or indices that do not add up.** Keep the areas but overlap them instead of stacking them: `stacked: false`, shown below.
+
+## Overlapping areas
+
+Stacking only makes sense when the series add up to a meaningful whole. Shares, rates and indices do not: a household can own a laptop *and* a smartphone, so ownership shares sum past 100% and a stacked top edge would trace a total nobody can read. Set `stacked: false` and each area instead runs from zero to its own value, as a translucent fill with a line along its top edge.
+
+<ChartDemo chart="area-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<AreaChart {...props} stacked={false} />
+```
+
+```vue [Vue]
+<AreaChart :options="{ ...props, stacked: false }" />
+```
+
+```svelte [Svelte]
+<div use:areaChart={{ ...props, stacked: false }}></div>
+```
+
+```ts [Angular]
+applyAreaChartProps(this.c.nativeElement, { ...props, stacked: false });
+```
+
+```html [Web component]
+<michi-vz-area-chart id="c"></michi-vz-area-chart>
+<script>
+  // an HTML attribute can only switch stacking on: set the property to turn it off
+  document.getElementById("c").stacked = false;
+</script>
+```
+
+:::
+
+- The y-axis runs to the largest single value (rounded to a nice tick), not to the sum of a row, and is not floored at 100, so shares as small as 0.9 keep their height. An explicit `yAxisDomain` or `forcePercentageScale` still wins.
+- Larger areas are drawn first, so the smaller ones sit on top where you can see them. The legend order and the colours do not change.
+- Every area covers the bottom of the plot, so hover picks the series whose top edge is nearest the pointer.
+- The top line takes the area's colour, including one your CSS sets on `.area[data-label-safe]`, in all three renderers.
+- `stackOffset: "expand"` normalizes a stack, so it has nothing to do here: it is ignored and an `ignored-option` data warning is emitted.
 
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 

@@ -5,6 +5,7 @@ import { renderElement } from "./render";
 
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const stacked = reg["area-chart"][0].props; // stacked composition example
+const overlap = reg["area-chart"][1].props; // stacked: false, shares that do not add up
 
 // Sparse monthly area data (Jan 2022 - Dec 2023) with 2022-04/05/09 + 2023-02/03 MISSING,
 // so the fillPeriodTicks story has real gaps to reveal as faded no-data ticks.
@@ -50,6 +51,7 @@ const meta: Meta = {
     renderer: { control: "inline-radio", options: ["svg", "canvas"] },
     xAxisDataType: { control: "inline-radio", options: ["date_annual", "date_monthly", "number"] },
     fillPeriodTicks: { control: "boolean" },
+    stacked: { control: "boolean" },
     isLoading: { control: "boolean" },
     width: { control: { type: "range", min: 320, max: 1100, step: 20 } },
     height: { control: { type: "range", min: 280, max: 760, step: 20 } },
@@ -71,4 +73,14 @@ export const Default: Story = {
  */
 export const FillPeriodTicks: Story = {
   args: { ...sparseMonthly, width: 900, height: 420, renderer: "svg", fillPeriodTicks: true },
+};
+
+/**
+ * stacked: false - overlapping areas for series that do not add up (shares, rates,
+ * indices): each area runs from zero to its own value, larger areas drawn first, with
+ * a line along each top edge. Toggle `stacked` in Controls to see the meaningless
+ * stacked total it replaces.
+ */
+export const Overlapping: Story = {
+  args: { ...overlap, width: 820, height: 480, renderer: "svg" },
 };

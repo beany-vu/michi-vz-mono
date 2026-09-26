@@ -17,6 +17,47 @@ Le total augmente, mais quelle part le fait grimper ? Empilez vos catégories et
 - **La composition dans le temps quand le total compte aussi.** Les bandes empilées montrent la part de chaque catégorie tandis que le bord supérieur trace la somme - une marée montante et une composition changeante en une seule image.
 - **Les histoires « la répartition change ».** Une part qui s'amincit pendant que le total grossit est un message qu'aucun tableur ne délivre aussi vite - idéal pour les revues de chiffre d'affaires par produit ou de trafic par canal.
 - **Quand les rangs se redistribuent, changez de graphique.** Si l'histoire est de savoir qui a dépassé qui, le [graphique en ruban](/fr/charts/ribbon) rend les échanges explicites ; pour un instant unique, un [camembert](/fr/charts/pie) suffit.
+- **Des parts, des taux ou des indices qui ne s'additionnent pas.** Gardez les aires, mais superposez-les au lieu de les empiler : `stacked: false`, présenté ci-dessous.
+
+## Aires superposées
+
+L'empilement n'a de sens que si les séries s'additionnent pour former un tout. Les parts, les taux et les indices, non : un ménage peut posséder un ordinateur portable *et* un smartphone, si bien que les taux d'équipement dépassent 100 % une fois additionnés, et un bord supérieur empilé tracerait un total que personne ne sait lire. Avec `stacked: false`, chaque aire va plutôt de zéro jusqu'à sa propre valeur, en remplissage translucide surmonté d'une ligne le long de son bord supérieur.
+
+<ChartDemo chart="area-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<AreaChart {...props} stacked={false} />
+```
+
+```vue [Vue]
+<AreaChart :options="{ ...props, stacked: false }" />
+```
+
+```svelte [Svelte]
+<div use:areaChart={{ ...props, stacked: false }}></div>
+```
+
+```ts [Angular]
+applyAreaChartProps(this.c.nativeElement, { ...props, stacked: false });
+```
+
+```html [Web component]
+<michi-vz-area-chart id="c"></michi-vz-area-chart>
+<script>
+  // un attribut HTML ne peut qu'activer l'empilement : passez par la propriété pour le désactiver
+  document.getElementById("c").stacked = false;
+</script>
+```
+
+:::
+
+- L'axe des y monte jusqu'à la plus grande valeur individuelle (arrondie à une graduation ronde), pas jusqu'à la somme d'une ligne, et n'a pas de plancher à 100 : des parts aussi petites que 0,9 gardent leur hauteur. Un `yAxisDomain` explicite ou `forcePercentageScale` reste prioritaire.
+- Les aires les plus grandes sont dessinées en premier, pour que les plus petites restent visibles au-dessus. L'ordre de la légende et les couleurs ne changent pas.
+- Toutes les aires couvrent le bas du graphique : le survol choisit donc la série dont le bord supérieur est le plus proche du pointeur.
+- La ligne supérieure prend la couleur de l'aire, y compris celle que votre CSS définit sur `.area[data-label-safe]`, dans les trois moteurs de rendu.
+- `stackOffset: "expand"` normalise un empilement et n'a donc rien à faire ici : il est ignoré, avec un avertissement de données `ignored-option`.
 
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 

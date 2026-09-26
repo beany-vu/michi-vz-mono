@@ -619,6 +619,16 @@ export interface AreaChartProps {
    * percentages unless an explicit `yAxisFormat` is given. A slice whose keys are all
    * zero/null renders as an empty (zero-height) band rather than `NaN`. */
   stackOffset?: "none" | "expand";
+  /** `false` draws the areas OVERLAPPING instead of stacked, for series that do not add up
+   * (shares, rates, indices) where a stacked total means nothing. Default `true` (stacked,
+   * unchanged). Each active key's area then runs from zero to its own value as a
+   * translucent fill (fill-opacity 0.2) with a 1.5px line in the series colour along its
+   * top edge. The y domain becomes the largest single value (niced, no floor at 100; an
+   * explicit `yAxisDomain` / `forcePercentageScale` still wins); larger areas draw first so
+   * smaller ones stay visible (legend order and colours unchanged); hover picks the key
+   * whose top edge is nearest the cursor. `stackOffset: "expand"` is ignored with it (an
+   * `ignored-option` data warning). */
+  stacked?: boolean;
   /** Approximate number of axis ticks to generate */
   ticks?: number;
   /** Explicit tick values, overriding the generated ones */
@@ -3738,7 +3748,8 @@ export interface DataWarning {
     | "missing-feature-id"
     | "invalid-geometry"
     | "empty-group"
-    | "excess-depth";
+    | "excess-depth"
+    | "ignored-option";
   message: string;
   label?: string;
 }

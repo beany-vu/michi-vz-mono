@@ -73,6 +73,11 @@
       #areaContract .area {
         fill: rgb(180, 60, 160);
       }
+      /* Overlapping AreaChart (stacked: false): the same .area fill rule must reach
+         BOTH the translucent canvas fill and the opaque top-edge line. */
+      #areaOverlap .area {
+        fill: rgb(30, 110, 200);
+      }
       /* ScatterPlot consumer colour contract: recolour point fills purely via CSS. */
       #scatterContract .scatter-point {
         fill: rgb(40, 200, 120);
@@ -230,6 +235,17 @@
     <h2>Area consumer-CSS fill contract (canvas)</h2>
     <div class="card" id="areaContract">
       <michi-vz-area-chart id="areaContractChart"></michi-vz-area-chart>
+    </div>
+    <h2>AreaChart stacked: false (overlapping areas, series that do not add up)</h2>
+    <div class="row">
+      <div class="card">
+        <h2>SVG renderer</h2>
+        <michi-vz-area-chart id="areaOverlapSvg"></michi-vz-area-chart>
+      </div>
+      <div class="card" id="areaOverlap">
+        <h2>Canvas renderer + consumer CSS fill</h2>
+        <michi-vz-area-chart id="areaOverlapCanvas"></michi-vz-area-chart>
+      </div>
     </div>
 
     <h1 style="margin-top: 36px">@michi-vz/wc - ScatterPlot</h1>
@@ -707,6 +723,41 @@
           renderer: "canvas",
           skipColorMappingDispatch: true,
           ...areaCommon,
+        });
+
+        // ---- AreaChart stacked: false (overlapping) ----
+        // Keys listed small-first on purpose: the draw order (largest mean first) must
+        // differ from the legend order. Per-row sums pass 1, the largest value is 0.9.
+        const overlapSeries = [
+          { date: 2019, Small: 0.1, Big: 0.6, Mid: 0.3 },
+          { date: 2020, Small: 0.2, Big: 0.5, Mid: 0.4 },
+          { date: 2021, Small: 0.15, Big: 0.9, Mid: 0.35 },
+          { date: 2022, Small: 0.25, Big: 0.7, Mid: 0.3 },
+        ];
+        const overlapCommon = {
+          series: overlapSeries,
+          keys: ["Small", "Big", "Mid"],
+          stacked: false,
+          curve: "curveLinear",
+          ...areaCommon,
+        };
+        const areaOverlapSvgEl = document.getElementById("areaOverlapSvg");
+        const areaOverlapCanvasEl = document.getElementById("areaOverlapCanvas");
+        const overlapHighlights = [];
+        areaOverlapSvgEl.addEventListener("michi-vz:highlight", (e) =>
+          overlapHighlights.push(e.detail),
+        );
+        Object.assign(areaOverlapSvgEl, {
+          ...overlapCommon,
+          chartTitle: "Overlap",
+          renderer: "svg",
+          colorsMapping: { Small: "#1b9e77", Big: "#d95f02", Mid: "#7570b3" },
+        });
+        Object.assign(areaOverlapCanvasEl, {
+          ...overlapCommon,
+          chartTitle: "Overlap canvas + CSS",
+          renderer: "canvas",
+          skipColorMappingDispatch: true,
         });
 
         // ---- ScatterPlot setup ----
@@ -1621,6 +1672,98 @@
             areaContractOk,
             "AREA CANVAS colour contract: consumer CSS rgb(180,60,160) reached canvas pixels",
           );
+
+          // ---- AreaChart stacked: false checks ----
+          const ovAreas = Array.from(areaOverlapSvgEl.querySelectorAll("path.area"));
+          const ovLines = Array.from(areaOverlapSvgEl.querySelectorAll("path.area-line"));
+          log(
+            ovAreas.length === 3 && ovLines.length === 3,
+            `AREA OVERLAP: SVG renders 3 path.area + 3 path.area-line (got ${ovAreas.length} + ${ovLines.length})`,
+          );
+          log(
+            ovAreas.every((a) => a.getAttribute("fill-opacity") === "0.2") &&
+              ovLines.every(
+                (l) =>
+                  l.getAttribute("fill") === "none" &&
+                  getComputedStyle(l).stroke ===
+                    getComputedStyle(
+                      areaOverlapSvgEl.querySelector(
+                        `path.area[data-label-safe="${l.getAttribute("data-label-safe")}"]`,
+                      ),
+                    ).fill,
+              ),
+            "AREA OVERLAP: translucent fills (fill-opacity 0.2) + top lines stroked in the series colour",
+          );
+          const ovOrder = ovAreas.map((a) => a.getAttribute("data-label")).join(",");
+          log(
+            ovOrder === "Big,Mid,Small",
+            `AREA OVERLAP: larger areas drawn first, the smallest last in the DOM (got ${ovOrder})`,
+          );
+          const ovCtx = areaOverlapSvgEl.getContext();
+          log(
+            ovCtx.yAxis.domain[0] === 0 &&
+              ovCtx.yAxis.domain[1] === 0.9 &&
+              ovCtx.legendData.map((l) => l.label).join(",") === "Small,Big,Mid",
+            `AREA OVERLAP: y domain = largest single value [0, 0.9], legend keeps the keys order (got [${ovCtx.yAxis.domain}])`,
+          );
+          log(
+            /^Overlapping area chart/.test(ovCtx.summary),
+            "AREA OVERLAP: the context summary names the overlapping mode",
+          );
+          // Hover in a REAL browser (real svg offset): just above Small's top edge at
+          // 2020 is inside all three areas, yet the nearest TOP edge is Small's.
+          {
+            const pts = (key) =>
+              areaOverlapSvgEl
+                .querySelector(`path.area-line[data-label="${key}"]`)
+                .getAttribute("d")
+                .replace(/^M/, "")
+                .split("L")
+                .map((p) => p.split(",").map(Number));
+            const [sx, sy] = pts("Small")[1];
+            const svgRect = areaOverlapSvgEl.querySelector("svg").getBoundingClientRect();
+            const ovOverlay = areaOverlapSvgEl.querySelector(".tpRef");
+            ovOverlay.dispatchEvent(
+              new MouseEvent("mousemove", {
+                clientX: svgRect.left + sx,
+                clientY: svgRect.top + sy - 3,
+                bubbles: true,
+              }),
+            );
+            const ovTip = areaOverlapSvgEl.querySelector(".tooltip");
+            const lastHl = overlapHighlights[overlapHighlights.length - 1] || [];
+            log(
+              ovTip.style.visibility === "visible" &&
+                ovTip.textContent.includes("Small") &&
+                lastHl[0] === "Small",
+              `AREA OVERLAP: hover picks the nearest top edge (Small) inside all three areas (got ${JSON.stringify(lastHl)})`,
+            );
+            ovOverlay.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+          }
+          // Canvas: consumer CSS rgb(30,110,200) must reach both the translucent fill
+          // and the opaque top line (pixel readback; getImageData is un-premultiplied).
+          {
+            const cnv = areaOverlapCanvasEl.querySelector("canvas");
+            let fillPx = false;
+            let linePx = false;
+            if (cnv) {
+              const { data: px } = cnv.getContext("2d").getImageData(0, 0, cnv.width, cnv.height);
+              for (let i = 0; i < px.length; i += 4) {
+                const blue =
+                  Math.abs(px[i] - 30) < 25 &&
+                  Math.abs(px[i + 1] - 110) < 25 &&
+                  Math.abs(px[i + 2] - 200) < 25;
+                if (!blue) continue;
+                if (px[i + 3] > 30 && px[i + 3] < 170) fillPx = true;
+                if (px[i + 3] > 230) linePx = true;
+                if (fillPx && linePx) break;
+              }
+            }
+            log(
+              fillPx && linePx,
+              `AREA OVERLAP CANVAS: consumer CSS fill reaches the translucent fill (${fillPx}) and the opaque top line (${linePx})`,
+            );
+          }
 
           // ---- ScatterPlot checks ----
           const marks = scatterSvgEl.querySelectorAll(".scatter-point");

@@ -113,7 +113,7 @@ export { processAreaChartData } from "./areaChart/data";
 export { buildAreaColors } from "./areaChart/colors";
 export { makeAreaGenerator } from "./areaChart/geometry";
 export { buildAreaContext } from "./context/buildAreaContext";
-export { checkAreaData } from "./validate/areaWarnings";
+export { checkAreaData, checkAreaOptions } from "./validate/areaWarnings";
 // GaugeChart pure layer
 export { processGaugeData } from "./gaugeChart/data";
 export { sweepBoundingBox, fitSweep, isFullSweepDeg } from "./gaugeChart/geometry";
