@@ -23,6 +23,7 @@ export function applySankeyChartProps(el: SankeyChartElement, props: SankeyChart
   if (props.showLabels !== undefined) el.showLabels = props.showLabels;
   if (props.colorsMapping !== undefined) el.colorsMapping = props.colorsMapping;
   if (props.highlightItems !== undefined) el.highlightItems = props.highlightItems;
+  if (props.hoverHighlight !== undefined) el.hoverHighlight = props.hoverHighlight;
   if (props.disabledItems !== undefined) el.disabledItems = props.disabledItems;
   if (props.skipColorMappingDispatch !== undefined)
     el.skipColorMappingDispatch = props.skipColorMappingDispatch;

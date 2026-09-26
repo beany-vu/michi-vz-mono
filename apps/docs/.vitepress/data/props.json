@@ -5398,6 +5398,14 @@
           "common": true
         },
         {
+          "name": "hoverHighlight",
+          "type": "boolean",
+          "optional": true,
+          "description": "Built-in hover emphasis, default false: hovering a NODE keeps it, every flow into or out of it and the nodes at those flows' other ends at full strength, hovering a FLOW keeps only that flow and its two end nodes, and everything else dims to the `highlightItems` levels (flows at linkOpacity x 0.25, nodes at 0.25). Applied in place (svg updates opacity on the existing marks and fades per `enableTransitions`; canvas/webgpu repaint), so hovering never re-renders the chart and consumers need not mirror `onHighlightItem` into `highlightItems`. While hovering it wins over `highlightItems`; leaving restores that state. A pinned (clicked) tooltip keeps its emphasis until unpinned. `onHighlightItem` fires exactly as without it.",
+          "default": "false",
+          "common": false
+        },
+        {
           "name": "disabledItems",
           "type": "string[]",
           "optional": true,

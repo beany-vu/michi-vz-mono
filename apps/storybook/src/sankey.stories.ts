@@ -6,6 +6,7 @@ import { renderElement } from "./render";
 // Bilateral trade flows (exporters -> markets) - the docs demo data.
 const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
 const flows = reg["sankey-chart"][0].props;
+const funnel = reg["sankey-chart"][1].props; // hoverHighlight on a three-column funnel
 
 const meta: Meta = {
   title: "Charts/Sankey",
@@ -19,6 +20,7 @@ const meta: Meta = {
     linkRadius: { control: { type: "range", min: 0, max: 16, step: 1 } },
     linkOpacity: { control: { type: "range", min: 0.1, max: 1, step: 0.05 } },
     showLabels: { control: "boolean" },
+    hoverHighlight: { control: "boolean" },
     width: { control: { type: "range", min: 360, max: 1100, step: 20 } },
     height: { control: { type: "range", min: 320, max: 760, step: 20 } },
   },
@@ -50,4 +52,9 @@ export const SharpCorners: Story = {
 /** Extra-rounded flows (linkRadius cranked up). */
 export const RoundedFlows: Story = {
   args: { ...flows, width: 820, height: 500, nodeRadius: 4, linkRadius: 10, renderer: "svg" },
+};
+
+/** hoverHighlight: hover a page (or a single flow) and its flows stand out. */
+export const HoverHighlight: Story = {
+  args: { ...funnel, renderer: "svg" },
 };

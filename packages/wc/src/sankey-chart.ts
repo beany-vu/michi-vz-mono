@@ -35,6 +35,7 @@ export class SankeyChartElement extends LitElement {
     showLabels: { type: Boolean, attribute: "show-labels" },
     colorsMapping: { attribute: false },
     highlightItems: { attribute: false },
+    hoverHighlight: { type: Boolean, attribute: "hover-highlight" },
     disabledItems: { attribute: false },
     skipColorMappingDispatch: { type: Boolean, attribute: "skip-color-mapping-dispatch" },
     margin: { attribute: false },
@@ -66,6 +67,7 @@ export class SankeyChartElement extends LitElement {
   showLabels?: boolean;
   colorsMapping?: Record<string, string>;
   highlightItems?: string[];
+  hoverHighlight?: boolean;
   disabledItems?: string[];
   skipColorMappingDispatch = false;
   margin?: Margin;
@@ -112,6 +114,7 @@ export class SankeyChartElement extends LitElement {
       showLabels: this.showLabels,
       colorsMapping: this.colorsMapping,
       highlightItems: this.highlightItems,
+      hoverHighlight: this.hoverHighlight,
       disabledItems: this.disabledItems,
       skipColorMappingDispatch: this.skipColorMappingDispatch,
       margin: this.margin,

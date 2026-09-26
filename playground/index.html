@@ -579,6 +579,18 @@
       </div>
     </div>
 
+    <h1 style="margin-top: 36px">@michi-vz/wc - Sankey (hoverHighlight)</h1>
+    <div class="row" id="sankeyHover">
+      <div class="card">
+        <h2>SVG, hoverHighlight (emphasis applied in place)</h2>
+        <michi-vz-sankey-chart id="sankeyHoverSvg"></michi-vz-sankey-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas, hoverHighlight (repainted)</h2>
+        <michi-vz-sankey-chart id="sankeyHoverCanvas"></michi-vz-sankey-chart>
+      </div>
+    </div>
+
     <div id="results">running…</div>
 
     <script type="module">
@@ -1505,6 +1517,27 @@
               ? `<b>${a.ring.label}</b> ${a.value.toFixed(2)} $/T`
               : `<b>${a.label || a.kind}</b> ${a.value.toFixed(2)} $/T`,
         });
+
+        // ---- Sankey hoverHighlight setup ---- same props on both so the svg twin
+        // tells the canvas pixel check where each node and flow is.
+        const sankeyHoverCommon = {
+          nodes: [{ id: "North" }, { id: "South" }, { id: "Hub" }, { id: "East" }, { id: "West" }],
+          links: [
+            { source: "North", target: "Hub", value: 30 },
+            { source: "South", target: "Hub", value: 20 },
+            { source: "Hub", target: "East", value: 28 },
+            { source: "Hub", target: "West", value: 22 },
+            { source: "South", target: "West", value: 12 },
+          ],
+          colors: ["#1f6fb2", "#e8b63a", "#2fae6c", "#c0392b", "#8e44ad"],
+          width: 460,
+          height: 280,
+          hoverHighlight: true,
+        };
+        const sankeyHoverSvgEl = document.getElementById("sankeyHoverSvg");
+        const sankeyHoverCanvasEl = document.getElementById("sankeyHoverCanvas");
+        Object.assign(sankeyHoverSvgEl, { ...sankeyHoverCommon, renderer: "svg" });
+        Object.assign(sankeyHoverCanvasEl, { ...sankeyHoverCommon, renderer: "canvas" });
 
         await nextFrame();
 
@@ -3036,6 +3069,106 @@
           log(
             gpLum > 200,
             `GAUGE POSITIONING: PNG export draws the marker above the painted arc (luminance=${gpLum.toFixed(1)})`,
+          );
+
+          // ---- Sankey hoverHighlight checks ----
+          // SVG: hovering a node changes opacity attributes on the marks already drawn.
+          const skLink = (s, t) =>
+            sankeyHoverSvgEl.querySelector(`path.link[data-source="${s}"][data-target="${t}"]`);
+          const skNode = (id) =>
+            sankeyHoverSvgEl.querySelector(`rect.node[data-label="${id}"]`).parentNode;
+          const skAlpha = (el) => Number(el.getAttribute("fill-opacity"));
+          const skNorth = skNode("North");
+          const skNorthHub = skLink("North", "Hub");
+          skNorth.dispatchEvent(new MouseEvent("mouseenter"));
+          log(
+            Math.abs(skAlpha(skNorthHub) - 0.45) < 1e-9 &&
+              Math.abs(skAlpha(skLink("South", "Hub")) - 0.1125) < 1e-9 &&
+              Math.abs(skAlpha(skLink("Hub", "East")) - 0.1125) < 1e-9 &&
+              Math.abs(skAlpha(skLink("South", "West")) - 0.1125) < 1e-9,
+            `SANKEY hoverHighlight (svg): hovering North keeps North->Hub at 0.45 and dims the unrelated flows to 0.1125 (got ${["North,Hub", "South,Hub", "Hub,East", "South,West"].map((k) => skAlpha(skLink(...k.split(",")))).join("/")})`,
+          );
+          log(
+            skNode("Hub").getAttribute("opacity") === "1" &&
+              skNode("South").getAttribute("opacity") === "0.25",
+            "SANKEY hoverHighlight (svg): the node at the other end stays lit, unrelated nodes dim to 0.25",
+          );
+          log(
+            skNode("North") === skNorth && skLink("North", "Hub") === skNorthHub,
+            "SANKEY hoverHighlight (svg): the hovered node and its flow are the same DOM elements (no re-render)",
+          );
+          skNorth.dispatchEvent(new MouseEvent("mouseleave"));
+          const skAll = Array.from(sankeyHoverSvgEl.querySelectorAll("path.link")).map(skAlpha);
+          log(
+            skAll.length === 5 && skAll.every((a) => a === 0.45),
+            `SANKEY hoverHighlight (svg): mouseleave restores every flow to 0.45 (got ${skAll.join("/")})`,
+          );
+          const skHubEast = skLink("Hub", "East");
+          skHubEast.dispatchEvent(new MouseEvent("mouseenter"));
+          log(
+            skAlpha(skHubEast) === 0.45 &&
+              Math.abs(skAlpha(skLink("Hub", "West")) - 0.1125) < 1e-9 &&
+              skNode("Hub").getAttribute("opacity") === "1" &&
+              skNode("West").getAttribute("opacity") === "0.25",
+            "SANKEY hoverHighlight (svg): a flow hover lights only that flow and its two end nodes",
+          );
+          skHubEast.dispatchEvent(new MouseEvent("mouseleave"));
+
+          // Canvas: hover through the host mousemove path, then read back the pixel
+          // alpha inside the South->West ribbon (a spot no other ribbon covers, found
+          // on the svg twin with isPointInFill). Lit = 0.45 x 255, dimmed = a quarter.
+          const skOther = Array.from(sankeyHoverSvgEl.querySelectorAll("path.link")).filter(
+            (p) => p !== skLink("South", "West"),
+          );
+          const skSouthWest = skLink("South", "West");
+          const skSpot = (() => {
+            const b = skSouthWest.getBBox();
+            const x = b.x + b.width / 2;
+            for (let y = Math.floor(b.y); y <= b.y + b.height; y++) {
+              const pt = new DOMPoint(x, y);
+              if (skSouthWest.isPointInFill(pt) && !skOther.some((p) => p.isPointInFill(pt)))
+                return { x, y };
+            }
+            return null;
+          })();
+          const skCanvasHost = sankeyHoverCanvasEl.querySelector(".mv-host");
+          const skCanvasSvg = sankeyHoverCanvasEl.querySelector("svg");
+          const skCnv = sankeyHoverCanvasEl.querySelector("canvas");
+          const skPixelAlpha = () => {
+            if (!skSpot || !skCnv) return -1;
+            const dpr = window.devicePixelRatio || 1;
+            return skCnv
+              .getContext("2d")
+              .getImageData(Math.floor(skSpot.x * dpr), Math.floor(skSpot.y * dpr), 1, 1).data[3];
+          };
+          const skMove = (x, y) => {
+            const r = skCanvasSvg.getBoundingClientRect();
+            skCanvasHost.dispatchEvent(
+              new MouseEvent("mousemove", {
+                clientX: r.left + x,
+                clientY: r.top + y,
+                bubbles: true,
+              }),
+            );
+          };
+          const skBefore = skPixelAlpha();
+          const skNorthRect = skNorth.querySelector("rect.node");
+          skMove(
+            Number(skNorthRect.getAttribute("x")) + Number(skNorthRect.getAttribute("width")) / 2,
+            Number(skNorthRect.getAttribute("y")) + Number(skNorthRect.getAttribute("height")) / 2,
+          );
+          await nextFrame();
+          const skHovered = skPixelAlpha();
+          skMove(2, 2);
+          await nextFrame();
+          const skAfter = skPixelAlpha();
+          log(
+            skBefore > 100 && skBefore < 130 && skHovered > 20 && skHovered < 40,
+            `SANKEY hoverHighlight (canvas): hovering North repaints the unrelated South->West flow dimmed (alpha ${skBefore} -> ${skHovered})`,
+          );
+          log(
+            skAfter === skBefore,
+            `SANKEY hoverHighlight (canvas): moving off every mark repaints it at full strength (alpha ${skAfter})`,
           );
         } catch (e) {
           log(false, "exception: " + (e && e.message));

@@ -14,11 +14,22 @@ import { processSankeyData } from "../sankeyChart/data";
 import { buildSankeyColors } from "../sankeyChart/colors";
 import { layoutSankey } from "../sankeyChart/layout";
 import { buildSankeyRenderModel, type SankeyRenderModel } from "../sankeyChart/renderModel";
-import { renderSankeySvg, type SankeyHoverTarget } from "../sankeyChart/renderSvg";
+import {
+  renderSankeySvg,
+  applySankeySvgEmphasis,
+  type SankeyHoverTarget,
+} from "../sankeyChart/renderSvg";
+import {
+  sankeyEmphasis,
+  sameSankeyTarget,
+  type SankeyEmphasis,
+  type SankeyEmphasisTarget,
+} from "../sankeyChart/emphasis";
 import { drawSankeyCanvas } from "../sankeyChart/renderCanvas";
 import { drawSankeyWebgpu } from "../sankeyChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
+import type { DataState } from "../state/dataState";
 import {
   resolveTimeline,
   createEngineTimeline,
@@ -65,6 +76,7 @@ interface Resolved {
   linkOpacity: number;
   showLabels: boolean;
   enableTransitions: boolean;
+  hoverHighlight: boolean;
   progressiveDraw: ResolvedReveal | null;
   timeline: ResolvedTimeline | null;
 }
@@ -86,6 +98,7 @@ function resolve(p: SankeyChartProps): Resolved {
     linkOpacity: p.linkOpacity ?? 0.45,
     showLabels: p.showLabels ?? true,
     enableTransitions: p.enableTransitions ?? true,
+    hoverHighlight: p.hoverHighlight ?? false,
     progressiveDraw: resolveReveal(p.progressiveDraw),
     timeline: resolveTimeline(p.timeline),
   };
@@ -129,6 +142,18 @@ export function mountSankeyChart(
   const chrome = createChromeRefs();
   let lastColorMappingSent: Record<string, string> = {};
   let model: SankeyRenderModel | null = null;
+  // hoverHighlight: the mark under the pointer (or pinned), kept by id so it
+  // survives a re-render - a consumer update() mid-hover re-applies it to the new
+  // model/DOM. `painted` is what the last render drew, so a hover change can
+  // update svg in place or repaint the canvas/webgpu layer without a render().
+  let hoverTarget: SankeyEmphasisTarget | null = null;
+  let painted: { r: Resolved; dataState: DataState } | null = null;
+  // Last progressive-draw cutoff painted on canvas: a hover repaint mid-reveal
+  // keeps the same clip instead of flashing the whole chart.
+  let canvasRevealX: number | undefined;
+  // Detached 2D context for link hit-testing once webgpu has dropped its 2D
+  // fallback canvas (isPointInPath needs a context, not pixels).
+  let hitCanvas: HTMLCanvasElement | null = null;
   const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
   // Opt-in "play through years": the controller + built-in control lifecycle is
   // shared engine glue; render() consumes the period-filtered links it returns.
@@ -203,6 +228,73 @@ export function mountSankeyChart(
   const highlightFor = (target: SankeyHoverTarget): string[] =>
     target.kind === "node" ? [target.node.id] : [target.link.sourceId, target.link.targetId];
 
+  // ---- hoverHighlight (transient emphasis; the pure rule is sankeyEmphasis) ----
+  const currentEmphasis = (): SankeyEmphasis | null =>
+    painted?.r.hoverHighlight && model ? sankeyEmphasis(model, hoverTarget) : null;
+  const toEmphasisTarget = (t: SankeyHoverTarget): SankeyEmphasisTarget =>
+    t.kind === "node"
+      ? { kind: "node", id: t.node.id }
+      : { kind: "link", index: t.link.index, sourceId: t.link.sourceId, targetId: t.link.targetId };
+
+  // Paint the canvas / webgpu layer - shared by render() and hover repaints.
+  const paintLayer = (r: Resolved, emphasis: SankeyEmphasis | null): void => {
+    if (!model) return;
+    if (r.renderer === "webgpu") {
+      if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("sankeyChart-webgpu-canvas");
+      const ready = drawSankeyWebgpu(webgpuCanvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        // Re-render once the async GPU device resolves, upgrading canvas → GPU.
+        onReady: render,
+        emphasis,
+      });
+      if (ready) {
+        // GPU painted - drop any first-frame 2D fallback canvas.
+        removeCanvas();
+      } else {
+        // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
+        // so the chart is never blank; the onReady re-render swaps in the GPU layer.
+        if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
+        drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height, emphasis });
+      }
+    } else if (r.renderer === "canvas") {
+      removeWebgpuCanvas();
+      if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
+      drawSankeyCanvas(canvas, svg, model, {
+        width: r.width,
+        height: r.height,
+        revealX: canvasRevealX,
+        emphasis,
+      });
+    }
+  };
+  // Show the current emphasis on what is already drawn: svg changes opacity
+  // attributes IN PLACE (the element under the pointer is never replaced, so no
+  // mouseleave/mouseenter loop); canvas/webgpu repaint their marks.
+  const repaintEmphasis = (): void => {
+    if (!painted || !model || painted.dataState === "nodata") return;
+    const emphasis = currentEmphasis();
+    if (painted.r.renderer === "svg") {
+      const root = svg.querySelector("g.sankey-content");
+      if (root) applySankeySvgEmphasis(root, model, emphasis);
+    } else {
+      paintLayer(painted.r, emphasis);
+    }
+  };
+  const setHover = (t: SankeyEmphasisTarget | null): void => {
+    if (!painted?.r.hoverHighlight || sameSankeyTarget(hoverTarget, t)) return;
+    hoverTarget = t;
+    repaintEmphasis();
+  };
+  // Link hit-testing context: the painted 2D canvas when there is one, else a
+  // detached scratch canvas (webgpu after the GPU took over).
+  const hitContext = (): CanvasRenderingContext2D | null => {
+    if (canvas) return canvas.getContext("2d");
+    if (typeof document === "undefined") return null;
+    hitCanvas ??= document.createElement("canvas");
+    return hitCanvas.getContext("2d");
+  };
+
   // Canvas/webgpu-mode hit-test: nodes (point-in-rect) first, then links via
   // isPointInPath under an identity transform (path + point both in CSS px).
   const onHostMove = (ev: MouseEvent): void => {
@@ -214,16 +306,16 @@ export function mountSankeyChart(
     for (const n of model.nodes) {
       if (x >= n.x && x <= n.x + n.w && y >= n.y && y <= n.y + n.h) {
         showTooltip({ kind: "node", node: n }, ev);
+        setHover({ kind: "node", id: n.id });
         baseProps.onHighlightItem?.([n.id]);
         return;
       }
     }
 
-    // Link hit-test needs a real 2D canvas context. In webgpu mode that canvas
-    // is only present while the GPU device isn't ready (the first-frame canvas
-    // fallback) - once GPU actually paints, link hover falls through to
-    // hideTooltip() below (node hover keeps working via geometry above).
-    const ctx = canvas?.getContext("2d") ?? null;
+    // Link hit-test needs a 2D context: the painted canvas, or - in webgpu mode
+    // once the GPU paints and the 2D fallback canvas is gone - a detached scratch
+    // canvas (isPointInPath only needs the path, not the pixels).
+    const ctx = hitContext();
     if (ctx) {
       // Filled ribbons → point-in-path. Identity transform so the path (CSS px)
       // and the point (CSS px) share one coordinate space.
@@ -233,6 +325,7 @@ export function mountSankeyChart(
         if (l.d && ctx.isPointInPath(new Path2D(l.d), x, y)) {
           ctx.restore();
           showTooltip({ kind: "link", link: l }, ev);
+          setHover({ kind: "link", index: l.index, sourceId: l.sourceId, targetId: l.targetId });
           baseProps.onHighlightItem?.([l.sourceId, l.targetId]);
           return;
         }
@@ -240,6 +333,7 @@ export function mountSankeyChart(
       ctx.restore();
     }
     hideTooltip();
+    setHover(null);
     baseProps.onHighlightItem?.([]);
   };
   // Canvas/webgpu-mode click-to-pin: SVG marks pin via their own onClick, but
@@ -250,17 +344,27 @@ export function mountSankeyChart(
       sticky = false;
       tooltip.classList.remove("sticky");
       tooltip.style.visibility = "hidden";
+      setHover(null);
     } else if (tooltip.style.visibility === "visible") {
       sticky = true;
       tooltip.classList.add("sticky");
     }
   };
+  // Backstop: a pointer that leaves the host straight from a mark (no empty
+  // margin crossed) must not leave its emphasis behind. Emphasis only - the
+  // tooltip and onHighlightItem keep their existing behaviour.
+  const onHostLeave = (): void => {
+    if (!sticky) setHover(null);
+  };
   host.addEventListener("mousemove", onHostMove);
+  host.addEventListener("mouseleave", onHostLeave);
   host.addEventListener("click", onHostClick);
   const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
     isSticky: () => sticky,
     unpin: () => {
       sticky = false;
+      // A pinned tooltip kept its emphasis; unpinning restores the normal state.
+      setHover(null);
     },
   });
 
@@ -323,6 +427,15 @@ export function mountSankeyChart(
       showLabels: r.showLabels,
       highlightItems: props.highlightItems ?? [],
     });
+    // hoverHighlight off: forget any hover so a later opt-in starts clean. A hovered
+    // mark that no longer exists (disabledItems, a timeline period without that
+    // link) drops its emphasis instead of lighting a stranger.
+    if (!r.hoverHighlight || (hoverTarget && !sankeyEmphasis(model, hoverTarget))) {
+      hoverTarget = null;
+    }
+    painted = { r, dataState };
+    const emphasis = currentEmphasis();
+    canvasRevealX = undefined;
 
     clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
@@ -334,50 +447,34 @@ export function mountSankeyChart(
         renderSankeySvg(
           svg,
           model,
-          { enableTransitions: r.enableTransitions },
+          { enableTransitions: r.enableTransitions, emphasis },
           {
             onEnter: (target, ev) => {
               if (sticky) return;
               showTooltip(target, ev);
+              setHover(toEmphasisTarget(target));
               props.onHighlightItem?.(highlightFor(target));
             },
             onLeave: () => {
               hideTooltip();
-              if (!sticky) props.onHighlightItem?.([]);
+              if (!sticky) {
+                setHover(null);
+                props.onHighlightItem?.([]);
+              }
             },
             onClick: (target, ev) => {
               sticky = true;
               tooltip.classList.add("sticky");
               showTooltip(target, ev);
+              // The pinned mark keeps its emphasis until the pin is dismissed.
+              setHover(toEmphasisTarget(target));
             },
           },
         );
-      }
-
-      if (r.renderer === "webgpu") {
-        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("sankeyChart-webgpu-canvas");
-        const ready = drawSankeyWebgpu(webgpuCanvas, svg, model, {
-          width: r.width,
-          height: r.height,
-          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
-          onReady: render,
-        });
-        if (ready) {
-          // GPU painted - drop any first-frame 2D fallback canvas.
-          removeCanvas();
-        } else {
-          // Device not ready / unavailable (incl. jsdom): paint the canvas-2D stopgap
-          // so the chart is never blank; the onReady re-render swaps in the GPU layer.
-          if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
-          drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height });
-        }
-      } else if (r.renderer === "canvas") {
-        removeWebgpuCanvas();
-        if (!canvas) canvas = makeLayerCanvas("sankey-chart-canvas");
-        drawSankeyCanvas(canvas, svg, model, { width: r.width, height: r.height });
-      } else {
         removeCanvas();
         removeWebgpuCanvas();
+      } else {
+        paintLayer(r, emphasis);
       }
 
       // Opt-in reveal animation: wipes the links + nodes left to right. Suppressed
@@ -391,12 +488,15 @@ export function mountSankeyChart(
         endPx: r.width,
         canvasRedraw:
           r.renderer === "canvas"
-            ? (x) =>
+            ? (x) => {
+                canvasRevealX = x;
                 drawSankeyCanvas(canvas, svg, model!, {
                   width: r.width,
                   height: r.height,
                   revealX: x,
-                })
+                  emphasis: currentEmphasis(),
+                });
+              }
             : undefined,
       });
     } else {
@@ -455,9 +555,11 @@ export function mountSankeyChart(
       disposeStickyDismiss();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
+      host.removeEventListener("mouseleave", onHostLeave);
       host.removeEventListener("click", onHostClick);
       canvas = null;
       webgpuCanvas = null;
+      hitCanvas = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-sankey-chart");
     },

@@ -18,6 +18,41 @@ description: "Diagramme de Sankey pour les flux : des nœuds disposés en colonn
 - **Repérer le chemin dominant et les fuites.** L'épaisseur des bandes est la valeur, si bien que les grandes routes et les petites pertes se lisent instantanément - la vue d'audit de n'importe quel système.
 - **Une seule étape ?** Si rien ne traverse *à travers*, une [barre comparable](/fr/charts/comparable) classe les sources plus proprement qu'un Sankey à deux colonnes.
 
+## Mise en avant au survol
+
+Le survol affiche toujours une infobulle. Avec `hoverHighlight: true`, le graphique met aussi en avant ce que vous pointez : survolez un **nœud**, et ce nœud, chaque flux qui y entre ou en sort et les nœuds à l'autre extrémité restent pleinement visibles tandis que le reste s'estompe ; survolez un **flux**, et seuls ce flux et ses deux nœuds d'extrémité restent allumés. Désactivé par défaut.
+
+<ChartDemo chart="sankey-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<SankeyChart {...props} hoverHighlight />
+```
+
+```vue [Vue]
+<SankeyChart :options="{ ...props, hoverHighlight: true }" />
+```
+
+```svelte [Svelte]
+<div use:sankeyChart={{ ...props, hoverHighlight: true }}></div>
+```
+
+```ts [Angular]
+applySankeyChartProps(this.c.nativeElement, { ...props, hoverHighlight: true });
+```
+
+```html [Web component]
+<michi-vz-sankey-chart hover-highlight></michi-vz-sankey-chart>
+```
+
+:::
+
+- La mise en avant s'applique sur place : en svg, l'opacité des marques déjà dessinées change ; canvas et webgpu redessinent. Le survol ne redessine jamais le graphique, il est donc inutile de renvoyer `onHighlightItem` dans `highlightItems` pour obtenir cet effet. `onHighlightItem` se déclenche toujours comme avant, pour votre propre interface.
+- Elle atténue aux mêmes niveaux que `highlightItems` (flux au quart de `linkOpacity`, nœuds à 0,25). Pendant le survol, elle l'emporte sur `highlightItems` ; en vous éloignant, l'état `highlightItems` revient.
+- Cliquez pour épingler l'infobulle : la mise en avant reste avec elle jusqu'à ce que l'épingle soit levée (clic sur l'infobulle, ou n'importe où hors du graphique).
+- En svg, le fondu suit `enableTransitions` ; canvas et webgpu basculent immédiatement.
+
 ## Données volumineuses sur WebGPU <span class="vp-badge warning">Expérimental</span>
 
 <script setup>

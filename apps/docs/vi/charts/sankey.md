@@ -18,6 +18,41 @@ description: "Biểu đồ Sankey cho các dòng chảy: các nút được bố
 - **Tìm tuyến chủ đạo và chỗ rò rỉ.** Độ dày của dải chính là giá trị, nên tuyến lớn và những thất thoát nhỏ đều hiện rõ tức thì: góc nhìn kiểm toán cho mọi hệ thống.
 - **Chỉ có một chặng?** Nếu không có gì chảy *xuyên qua*, [biểu đồ cột so sánh](/vi/charts/comparable) xếp hạng các nguồn gọn gàng hơn một Sankey hai cột.
 
+## Làm nổi bật khi rê chuột
+
+Rê chuột luôn hiện tooltip. Đặt `hoverHighlight: true` thì biểu đồ còn làm nổi bật thứ bạn đang trỏ vào: rê chuột lên một **nút** thì nút đó, mọi dòng chảy vào hoặc ra khỏi nó và các nút ở đầu bên kia vẫn giữ nguyên độ đậm trong khi phần còn lại mờ đi; rê chuột lên một **dòng chảy** thì chỉ dòng chảy đó và hai nút ở hai đầu của nó còn sáng. Mặc định tắt.
+
+<ChartDemo chart="sankey-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<SankeyChart {...props} hoverHighlight />
+```
+
+```vue [Vue]
+<SankeyChart :options="{ ...props, hoverHighlight: true }" />
+```
+
+```svelte [Svelte]
+<div use:sankeyChart={{ ...props, hoverHighlight: true }}></div>
+```
+
+```ts [Angular]
+applySankeyChartProps(this.c.nativeElement, { ...props, hoverHighlight: true });
+```
+
+```html [Web component]
+<michi-vz-sankey-chart hover-highlight></michi-vz-sankey-chart>
+```
+
+:::
+
+- Hiệu ứng được áp dụng tại chỗ: svg đổi độ mờ của các phần tử đã vẽ sẵn, canvas và webgpu vẽ lại. Rê chuột không bao giờ khiến biểu đồ dựng lại, nên không cần đưa `onHighlightItem` ngược vào `highlightItems` để có hiệu ứng này. `onHighlightItem` vẫn được gọi như trước, cho giao diện riêng của bạn.
+- Mức làm mờ giống hệt `highlightItems` (dòng chảy ở một phần tư `linkOpacity`, nút ở 0,25). Trong lúc rê chuột, nó được ưu tiên hơn `highlightItems`; khi rời đi, trạng thái `highlightItems` được khôi phục.
+- Click để ghim tooltip thì phần nổi bật cũng được giữ theo cho đến khi bỏ ghim (click vào tooltip, hoặc bất kỳ đâu bên ngoài biểu đồ).
+- Với trình kết xuất svg, hiệu ứng mờ dần tuân theo `enableTransitions`; canvas và webgpu chuyển ngay lập tức.
+
 ## Dữ liệu lớn trên WebGPU <span class="vp-badge warning">Thử nghiệm</span>
 
 <script setup>

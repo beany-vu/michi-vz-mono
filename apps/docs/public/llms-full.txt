@@ -843,6 +843,7 @@ Chart-specific props (the shared props above also apply):
 - `linkColorMode`: `"source" | "target"` (default: `"source"`) - Colour links by their "source" (default) or "target" node.
 - `linkOpacity`: `number` (default: `0.45`) - Link opacity in [0,1] (default 0.45).
 - `showLabels`: `boolean` (default: `true`) - Draw node labels (default true).
+- `hoverHighlight`: `boolean` (default: `false`) - Built-in hover emphasis, default false: hovering a NODE keeps it, every flow into or out of it and the nodes at those flows' other ends at full strength, hovering a FLOW keeps only that flow and its two end nodes, and everything else dims to the `highlightItems` levels (flows at linkOpacity x 0.2...
 - `isLoading`: `boolean` - Show the loading overlay and skip the no-data check (legacy michi-vz parity).
 - `isNodata`: `boolean | ((dataSet: SankeyNodeItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on nodes; default = empty nodes.
 - `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).

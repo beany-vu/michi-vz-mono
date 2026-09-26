@@ -1751,6 +1751,51 @@ const sankey: Example<SankeyChartProps>[] = [
       ],
     },
   },
+  // [1] hoverHighlight: built-in hover emphasis on a three-column funnel.
+  {
+    id: "sankey-hover-highlight",
+    title: "Hover emphasis: visits → pages → outcomes",
+    description:
+      "Website visits flowing from traffic channels through landing pages to an outcome. With hoverHighlight on, hovering a page lights every flow into and out of it and the channels and outcomes it connects to, while the rest fades; hovering a single flow lights just that flow and its two ends.",
+    element: "michi-vz-sankey-chart",
+    props: {
+      title: "Weekly visits by channel, landing page and outcome",
+      width: 820,
+      height: 460,
+      hoverHighlight: true,
+      linkColorMode: "source",
+      nodeRadius: 3,
+      linkRadius: 2,
+      nodes: [
+        { id: "Search", color: TM_BLUE },
+        { id: "Social", color: TM_CORAL },
+        { id: "Email", color: TM_GOLD },
+        { id: "Direct", color: TM_TEAL },
+        { id: "Home", color: TM_BLUE2 },
+        { id: "Pricing", color: TM_RED },
+        { id: "Blog", color: TM_TEAL },
+        { id: "Sign-up", color: TM_BLUE },
+        { id: "Left", label: "Left the site", color: "#9aa3ad" },
+      ],
+      links: [
+        { source: "Search", target: "Home", value: 420 },
+        { source: "Search", target: "Blog", value: 310 },
+        { source: "Search", target: "Pricing", value: 160 },
+        { source: "Social", target: "Blog", value: 260 },
+        { source: "Social", target: "Home", value: 90 },
+        { source: "Email", target: "Pricing", value: 210 },
+        { source: "Email", target: "Home", value: 70 },
+        { source: "Direct", target: "Home", value: 240 },
+        { source: "Direct", target: "Pricing", value: 110 },
+        { source: "Home", target: "Sign-up", value: 180 },
+        { source: "Home", target: "Left", value: 640 },
+        { source: "Pricing", target: "Sign-up", value: 290 },
+        { source: "Pricing", target: "Left", value: 190 },
+        { source: "Blog", target: "Sign-up", value: 60 },
+        { source: "Blog", target: "Left", value: 510 },
+      ],
+    },
+  },
 ];
 
 const fountain: Example<FountainChartProps>[] = [

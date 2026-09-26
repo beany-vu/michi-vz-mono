@@ -1,7 +1,7 @@
 // Renderer-agnostic Sankey model - consumed by SVG, canvas, hit-test, and
 // context. Node rects (with the colour-contract attributes) + link bands (path +
 // width + stroke colour). Link colour follows the source or target node.
-// Highlight dimming is applied at draw time (not baked here).
+// Highlight dimming is applied at draw time (not baked here): see emphasis.ts.
 import { sanitizeForClassName } from "../math/sanitize";
 import type { SankeyColorResolver } from "./colors";
 import type { SankeyLaidNode, SankeyLaidLink } from "./layout";
@@ -56,6 +56,8 @@ export interface SankeyNodeMark {
 }
 
 export interface SankeyLinkMark {
+  /** Position in `SankeyRenderModel.links` (the hover-emphasis link key). */
+  index: number;
   sourceId: string;
   targetId: string;
   /** Colour-group key (source or target node id, per linkColorMode). */
@@ -111,9 +113,10 @@ export function buildSankeyRenderModel(
     labelLeft: (n.x0 + n.x1) / 2 < o.width / 2,
   }));
 
-  const links: SankeyLinkMark[] = laid.links.map((l) => {
+  const links: SankeyLinkMark[] = laid.links.map((l, index) => {
     const key = o.linkColorMode === "target" ? l.targetId : l.sourceId;
     return {
+      index,
       sourceId: l.sourceId,
       targetId: l.targetId,
       colorKey: key,

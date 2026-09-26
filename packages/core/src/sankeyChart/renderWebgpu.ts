@@ -9,12 +9,15 @@
 import { drawMarksWebgpu, emptyBatch, pushRect, pushBandStrip, markColor } from "../webgpu/marks";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import type { SankeyRenderModel } from "./renderModel";
+import { sankeyLitState, sankeyLinkAlpha, sankeyNodeAlpha, type SankeyEmphasis } from "./emphasis";
 
 export interface SankeyWebgpuOptions {
   width: number;
   height: number;
   /** Called once when the GPU device becomes ready, so the engine re-renders. */
   onReady?: () => void;
+  /** Transient hover emphasis (wins over the model's highlightSet); null/omitted = none. */
+  emphasis?: SankeyEmphasis | null;
 }
 
 // Number of samples along each link ribbon's top/bottom edge (the ribbon path is a
@@ -79,15 +82,13 @@ export function drawSankeyWebgpu(
     "fill",
   );
 
-  const anyHighlight = model.highlightSet.size > 0;
+  const lit = sankeyLitState(model, o.emphasis ?? null);
   const batch = emptyBatch();
 
   // ---- Links (under the nodes) ----
   for (const l of model.links) {
-    const lit =
-      !anyHighlight || model.highlightSet.has(l.sourceId) || model.highlightSet.has(l.targetId);
     const css = linkColors.get(l.colorKey) || l.color;
-    const c = markColor(css, lit ? model.linkOpacity : model.linkOpacity * 0.25);
+    const c = markColor(css, sankeyLinkAlpha(model.linkOpacity, lit.links[l.index]));
     if (c[3] <= 0) continue;
     // The mark only carries the finished SVG path string (+ width), not the raw
     // sx/sy/tx/ty centreline the model computed - recover it exactly from the path's
@@ -100,13 +101,12 @@ export function drawSankeyWebgpu(
   }
 
   // ---- Nodes (on top of links) ----
-  for (const n of model.nodes) {
-    const lit = !anyHighlight || model.highlightSet.has(n.id);
+  model.nodes.forEach((n, i) => {
     const css = nodeColors.get(n.colorKey) || n.fill;
-    const c = markColor(css, lit ? 1 : 0.25);
-    if (c[3] <= 0) continue;
+    const c = markColor(css, sankeyNodeAlpha(lit.nodes[i]));
+    if (c[3] <= 0) return;
     pushRect(batch.triangles, n.x, n.y, n.w, n.h, c);
-  }
+  });
 
   return drawMarksWebgpu(canvas, batch, { width: o.width, height: o.height, onReady: o.onReady });
 }

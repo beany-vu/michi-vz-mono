@@ -18,6 +18,41 @@ description: "Sankey-diagram voor stromen: knopen ingedeeld in kolommen waarbij 
 - **Het dominante pad en de lekken vinden.** Banddikte is de waarde, dus de dikke routes en de dunne verliezen lees je meteen af - het auditoverzicht van elk systeem.
 - **Slechts één fase?** Als er niets *doorheen* stroomt, rangschikt een [staafdiagram](/nl/charts/comparable) bronnen overzichtelijker dan een Sankey met twee kolommen.
 
+## Nadruk bij hover
+
+Hover toont altijd een tooltip. Met `hoverHighlight: true` zet de grafiek ook naar voren waar je naar wijst: hover over een **knoop** en die knoop, elke stroom die erin of eruit gaat en de knopen aan de andere uiteinden blijven op volle sterkte terwijl de rest vervaagt; hover over een **stroom** en alleen die stroom en zijn twee eindknopen blijven opgelicht. Standaard uit.
+
+<ChartDemo chart="sankey-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<SankeyChart {...props} hoverHighlight />
+```
+
+```vue [Vue]
+<SankeyChart :options="{ ...props, hoverHighlight: true }" />
+```
+
+```svelte [Svelte]
+<div use:sankeyChart={{ ...props, hoverHighlight: true }}></div>
+```
+
+```ts [Angular]
+applySankeyChartProps(this.c.nativeElement, { ...props, hoverHighlight: true });
+```
+
+```html [Web component]
+<michi-vz-sankey-chart hover-highlight></michi-vz-sankey-chart>
+```
+
+:::
+
+- De nadruk wordt ter plekke toegepast: svg past de dekking aan van de markeringen die al getekend zijn, canvas en webgpu tekenen opnieuw. Hoveren rendert de grafiek nooit opnieuw, dus je hoeft `onHighlightItem` niet terug te voeren in `highlightItems` voor dit effect. `onHighlightItem` vuurt nog steeds zoals voorheen, voor je eigen UI.
+- Het dimt tot dezelfde niveaus als `highlightItems` (stromen op een kwart van `linkOpacity`, knopen op 0,25). Tijdens het hoveren wint het van `highlightItems`; wie wegbeweegt krijgt de `highlightItems`-toestand terug.
+- Klik om de tooltip vast te zetten; de nadruk blijft erbij tot de tooltip wordt losgemaakt (klik op de tooltip, of ergens buiten de grafiek).
+- Op de svg-renderer volgt het vervagen `enableTransitions`; canvas en webgpu schakelen meteen om.
+
 ## Veel data op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
 <script setup>

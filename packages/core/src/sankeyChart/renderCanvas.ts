@@ -5,6 +5,7 @@
 import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import type { SankeyRenderModel } from "./renderModel";
+import { sankeyLitState, sankeyLinkAlpha, sankeyNodeAlpha, type SankeyEmphasis } from "./emphasis";
 
 export interface SankeyCanvasOptions {
   width: number;
@@ -12,6 +13,8 @@ export interface SankeyCanvasOptions {
   /** Progressive-draw reveal cutoff: only pixels at x <= revealX are painted
    *  (a ctx.clip rect, matching the SVG renderer's <clipPath> reveal). */
   revealX?: number;
+  /** Transient hover emphasis (wins over the model's highlightSet); null/omitted = none. */
+  emphasis?: SankeyEmphasis | null;
 }
 
 // Rounded-rect fill via a manual arcTo path (jsdom's 2D context has no
@@ -79,14 +82,12 @@ export function drawSankeyCanvas(
     "fill",
   );
 
-  const anyHighlight = model.highlightSet.size > 0;
+  const lit = sankeyLitState(model, o.emphasis ?? null);
 
   // ---- Links (under the nodes) ----
   for (const l of model.links) {
-    const lit =
-      !anyHighlight || model.highlightSet.has(l.sourceId) || model.highlightSet.has(l.targetId);
     ctx.fillStyle = linkColors.get(l.colorKey) || l.color;
-    ctx.globalAlpha = lit ? model.linkOpacity : model.linkOpacity * 0.25;
+    ctx.globalAlpha = sankeyLinkAlpha(model.linkOpacity, lit.links[l.index]);
     ctx.fill(new Path2D(l.d));
   }
   ctx.globalAlpha = 1;
@@ -102,9 +103,8 @@ export function drawSankeyCanvas(
   ctx.font = `${Math.round(fs)}px ${fam}`;
   ctx.textBaseline = "middle";
 
-  for (const n of model.nodes) {
-    const lit = !anyHighlight || model.highlightSet.has(n.id);
-    ctx.globalAlpha = lit ? 1 : 0.25;
+  model.nodes.forEach((n, i) => {
+    ctx.globalAlpha = sankeyNodeAlpha(lit.nodes[i]);
     ctx.fillStyle = nodeColors.get(n.colorKey) || n.fill;
     fillRoundedRect(ctx, n.x, n.y, n.w, n.h, model.nodeRadius);
     if (model.showLabels && n.h >= 6) {
@@ -112,7 +112,7 @@ export function drawSankeyCanvas(
       ctx.textAlign = n.labelLeft ? "left" : "right";
       ctx.fillText(n.label, n.labelLeft ? n.x + n.w + 4 : n.x - 4, n.y + n.h / 2);
     }
-  }
+  });
   ctx.globalAlpha = 1;
 
   if (o.revealX !== undefined) ctx.restore();

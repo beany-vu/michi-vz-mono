@@ -207,6 +207,8 @@ export { processSankeyData } from "./sankeyChart/data";
 export { buildSankeyColors } from "./sankeyChart/colors";
 export { layoutSankey } from "./sankeyChart/layout";
 export { buildSankeyRenderModel } from "./sankeyChart/renderModel";
+export { sankeyEmphasis, sankeyLitState } from "./sankeyChart/emphasis";
+export type { SankeyEmphasis, SankeyEmphasisTarget, SankeyLitState } from "./sankeyChart/emphasis";
 export { buildSankeyContext } from "./context/buildSankeyContext";
 export { checkSankeyData } from "./validate/sankeyWarnings";
 // Fountain ("Jet d'Eau") pure layer (rising column + blooming plume; snapshot/trend)

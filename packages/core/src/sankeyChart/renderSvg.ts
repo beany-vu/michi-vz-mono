@@ -2,15 +2,19 @@
 // nodes): each is one <path class="link"> (stroke = the colour, width ∝ value)
 // with the colour-contract attributes. Nodes are <rect class="node"> with a label
 // that flips side based on which half the node sits in. Highlight dimming
-// (opacity) is computed here, not baked into the model.
+// (opacity) is decided by the shared emphasis.ts helper, not baked into the model;
+// a hover emphasis is applied IN PLACE (applySankeySvgEmphasis), never by redrawing.
 import { svgEl } from "../dom";
 import type { SankeyNodeMark, SankeyLinkMark, SankeyRenderModel } from "./renderModel";
+import { sankeyLitState, sankeyLinkAlpha, sankeyNodeAlpha, type SankeyEmphasis } from "./emphasis";
 
 export type SankeyHoverTarget =
   { kind: "node"; node: SankeyNodeMark } | { kind: "link"; link: SankeyLinkMark };
 
 export interface SankeySvgOptions {
   enableTransitions: boolean;
+  /** Transient hover emphasis (wins over the model's highlightSet); null/omitted = none. */
+  emphasis?: SankeyEmphasis | null;
 }
 
 export interface SankeyInteractions {
@@ -29,26 +33,29 @@ export function renderSankeySvg(
   // <g> to clip (links + nodes together, never the title which lives outside it).
   const root = svgEl("g", { class: "sankey-content" });
   const transition = o.enableTransitions ? "opacity 0.2s ease-in-out" : "none";
-  const anyHighlight = model.highlightSet.size > 0;
+  // Links dim through fill-opacity, so their transition has to cover it too.
+  const linkTransition = o.enableTransitions
+    ? "opacity 0.2s ease-in-out, fill-opacity 0.2s ease-in-out"
+    : "none";
+  const lit = sankeyLitState(model, o.emphasis ?? null);
 
   // ---- Links (under the nodes) ----
   const linksG = svgEl("g", { class: "sankey-links" });
   for (const l of model.links) {
-    const lit =
-      !anyHighlight || model.highlightSet.has(l.sourceId) || model.highlightSet.has(l.targetId);
     const path = svgEl("path", {
       class: "link",
       "data-label": l.colorKey,
       "data-label-safe": l.dataLabelSafe,
       "data-source": l.sourceId,
       "data-target": l.targetId,
+      "data-index": l.index,
       "data-width": Math.max(1, l.width),
       d: l.d,
       fill: l.color,
       stroke: "none",
-      "fill-opacity": lit ? model.linkOpacity : model.linkOpacity * 0.25,
+      "fill-opacity": sankeyLinkAlpha(model.linkOpacity, lit.links[l.index]),
     });
-    path.style.transition = transition;
+    path.style.transition = linkTransition;
     path.style.cursor = "pointer";
     path.addEventListener("mouseenter", (e) => ia.onEnter({ kind: "link", link: l }, e));
     path.addEventListener("mouseleave", (e) => ia.onLeave(e));
@@ -59,9 +66,12 @@ export function renderSankeySvg(
 
   // ---- Nodes ----
   const nodesG = svgEl("g", { class: "sankey-nodes" });
-  for (const n of model.nodes) {
-    const lit = !anyHighlight || model.highlightSet.has(n.id);
-    const g = svgEl("g", { class: "sankey-node", opacity: lit ? 1 : 0.25 });
+  model.nodes.forEach((n, i) => {
+    const g = svgEl("g", {
+      class: "sankey-node",
+      "data-index": i,
+      opacity: sankeyNodeAlpha(lit.nodes[i]),
+    });
     const radius = Math.min(model.nodeRadius, Math.min(n.w, n.h) / 2);
     g.appendChild(
       svgEl("rect", {
@@ -95,8 +105,32 @@ export function renderSankeySvg(
     g.addEventListener("mouseleave", (e) => ia.onLeave(e));
     g.addEventListener("click", (e) => ia.onClick({ kind: "node", node: n }, e));
     nodesG.appendChild(g);
-  }
+  });
   root.appendChild(nodesG);
 
   parent.appendChild(root);
+}
+
+/**
+ * Re-apply the lit/dim state to marks ALREADY drawn from `model` - only the
+ * opacity attributes change, so the element under the pointer is never replaced
+ * (a redraw would fire mouseleave/mouseenter on it). Marks are matched by their
+ * `data-index` (their position in model.links / model.nodes).
+ */
+export function applySankeySvgEmphasis(
+  root: ParentNode,
+  model: SankeyRenderModel,
+  emphasis: SankeyEmphasis | null,
+): void {
+  const lit = sankeyLitState(model, emphasis);
+  root.querySelectorAll("path.link[data-index]").forEach((el) => {
+    const on = lit.links[Number(el.getAttribute("data-index"))];
+    if (on !== undefined) {
+      el.setAttribute("fill-opacity", String(sankeyLinkAlpha(model.linkOpacity, on)));
+    }
+  });
+  root.querySelectorAll("g.sankey-node[data-index]").forEach((el) => {
+    const on = lit.nodes[Number(el.getAttribute("data-index"))];
+    if (on !== undefined) el.setAttribute("opacity", String(sankeyNodeAlpha(on)));
+  });
 }

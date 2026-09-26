@@ -3505,6 +3505,17 @@ export interface SankeyChartProps {
   showLabels?: boolean;
   /** Node ids to highlight (links to/from a highlighted node stay lit). */
   highlightItems?: string[];
+  /** Built-in hover emphasis, default false: hovering a NODE keeps it, every flow
+   * into or out of it and the nodes at those flows' other ends at full strength,
+   * hovering a FLOW keeps only that flow and its two end nodes, and everything else
+   * dims to the `highlightItems` levels (flows at linkOpacity x 0.25, nodes at 0.25).
+   * Applied in place (svg updates opacity on the existing marks and fades per
+   * `enableTransitions`; canvas/webgpu repaint), so hovering never re-renders the
+   * chart and consumers need not mirror `onHighlightItem` into `highlightItems`.
+   * While hovering it wins over `highlightItems`; leaving restores that state. A
+   * pinned (clicked) tooltip keeps its emphasis until unpinned. `onHighlightItem`
+   * fires exactly as without it. */
+  hoverHighlight?: boolean;
   /** Node ids to drop (their links are dropped too). */
   disabledItems?: string[];
   /** Render as inline SVG (default) or to a canvas (faster for large datasets); getContext() is identical either way */

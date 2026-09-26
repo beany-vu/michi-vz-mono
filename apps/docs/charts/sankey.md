@@ -18,6 +18,41 @@ description: "Sankey diagram for flows: nodes laid out in columns with band thic
 - **Finding the dominant path and the leaks.** Band thickness is the value, so the thick routes and the thin losses read instantly - the audit view of any system.
 - **Only one stage?** If nothing flows *through*, a [Comparable bar](/charts/comparable) ranks sources more cleanly than a two-column Sankey.
 
+## Hover emphasis
+
+Hovering always shows a tooltip. Set `hoverHighlight: true` and the chart also brings forward what you point at: hover a **node** and that node, every flow into or out of it and the nodes at the other ends stay at full strength while the rest fades; hover a **flow** and only that flow and its two end nodes stay lit. Off by default.
+
+<ChartDemo chart="sankey-chart" :index="1" />
+
+::: code-group
+
+```tsx [React]
+<SankeyChart {...props} hoverHighlight />
+```
+
+```vue [Vue]
+<SankeyChart :options="{ ...props, hoverHighlight: true }" />
+```
+
+```svelte [Svelte]
+<div use:sankeyChart={{ ...props, hoverHighlight: true }}></div>
+```
+
+```ts [Angular]
+applySankeyChartProps(this.c.nativeElement, { ...props, hoverHighlight: true });
+```
+
+```html [Web component]
+<michi-vz-sankey-chart hover-highlight></michi-vz-sankey-chart>
+```
+
+:::
+
+- The emphasis is applied in place: svg changes the opacity of the marks already drawn, canvas and webgpu repaint. Hovering never re-renders the chart, so there is no need to feed `onHighlightItem` back into `highlightItems` for this effect. `onHighlightItem` still fires as before, for your own UI.
+- It dims to the same levels as `highlightItems` (flows at a quarter of `linkOpacity`, nodes at 0.25). While you hover it wins over `highlightItems`; moving away restores the `highlightItems` state.
+- Click to pin the tooltip and the emphasis stays with it until the pin is dismissed (click the tooltip, or anywhere outside the chart).
+- On the svg renderer the fade follows `enableTransitions`; canvas and webgpu switch at once.
+
 ## Heavy data on WebGPU <span class="vp-badge warning">Experimental</span>
 
 <script setup>
