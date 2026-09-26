@@ -2630,6 +2630,16 @@
             radialSvgEl.querySelectorAll("path.radial-tree-link").length === 6,
             "RADIAL: renders 6 dendrogram links",
           );
+          {
+            // An unfilled path is filled black by the browser: the links must be thin strokes.
+            const radLinks = [...radialSvgEl.querySelectorAll("path.radial-tree-link")];
+            const radLinkStyles = radLinks.map((p) => getComputedStyle(p));
+            log(
+              radLinks.length > 0 &&
+                radLinkStyles.every((cs) => cs.fill === "none" && cs.stroke !== "none"),
+              `RADIAL: svg links are unfilled strokes (fills: ${[...new Set(radLinkStyles.map((cs) => cs.fill))].join(", ")})`,
+            );
+          }
           log(
             !!radialSvgEl.querySelector(
               'circle.radial-tree-node-circle[data-label-safe="Sectors"]',

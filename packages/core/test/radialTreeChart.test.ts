@@ -61,6 +61,22 @@ describe("mountRadialTreeChart (jsdom, svg renderer)", () => {
     host.remove();
   });
 
+  // A path with no fill attribute is filled black by the browser, and no stylesheet rule
+  // targets .radial-tree-link, so every svg link drew as a solid black wedge. The links are
+  // thin grey strokes, as the canvas renderer paints them (rgba(120,120,120), 1px).
+  it("draws each svg link as a thin grey stroke with no fill", () => {
+    const { host, chart } = mount();
+    const links = Array.from(host.querySelectorAll("path.radial-tree-link"));
+    expect(links.length).toBe(6);
+    for (const link of links) {
+      expect(link.getAttribute("fill")).toBe("none");
+      expect(link.getAttribute("stroke")).toBe("rgb(120, 120, 120)");
+      expect(link.getAttribute("stroke-width")).toBe("1");
+    }
+    chart.destroy();
+    host.remove();
+  });
+
   it("shows full name + value labels at low leaf density", () => {
     const { host, chart } = mount();
     const labels = Array.from(host.querySelectorAll("tspan.radial-tree-label-name")).map(

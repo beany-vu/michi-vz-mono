@@ -33,9 +33,15 @@ export function renderRadialTreeSvg(
   const linksG = svgEl("g", { class: "radial-tree-links" });
   for (const m of model.marks) {
     linksG.appendChild(
+      // fill="none": an svg path with no fill is filled black, which drew each spoke as a
+      // solid wedge. Thin grey strokes, as the canvas renderer paints them; presentation
+      // attributes, so a consumer stylesheet can still restyle `.radial-tree-link`.
       svgEl("path", {
         class: "radial-tree-link",
         d: linkPath(m),
+        fill: "none",
+        stroke: "rgb(120, 120, 120)",
+        "stroke-width": 1,
         opacity: m.dimmed ? 0.15 : 0.4,
       }),
     );
