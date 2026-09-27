@@ -66,7 +66,7 @@ Give every row a `date` and flip on `timeline`: the tornado chart becomes a year
 const ref = useRef<DualHorizontalBarChartHandle>(null);
 
 <DualHorizontalBarChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -86,7 +86,7 @@ applyDualHorizontalBarChartProps(this.c.nativeElement, { ...props, timeline: { s
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
@@ -94,7 +94,8 @@ applyDualHorizontalBarChartProps(this.c.nativeElement, { ...props, timeline: { s
 
 - `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
 - Values glide between periods by default (`interpolate`); tune the motion with `tweenMs` and `easing`, or set `interpolate: false` for hard cuts. Reduced motion always gets the hard cut.
-- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- `seek(period)` looks for the period first, comparing as text, so `seek(2021)` and `seek("2021")` both land on 2021 whether your dates are numbers or strings. A number counts as a position (0 = first) only when no period matches, and a string that matches none does nothing. `seekIndex(i)` always goes by position, as the built-in scrubber does.
 - A `filter` (top-N, sorting) still applies inside each period, so a top 5 per year race works out of the box.
 - Rows without a `date` stay visible in every period.
 

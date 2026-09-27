@@ -122,7 +122,7 @@ Dữ liệu vốn đã trải dài qua nhiều năm nên không cần gắn thê
 const ref = useRef<RangeChartHandle>(null);
 
 <RangeChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -142,14 +142,15 @@ applyRangeChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
 :::
 
 - `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
-- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- `seek(period)` tìm kỳ trước, so sánh dạng chữ, nên `seek(2021)` và `seek("2021")` đều tới 2021 dù ngày trong dữ liệu là số hay chuỗi. Số chỉ được hiểu là vị trí (0 = kỳ đầu) khi không có kỳ nào khớp, còn chuỗi không khớp kỳ nào thì không làm gì. `seekIndex(i)` luôn đi theo vị trí, giống thanh tua có sẵn.
 - Giá trị trượt mượt giữa các năm theo mặc định (`interpolate`); đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
 - `timeline` được ưu tiên hơn `progressiveDraw` khi cả hai cùng được bật trên một biểu đồ.
 

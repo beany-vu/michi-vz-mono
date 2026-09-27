@@ -128,7 +128,7 @@ Gắn `date` cho từng liên kết rồi bật `timeline`: snapshot của một
 const ref = useRef<SankeyChartHandle>(null);
 
 <SankeyChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -148,7 +148,7 @@ applySankeyChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 100
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
@@ -156,7 +156,8 @@ applySankeyChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 100
 
 - `speedMs` chỉnh nhịp chạy, `loop` quay vòng, `autoplay: true` tự chạy khi mount, `showControl: false` ẩn thanh điều khiển có sẵn.
 - Giá trị trượt mượt giữa các giai đoạn theo mặc định (`interpolate`); chỉnh chuyển động bằng `tweenMs` và `easing`, hoặc đặt `interpolate: false` để cắt thẳng. Khi bật reduced motion, biểu đồ luôn cắt thẳng.
-- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- Controller headless luôn sẵn sàng: `chart.timeline()` cho `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, kèm `onStep` và `formatPeriod` trong config khi cần tự dựng UI.
+- `seek(period)` tìm kỳ trước, so sánh dạng chữ, nên `seek(2021)` và `seek("2021")` đều tới 2021 dù ngày trong dữ liệu là số hay chuỗi. Số chỉ được hiểu là vị trí (0 = kỳ đầu) khi không có kỳ nào khớp, còn chuỗi không khớp kỳ nào thì không làm gì. `seekIndex(i)` luôn đi theo vị trí, giống thanh tua có sẵn.
 - Liên kết không có `date` vẫn hiển thị ở mọi giai đoạn.
 - `timeline` thắng `progressiveDraw` khi cả hai cùng đặt - hiệu ứng vẽ dần bên dưới đứng yên khi timeline đang điều khiển.
 

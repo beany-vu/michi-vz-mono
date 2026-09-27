@@ -122,7 +122,7 @@ Les données couvrent déjà plusieurs années, il n'y a donc rien à taguer. Ac
 const ref = useRef<RangeChartHandle>(null);
 
 <RangeChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -142,14 +142,15 @@ applyRangeChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
 :::
 
 - `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
-- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- `seek(period)` cherche d'abord la période, en comparant le texte : `seek(2021)` et `seek("2021")` vont tous les deux sur 2021, que vos dates soient des nombres ou des chaînes. Un nombre ne compte comme une position (0 = la première) que si aucune période ne correspond, et une chaîne qui ne correspond à rien ne fait rien. `seekIndex(i)` va toujours par position, comme le curseur intégré.
 - Les valeurs glissent entre les années par défaut (`interpolate`) ; passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
 - `timeline` l'emporte sur `progressiveDraw` quand les deux sont définis sur le même graphique.
 

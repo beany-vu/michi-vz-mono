@@ -84,7 +84,7 @@ De Gapminder-truc: geef elk punt een `date`, zet `timeline` aan en zie de punten
 const ref = useRef<ScatterChartHandle>(null);
 
 <ScatterChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -104,7 +104,7 @@ applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 10
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
@@ -112,7 +112,8 @@ applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 10
 
 - `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
 - Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
-- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- `seek(period)` zoekt eerst de periode en vergelijkt als tekst, dus `seek(2021)` en `seek("2021")` komen allebei op 2021 uit, of je datums nu getallen of strings zijn. Een getal telt alleen als positie (0 = de eerste) als geen periode past, en een string die nergens bij past doet niets. `seekIndex(i)` gaat altijd op positie, net als de ingebouwde scrubber.
 - Combineer met `pointLabels` zodat elke bubbel een naam houdt terwijl hij beweegt; een `filter` blijft binnen elke periode gelden.
 - Punten zonder `date` blijven in elke periode zichtbaar.
 

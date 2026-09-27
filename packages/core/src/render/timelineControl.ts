@@ -56,10 +56,12 @@ export function applyTimelineControl(
       if (tl) {
         // Read the target BEFORE pausing: pause() triggers a play-state sync
         // that rewrites range.value back to the current index, which would
-        // turn the seek into a no-op while playing.
+        // turn the seek into a no-op while playing. The slider value is a
+        // position, so seekIndex: seek() would match a period of that value
+        // first (quarters 1-4, months 1-12) and land one step early.
         const target = Number(range.value);
         tl.pause();
-        tl.seek(target);
+        tl.seekIndex(target);
       }
     });
     root.appendChild(button);

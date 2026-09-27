@@ -84,7 +84,7 @@ Le geste Gapminder : datez chaque point avec `date`, activez `timeline`, et rega
 const ref = useRef<ScatterChartHandle>(null);
 
 <ScatterChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -104,7 +104,7 @@ applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 10
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
@@ -112,7 +112,8 @@ applyScatterChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 10
 
 - `speedMs` règle le rythme, `loop` reboucle, `autoplay: true` démarre au montage, `showControl: false` masque la barre intégrée.
 - Les valeurs glissent d'une période à l'autre par défaut (`interpolate`) ; ajustez le mouvement avec `tweenMs` et `easing`, ou passez `interpolate: false` pour des coupes nettes. Avec reduced motion, la coupe est toujours nette.
-- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- Le contrôleur headless reste disponible : `chart.timeline()` expose `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` et `formatPeriod` dans la config pour une UI maison.
+- `seek(period)` cherche d'abord la période, en comparant le texte : `seek(2021)` et `seek("2021")` vont tous les deux sur 2021, que vos dates soient des nombres ou des chaînes. Un nombre ne compte comme une position (0 = la première) que si aucune période ne correspond, et une chaîne qui ne correspond à rien ne fait rien. `seekIndex(i)` va toujours par position, comme le curseur intégré.
 - Associez-le à `pointLabels` pour que chaque bulle garde son nom en mouvement ; un `filter` s'applique toujours à l'intérieur de chaque période.
 - Les points sans `date` restent visibles à chaque période.
 

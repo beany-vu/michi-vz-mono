@@ -3791,7 +3791,10 @@ export interface ChartInstance<P> {
    * `progressiveDraw`): re-runs the reveal from the start. */
   replay?(): void;
   /** Present when the chart was mounted with a `timeline` config: the headless
-   * playback controller (play/pause/seek/step through periods). */
+   * playback controller (play/pause/step through periods). `seek(period)`
+   * matches a period value first (text compare, so 2021 finds "2021") and reads
+   * a number as a position only when no period matches; `seekIndex(i)` always
+   * goes by position (0 = first). */
   timeline?(): import("./animation/timeline").TimelineController | null;
   /** Present when the chart was mounted with `zoom`: restore the full x-domain. */
   resetZoom?(): void;

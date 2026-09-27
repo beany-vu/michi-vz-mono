@@ -157,6 +157,28 @@ describe("gap chart timeline control UI", () => {
     host.remove();
   });
 
+  it("scrubbing goes by position even when the periods are small numbers (quarters 1-3)", () => {
+    const quarters: GapDataItem[] = [
+      { label: "Alpha", value1: 10, value2: 30, date: 1 },
+      { label: "Alpha", value1: 12, value2: 28, date: 2 },
+      { label: "Beta", value1: 45, value2: 25, date: 2 },
+      { label: "Alpha", value1: 14, value2: 26, date: 3 },
+      { label: "Gamma", value1: 5, value2: 9, date: 3 },
+    ];
+    const { host, chart } = mount({ dataSet: quarters, timeline: true });
+    const range = host.querySelector<HTMLInputElement>('.mv-timeline input[type="range"]')!;
+    range.value = "1";
+    range.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(chart.timeline!()!.getState().index).toBe(1);
+    expect(host.querySelector(".mv-timeline-period")!.textContent).toBe("2");
+    range.value = "2";
+    range.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(chart.timeline!()!.getState().index).toBe(2);
+    expect(visibleLabels(host).has("Gamma")).toBe(true);
+    chart.destroy();
+    host.remove();
+  });
+
   it("scrubbing WHILE PLAYING pauses and seeks to the chosen period (sync must not clobber the input value)", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount({ timeline: { speedMs: 800, loop: true } }, ticker);

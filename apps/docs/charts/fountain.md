@@ -123,7 +123,7 @@ The data already spans years, so there is nothing to tag. Flip on `timeline` and
 const ref = useRef<FountainChartHandle>(null);
 
 <FountainChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -143,14 +143,15 @@ applyFountainChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
 :::
 
 - `speedMs` sets the pace, `loop` wraps around, `autoplay: true` starts on mount, `showControl: false` hides the built-in bar.
-- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- The headless controller is always available: `chart.timeline()` exposes `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` and `formatPeriod` in the config for custom UI.
+- `seek(period)` looks for the period first, comparing as text, so `seek(2021)` and `seek("2021")` both land on 2021 whether your dates are numbers or strings. A number counts as a position (0 = first) only when no period matches, and a string that matches none does nothing. `seekIndex(i)` always goes by position, as the built-in scrubber does.
 - Values glide between years by default (`interpolate`); set `interpolate: false` for hard jump-cuts. Reduced motion always jump-cuts.
 - `timeline` wins over `progressiveDraw` when both are set on the same chart.
 

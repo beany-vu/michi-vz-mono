@@ -99,7 +99,7 @@ describe("VerticalStackBarChart timeline (cumulative)", () => {
   it("the LAST period reveals the full width", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount({ timeline: { easing: "linear", tweenMs: 400 } }, ticker);
-    chart.timeline!()!.seek(2);
+    chart.timeline!()!.seekIndex(2);
     ticker.tick(400);
     expect(clipWidth(host)).toBe(T2);
     chart.destroy();

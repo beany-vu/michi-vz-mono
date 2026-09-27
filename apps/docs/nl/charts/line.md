@@ -153,7 +153,7 @@ De data beslaat al meerdere jaren, dus er is niets te taggen. Zet `timeline` aan
 const ref = useRef<LineChartHandle>(null);
 
 <LineChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -173,14 +173,15 @@ applyLineChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000,
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
 :::
 
 - `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
-- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- `seek(period)` zoekt eerst de periode en vergelijkt als tekst, dus `seek(2021)` en `seek("2021")` komen allebei op 2021 uit, of je datums nu getallen of strings zijn. Een getal telt alleen als positie (0 = de eerste) als geen periode past, en een string die nergens bij past doet niets. `seekIndex(i)` gaat altijd op positie, net als de ingebouwde scrubber.
 - Waarden glijden standaard tussen jaren (`interpolate`); zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
 - `timeline` wint het van `progressiveDraw` wanneer beide op dezelfde grafiek staan.
 - `tipLabel: true` in de `timeline`-config laat een label meebewegen met de groeiende lijnpunt tijdens het afspelen - hetzelfde tiplabel als bij `progressiveDraw`, nu alleen aangestuurd door de scrubber in plaats van de eenmalige sweep.

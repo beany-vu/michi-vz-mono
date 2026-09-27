@@ -97,7 +97,7 @@ describe("FanChart timeline (cumulative)", () => {
   it("the LAST period reveals the full width", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount({ timeline: { easing: "linear", tweenMs: 400 } }, ticker);
-    chart.timeline!()!.seek(3);
+    chart.timeline!()!.seekIndex(3);
     ticker.tick(400);
     expect(clipWidth(host)).toBe(T3);
     chart.destroy();

@@ -81,16 +81,16 @@ describe("createCumulativeTimeline", () => {
 
   it("the LAST period reveals to endPx (full width)", () => {
     const { cum, ticker, dom } = make();
-    cum.controller()!.seek(2);
+    cum.controller()!.seekIndex(2);
     ticker.tick(400);
     expect(clipWidth(dom.svg)).toBe(END);
   });
 
   it("seeking backwards tweens the reveal DOWN (the line retracts)", () => {
     const { cum, ticker, dom } = make();
-    cum.controller()!.seek(2);
+    cum.controller()!.seekIndex(2);
     ticker.tick(400);
-    cum.controller()!.seek(0);
+    cum.controller()!.seekIndex(0);
     ticker.tick(200);
     const mid = clipWidth(dom.svg);
     expect(mid).toBeLessThan(END);

@@ -163,7 +163,7 @@ describe("scatter timeline interpolation (engine level)", () => {
     const tl = chart.timeline!()!;
     tl.stepForward();
     ticker.tick(100);
-    tl.seek(0); // back to 2018 mid-tween
+    tl.seekIndex(0); // back to 2018 mid-tween
     ticker.tick(400); // let the new tween finish
     expect(tl.getState().index).toBe(0);
     const el = alphaCx(host);

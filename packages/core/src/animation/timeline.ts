@@ -1,7 +1,8 @@
 // Headless playback controller for "play through years" charts. It owns the
 // clock and the current period index but never touches the DOM: engines wire
 // events.onStep to their own snapshot update, the built-in control UI wires
-// its buttons to play/pause/seek. Deterministic under a ManualTicker.
+// its button to toggle and its scrubber to seekIndex. Deterministic under a
+// ManualTicker.
 
 import { defaultTicker, type Ticker } from "./ticker";
 
@@ -73,14 +74,34 @@ export class TimelineController {
     else this.play();
   }
 
-  seek(indexOrPeriod: number | string): void {
+  /**
+   * Jump to a period by its value. The period is matched first, comparing as
+   * text (`String(period) === String(p)`), so `seek(2021)` and `seek("2021")`
+   * both land on 2021 whether the data's periods are numbers or strings, and
+   * `seek(3)` lands on the period "3" of a 1-12 month axis.
+   *
+   * Only when no period matches does a number fall back to a position
+   * (0 = first, clamped to the ends, see seekIndex). A string that matches no
+   * period, or a non-finite number, leaves the timeline where it is. To go by
+   * position whatever the period values are, call seekIndex.
+   */
+  seek(period: number | string): void {
     if (this.destroyed) return;
-    const idx =
-      typeof indexOrPeriod === "number" && !this.periods.includes(indexOrPeriod)
-        ? indexOrPeriod
-        : this.periods.findIndex((p) => String(p) === String(indexOrPeriod));
-    this.moveTo(clamp(idx, 0, this.lastIndex()));
-    this.lastStepAt = this.ticker.now();
+    const key = String(period);
+    const match = this.periods.findIndex((p) => String(p) === key);
+    if (match >= 0) this.jumpTo(match);
+    else if (typeof period === "number") this.seekIndex(period);
+  }
+
+  /**
+   * Jump to the period at a position (0 = first), whatever its value. Out of
+   * range positions clamp to the first or last period, a fractional one rounds
+   * to the nearest, and a non-finite one is ignored. The built-in scrubber
+   * uses this; use seek to go by period value.
+   */
+  seekIndex(index: number): void {
+    if (this.destroyed || !Number.isFinite(index)) return;
+    this.jumpTo(clamp(Math.round(index), 0, this.lastIndex()));
   }
 
   stepForward(): void {
@@ -132,6 +153,13 @@ export class TimelineController {
     if (idx === this.index) return;
     this.index = idx;
     this.events.onStep?.(this.periods[idx], idx);
+  }
+
+  /** A user jump (seek/seekIndex): move, then restart the step clock so
+   *  playback waits a full step before advancing from the new period. */
+  private jumpTo(idx: number): void {
+    this.moveTo(idx);
+    this.lastStepAt = this.ticker.now();
   }
 
   private scheduleFrame(): void {

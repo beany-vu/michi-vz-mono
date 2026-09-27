@@ -97,7 +97,7 @@ RadarChart gebruikt `date` al voor de legacy vorm per as `{ date, value }`, dus 
 const ref = useRef<RadarChartHandle>(null);
 
 <RadarChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / stepForward()
+// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
 ```
 
 ```vue [Vue]
@@ -117,7 +117,7 @@ applyRadarChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000
 <script>
   const el = document.getElementById("c");
   el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year)
+  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
 </script>
 ```
 
@@ -125,7 +125,8 @@ applyRadarChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000
 
 - `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
 - Waarden glijden standaard tussen periodes (`interpolate`); stem de beweging af met `tweenMs` en `easing`, of zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
-- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
+- `seek(period)` zoekt eerst de periode en vergelijkt als tekst, dus `seek(2021)` en `seek("2021")` komen allebei op 2021 uit, of je datums nu getallen of strings zijn. Een getal telt alleen als positie (0 = de eerste) als geen periode past, en een string die nergens bij past doet niets. `seekIndex(i)` gaat altijd op positie, net als de ingebouwde scrubber.
 - Series zonder `period` blijven in elke periode zichtbaar.
 - `timeline` wint het van `progressiveDraw` als beide zijn ingesteld - de onthulanimatie verderop blijft uit zolang de timeline de regie heeft.
 
