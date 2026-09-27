@@ -60,7 +60,12 @@ export {
   attachDevtools,
   reportDevtoolsHit,
 } from "./devtools/hook";
-export type { MichiVzDevtoolsHook, DevtoolsChartEntry, DevtoolsHitEvent } from "./devtools/hook";
+export type {
+  MichiVzDevtoolsHook,
+  DevtoolsChartEntry,
+  DevtoolsHitEvent,
+  AttachDevtoolsOptions,
+} from "./devtools/hook";
 
 // ---- Styling ----
 export { CORE_CSS, ensureStyles } from "./styles";

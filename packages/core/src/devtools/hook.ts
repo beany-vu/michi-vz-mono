@@ -25,6 +25,20 @@ export interface DevtoolsChartEntry {
   setProps(patch: Record<string, unknown>): void;
   /** Plugin-provided agent/MCP tools, if any. */
   getTools?(): AgentTool[];
+  /**
+   * Whether the engine streams its canvas / WebGPU hover hit-tests to the hook
+   * (`reportDevtoolsHit`): "canvas" when it does, "none" when it has no hit
+   * channel, so a panel can say "this chart does not report canvas hits" instead
+   * of blaming a dead listener. Absent on entries from an older core or found
+   * through the DOM (unknown).
+   */
+  hitReporting?: "canvas" | "none";
+}
+
+/** Options for {@link attachDevtools}. */
+export interface AttachDevtoolsOptions {
+  /** Declare "canvas" when the engine calls reportDevtoolsHit (default "none"). */
+  hitReporting?: "canvas" | "none";
 }
 
 type Listener = (charts: DevtoolsChartEntry[]) => void;
@@ -77,6 +91,19 @@ interface DevtoolsGlobals {
 const g = globalThis as unknown as DevtoolsGlobals;
 let counter = 0;
 
+/**
+ * Run one listener. Listeners run synchronously inside the app's chart.update()
+ * (and inside engine hover handlers), so a devtools bug must be reported, never
+ * thrown out of the app's own call.
+ */
+function safely(run: () => void): void {
+  try {
+    run();
+  } catch (err) {
+    console.error("[michi-vz devtools] a devtools listener threw:", err);
+  }
+}
+
 function createHook(): MichiVzDevtoolsHook {
   const charts = new Map<string, DevtoolsChartEntry>();
   const subs = new Set<Listener>();
@@ -84,7 +111,7 @@ function createHook(): MichiVzDevtoolsHook {
   const timingSubs = new Set<TimingListener>();
   const broadcast = (): void => {
     const list = [...charts.values()];
-    subs.forEach((fn) => fn(list));
+    subs.forEach((fn) => safely(() => fn(list)));
   };
   return {
     isMichiVzDevtools: true,
@@ -102,14 +129,14 @@ function createHook(): MichiVzDevtoolsHook {
     },
     notify: broadcast,
     reportHit(e) {
-      hitSubs.forEach((fn) => fn(e));
+      hitSubs.forEach((fn) => safely(() => fn(e)));
     },
     subscribeHits(fn) {
       hitSubs.add(fn);
       return () => hitSubs.delete(fn);
     },
     reportTiming(id, ms) {
-      timingSubs.forEach((fn) => fn(id, ms));
+      timingSubs.forEach((fn) => safely(() => fn(id, ms)));
     },
     subscribeTimings(fn) {
       timingSubs.add(fn);
@@ -168,6 +195,7 @@ export function attachDevtools<P>(
   host: HTMLElement,
   chartType: string,
   getProps: () => P,
+  options: AttachDevtoolsOptions = {},
 ): ChartInstance<P> {
   const hook = getDevtoolsHook();
   if (!hook) return instance;
@@ -190,9 +218,10 @@ export function attachDevtools<P>(
     getProps: () => getProps(),
     setProps: (patch) => timedUpdate({ ...getProps(), ...(patch as Partial<P>) } as P),
     getTools: instance.getTools ? () => instance.getTools!() : undefined,
+    hitReporting: options.hitReporting ?? "none",
   });
 
-  return {
+  const tracked: ChartInstance<P> = {
     ...instance,
     update: timedUpdate,
     destroy() {
@@ -200,4 +229,14 @@ export function attachDevtools<P>(
       instance.destroy();
     },
   };
+  if (instance.use) {
+    const use = instance.use.bind(instance);
+    // A plugin's setup and the re-render it triggers change the context without
+    // an update() call; tell the panel.
+    tracked.use = (plugin) => {
+      use(plugin);
+      hook.notify();
+    };
+  }
+  return tracked;
 }

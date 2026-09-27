@@ -79,3 +79,93 @@ describe("auditContext", () => {
     );
   });
 });
+
+describe("auditContext: one contrast check per distinct colour", () => {
+  it("names every label sharing a low-contrast colour in ONE finding", () => {
+    const findings = auditContext({
+      summary: "Line chart with 2 series.",
+      a11yTable: { headers: ["label"], rows: [["A"], ["B"]] },
+      colorsMapping: { A: "#ffe97a", B: "#FFE97A" },
+      series: [{ label: "A" }, { label: "B" }],
+    });
+    const light = findings.filter((f) => f.text.includes("light background"));
+    expect(light).toHaveLength(1);
+    expect(light[0].text).toContain("A");
+    expect(light[0].text).toContain("B");
+  });
+});
+
+describe("auditContext: colour ramps (choropleth, symbol map, colorScale)", () => {
+  // ColorBrewer Purples, 5 classes; 10 regions binned into them.
+  const purples = ["#f2f0f7", "#cbc9e2", "#9e9ac8", "#756bb1", "#54278f"];
+  const regions = [
+    "Kenya",
+    "Benin",
+    "Ghana",
+    "Mali",
+    "Chad",
+    "Niger",
+    "Togo",
+    "Congo",
+    "Gabon",
+    "Sudan",
+  ];
+  const colorsMapping = Object.fromEntries(regions.map((r, i) => [r, purples[i % 5]]));
+  const ctx = {
+    chartType: "choropleth-map-chart",
+    summary: "Choropleth map of 10 regions.",
+    a11yTable: { headers: ["region", "value"], rows: regions.map((r, i) => [r, i]) },
+    colorsMapping,
+  };
+  const props = {
+    colorScale: { domain: [10, 20, 30, 40], range: purples },
+    noDataColor: "#d9d9d9",
+  };
+
+  it("audits the ramp instead of flagging same-bin regions and every pale step", () => {
+    const findings = auditContext(ctx, { props });
+    expect(findings.some((f) => f.text.includes("same color"))).toBe(false);
+    expect(findings.some((f) => f.text.includes("background"))).toBe(false);
+    expect(findings.filter((f) => f.kind !== "ok")).toEqual([]);
+    expect(findings.some((f) => f.kind === "ok" && f.text.toLowerCase().includes("ramp"))).toBe(
+      true,
+    );
+  });
+
+  it("uses the ramp audit for a choropleth even without a colorScale prop", () => {
+    const findings = auditContext(ctx, { props: {} });
+    expect(findings.some((f) => f.text.includes("same color"))).toBe(false);
+    expect(findings.some((f) => f.kind === "ok" && f.text.toLowerCase().includes("ramp"))).toBe(
+      true,
+    );
+  });
+
+  it("flags adjacent steps that are hard to tell apart", () => {
+    const findings = auditContext(ctx, {
+      props: { colorScale: { domain: [10, 20], range: ["#f2f0f7", "#9e9ac8", "#9c98c6"] } },
+    });
+    const step = findings.find((f) => f.kind === "warn" && f.text.includes("steps 2 and 3"));
+    expect(step).toBeDefined();
+  });
+
+  it("flags a noDataColor that matches or nearly matches a ramp step", () => {
+    const same = auditContext(ctx, { props: { ...props, noDataColor: "#F2F0F7" } });
+    expect(same.some((f) => f.kind === "warn" && f.text.includes("noDataColor"))).toBe(true);
+    const near = auditContext(ctx, { props: { ...props, noDataColor: "#f4f2f8" } });
+    expect(near.some((f) => f.kind === "warn" && f.text.includes("noDataColor"))).toBe(true);
+  });
+
+  it("audits a symbol map's colorScale (echoed on the context) as a ramp", () => {
+    const findings = auditContext({
+      chartType: "symbol-map-chart",
+      summary: "Symbol map.",
+      a11yTable: { headers: ["label"], rows: [["A"], ["B"]] },
+      colorsMapping: { A: "#f2f0f7", B: "#f2f0f7" },
+      colorScale: { domain: [5], range: ["#f2f0f7", "#54278f"] },
+    });
+    expect(findings.some((f) => f.text.includes("same color"))).toBe(false);
+    expect(findings.some((f) => f.kind === "ok" && f.text.toLowerCase().includes("ramp"))).toBe(
+      true,
+    );
+  });
+});

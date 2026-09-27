@@ -13,11 +13,12 @@ it is one import, versioned with your app.
 <DevtoolsDemo />
 
 > Click **Mount devtools**: the floating Michi shield appears bottom right - the devtools'
-> collapsed face. Click it (or press `Ctrl/Cmd+Shift+M`) to open the panel, pick the chart in the list, and
-> walk the tabs: **Overview** (context, series, live editing), **Sizing**, **Scales**, **Diff**,
-> **Hit-test**, **Profiler**, **A11y**, and **Insights** - where ✦ **Narrate** and ✦ **Detect
-> anomalies** run real `@michi-vz/insights` plugins against the live chart (the 2022 Cost spike
-> gets flagged; highlight it from the result). This is the real package, running in your browser.
+> collapsed face. Click it (or press `Ctrl/Cmd+Shift+M`) to open the panel, pick the chart in the
+> list, and walk the tabs: **Overview** (context, items table, live editing), **Props**,
+> **Sizing**, **Scales**, **Diff**, **Hit-test**, **Profiler**, **A11y**, and **Insights** - where
+> ✦ **Narrate** and ✦ **Detect anomalies** run real `@michi-vz/insights` plugins against the live
+> chart (the 2022 Cost spike gets flagged; highlight it from the result). This is the real
+> package, running in your browser.
 
 ## Quick start
 
@@ -47,6 +48,10 @@ import { MichiVzDevtools } from "@michi-vz/react";
 
 <MichiVzDevtools />
 ```
+
+Charts rendered in the same tree register with the panel even when they mount in the same render
+as `<MichiVzDevtools />`: the component switches the hook on in a layout effect, before the
+charts' own mount effects run.
 
 For Vue, Svelte, Angular, or plain web components the recipe is the same three lines: call
 `mountDevtools()` in your root component's mount hook, `destroy()` on unmount. And for builds
@@ -81,11 +86,11 @@ Working with a big context or a long series table? **Drag the panel's top-left c
 resize it (the size is remembered per browser), or hit the **⛶** button in the header to
 maximize it to the full viewport and back.
 
-Dashboards with many charts stay manageable: the chart list has a **filter box**, every list
-entry has a **◎ locate** button that scrolls the chart into view and flashes an outline around
-it, and past 8 charts the panel coalesces update bursts into a single re-render so a busy page
-never lags because devtools is open. The panel does no polling at all - it only reacts to the
-hook's events, and history snapshots skip charts whose context has not changed.
+Dashboards with many charts stay manageable: the chart list has a **filter box**, every list entry
+has a **◎ locate** button that scrolls the chart into view and flashes an outline around it, and
+past 8 charts the panel coalesces update bursts into a single re-render so a busy page never lags
+because devtools is open. The panel does no polling at all - it only reacts to the hook's events,
+and history snapshots skip charts whose context and props have not changed.
 
 ## The tabs
 
@@ -102,17 +107,24 @@ michi-vz charts are fixed-size by design and responsiveness belongs to the host.
 
 Renders the live `xAxis` / `yAxis` domains straight from the `ChartContext`, with sanity checks
 for the three classic failure modes: a `NaN` domain (a date or value failed to parse), a
-zero-width domain (every value identical, marks collapse), and an inverted domain (a manual
-domain prop passed backwards). Charts without axes (pie, sankey, treemap) say so instead of
-showing nothing.
+zero-width domain (every value identical, marks collapse), and an inverted domain (a manual domain
+prop passed backwards). Charts without x/y axes that still map values through a scale show that
+scale instead: the radar's radial domain `[0, maxValue]`, the gauge's sweep `[min, max]`, the
+choropleth's lowest and highest matched value, and the symbol map's `colorScale` thresholds (or
+its value range when it has no `colorScale`). Pie, sankey and treemap place marks without a value
+scale, and say so.
 
 ### Diff - "what changed between these two renders?"
 
-The panel snapshots each chart's `ChartContext` on **every update** and keeps a short history.
-The Diff tab deep-diffs the last two snapshots into an added/removed/changed list with exact
-paths (`series[0].max: 140 → 555`), so "my chart looks different and I do not know why" becomes
-a two-line answer. Step back through the History bar and the diff follows the snapshot you are
-viewing.
+The panel snapshots each chart's `ChartContext` on **every update** and keeps a short history. The
+Diff tab deep-diffs the last two snapshots into an added/removed/changed list with exact paths, so
+"my chart looks different and I do not know why" becomes a two-line answer. Array items are
+matched by their `label`, `key`, `id` or `code`, so a path names the item
+(`series["Revenue"].max: 140 → 555`) and a Top-N re-rank shows as one **reordered** entry instead
+of a wall of index changes (the same goes for a list such as `renderedRankedIds`). Each snapshot
+also keeps a data-free copy of the props, so an update that changes only props (a highlight, a
+`barRadius` tweak) is a snapshot too and shows under `props.` (`props.highlightItems`). Step back
+through the History bar and the diff follows the snapshot you are viewing.
 
 ### Insights - the chart explains itself
 
@@ -132,12 +144,23 @@ JSON result out).
 
 ### Hit-test - "why doesn't my tooltip fire?"
 
-Canvas marks have no DOM, so when a hover stops working there is nothing to inspect in the
-Elements panel - you cannot tell a hit-test bug from a dead listener from a CSS
-`pointer-events` problem. The Hit-test tab streams the chart's own canvas hit-test results
-live: every pointer move logs its coordinates and the mark it resolved (or a miss), and a
-green/red marker tracks the last event on the chart itself. The killer diagnostic is silence:
-if you are hovering and the log is not moving, the chart's canvas listener is dead.
+Canvas marks have no DOM, so when a hover stops working there is nothing to inspect in the Elements
+panel - you cannot tell a hit-test bug from a dead listener from a CSS `pointer-events` problem. For
+the charts that report their canvas hit-tests (bubble, fountain, line, radial tree, scatter, symbol
+map and treemap), the Hit-test tab streams them live: every pointer move logs its coordinates and
+the mark it resolved (or a miss), and a green/red marker tracks the last event on the chart itself.
+The killer diagnostic is silence: if you are hovering and the log is not moving, the chart's canvas
+listener is dead. The other charts do not report canvas hits yet, and the tab says exactly that
+instead of blaming the listener.
+
+For a chart drawn as SVG, the tab is an **SVG inspector**: move the pointer over the chart and it
+logs the topmost element under it (tag, class, position among its siblings) and a **colour key**,
+read from the nearest `data-label-safe` / `data-label` ancestor of the first element under the
+pointer that has one. A transparent hit target carries no key, so over a symbol map's mark the row
+reads `circle.symbol-hit over circle.symbol` and shows the key of the mark below. The colour key is
+the hook the colour contract uses, not the mark's identity: a sankey link, for example, carries the
+key of its source or target node. Layers with `pointer-events: none`, such as gauge annotations, are
+invisible to it.
 
 ### Profiler - "why did this get slow?"
 
@@ -148,18 +171,50 @@ listeners.
 
 ### A11y - the audit no chart devtool does
 
-Chartability-inspired heuristics run against the live context: a missing plain-language
-`summary` (screen readers and AI agents get nothing), an a11y table with fewer rows than
-series, two series sharing one color (indistinguishable without vision), and series colors
-below the 3:1 graphics-contrast ratio on a light or dark background. Below the audit, the tab
-renders the actual a11y data table - exactly what a screen reader gets.
+Chartability-inspired heuristics run against the live context: a missing plain-language `summary`
+(screen readers and AI agents get nothing), an a11y table with fewer rows than series, two series
+sharing one color (indistinguishable without vision), and colors below the 3:1 graphics-contrast
+ratio on a light or dark background, checked once per color and naming every series that uses it.
+Choropleth and symbol maps, and any chart with a `colorScale`, color by bins, so places in the
+same bin share a color on purpose. There the tab audits the ramp instead: neighbouring steps that
+are hard to tell apart, and a `noDataColor` that matches or nearly matches a step. Below the
+audit, the tab renders the actual a11y data table - exactly what a screen reader gets.
+
+### Props - "which switches is this chart running with?"
+
+Many options never show up in the `ChartContext`: `barRadius`, an area chart's `stacked` /
+`stackOffset`, the sankey's `hoverHighlight`, a gauge's sweep, zoom, and the timeline and reveal
+configs. The Props tab shows what `getProps()` returns, as a tree: the data props (`dataSet`,
+`series`, `nodes`, `links`, ...) collapse to `Array(n)` and functions show as `ƒ` and their name.
+
+Props are part of History too, so an update that changes only props (a highlight, a styling switch)
+is a snapshot the Diff tab can show. When `highlightItems` or `disabledItems` changes more than 10
+times in one second, each time in an update that changes no other prop, the tab warns and names the
+prop: that is usually an app echoing `onHighlightItem` back into `highlightItems` on every hover.
+Let the chart handle hover itself (for example the sankey's `hoverHighlight`) and keep
+`highlightItems` for selections. The other props are compared in full, data included, so resizing a
+responsive chart, dragging a slider bound to `barRadius`, or a timeline that passes a new `dataSet`
+on every frame while it highlights the current leader never warns. Data changed in place and passed
+again as the same array counts as a change only when its length changes. Functions compare by name,
+so the fresh callbacks a React render passes do not hide an echo. The warning clears after 30
+seconds without such changes.
+
+Edits made from the panel go straight to the chart instance. On a chart managed by React or a web
+component, the wrapper's next render passes its own props again and overwrites them.
 
 ### Overview - inspect, drive, edit
 
-The classic inspector: the summary, per-series stats (including the actual-vs-predicted split
-below), highlight/disable toggles that patch the live props, and a `dataSet` JSON editor -
-edit, hit **Apply**, and watch the chart re-render. Played too much? **Reset chart** restores
-the dataSet, highlight, and disable state to exactly what they were when devtools first saw
+The classic inspector: the summary, the stats, and an **Items** table built from the context's
+per-item array - `series`, a fountain's `jets`, a gauge's `rings`, sankey `nodes`, treemap `leaves`,
+map `regions` or `symbols`, and so on, with a dropdown when there is more than one. Click a column
+to sort it (a fountain's jets by range, for example) and hover a row to highlight that item on the
+chart. The hover is not recorded in History, and leaving the table puts back the highlight the app
+had set. Series with a forecast show the actual-vs-predicted split described below. The
+highlight/disable toggles list every label the chart knows about (legend, colors, the current
+highlight and disable props), so a series you disable stays in the list. The JSON editor edits
+whichever data prop the chart has (`dataSet`, `series`, `data`, or a sankey's `nodes` and `links`
+together) - edit, hit **Apply**, and watch the chart re-render. Played too much? **Reset chart**
+restores the data, highlight, and disable state to exactly what they were when devtools first saw
 the chart - every panel-driven edit undone in one click.
 
 By the way: the ✦ actions on the Insights tab are **not a language model** by default - they
@@ -169,10 +224,13 @@ tooltip says exactly what it computes). Nothing is downloaded, nothing leaves th
 ## Time travel through state
 
 When a chart has changed more than once, a **History** bar appears: step `◀` / `▶` through past
-`ChartContext` snapshots to see exactly how the state evolved, or click **● live** to return to
-the latest. While viewing a past snapshot the controls are read-only (you are inspecting history,
-not driving the chart). Combined with the Diff tab, this answers "what did this chart look like
-one update ago, and what changed?" in seconds.
+snapshots to see exactly how the state evolved, or click **● live** to return to the latest.
+Snapshots also catch the renders a chart starts on its own: a timeline step, the end of a timeline
+tween, a line chart zoom, a bubble chart's async layout, the switch to WebGPU, and a plugin added
+with `use()`. While viewing a past snapshot the controls are read-only (you are inspecting history,
+not driving the chart). Combined with the Diff tab, this answers "what did this chart look like one
+update ago, and what changed?" in seconds. When a chart is destroyed or leaves the page, the panel
+drops that chart's history and everything else it kept for it.
 
 ## Actual vs predicted
 
@@ -231,11 +289,16 @@ the devtools module. It would reuse the same hook, so nothing here is throwaway.
 
 ## How it works
 
-`@michi-vz/core` ships a tiny opt-in hook. `mountDevtools()` calls `enableDevtools()`, which installs
-`globalThis.__MICHI_VZ_DEVTOOLS_HOOK__` - a registry every `mountXChart()` writes to on mount and
-clears on `destroy()`. The panel subscribes to it for updates and also sweeps the DOM for
-`<michi-vz-*>` elements that mounted earlier. When devtools is never enabled, the hook is never
-created and charts pay only a single flag check per mount.
+`@michi-vz/core` ships a tiny opt-in hook. `mountDevtools()` calls `enableDevtools()`, which
+installs `globalThis.__MICHI_VZ_DEVTOOLS_HOOK__` - a registry every `mountXChart()` writes to on
+mount and clears on `destroy()`. The panel subscribes to it for updates. To find web components that
+mounted before the devtools, it also sweeps the DOM for chart hosts (the `.michi-vz` class) and
+climbs to the enclosing `<michi-vz-*>` element, skipping any the hook already lists. Each element
+keeps the id it was first given: its own `id` attribute the first time the panel meets that id,
+otherwise a numbered id no other chart has had. No two charts share an id, and removing one chart
+never hands its history or controls to another. A hook listener that throws is reported with
+`console.error` and never breaks your `chart.update()`. When devtools is never enabled, the hook is
+never created and charts pay only a single flag check per mount.
 
 You can build your own UI (or a future extension) against the same surface:
 
@@ -248,3 +311,6 @@ hook?.subscribe((charts) => {
   for (const c of charts) console.log(c.chartType, c.getContext());
 });
 ```
+
+Each chart entry also says whether its engine reports canvas hits (`hitReporting: "canvas"` or
+`"none"`), which is how the Hit-test tab knows when silence means a dead listener.

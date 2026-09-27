@@ -4,7 +4,7 @@
 // (gap detection), single-point guide line, LTTB-decimated canvas, hover line.
 import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
-import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
+import { attachDevtools, getDevtoolsHook, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
@@ -222,6 +222,7 @@ export function mountLineChart(
     zoomDomain = domain;
     render(); // clamps to the data domain; a degenerate intersection nulls it
     baseProps.onZoomChange?.(zoomDomain);
+    getDevtoolsHook()?.notify(); // a zoom re-renders outside update()
   };
 
   const removeZoomRect = (): void => {
@@ -1205,5 +1206,5 @@ export function mountLineChart(
     instance.setZoomDomain = (domain) => applyZoom(domain);
   }
 
-  return attachDevtools(instance, host, "line-chart", () => baseProps);
+  return attachDevtools(instance, host, "line-chart", () => baseProps, { hitReporting: "canvas" });
 }

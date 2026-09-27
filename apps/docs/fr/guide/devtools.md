@@ -13,14 +13,14 @@ c'est un simple import, versionné avec votre application.
 
 <DevtoolsDemo />
 
-> Cliquez sur **Mount devtools** : le blason Michi flottant apparaît en bas à droite - le
-> visage replié des devtools. Cliquez dessus (ou appuyez sur `Ctrl/Cmd+Shift+M`) pour ouvrir le
-> panneau, choisissez le graphique dans la liste, et parcourez les onglets : **Overview**
-> (contexte, séries, édition en direct), **Sizing**, **Scales**, **Diff**, **Hit-test**,
-> **Profiler**, **A11y**, et **Insights** - où ✦ **Narrate** et ✦ **Detect anomalies**
-> exécutent de vrais plugins `@michi-vz/insights` sur le graphique en direct (le pic de coût de
-> 2022 est signalé ; mettez-le en évidence depuis le résultat). C'est le vrai package, qui
-> s'exécute dans votre navigateur.
+> Cliquez sur **Mount devtools** : le blason Michi flottant apparaît en bas à droite - le visage
+> replié des devtools. Cliquez dessus (ou appuyez sur `Ctrl/Cmd+Shift+M`) pour ouvrir le panneau,
+> choisissez le graphique dans la liste, et parcourez les onglets : **Overview** (contexte,
+> tableau des éléments, édition en direct), **Props**, **Sizing**, **Scales**, **Diff**,
+> **Hit-test**, **Profiler**, **A11y**, et **Insights** - où ✦ **Narrate** et ✦ **Detect
+> anomalies** exécutent de vrais plugins `@michi-vz/insights` sur le graphique en direct (le pic
+> de coût de 2022 est signalé ; mettez-le en évidence depuis le résultat). C'est le vrai package,
+> qui s'exécute dans votre navigateur.
 
 ## Démarrage rapide
 
@@ -51,6 +51,10 @@ import { MichiVzDevtools } from "@michi-vz/react";
 
 <MichiVzDevtools />
 ```
+
+Les graphiques rendus dans le même arbre s'enregistrent auprès du panneau même s'ils sont montés
+dans le même rendu que `<MichiVzDevtools />` : le composant active le hook dans un effet de
+layout, avant que les effets de montage des graphiques ne s'exécutent.
 
 Pour Vue, Svelte, Angular, ou les web components natifs, la recette est la même en trois
 lignes : appelez `mountDevtools()` dans le hook de montage de votre composant racine,
@@ -89,13 +93,13 @@ supérieur gauche du panneau** pour le redimensionner (la taille est mémorisée
 ou cliquez sur le bouton **⛶** dans l'en-tête pour l'agrandir à la totalité de la fenêtre et
 revenir en arrière.
 
-Les tableaux de bord avec de nombreux graphiques restent gérables : la liste des graphiques a
-une **zone de filtre**, chaque entrée de liste a un bouton **◎ locate** qui fait défiler jusqu'à
-ce que le graphique soit visible et fait clignoter un contour autour de lui, et au-delà de 8
-graphiques le panneau regroupe les rafales de mises à jour en un seul nouveau rendu afin
-qu'une page chargée ne ralentisse jamais parce que les devtools sont ouverts. Le panneau ne
-fait aucun polling du tout - il ne réagit qu'aux événements du hook, et les instantanés
-d'historique ignorent les graphiques dont le contexte n'a pas changé.
+Les tableaux de bord avec de nombreux graphiques restent gérables : la liste des graphiques a une
+**zone de filtre**, chaque entrée de liste a un bouton **◎ locate** qui fait défiler jusqu'à ce
+que le graphique soit visible et fait clignoter un contour autour de lui, et au-delà de 8
+graphiques le panneau regroupe les rafales de mises à jour en un seul nouveau rendu afin qu'une
+page chargée ne ralentisse jamais parce que les devtools sont ouverts. Le panneau ne fait aucun
+polling du tout - il ne réagit qu'aux événements du hook, et les instantanés d'historique ignorent
+les graphiques dont le contexte et les props n'ont pas changé.
 
 ## Les onglets
 
@@ -112,21 +116,29 @@ réactivité appartient à l'hôte.
 
 ### Scales - « pourquoi mes valeurs d'axe sont-elles fausses ? »
 
-Affiche les domaines `xAxis` / `yAxis` en direct, directement depuis le `ChartContext`, avec
-des vérifications de cohérence pour les trois modes de défaillance classiques : un domaine
-`NaN` (une date ou une valeur n'a pas pu être analysée), un domaine de largeur nulle (toutes
-les valeurs identiques, les marques s'effondrent), et un domaine inversé (une prop de domaine
-manuelle passée à l'envers). Les graphiques sans axes (pie, sankey, treemap) le signalent au
-lieu de n'afficher rien.
+Affiche les domaines `xAxis` / `yAxis` en direct, directement depuis le `ChartContext`, avec des
+vérifications de cohérence pour les trois modes de défaillance classiques : un domaine `NaN` (une
+date ou une valeur n'a pas pu être analysée), un domaine de largeur nulle (toutes les valeurs
+identiques, les marques s'effondrent), et un domaine inversé (une prop de domaine manuelle passée
+à l'envers). Les graphiques sans axes x/y qui passent quand même leurs valeurs par une échelle
+affichent cette échelle : le domaine radial `[0, maxValue]` du radar, la course `[min, max]` de la
+jauge, la plus petite et la plus grande valeur appariée de la choroplèthe, et les seuils
+`colorScale` de la carte à symboles (ou sa plage de valeurs quand elle n'a pas de `colorScale`).
+Pie, sankey et treemap placent leurs marques sans échelle de valeurs, et le disent.
 
 ### Diff - « qu'est-ce qui a changé entre ces deux rendus ? »
 
-Le panneau prend un instantané du `ChartContext` de chaque graphique à **chaque mise à jour**
-et conserve un court historique. L'onglet Diff compare en profondeur les deux derniers
-instantanés en une liste d'ajouts/suppressions/changements avec des chemins exacts
-(`series[0].max: 140 → 555`), si bien que « mon graphique a l'air différent et je ne sais pas
-pourquoi » devient une réponse en deux lignes. Reculez dans la barre d'historique et le diff
-suit l'instantané que vous consultez.
+Le panneau prend un instantané du `ChartContext` de chaque graphique à **chaque mise à jour** et
+conserve un court historique. L'onglet Diff compare en profondeur les deux derniers instantanés en
+une liste d'ajouts/suppressions/changements avec des chemins exacts, si bien que « mon graphique a
+l'air différent et je ne sais pas pourquoi » devient une réponse en deux lignes. Les éléments des
+tableaux sont appariés par leur `label`, `key`, `id` ou `code` : un chemin nomme l'élément
+(`series["Revenue"].max: 140 → 555`) et un nouveau classement Top-N apparaît comme une seule
+entrée **reordered** au lieu d'un mur de changements d'index (de même pour une liste comme
+`renderedRankedIds`). Chaque instantané garde aussi une copie des props sans les données : une
+mise à jour qui ne change que des props (une mise en évidence, un réglage de `barRadius`) crée
+donc aussi un instantané, affiché sous `props.` (`props.highlightItems`). Reculez dans la barre
+d'historique et le diff suit l'instantané que vous consultez.
 
 ### Insights - le graphique s'explique lui-même
 
@@ -147,14 +159,26 @@ Tout ce qu'un plugin expose d'autre s'affiche sous **Advanced** comme un exécut
 
 ### Hit-test - « pourquoi mon infobulle ne se déclenche-t-elle pas ? »
 
-Les marques en canvas n'ont pas de DOM, donc quand un survol cesse de fonctionner, il n'y a
-rien à inspecter dans le panneau Elements - vous ne pouvez pas distinguer un bug de test de
-collision (hit-test) d'un écouteur mort ou d'un problème CSS `pointer-events`. L'onglet
-Hit-test diffuse en direct les résultats des propres tests de collision en canvas du
-graphique : chaque déplacement de pointeur journalise ses coordonnées et la marque qu'il a
-résolue (ou un échec), et un marqueur vert/rouge suit le dernier événement sur le graphique
-lui-même. Le diagnostic décisif est le silence : si vous survolez et que le journal ne bouge
-pas, l'écouteur canvas du graphique est mort.
+Les marques en canvas n'ont pas de DOM, donc quand un survol cesse de fonctionner, il n'y a rien à
+inspecter dans le panneau Elements - vous ne pouvez pas distinguer un bug de test de collision
+(hit-test) d'un écouteur mort ou d'un problème CSS `pointer-events`. Pour les graphiques qui
+signalent leurs tests de collision en canvas (bubble, fountain, line, radial tree, scatter, symbol
+map et treemap), l'onglet Hit-test les diffuse en direct : chaque déplacement de pointeur journalise
+ses coordonnées et la marque qu'il a résolue (ou un échec), et un marqueur vert/rouge suit le
+dernier événement sur le graphique lui-même. Le diagnostic décisif est le silence : si vous survolez
+et que le journal ne bouge pas, l'écouteur canvas du graphique est mort. Les autres graphiques ne
+signalent pas encore leurs tests de collision en canvas, et l'onglet le dit au lieu d'accuser
+l'écouteur.
+
+Pour un graphique dessiné en SVG, l'onglet devient un **inspecteur SVG** : déplacez le pointeur sur
+le graphique et il journalise l'élément le plus haut sous le pointeur (balise, classe, position
+parmi ses frères) et une **clé de couleur**, lue sur l'ancêtre `data-label-safe` / `data-label` le
+plus proche du premier élément sous le pointeur qui en a un. Une cible de clic transparente ne porte
+pas de clé : au-dessus d'une marque de carte à symboles, la ligne indique
+`circle.symbol-hit over circle.symbol` et donne la clé de la marque située dessous. La clé de
+couleur est le point d'accroche du contrat de couleur, pas l'identité de la marque : un lien de
+sankey, par exemple, porte la clé de son nœud source ou cible. Les calques en
+`pointer-events: none`, comme les annotations de la jauge, lui sont invisibles.
 
 ### Profiler - « pourquoi est-ce devenu lent ? »
 
@@ -166,22 +190,60 @@ fuient.
 
 ### A11y - l'audit qu'aucun devtool de graphique ne fait
 
-Des heuristiques inspirées de Chartability s'exécutent sur le contexte en direct : un
-`summary` en langage clair manquant (les lecteurs d'écran et les agents IA n'obtiennent
-rien), un tableau a11y avec moins de lignes que de séries, deux séries partageant une même
-couleur (indiscernables sans la vue), et des couleurs de série en dessous du ratio de
-contraste graphique de 3:1 sur un fond clair ou sombre. Sous l'audit, l'onglet affiche le
-véritable tableau de données a11y - exactement ce qu'obtient un lecteur d'écran.
+Des heuristiques inspirées de Chartability s'exécutent sur le contexte en direct : un `summary` en
+langage clair manquant (les lecteurs d'écran et les agents IA n'obtiennent rien), un tableau a11y
+avec moins de lignes que de séries, deux séries partageant une même couleur (indiscernables sans
+la vue), et des couleurs en dessous du ratio de contraste graphique de 3:1 sur un fond clair ou
+sombre, vérifiées une fois par couleur en nommant chaque série qui l'utilise. Les cartes
+choroplèthes et à symboles, et tout graphique avec un `colorScale`, colorent par classes : les
+lieux d'une même classe partagent donc une couleur exprès. Là, l'onglet audite plutôt la rampe de
+couleurs : des paliers voisins difficiles à distinguer, et une `noDataColor` identique ou presque
+à un palier. Sous l'audit, l'onglet affiche le véritable tableau de données a11y - exactement ce
+qu'obtient un lecteur d'écran.
+
+### Props - « avec quels réglages ce graphique tourne-t-il ? »
+
+Beaucoup d'options n'apparaissent jamais dans le `ChartContext` : `barRadius`, `stacked` /
+`stackOffset` d'un graphique en aires, `hoverHighlight` du sankey, la course d'une jauge, le zoom,
+les configurations de timeline et de révélation. L'onglet Props montre ce que renvoie
+`getProps()`, sous forme d'arbre : les props de données (`dataSet`, `series`, `nodes`, `links`,
+...) sont repliées en `Array(n)` et les fonctions s'affichent comme `ƒ` suivi de leur nom.
+
+Les props font aussi partie de l'historique : une mise à jour qui ne change que des props (une mise
+en évidence, un réglage de style) est un instantané que l'onglet Diff peut montrer. Quand
+`highlightItems` ou `disabledItems` change plus de 10 fois en une seconde, chaque fois dans une mise
+à jour qui ne change aucune autre prop, l'onglet avertit en nommant la prop : c'est en général une
+application qui renvoie `onHighlightItem` dans `highlightItems` à chaque survol. Laissez le
+graphique gérer le survol lui-même (par exemple `hoverHighlight` du sankey) et gardez
+`highlightItems` pour les sélections. Les autres props sont comparées en entier, données comprises :
+redimensionner un graphique responsive, faire glisser un curseur lié à `barRadius` ou jouer une
+timeline qui passe un nouveau `dataSet` à chaque image en mettant en évidence le meneur du moment ne
+déclenche jamais l'avertissement. Des données modifiées sur place puis repassées dans le même
+tableau ne comptent comme un changement que si sa longueur change. Les fonctions sont comparées par
+leur nom, si bien que les nouveaux callbacks que transmet un rendu React ne masquent pas un écho.
+L'avertissement disparaît après 30 secondes sans de tels changements.
+
+Les modifications faites depuis le panneau vont directement à l'instance du graphique. Sur un
+graphique géré par React ou par un web component, le rendu suivant du wrapper repasse ses propres
+props et les écrase.
 
 ### Overview - inspecter, piloter, éditer
 
-L'inspecteur classique : le résumé, les statistiques par série (y compris la répartition
-réel-contre-prédit ci-dessous), des bascules mise en évidence/désactivation qui patchent les
-props en direct, et un éditeur JSON de `dataSet` - éditez, cliquez sur **Apply**, et regardez
-le graphique se redessiner. Trop joué ? **Reset chart** restaure le dataSet, la mise en
-évidence, et l'état de désactivation exactement à ce qu'ils étaient quand les devtools ont vu
-le graphique pour la première fois - chaque édition faite depuis le panneau annulée en un
-clic.
+L'inspecteur classique : le résumé, les statistiques, et un tableau **Items** construit à partir du
+tableau par élément du contexte - `series`, les `jets` d'une fontaine, les `rings` d'une jauge, les
+`nodes` du sankey, les `leaves` du treemap, les `regions` ou `symbols` des cartes, etc., avec une
+liste déroulante quand il y en a plusieurs. Cliquez sur une colonne pour la trier (les jets d'une
+fontaine par plage, par exemple) et survolez une ligne pour mettre cet élément en évidence sur le
+graphique. Ce survol n'est pas enregistré dans l'historique, et quitter le tableau rétablit la mise
+en évidence définie par l'application. Les séries avec une prévision montrent la répartition
+réel-contre-prédit décrite plus bas. Les bascules mise en évidence/désactivation listent chaque
+libellé que le graphique connaît (légende, couleurs, props de mise en évidence et de désactivation
+actuelles), si bien qu'une série désactivée reste dans la liste. L'éditeur JSON édite la prop de
+données que le graphique possède (`dataSet`, `series`, `data`, ou `nodes` et `links` ensemble pour
+un sankey) - éditez, cliquez sur **Apply**, et regardez le graphique se redessiner. Trop joué ?
+**Reset chart** restaure les données, la mise en évidence, et l'état de désactivation exactement à
+ce qu'ils étaient quand les devtools ont vu le graphique pour la première fois - chaque édition
+faite depuis le panneau annulée en un clic.
 
 Au passage : les actions ✦ de l'onglet Insights ne sont **pas un modèle de langage** par
 défaut - elles exécutent localement les plugins insights du graphique (règles et statistiques
@@ -190,12 +252,16 @@ téléchargé, rien ne quitte la page.
 
 ## Voyager dans le temps à travers l'état
 
-Quand un graphique a changé plus d'une fois, une barre **History** apparaît : avancez `◀` /
-`▶` à travers les instantanés passés du `ChartContext` pour voir exactement comment l'état a
-évolué, ou cliquez sur **● live** pour revenir au dernier. En consultant un instantané passé,
-les contrôles sont en lecture seule (vous inspectez l'historique, vous ne pilotez pas le
-graphique). Combiné à l'onglet Diff, cela répond en quelques secondes à « à quoi ressemblait
-ce graphique une mise à jour plus tôt, et qu'est-ce qui a changé ? ».
+Quand un graphique a changé plus d'une fois, une barre **History** apparaît : avancez `◀` / `▶` à
+travers les instantanés passés pour voir exactement comment l'état a évolué, ou cliquez sur **●
+live** pour revenir au dernier. Les instantanés captent aussi les rendus qu'un graphique lance
+lui-même : un pas de timeline, la fin d'une transition de timeline, un zoom de graphique linéaire,
+la mise en page asynchrone d'un graphique à bulles, le passage à WebGPU, et un plugin ajouté avec
+`use()`. En consultant un instantané passé, les contrôles sont en lecture seule (vous inspectez
+l'historique, vous ne pilotez pas le graphique). Combiné à l'onglet Diff, cela répond en quelques
+secondes à « à quoi ressemblait ce graphique une mise à jour plus tôt, et qu'est-ce qui a changé ?
+». Quand un graphique est détruit ou quitte la page, le panneau abandonne son historique et tout
+l'état qu'il gardait pour lui.
 
 ## Réel contre prédit
 
@@ -261,12 +327,18 @@ rien ici n'est jetable.
 
 ## Comment ça marche
 
-`@michi-vz/core` fournit un minuscule hook opt-in. `mountDevtools()` appelle
-`enableDevtools()`, qui installe `globalThis.__MICHI_VZ_DEVTOOLS_HOOK__` - un registre dans
-lequel chaque `mountXChart()` écrit au montage et qu'il efface au `destroy()`. Le panneau s'y
-abonne pour les mises à jour et parcourt aussi le DOM à la recherche des éléments
-`<michi-vz-*>` montés plus tôt. Quand les devtools ne sont jamais activés, le hook n'est
-jamais créé et les graphiques ne paient qu'une seule vérification de drapeau par montage.
+`@michi-vz/core` fournit un minuscule hook opt-in. `mountDevtools()` appelle `enableDevtools()`, qui
+installe `globalThis.__MICHI_VZ_DEVTOOLS_HOOK__` - un registre dans lequel chaque `mountXChart()`
+écrit au montage et qu'il efface au `destroy()`. Le panneau s'y abonne pour les mises à jour. Pour
+trouver les web components montés avant les devtools, il parcourt aussi le DOM à la recherche des
+hôtes de graphiques (la classe `.michi-vz`) et remonte jusqu'à l'élément `<michi-vz-*>` qui les
+contient, en ignorant ceux que le hook liste déjà. Chaque élément garde l'identifiant reçu la
+première fois : son propre attribut `id` la première fois que le panneau rencontre cet identifiant,
+sinon un identifiant numéroté qu'aucun autre graphique n'a eu. Deux graphiques ne partagent jamais
+un identifiant, et retirer un graphique ne transmet jamais son historique ni ses contrôles à un
+autre. Un écouteur du hook qui lève une erreur est signalé avec `console.error` et ne casse jamais
+votre `chart.update()`. Quand les devtools ne sont jamais activés, le hook n'est jamais créé et les
+graphiques ne paient qu'une seule vérification de drapeau par montage.
 
 Vous pouvez construire votre propre interface (ou une future extension) sur la même
 surface :
@@ -280,3 +352,7 @@ hook?.subscribe((charts) => {
   for (const c of charts) console.log(c.chartType, c.getContext());
 });
 ```
+
+Chaque entrée de graphique indique aussi si son moteur signale ses tests de collision en canvas
+(`hitReporting: "canvas"` ou `"none"`) : c'est ainsi que l'onglet Hit-test sait quand le silence
+veut dire un écouteur mort.

@@ -67,8 +67,18 @@ interface WcElement extends HTMLElement {
   getContext?: () => ChartContext | null;
   getTools?: () => AgentTool[];
   dataSet?: unknown;
+  series?: unknown;
+  data?: unknown;
+  nodes?: unknown;
+  links?: unknown;
   highlightItems?: string[];
   disabledItems?: string[];
+}
+
+/** One History entry: the context and the data-free props signature at that time. */
+interface Snapshot {
+  ctx: ChartContext;
+  props: Record<string, unknown>;
 }
 
 const DEFAULT_HOTKEY: DevtoolsHotkey = { key: "m", ctrl: true, meta: true, shift: true };
@@ -96,9 +106,18 @@ const OPEN_KEY = "michi-vz-devtools-open";
 const BTN_KEY = "michi-vz-devtools-btn";
 
 type TabKey =
-  "overview" | "sizing" | "scales" | "diff" | "hittest" | "profiler" | "insights" | "a11y";
+  | "overview"
+  | "props"
+  | "sizing"
+  | "scales"
+  | "diff"
+  | "hittest"
+  | "profiler"
+  | "insights"
+  | "a11y";
 const TABS: Array<[TabKey, string]> = [
   ["overview", "Overview"],
+  ["props", "Props"],
   ["sizing", "Sizing"],
   ["scales", "Scales"],
   ["diff", "Diff"],
@@ -164,28 +183,375 @@ function shortJson(value: unknown, max = 80): string {
   return s.length > max ? `${s.slice(0, max - 1)}…` : s;
 }
 
+// ---- items and data props ---------------------------------------------------
+// The props that hold a chart's data, in the order the data editor looks for them.
+// Sankey's nodes + links are edited together as one { nodes, links } object.
+const DATA_KEYS = ["dataSet", "series", "data", "nodes", "links"] as const;
+
+interface DataProp {
+  /** Heading word(s): "dataSet", "series", "nodes + links". */
+  label: string;
+  keys: string[];
+  value: unknown;
+}
+
+/** The data prop the editor should edit, or null when the chart has none. */
+function dataPropOf(props: Record<string, unknown>): DataProp | null {
+  for (const k of ["dataSet", "series", "data"]) {
+    if (props[k] !== undefined) return { label: k, keys: [k], value: props[k] };
+  }
+  if (props.nodes !== undefined && props.links !== undefined) {
+    return {
+      label: "nodes + links",
+      keys: ["nodes", "links"],
+      value: { nodes: props.nodes, links: props.links },
+    };
+  }
+  return null;
+}
+
+type Row = Record<string, unknown>;
+
+function isRecord(v: unknown): v is Row {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+// Arrays the Items dropdown lists first, in this order. Any other top-level array
+// of records follows (so a new chart's per-item array shows up with no change
+// here); legendData goes last because it repeats what the primary array says.
+const PREFERRED_ITEM_ARRAYS = [
+  "series",
+  "jets",
+  "rings",
+  "nodes",
+  "leaves",
+  "regions",
+  "symbols",
+  "slices",
+  "bubbles",
+];
+
+/** Every top-level array of records on the context, primary first. */
+function itemArrays(ctx: ChartContext): Array<{ key: string; rows: Row[] }> {
+  const found: Array<{ key: string; rows: Row[] }> = [];
+  for (const [key, value] of Object.entries(ctx as unknown as Row)) {
+    if (Array.isArray(value) && value.length > 0 && value.every(isRecord)) {
+      found.push({ key, rows: value as Row[] });
+    }
+  }
+  const rank = (key: string): number => {
+    const i = PREFERRED_ITEM_ARRAYS.indexOf(key);
+    if (i >= 0) return i;
+    return key === "legendData" ? PREFERRED_ITEM_ARRAYS.length + 1 : PREFERRED_ITEM_ARRAYS.length;
+  };
+  return found
+    .map((f, i) => ({ f, i }))
+    .sort((a, b) => rank(a.f.key) - rank(b.f.key) || a.i - b.i)
+    .map((x) => x.f);
+}
+
+/** The label a row is highlighted / disabled by: label, key, id, code or name. */
+function rowLabel(row: Row): string | null {
+  for (const f of ["label", "key", "id", "code", "name"]) {
+    const v = row[f];
+    if (typeof v === "string" && v) return v;
+    if (typeof v === "number" && Number.isFinite(v)) return String(v);
+  }
+  return null;
+}
+
+/** Columns: the identity fields first, then every other field in first-seen order. */
+function itemColumns(rows: Row[]): string[] {
+  const seen = new Set<string>();
+  for (const r of rows) for (const k of Object.keys(r)) seen.add(k);
+  const ident = ["label", "key", "id", "code", "name"].filter((k) => seen.has(k));
+  return [...ident, ...[...seen].filter((k) => !ident.includes(k))];
+}
+
+function formatCell(v: unknown): string {
+  if (v === undefined) return "";
+  if (v === null) return "null";
+  if (typeof v === "number") {
+    return Number.isInteger(v) || !Number.isFinite(v)
+      ? String(v)
+      : String(Math.round(v * 1e4) / 1e4);
+  }
+  if (typeof v === "string" || typeof v === "boolean") return String(v);
+  if (Array.isArray(v)) return `Array(${v.length})`;
+  return shortJson(v, 48);
+}
+
+/** Sort order for one column: numbers numerically, text naturally, blanks last. */
+function compareCells(a: unknown, b: unknown): number {
+  const blank = (v: unknown): boolean => v === undefined || v === null || v === "";
+  if (blank(a) || blank(b)) return blank(a) === blank(b) ? 0 : blank(a) ? 1 : -1;
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  if (typeof a === "boolean" && typeof b === "boolean") return Number(a) - Number(b);
+  return formatCell(a).localeCompare(formatCell(b), undefined, { numeric: true });
+}
+
+/**
+ * Labels the Highlight / Disable controls offer. The union keeps a disabled series
+ * listed (most contexts drop disabled items from `series`) and covers charts with
+ * no legend (a fountain in trend mode) or rows keyed by `key` (area, ribbon).
+ */
+function controlLabels(ctx: ChartContext | null, props: Row): string[] {
+  const out = new Set<string>();
+  const add = (v: unknown): void => {
+    if (typeof v === "string" && v) out.add(v);
+    else if (typeof v === "number" && Number.isFinite(v)) out.add(String(v));
+  };
+  ctx?.legendData?.forEach((l) => add(l.label));
+  (props.disabledItems as unknown[] | undefined)?.forEach(add);
+  (props.highlightItems as unknown[] | undefined)?.forEach(add);
+  Object.keys(ctx?.colorsMapping ?? {}).forEach(add);
+  const series = (ctx as unknown as { series?: unknown })?.series;
+  if (Array.isArray(series)) {
+    for (const s of series) if (isRecord(s)) add(s.label ?? s.key);
+  }
+  return [...out];
+}
+
+// ---- SVG inspector -------------------------------------------------------------
+/** One pointer move over an svg-rendered chart, as the SVG inspector logs it. */
+interface SvgHit {
+  host: HTMLElement;
+  /** Pointer position relative to the host box. */
+  x: number;
+  y: number;
+  t: number;
+  /** The topmost element under the pointer, e.g. "path.pie-slice:nth-child(2)". */
+  el: string | null;
+  /**
+   * The element the colour key was read from, when it is not the topmost one:
+   * the mark under a transparent hit target such as the symbol map's
+   * circle.symbol-hit. Null when the key came from the topmost element or no
+   * element under the pointer has one.
+   */
+  keyedEl: string | null;
+  /** That element's nearest keyed ancestor's colour hook: which attribute, and its value. */
+  keyAttr: "data-label-safe" | "data-label" | null;
+  key: string | null;
+}
+
+/** tag.class1.class2:nth-child(i) - enough to find the element in the Elements panel. */
+function describeElement(n: Element): string {
+  const tag = n.tagName.toLowerCase();
+  const cls = (n.getAttribute("class") ?? "").trim().split(/\s+/).filter(Boolean).slice(0, 2);
+  const parent = n.parentElement;
+  const idx = parent ? Array.prototype.indexOf.call(parent.children, n) + 1 : 1;
+  return `${tag}${cls.map((c) => `.${c}`).join("")}:nth-child(${idx})`;
+}
+
+// ---- props ------------------------------------------------------------------
+// Props whose value is the chart's data (or its map): shown collapsed, never in full.
+const COLLAPSED_PROPS = new Set<string>([...DATA_KEYS, "geography"]);
+/** Arrays longer than this collapse to Array(n) anywhere in the tree. */
+const LONG_ARRAY = 50;
+const MAX_DEPTH = 6;
+
+function fnLabel(fn: unknown): string {
+  const name = (fn as { name?: string }).name;
+  return `ƒ ${name || "anonymous"}`;
+}
+
+/** A data prop, one level deep: arrays as Array(n), a FeatureCollection keeps its type. */
+function collapseData(v: unknown): unknown {
+  if (Array.isArray(v)) return `Array(${v.length})`;
+  if (!isRecord(v)) return typeof v === "function" ? fnLabel(v) : v;
+  const out: Row = {};
+  for (const [k, x] of Object.entries(v)) {
+    out[k] = Array.isArray(x) ? `Array(${x.length})` : isRecord(x) ? "{…}" : x;
+  }
+  return out;
+}
+
+/**
+ * A JSON-safe, data-free view of a chart's props for the Props tab and the History
+ * signature: data props collapsed to Array(n), functions as "ƒ name", long arrays
+ * collapsed, undefined fields dropped. Stable across renders that pass equal props
+ * (a wrapper's fresh arrow functions keep their inferred names).
+ */
+function summarizeProps(props: unknown): Row {
+  // Objects on the current path only: a value shared by two props is shown twice,
+  // a real cycle once.
+  const path = new Set<object>();
+  const walk = (v: unknown, depth: number): unknown => {
+    if (typeof v === "function") return fnLabel(v);
+    if (v === null || typeof v !== "object") return v;
+    if (v instanceof Date) return v.toISOString();
+    if (path.has(v)) return "[circular]";
+    if (depth >= MAX_DEPTH) return Array.isArray(v) ? `Array(${v.length})` : "{…}";
+    if (Array.isArray(v) && v.length > LONG_ARRAY) return `Array(${v.length})`;
+    const proto = Object.getPrototypeOf(v) as object | null;
+    if (!Array.isArray(v) && proto !== Object.prototype && proto !== null) {
+      return `[${(v as { constructor?: { name?: string } }).constructor?.name ?? "object"}]`;
+    }
+    path.add(v);
+    let out: unknown;
+    if (Array.isArray(v)) {
+      out = v.map((x) => walk(x, depth + 1));
+    } else {
+      const obj: Row = {};
+      for (const [k, x] of Object.entries(v)) {
+        if (x !== undefined) obj[k] = walk(x, depth + 1);
+      }
+      out = obj;
+    }
+    path.delete(v);
+    return out;
+  };
+  const out: Row = {};
+  if (!isRecord(props)) return out;
+  for (const [k, v] of Object.entries(props)) {
+    if (v === undefined) continue;
+    out[k] = COLLAPSED_PROPS.has(k) ? collapseData(v) : walk(v, 1);
+  }
+  return out;
+}
+
+/** Nesting past this depth counts as a change instead of being walked. */
+const SAME_MAX_DEPTH = 1000;
+
+/**
+ * Whether two prop values hold the same content, compared in full, data included:
+ * summarizeProps collapses data to Array(n), which cannot tell an animation's next
+ * frame from the last one. A shared reference is equal without a walk. Functions
+ * compare by name, as the Props tab shows them, because a wrapper's render passes
+ * fresh callbacks that keep their inferred names. Class instances other than Date
+ * compare by reference, and an undefined field counts as absent.
+ */
+function samePropValue(a: unknown, b: unknown): boolean {
+  // Objects on the current path of `a`: a cycle is not walked twice.
+  const path = new Set<object>();
+  const same = (x: unknown, y: unknown, depth: number): boolean => {
+    if (Object.is(x, y)) return true;
+    if (typeof x === "function" && typeof y === "function") return fnLabel(x) === fnLabel(y);
+    if (x === null || y === null || typeof x !== "object" || typeof y !== "object") return false;
+    if (x instanceof Date && y instanceof Date) return x.getTime() === y.getTime();
+    if (path.has(x)) return true;
+    if (depth >= SAME_MAX_DEPTH) return false;
+    const plain = (v: object): boolean => {
+      const proto = Object.getPrototypeOf(v) as object | null;
+      return proto === Object.prototype || proto === null;
+    };
+    const isArr = Array.isArray(x);
+    if (isArr !== Array.isArray(y) || (!isArr && (!plain(x) || !plain(y)))) return false;
+    path.add(x);
+    try {
+      if (isArr) {
+        const xs = x as unknown[];
+        const ys = y as unknown[];
+        if (xs.length !== ys.length) return false;
+        for (let i = 0; i < xs.length; i++) if (!same(xs[i], ys[i], depth + 1)) return false;
+        return true;
+      }
+      const xr = x as Row;
+      const yr = y as Row;
+      const keys = Object.keys(xr).filter((k) => xr[k] !== undefined);
+      if (keys.length !== Object.keys(yr).filter((k) => yr[k] !== undefined).length) return false;
+      for (const k of keys) if (!same(xr[k], yr[k], depth + 1)) return false;
+      return true;
+    } finally {
+      path.delete(x);
+    }
+  };
+  return same(a, b, 0);
+}
+
+// ---- scales without x/y axes -------------------------------------------------
+interface OtherScale {
+  name: string;
+  domain: unknown;
+  range?: unknown;
+  /** What the domain maps to, in plain words. */
+  note: string;
+}
+
+// Charts with no xAxis/yAxis that still map values through a scale. Explicit per
+// chart type on purpose: a generic sniff would read unrelated fields as domains.
+// Pie, sankey and treemap stay absent: they place marks without a value scale.
+const OTHER_SCALES: Record<string, (ctx: Record<string, unknown>) => OtherScale[]> = {
+  "radar-chart": (c) => [
+    {
+      name: "radial",
+      domain: [0, c.maxValue],
+      note: "centre to outer ring; maxValue is the explicit prop, the niceMaxValue-rounded data max, or the data max",
+    },
+  ],
+  "gauge-chart": (c) => [
+    { name: "sweep", domain: [c.min, c.max], note: "start and end of the sweep (min, max)" },
+  ],
+  "choropleth-map-chart": (c) => {
+    const d = (c.stats as { valueDomain?: unknown } | undefined)?.valueDomain;
+    return d ? [{ name: "colour", domain: d, note: "lowest and highest matched value" }] : [];
+  },
+  "symbol-map-chart": (c) => {
+    const cs = c.colorScale as { domain?: unknown; range?: unknown } | undefined;
+    if (cs) {
+      return [
+        {
+          name: "colour",
+          domain: cs.domain,
+          range: cs.range,
+          note: "colorScale thresholds: n thresholds pick among n + 1 colours",
+        },
+      ];
+    }
+    const d = (c.stats as { valueDomain?: unknown } | undefined)?.valueDomain;
+    return d ? [{ name: "value", domain: d, note: "lowest and highest visible value" }] : [];
+  },
+};
+
 // ---- discovery --------------------------------------------------------------
+// The <michi-vz-*> element enclosing an engine host: the engines put the
+// `michi-vz` class on their host, which for a web component is the inner
+// div.mv-host (no getContext); the custom element around it has getContext().
+function wcAncestor(node: Element): WcElement | null {
+  for (let n: Element | null = node; n; n = n.parentElement) {
+    if (n.tagName.startsWith("MICHI-VZ-") && typeof (n as WcElement).getContext === "function") {
+      return n as WcElement;
+    }
+  }
+  return null;
+}
+
 // Wrap a <michi-vz-*> custom element as a devtools entry (fallback for charts that
 // mounted before devtools was enabled, so they never registered with the hook).
-function domEntry(node: WcElement, index: number): DevtoolsChartEntry {
+function domEntry(node: WcElement, id: string): DevtoolsChartEntry {
   const tag = node.tagName.toLowerCase();
   const ctxType = node.getContext?.()?.chartType;
   return {
-    id: node.id ? `${tag}#${node.id}` : `${tag}-dom-${index}`,
+    id,
     chartType: ctxType ?? tag.replace(/^michi-vz-/, ""),
     host: node,
     getContext: () => node.getContext?.() ?? null,
-    getProps: () => ({
-      dataSet: node.dataSet,
-      highlightItems: node.highlightItems ?? [],
-      disabledItems: node.disabledItems ?? [],
-    }),
+    getProps: () => {
+      const props: Record<string, unknown> = {
+        highlightItems: node.highlightItems ?? [],
+        disabledItems: node.disabledItems ?? [],
+      };
+      for (const k of DATA_KEYS) if (node[k] !== undefined) props[k] = node[k];
+      return props;
+    },
     setProps: (patch) => Object.assign(node, patch),
     getTools: node.getTools ? () => node.getTools!() : undefined,
   };
 }
 
 // ---- panel ------------------------------------------------------------------
+// How many entries each per-chart store of a mounted panel holds (test seam).
+const stateProbes = new WeakMap<DevtoolsHandle, () => Record<string, number>>();
+
+/**
+ * @internal The size of every per-chart store the panel behind `handle` keeps,
+ * for the tests that check a destroyed chart's state is freed. Not exported
+ * from the package entry.
+ */
+export function panelStateSizes(handle: DevtoolsHandle): Record<string, number> | null {
+  return stateProbes.get(handle)?.() ?? null;
+}
+
 export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   if (typeof document === "undefined") {
     const noop = () => {};
@@ -214,6 +580,15 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   let selectedId: string | null = null;
   let selectedTab: TabKey = "overview";
   let controlsKey = ""; // selection + live/history mode the controls were last built for
+  // Items table state: which context array, the sort, and the signature it was built for.
+  let itemsArrayKey: string | null = null;
+  let itemsSort: { col: string; dir: 1 | -1 } | null = null;
+  let itemsSig = "";
+  // The Items-row hover in progress (null = none): the chart, and the highlightItems
+  // the app had set (undefined when it set none), restored when the pointer leaves
+  // the table. A hover is the panel's own transient edit: History records the
+  // chart as if that original value were still in place.
+  let hover: { id: string; original: string[] | undefined } | null = null;
   let viewBack = 0; // 0 = live (latest); N = N snapshots back for the selected chart
   // Closed-by-default with memory: an explicit `open` option wins; otherwise the
   // last open/closed state is restored, and a first run collapses to the button.
@@ -236,50 +611,203 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
 
   // Per-chart ring buffer of ChartContext snapshots (captured on every update), so
   // you can step back through how a chart's state changed - the core debug feature.
-  const history = new Map<string, ChartContext[]>();
+  // Each snapshot keeps the context AND a data-free props signature, so a
+  // prop-only update (a highlight, a barRadius tweak) is a snapshot Diff can show.
+  const history = new Map<string, Snapshot[]>();
   const lastJson = new Map<string, string>();
+  const lastPropsJson = new Map<string, string>();
+  // Prop churn: updates that change nothing but highlightItems or disabledItems,
+  // the props an app echoes back from a hover. An update that also changes any
+  // other prop (a resize, a slider, an animation frame's new dataSet values) is
+  // not churn. Per chart: the churn updates of the last second, the busiest second
+  // seen and which of the two props it changed. A burst older than CHURN_QUIET_MS
+  // no longer warns.
+  const CHURN_WINDOW_MS = 1000;
+  const CHURN_LIMIT = 10;
+  const CHURN_QUIET_MS = 30_000;
+  const CHURN_KEYS = ["highlightItems", "disabledItems"];
+  interface Churn {
+    recent: Array<{ t: number; keys: string[] }>;
+    peak: number;
+    peakKeys: string[];
+    lastAt: number;
+  }
+  const churn = new Map<string, Churn>();
+  // True while the panel itself calls setProps: its own edits and row hovers are
+  // not app churn.
+  let panelEditing = false;
+  // The props the churn check last saw, per chart: the values the app passed (a
+  // shallow copy of getProps()) and each one's summary signature. A prop changed
+  // when either differs. The full comparison sees new data values at the same
+  // length, which the summary collapses to the same Array(n); the signature, taken
+  // when the update ran, sees an object the app changed in place and passed again
+  // (a data prop only as far as its length). Fed by every update() (the timing
+  // channel names the chart), not by capture(): past BURST_THRESHOLD charts the
+  // refreshes are coalesced to about ten a second, and a count sampled that way
+  // could never pass CHURN_LIMIT.
+  interface SeenProps {
+    values: Row;
+    sigs: Record<string, string>;
+  }
+  const churnSeen = new Map<string, SeenProps>();
+  function seenProps(props: unknown): SeenProps {
+    const sigs: Record<string, string> = {};
+    for (const [k, v] of Object.entries(summarizeProps(props))) sigs[k] = safeJson(v);
+    return { values: isRecord(props) ? { ...props } : {}, sigs };
+  }
+  function trackChurn(id: string): void {
+    const entry = hook.charts.get(id);
+    if (!entry) return;
+    const next = seenProps(entry.getProps());
+    const prev = churnSeen.get(id);
+    churnSeen.set(id, next);
+    if (!prev || panelEditing) return;
+    const changed = (k: string): boolean =>
+      prev.sigs[k] !== next.sigs[k] || !samePropValue(prev.values[k], next.values[k]);
+    const keys = CHURN_KEYS.filter(changed);
+    if (keys.length === 0) return;
+    // Any other prop changing with them makes this an ordinary update, not an echo.
+    for (const k of new Set([...Object.keys(prev.values), ...Object.keys(next.values)])) {
+      if (!CHURN_KEYS.includes(k) && changed(k)) return;
+    }
+    notePropChurn(id, keys);
+  }
+  function notePropChurn(id: string, keys: string[]): void {
+    const now = Date.now();
+    let c = churn.get(id);
+    if (!c || now - c.lastAt > CHURN_QUIET_MS) {
+      c = { recent: [], peak: 0, peakKeys: [], lastAt: now };
+      churn.set(id, c);
+    }
+    c.lastAt = now;
+    c.recent.push({ t: now, keys });
+    while (c.recent.length && c.recent[0].t < now - CHURN_WINDOW_MS) c.recent.shift();
+    if (c.recent.length > c.peak) {
+      c.peak = c.recent.length;
+      const changed = new Set(c.recent.flatMap((u) => u.keys));
+      c.peakKeys = CHURN_KEYS.filter((k) => changed.has(k));
+    }
+  }
+  /** Patch a chart's props from the panel (not counted as churn), then refresh. */
+  function panelSetProps(entry: DevtoolsChartEntry, patch: Record<string, unknown>): void {
+    panelEditing = true;
+    try {
+      entry.setProps(patch);
+    } finally {
+      // Record the edit now: on a busy page the hook's own refresh may be deferred.
+      refresh();
+      panelEditing = false;
+    }
+  }
   // Last AI action result per chart (survives re-renders; cleared on selection change).
   const aiState = new Map<string, { tool: string; text: string; labels?: string[] }>();
   // Each chart's editable props as first seen by the panel, so Reset can undo every
-  // panel-driven edit (dataSet, highlight, disable) in one click. JSON-cloned: the
-  // three fields are data-only, and function props are never touched by the panel.
+  // panel-driven edit (the data props, highlight, disable) in one click. JSON-cloned:
+  // these fields are data-only, and function props are never touched by the panel.
   const initialProps = new Map<
     string,
-    { dataSet?: unknown; highlightItems: string[]; disabledItems: string[] }
+    { data: Record<string, unknown>; highlightItems: string[]; disabledItems: string[] }
   >();
   function rememberInitial(e: DevtoolsChartEntry): void {
     if (initialProps.has(e.id)) return;
-    const p = (e.getProps() ?? {}) as {
-      dataSet?: unknown;
+    const p = (e.getProps() ?? {}) as Row & {
       highlightItems?: string[];
       disabledItems?: string[];
     };
     try {
+      const data: Record<string, unknown> = {};
+      for (const k of DATA_KEYS) {
+        if (p[k] !== undefined) data[k] = JSON.parse(JSON.stringify(p[k])) as unknown;
+      }
       initialProps.set(e.id, {
-        dataSet:
-          p.dataSet === undefined ? undefined : (JSON.parse(JSON.stringify(p.dataSet)) as unknown),
+        data,
         highlightItems: [...(p.highlightItems ?? [])],
         disabledItems: [...(p.disabledItems ?? [])],
       });
     } catch {
-      // non-serializable dataSet - reset stays unavailable for this chart
+      // non-serializable data - reset stays unavailable for this chart
     }
   }
   // Canvas hit-test event ring buffer (all hosts; filtered per selection at render).
   const MAX_HITS = 200;
   const hitLog: DevtoolsHitEvent[] = [];
   let hitRenderQueued = false;
-  const onHit = (e: DevtoolsHitEvent): void => {
-    hitLog.push(e);
-    if (hitLog.length > MAX_HITS) hitLog.shift();
-    // Throttle: a mousemove stream must not re-render the panel per event.
+  // Throttle: a mousemove stream must not re-render the panel per event.
+  function queueHitRender(): void {
     if (!isOpen || selectedTab !== "hittest" || hitRenderQueued) return;
     hitRenderQueued = true;
     setTimeout(() => {
       hitRenderQueued = false;
       if (isOpen && selectedTab === "hittest") render();
     }, 80);
+  }
+  const onHit = (e: DevtoolsHitEvent): void => {
+    hitLog.push(e);
+    if (hitLog.length > MAX_HITS) hitLog.shift();
+    queueHitRender();
   };
+
+  // SVG inspector: a pointermove listener on the selected svg chart's host, live
+  // only while the Hit-test tab shows that chart. Panel-only; engines are untouched.
+  const svgLog: SvgHit[] = [];
+  let svgInspectHost: HTMLElement | null = null;
+  const onSvgMove = (ev: MouseEvent): void => {
+    const host = svgInspectHost;
+    if (!host) return;
+    const inside = (n: Element): boolean =>
+      n !== host && host.contains(n) && !n.hasAttribute("data-michi-vz-devtools-hitdot");
+    // elementsFromPoint gives the real paint order; without it (jsdom) the event
+    // target is the topmost element that takes pointer events.
+    const stack = (
+      typeof document.elementsFromPoint === "function"
+        ? document.elementsFromPoint(ev.clientX, ev.clientY)
+        : []
+    ).filter(inside);
+    const target = ev.target instanceof Element ? ev.target : null;
+    if (stack.length === 0 && target && inside(target)) stack.push(target);
+    const top = stack[0] ?? null;
+    // The colour key comes from the first element down the stack with a keyed
+    // ancestor in the host: a transparent hit target above a mark has none.
+    let keyed: Element | null = null;
+    let keySource: Element | null = null;
+    for (const n of stack) {
+      const k = n.closest("[data-label-safe],[data-label]");
+      if (k && host.contains(k)) {
+        keyed = k;
+        keySource = n;
+        break;
+      }
+    }
+    const keyAttr = keyed
+      ? keyed.hasAttribute("data-label-safe")
+        ? "data-label-safe"
+        : "data-label"
+      : null;
+    const rect = host.getBoundingClientRect();
+    svgLog.push({
+      host,
+      x: ev.clientX - rect.left,
+      y: ev.clientY - rect.top,
+      t: typeof performance !== "undefined" ? performance.now() : 0,
+      el: top ? describeElement(top) : null,
+      keyedEl: keySource && keySource !== top ? describeElement(keySource) : null,
+      keyAttr,
+      key: keyed && keyAttr ? keyed.getAttribute(keyAttr) : null,
+    });
+    if (svgLog.length > MAX_HITS) svgLog.shift();
+    queueHitRender();
+  };
+  /** Point the SVG inspector at `host` (null detaches it). */
+  function syncSvgInspector(host: HTMLElement | null): void {
+    if (host === svgInspectHost) return;
+    svgInspectHost?.removeEventListener("pointermove", onSvgMove);
+    svgInspectHost = host;
+    host?.addEventListener("pointermove", onSvgMove);
+  }
+  /** Marks painted as SVG elements (no context yet counts: nothing to inspect). */
+  function isSvgRendered(entry: DevtoolsChartEntry): boolean {
+    return entry.getContext()?.renderer === "svg";
+  }
   // Per-chart render durations reported by attachDevtools around update() (ring 60).
   const MAX_TIMINGS = 60;
   const timings = new Map<string, number[]>();
@@ -288,6 +816,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     arr.push(ms);
     if (arr.length > MAX_TIMINGS) arr.shift();
     timings.set(id, arr);
+    trackChurn(id); // one report per update(), with the chart it ran on
   };
 
   // Marker dot placed over the chart host at the last hit position (inline-styled:
@@ -311,15 +840,25 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   }
 
   function capture(): void {
-    for (const e of entries()) {
+    const list = entries();
+    for (const e of list) {
       rememberInitial(e);
       const ctx = e.getContext();
       if (!ctx) continue;
       const json = safeJson(ctx);
-      if (lastJson.get(e.id) === json) continue; // unchanged since last snapshot
+      // During an Items-row hover, the props the app set (not the panel's highlight).
+      const props =
+        hover?.id === e.id
+          ? { ...((e.getProps() ?? {}) as Row), highlightItems: hover.original }
+          : e.getProps();
+      const propsJson = safeJson(summarizeProps(props));
+      // Seed the churn check's baseline (trackChurn keeps it current from then on).
+      if (!churnSeen.has(e.id)) churnSeen.set(e.id, seenProps(e.getProps()));
+      if (lastJson.get(e.id) === json && lastPropsJson.get(e.id) === propsJson) continue; // unchanged
       const arr = history.get(e.id) ?? [];
-      arr.push(JSON.parse(json) as ChartContext);
+      arr.push({ ctx: JSON.parse(json) as ChartContext, props: JSON.parse(propsJson) as Row });
       lastJson.set(e.id, json);
+      lastPropsJson.set(e.id, propsJson);
       let shifted = false;
       if (arr.length > MAX_HISTORY) {
         arr.shift();
@@ -330,6 +869,34 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       if (e.id === selectedId && viewBack > 0 && !shifted) {
         viewBack = Math.min(viewBack + 1, arr.length - 1);
       }
+    }
+    forgetGone(list);
+  }
+
+  /**
+   * Free the state of every chart that is no longer listed (destroyed, or a web
+   * component that left the page), and the pointer logs of hosts that left the
+   * page. Charts are remounted all the time (StrictMode, HMR, route changes), and
+   * each keeps full context snapshots.
+   */
+  function forgetGone(list: DevtoolsChartEntry[]): void {
+    const live = new Set(list.map((e) => e.id));
+    if (hover && !live.has(hover.id)) hover = null;
+    const perChart: Array<Map<string, unknown>> = [
+      history,
+      lastJson,
+      lastPropsJson,
+      churnSeen,
+      churn,
+      initialProps,
+      timings,
+      aiState,
+    ];
+    for (const store of perChart) {
+      for (const id of store.keys()) if (!live.has(id)) store.delete(id);
+    }
+    for (const log of [hitLog, svgLog] as Array<Array<{ host: HTMLElement }>>) {
+      for (let i = log.length - 1; i >= 0; i--) if (!log[i].host.isConnected) log.splice(i, 1);
     }
   }
 
@@ -395,6 +962,11 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   const tabsEl = el("div", { class: "mv-devtools-tabs" });
   const contentEl = el("div");
   const readoutEl = el("div");
+  // The Items table lives in its own long-lived container and is rebuilt only when
+  // its rows or sort change: a row hover (a highlight-only update) re-renders the
+  // panel, and rebuilding the row under the pointer would break the hover.
+  const itemsEl = el("div", { class: "mv-devtools-items" });
+  const rawEl = el("div");
   const controlsEl = el("div");
   const detailEl = el("div", { class: "mv-devtools-detail" }, [historyNavEl, tabsEl, contentEl]);
 
@@ -594,17 +1166,41 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   window.addEventListener("resize", onWindowResize);
 
   // -- entry list (hook entries first; DOM-discovered wc elements that aren't hooked) --
+  // A DOM-found element keeps the id it got when the panel first saw it, so a
+  // removed sibling never hands its History, controls or Reset data to the next
+  // chart. The element's own id names it. A later element reusing that id is
+  // numbered after it ("#sales (2)"): a valid id attribute holds no spaces, so the
+  // number never lands on another element's own id such as "sales-1". One without
+  // an id takes "-dom-" and a number. Every id handed out stays taken, so no two
+  // elements ever share one.
+  const domIds = new WeakMap<Element, string>();
+  const takenDomIds = new Set<string>();
+  let domCounter = 0;
+  function domIdOf(node: Element): string {
+    const known = domIds.get(node);
+    if (known !== undefined) return known;
+    const tag = node.tagName.toLowerCase();
+    const named = node.id ? `${tag}#${node.id}` : null;
+    let id = named;
+    for (let n = 2; id === null || takenDomIds.has(id); n++) {
+      id = named ? `${named} (${n})` : `${tag}-dom-${++domCounter}`;
+    }
+    takenDomIds.add(id);
+    domIds.set(node, id);
+    return id;
+  }
   function entries(): DevtoolsChartEntry[] {
     const hooked = [...hook.charts.values()];
-    const hostSet = new Set(hooked.map((e) => e.host));
     const dom: DevtoolsChartEntry[] = [];
-    const nodes = document.querySelectorAll<WcElement>('[class*="michi-vz-"]');
-    let i = 0;
-    nodes.forEach((node) => {
-      // Only treat custom elements that expose getContext() and aren't already hooked.
-      if (typeof node.getContext === "function" && !hostSet.has(node)) {
-        dom.push(domEntry(node, i++));
-      }
+    const seen = new Set<Element>();
+    document.querySelectorAll(".michi-vz").forEach((hostNode) => {
+      const node = wcAncestor(hostNode);
+      if (!node || seen.has(node)) return;
+      seen.add(node);
+      // A hooked chart's host is the element itself or (for a web component that
+      // mounted after devtools) its inner div - either way it is listed already.
+      if (hooked.some((e) => node === e.host || node.contains(e.host))) return;
+      dom.push(domEntry(node, domIdOf(node)));
     });
     return [...hooked, ...dom];
   }
@@ -618,6 +1214,9 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
     if (selectedId !== prev) {
       viewBack = 0; // reset the history view when selection changes
       aiState.delete(prev ?? "");
+      itemsArrayKey = null;
+      itemsSort = null;
+      hover = null;
     }
     renderList(list);
     const sel = list.find((e) => e.id === selectedId) ?? null;
@@ -705,7 +1304,7 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   function viewedContext(entry: DevtoolsChartEntry): ChartContext | null {
     const hist = history.get(entry.id) ?? [];
     const live = viewBack === 0 || hist.length === 0;
-    return live ? entry.getContext() : hist[hist.length - 1 - viewBack];
+    return live ? entry.getContext() : hist[hist.length - 1 - viewBack].ctx;
   }
 
   function renderHistoryNav(entry: DevtoolsChartEntry | null): void {
@@ -749,10 +1348,16 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
   }
 
   function renderContent(sel: DevtoolsChartEntry | null): void {
+    syncSvgInspector(
+      isOpen && selectedTab === "hittest" && sel && isSvgRendered(sel) ? sel.host : null,
+    );
     if (selectedTab === "overview") {
       // Overview keeps its two long-lived children so a live edit (notify -> render)
       // never blows away the dataSet textarea mid-typing.
-      if (contentEl.firstChild !== readoutEl) contentEl.replaceChildren(readoutEl, controlsEl);
+      if (contentEl.firstChild !== readoutEl) {
+        contentEl.replaceChildren(readoutEl, itemsEl, rawEl, controlsEl);
+        itemsSig = ""; // itemsEl was detached: rebuild it
+      }
       renderReadout(sel);
       const key = `${selectedId}|${viewBack === 0 ? "live" : "hist"}`;
       if (key !== controlsKey) {
@@ -768,21 +1373,27 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       return;
     }
     if (selectedTab !== "hittest") removeHitDot();
-    if (selectedTab === "sizing") renderSizing(sel);
+    if (selectedTab === "props") renderProps(sel);
+    else if (selectedTab === "sizing") renderSizing(sel);
     else if (selectedTab === "scales") renderScales(viewedContext(sel));
     else if (selectedTab === "diff") renderDiff(sel);
     else if (selectedTab === "hittest") renderHitTest(sel);
     else if (selectedTab === "profiler") renderProfiler(sel);
-    else if (selectedTab === "a11y") renderA11y(viewedContext(sel));
+    else if (selectedTab === "a11y") renderA11y(sel, viewedContext(sel));
     else renderInsights(sel, viewedContext(sel));
   }
 
   function renderReadout(entry: DevtoolsChartEntry | null): void {
     readoutEl.replaceChildren();
-    if (!entry) return;
-    const ctx = viewedContext(entry);
-    if (!ctx) {
-      readoutEl.append(el("div", { class: "empty" }, ["No context yet (chart not rendered)"]));
+    const ctx = entry ? viewedContext(entry) : null;
+    if (!entry || !ctx) {
+      // Nothing to list: drop the previous chart's items and raw context too.
+      itemsEl.replaceChildren();
+      itemsSig = "";
+      rawEl.replaceChildren();
+      if (entry) {
+        readoutEl.append(el("div", { class: "empty" }, ["No context yet (chart not rendered)"]));
+      }
       return;
     }
 
@@ -817,49 +1428,167 @@ export function mountDevtools(opts: MountDevtoolsOptions = {}): DevtoolsHandle {
       readoutEl.append(kv);
     }
 
-    // Series - including actual vs predicted provenance where present.
-    const series = (ctx as { series?: Array<Record<string, unknown>> }).series;
-    if (Array.isArray(series) && series.length) {
-      const hasProvenance = series.some((s) => "predictedCount" in s || "forecastCount" in s);
-      readoutEl.append(el("h4", {}, [hasProvenance ? "Series (actual vs predicted)" : "Series"]));
-      const head = ["label", "points"];
-      if (hasProvenance) head.push("actual", "predicted", "forecastStart");
-      const table = el("table");
-      table.append(
-        el("thead", {}, [
-          el(
-            "tr",
-            {},
-            head.map((h) => el("th", {}, [h])),
-          ),
-        ]),
-      );
-      const tbody = el("tbody");
-      for (const s of series) {
-        const actual = (s.actualCount ?? s.historyCount) as number | undefined;
-        const predicted = (s.predictedCount ?? s.forecastCount) as number | undefined;
-        const points = (s.pointCount ?? "") as number | string;
-        const cells: Array<Node | string> = [
-          el("td", {}, [String(s.label ?? "")]),
-          el("td", {}, [String(points)]),
-        ];
-        if (hasProvenance) {
-          cells.push(
-            el("td", {}, [el("span", { class: "badge actual" }, [String(actual ?? 0)])]),
-            el("td", {}, [el("span", { class: "badge predicted" }, [String(predicted ?? 0)])]),
-            el("td", {}, [s.forecastStart == null ? "-" : String(s.forecastStart)]),
-          );
-        }
-        tbody.append(el("tr", {}, cells));
-      }
-      table.append(tbody);
-      readoutEl.append(table);
-    }
+    renderItems(entry, ctx);
 
     // Full context JSON (collapsible).
+    rawEl.replaceChildren();
     const details = el("details");
     details.append(el("summary", {}, ["ChartContext (raw)"]), el("pre", {}, [safeJson(ctx)]));
-    readoutEl.append(el("h4", {}, ["Context"]), details);
+    rawEl.append(el("h4", {}, ["Context"]), details);
+  }
+
+  // Items: a sortable table over the context's per-item array (series, jets, rings,
+  // nodes, ...), with a dropdown when the context has more than one. Hovering a row
+  // highlights that item on the live chart.
+  function renderItems(entry: DevtoolsChartEntry, ctx: ChartContext): void {
+    const arrays = itemArrays(ctx);
+    const live = viewBack === 0;
+    const current = arrays.find((a) => a.key === itemsArrayKey) ?? arrays[0];
+    const sig = [
+      entry.id,
+      live ? "live" : "hist",
+      current?.key ?? "",
+      itemsSort ? `${itemsSort.col}:${itemsSort.dir}` : "",
+      current ? safeJson(current.rows) : "",
+    ].join("|");
+    if (sig === itemsSig) return;
+    itemsSig = sig;
+    itemsEl.replaceChildren();
+    if (!current) return;
+
+    const rows = current.rows;
+    const cols = itemColumns(rows);
+    const hasProvenance = rows.some((r) => "predictedCount" in r || "forecastCount" in r);
+    itemsEl.append(el("h4", {}, [hasProvenance ? "Items (actual vs predicted)" : "Items"]));
+
+    const bar = el("div", { class: "row" });
+    if (arrays.length > 1) {
+      const select = el("select", { title: "Which per-item array of the context to list" });
+      for (const a of arrays) {
+        const opt = el("option", { value: a.key }, [`${a.key} (${a.rows.length})`]);
+        if (a.key === current.key) opt.selected = true;
+        select.append(opt);
+      }
+      select.addEventListener("change", () => {
+        itemsArrayKey = select.value;
+        itemsSort = null;
+        render();
+      });
+      bar.append(select);
+    } else {
+      bar.append(el("span", { class: "k" }, [`${current.key} (${rows.length})`]));
+    }
+    bar.append(
+      el("span", { class: "k" }, [
+        live ? "click a column to sort; hover a row to highlight it" : "click a column to sort",
+      ]),
+    );
+    itemsEl.append(bar);
+
+    const order = rows.map((r, i) => ({ r, i }));
+    if (itemsSort) {
+      const { col, dir } = itemsSort;
+      order.sort((a, b) => compareCells(a.r[col], b.r[col]) * dir || a.i - b.i);
+    }
+
+    const table = el("table");
+    const headRow = el("tr");
+    for (const col of cols) {
+      const arrow = itemsSort?.col === col ? (itemsSort.dir === 1 ? " ▲" : " ▼") : "";
+      const th = el("th", { "data-col": col, class: "sortable", title: `Sort by ${col}` }, [
+        col + arrow,
+      ]);
+      th.addEventListener("click", () => {
+        itemsSort =
+          itemsSort?.col === col ? { col, dir: itemsSort.dir === 1 ? -1 : 1 } : { col, dir: 1 };
+        render();
+      });
+      headRow.append(th);
+    }
+    table.append(el("thead", {}, [headRow]));
+
+    const tbody = el("tbody");
+    for (const { r } of order) {
+      const cells = cols.map((col) => {
+        const v = r[col];
+        if (col === "actualCount" || col === "historyCount") {
+          return el("td", {}, [el("span", { class: "badge actual" }, [formatCell(v ?? 0)])]);
+        }
+        if (col === "predictedCount" || col === "forecastCount") {
+          return el("td", {}, [el("span", { class: "badge predicted" }, [formatCell(v ?? 0)])]);
+        }
+        return el("td", {}, [col === "forecastStart" && v == null ? "-" : formatCell(v)]);
+      });
+      const tr = el("tr", {}, cells);
+      const label = rowLabel(r);
+      if (live && label !== null) {
+        tr.addEventListener("mouseenter", () => hoverItem(entry, label));
+      }
+      tbody.append(tr);
+    }
+    table.append(tbody);
+    if (live) table.addEventListener("mouseleave", () => unhoverItems(entry));
+    itemsEl.append(el("div", { class: "mv-devtools-tablewrap" }, [table]));
+  }
+
+  function hoverItem(entry: DevtoolsChartEntry, label: string): void {
+    const set = ((entry.getProps() ?? {}) as { highlightItems?: string[] }).highlightItems;
+    const current = set ?? [];
+    if (current.length === 1 && current[0] === label) return; // already showing it
+    if (hover?.id !== entry.id) hover = { id: entry.id, original: set && [...set] };
+    panelSetProps(entry, { highlightItems: [label] });
+  }
+
+  function unhoverItems(entry: DevtoolsChartEntry): void {
+    if (hover?.id !== entry.id) return;
+    // Restore while the hover is still masked, so the restore is not a snapshot.
+    panelSetProps(entry, { highlightItems: hover.original && [...hover.original] });
+    hover = null;
+  }
+
+  // -- Props tab: the props the chart was last rendered with, which the context
+  //    never echoes (barRadius, stacked, hoverHighlight, timeline configs, ...) --
+  function renderProps(entry: DevtoolsChartEntry): void {
+    const hist = history.get(entry.id) ?? [];
+    const live = viewBack === 0 || hist.length === 0;
+    const tree = live ? summarizeProps(entry.getProps()) : hist[hist.length - 1 - viewBack].props;
+
+    const c = churn.get(entry.id);
+    if (c && c.peak > CHURN_LIMIT && Date.now() - c.lastAt <= CHURN_QUIET_MS) {
+      const at = new Date(c.lastAt).toLocaleTimeString();
+      const hint = c.peakKeys.includes("highlightItems")
+        ? "That is usually an app echoing onHighlightItem back into highlightItems on every hover, so every mouse move re-renders the chart. Let the chart handle hover itself instead (for example the sankey's hoverHighlight prop) and keep highlightItems for selections."
+        : "Something sets disabledItems on every pointer move or frame, and each change re-renders the chart. Set it when the user shows or hides a series instead.";
+      contentEl.append(
+        el("div", { class: "mv-devtools-flag warn" }, [
+          `${c.peakKeys.join(" and ")} changed ${c.peak} times within one second, with no other prop changing (last change at ${at}). ${hint} This warning clears after ${CHURN_QUIET_MS / 1000} seconds without such changes.`,
+        ]),
+      );
+    }
+
+    contentEl.append(el("h4", {}, [live ? "Props" : "Props (snapshot)"]));
+    contentEl.append(
+      el("div", { class: "mv-devtools-note" }, [
+        "What getProps() returns: data props show as Array(n), functions as ƒ and their name. Overview edits patch these props on the chart instance directly; a React or web-component wrapper re-renders with its own props and overwrites those edits on its next render.",
+      ]),
+    );
+    const keys = Object.keys(tree);
+    if (keys.length === 0) {
+      contentEl.append(el("div", { class: "empty" }, ["This chart exposes no props."]));
+      return;
+    }
+    const kv = el("div", { class: "mv-devtools-kv" });
+    for (const k of keys) {
+      const v = tree[k];
+      kv.append(
+        el("span", { class: "k" }, [k]),
+        el("span", {}, [typeof v === "string" ? v : shortJson(v, 160)]),
+      );
+    }
+    contentEl.append(kv);
+    const details = el("details");
+    details.append(el("summary", {}, ["Props (tree)"]), el("pre", {}, [safeJson(tree)]));
+    contentEl.append(details);
   }
 
   // -- Sizing tab: pain point #1, "why is my chart 0x0 / overflowing?" --
@@ -940,15 +1669,6 @@ ro.observe(host);`,
       xAxis?: { type?: string; domain?: unknown };
       yAxis?: { domain?: unknown; labels?: string[] };
     };
-    if (!anyCtx.xAxis && !anyCtx.yAxis) {
-      contentEl.append(
-        el("div", { class: "empty" }, [
-          `${ctx.chartType} has no axis scales (pie, sankey, treemap and friends place marks without x/y domains).`,
-        ]),
-      );
-      return;
-    }
-
     const checks: Array<{ kind: "warn" | "err"; text: string }> = [];
     const numericChecks = (name: string, domain: unknown): void => {
       if (!Array.isArray(domain) || domain.length !== 2) return;
@@ -971,6 +1691,42 @@ ro.observe(host);`,
         });
       }
     };
+
+    if (!anyCtx.xAxis && !anyCtx.yAxis) {
+      const describe = OTHER_SCALES[ctx.chartType];
+      if (!describe) {
+        contentEl.append(
+          el("div", { class: "empty" }, [
+            `${ctx.chartType} has no axis scales (pie, sankey, treemap and friends place marks without x/y domains).`,
+          ]),
+        );
+        return;
+      }
+      const scales = describe(ctx as unknown as Record<string, unknown>);
+      if (scales.length === 0) {
+        contentEl.append(
+          el("div", { class: "empty" }, [`${ctx.chartType} has no values to scale yet.`]),
+        );
+        return;
+      }
+      for (const sc of scales) {
+        contentEl.append(el("h4", {}, [`${sc.name} scale`]));
+        const kv = el("div", { class: "mv-devtools-kv" });
+        kv.append(
+          el("span", { class: "k" }, ["domain"]),
+          el("span", {}, [shortJson(sc.domain, 160)]),
+        );
+        if (sc.range !== undefined) {
+          kv.append(
+            el("span", { class: "k" }, ["range"]),
+            el("span", {}, [shortJson(sc.range, 160)]),
+          );
+        }
+        kv.append(el("span", { class: "k" }, ["reads"]), el("span", {}, [sc.note]));
+        contentEl.append(kv);
+        numericChecks(`${sc.name} scale`, sc.domain);
+      }
+    }
 
     if (anyCtx.xAxis) {
       contentEl.append(el("h4", {}, ["xAxis"]));
@@ -1037,7 +1793,12 @@ ro.observe(host);`,
     }
     const prev = hist[idx - 1];
     const next = hist[idx];
-    const changes = diffObjects(prev, next);
+    // Match array items by label/key/id/code so a re-rank reads as one reorder;
+    // prop-only changes (highlight, styling switches) show under "props.".
+    const changes = [
+      ...diffObjects(prev.ctx, next.ctx, "", { keyOf: true }),
+      ...diffObjects(prev.props, next.props, "props", { keyOf: true }),
+    ];
     contentEl.append(
       el("h4", {}, [
         `Snapshot ${idx} → ${idx + 1} (${changes.length} change${changes.length === 1 ? "" : "s"})`,
@@ -1054,7 +1815,7 @@ ro.observe(host);`,
         el("span", { class: "path" }, [c.path]),
       );
       const vals =
-        c.kind === "changed"
+        c.kind === "changed" || c.kind === "reordered"
           ? `${shortJson(c.from)} → ${shortJson(c.to)}`
           : c.kind === "added"
             ? `+ ${shortJson(c.to)}`
@@ -1070,16 +1831,23 @@ ro.observe(host);`,
   }
 
   // -- Hit-test tab: live canvas pointer log (pain point #5; makes a dead/rebound
-  //    canvas listener visually obvious - the log goes silent on hover) --
+  //    canvas listener visually obvious - the log goes silent on hover), or the
+  //    SVG inspector when the marks are svg elements --
   function renderHitTest(entry: DevtoolsChartEntry): void {
+    if (isSvgRendered(entry)) {
+      renderSvgInspector(entry);
+      return;
+    }
     const mine = hitLog.filter((e) => e.host === entry.host);
     contentEl.append(el("h4", {}, ["Pointer log"]));
     if (mine.length === 0) {
-      contentEl.append(
-        el("div", { class: "empty" }, [
-          "Waiting for pointer events. Move the mouse over the chart (canvas/webgpu mode - SVG marks are inspectable directly). If the log stays silent while you hover, the chart's canvas listener is dead.",
-        ]),
-      );
+      const text =
+        entry.hitReporting === "none"
+          ? `This chart does not report canvas hits: the ${entry.chartType} engine has no devtools hit channel yet, so this log stays empty while you hover. Its own tooltip still works. To see which element is under the pointer, render it with renderer "svg" and use the SVG inspector here.`
+          : entry.hitReporting === "canvas"
+            ? "Waiting for pointer events. Move the mouse over the chart. If the log stays silent while you hover, the chart's canvas listener is dead."
+            : "Waiting for pointer events. Move the mouse over the chart. A chart found through the DOM, or built on an older core, may not report canvas hits at all.";
+      contentEl.append(el("div", { class: "empty" }, [text]));
       return;
     }
     const last = mine[mine.length - 1];
@@ -1107,6 +1875,41 @@ ro.observe(host);`,
     if (mine.length > 50) {
       contentEl.append(
         el("div", { class: "empty" }, [`showing the last 50 of ${mine.length} events`]),
+      );
+    }
+  }
+
+  function renderSvgInspector(entry: DevtoolsChartEntry): void {
+    contentEl.append(el("h4", {}, ["SVG inspector"]));
+    contentEl.append(
+      el("div", { class: "mv-devtools-note" }, [
+        "SVG marks are real elements, so this reads what is under the pointer: the topmost element (tag, class, position among its siblings) and the colour key of the first element under the pointer that has a [data-label-safe] or [data-label] ancestor. When that element is not the topmost one, for example a mark under a transparent hit target, the row names both, as in circle.symbol-hit over circle.symbol. The colour key is the hook the colour contract uses, not the mark's identity: a sankey link, for example, carries the key of its source or target node. Layers with pointer-events: none (such as gauge annotations) are invisible here. In canvas or WebGPU mode this tab shows the chart's own hit-test log instead.",
+      ]),
+    );
+    const mine = svgLog.filter((e) => e.host === entry.host);
+    if (mine.length === 0) {
+      contentEl.append(
+        el("div", { class: "empty" }, ["Move the pointer over the chart to inspect its marks."]),
+      );
+      return;
+    }
+    const log = el("div", { class: "mv-devtools-hitlog mv-devtools-svglog" });
+    for (const e of mine.slice(-50).reverse()) {
+      log.append(
+        el("div", { class: "row" }, [
+          el("span", { class: e.el ? "hit" : "miss" }, [
+            e.el ? (e.keyedEl ? `${e.el} over ${e.keyedEl}` : e.el) : "(nothing)",
+          ]),
+          el("span", {}, [e.key !== null ? `colour key ${e.keyAttr}="${e.key}"` : "no colour key"]),
+          el("span", { class: "k" }, [`${Math.round(e.x)}, ${Math.round(e.y)}`]),
+          el("span", { class: "k" }, [`${Math.round(e.t)} ms`]),
+        ]),
+      );
+    }
+    contentEl.append(log);
+    if (mine.length > 50) {
+      contentEl.append(
+        el("div", { class: "empty" }, [`showing the last 50 of ${mine.length} pointer moves`]),
       );
     }
   }
@@ -1164,13 +1967,14 @@ ro.observe(host);`,
   }
 
   // -- A11y tab: Chartability-inspired audit of the live context --
-  function renderA11y(ctx: ChartContext | null): void {
+  function renderA11y(entry: DevtoolsChartEntry, ctx: ChartContext | null): void {
     if (!ctx) {
       contentEl.append(el("div", { class: "empty" }, ["No context yet (chart not rendered)"]));
       return;
     }
     contentEl.append(el("h4", {}, ["Audit"]));
-    for (const f of auditContext(ctx as unknown as AuditableContext)) {
+    // Props carry what the context does not: the colorScale ramp and noDataColor.
+    for (const f of auditContext(ctx as unknown as AuditableContext, { props: entry.getProps() })) {
       contentEl.append(el("div", { class: `mv-devtools-flag ${f.kind}` }, [f.text]));
     }
 
@@ -1293,11 +2097,7 @@ ro.observe(host);`,
             `Highlight ${state.labels.length} flagged series`,
           ]);
           hl.addEventListener("click", () => {
-            try {
-              entry.setProps({ highlightItems: state.labels });
-            } finally {
-              refresh();
-            }
+            panelSetProps(entry, { highlightItems: state.labels });
           });
           contentEl.append(el("div", { class: "row" }, [hl]));
         }
@@ -1352,24 +2152,14 @@ ro.observe(host);`,
     }
 
     function apply(patch: Record<string, unknown>): void {
-      try {
-        entry!.setProps(patch);
-      } finally {
-        refresh();
-      }
+      panelSetProps(entry!, patch);
     }
 
-    const props = (entry.getProps() ?? {}) as {
+    const props = (entry.getProps() ?? {}) as Row & {
       highlightItems?: string[];
       disabledItems?: string[];
-      dataSet?: unknown;
     };
-    const ctx = entry.getContext();
-    const labels: string[] = Array.isArray((ctx as { series?: Array<{ label?: string }> })?.series)
-      ? (ctx as { series: Array<{ label?: string }> }).series
-          .map((s) => String(s.label ?? ""))
-          .filter(Boolean)
-      : [];
+    const labels = controlLabels(entry.getContext(), props);
 
     // Highlight / disable toggles per series.
     if (labels.length) {
@@ -1417,7 +2207,7 @@ ro.observe(host);`,
         {
           class: "mv-devtools-btn",
           title:
-            "Restore the chart's dataSet, highlight and disable state as they were when devtools first saw it",
+            "Restore the chart's data, highlight and disable state as they were when devtools first saw it",
         },
         ["Reset chart"],
       );
@@ -1426,34 +2216,54 @@ ro.observe(host);`,
           highlightItems: [...initial.highlightItems],
           disabledItems: [...initial.disabledItems],
         };
-        if (initial.dataSet !== undefined)
-          patch.dataSet = JSON.parse(JSON.stringify(initial.dataSet));
-        controlsKey = ""; // force the controls (incl. the dataSet textarea) to rebuild
+        for (const [k, v] of Object.entries(initial.data)) {
+          patch[k] = JSON.parse(JSON.stringify(v)) as unknown;
+        }
+        controlsKey = ""; // force the controls (incl. the data textarea) to rebuild
         apply(patch);
       });
       controlsEl.append(el("div", { class: "row" }, [resetBtn]));
     }
+    controlsEl.append(
+      el("div", { class: "mv-devtools-note" }, [
+        "These edits patch the chart instance directly. On a React- or web-component-managed chart the wrapper's next render overwrites them.",
+      ]),
+    );
 
-    // Data editor.
-    if (props.dataSet !== undefined) {
-      controlsEl.append(el("h4", {}, ["Edit dataSet"]));
+    // Data editor: whichever data prop the chart has (dataSet, series, data, or a
+    // sankey's nodes + links edited as one { nodes, links } object).
+    const dataProp = dataPropOf(props);
+    if (dataProp) {
+      controlsEl.append(el("h4", {}, [`Edit ${dataProp.label}`]));
       const ta = el("textarea", {});
-      ta.value = safeJson(props.dataSet);
+      ta.value = safeJson(dataProp.value);
       const err = el("div", { class: "err" });
       const applyBtn = el("button", { class: "mv-devtools-btn" }, ["Apply"]);
       const resetBtn = el("button", { class: "mv-devtools-btn" }, ["Reset"]);
       applyBtn.addEventListener("click", () => {
+        let next: unknown;
         try {
-          const next = JSON.parse(ta.value);
-          err.textContent = "";
-          apply({ dataSet: next });
+          next = JSON.parse(ta.value);
         } catch (e) {
           err.textContent = `Invalid JSON: ${(e as Error).message}`;
+          return;
         }
+        if (dataProp.keys.length === 1) {
+          err.textContent = "";
+          apply({ [dataProp.keys[0]]: next });
+          return;
+        }
+        const obj = isRecord(next) ? next : {};
+        const missing = dataProp.keys.filter((k) => obj[k] === undefined);
+        if (missing.length) {
+          err.textContent = `Expected an object with ${dataProp.keys.join(" and ")}; missing ${missing.join(", ")}.`;
+          return;
+        }
+        err.textContent = "";
+        apply(Object.fromEntries(dataProp.keys.map((k) => [k, obj[k]])));
       });
       resetBtn.addEventListener("click", () => {
-        const p = entry.getProps() as { dataSet?: unknown };
-        ta.value = safeJson(p.dataSet);
+        ta.value = safeJson(dataPropOf((entry.getProps() ?? {}) as Row)?.value);
         err.textContent = "";
       });
       controlsEl.append(ta, el("div", { class: "row" }, [applyBtn, resetBtn]), err);
@@ -1472,6 +2282,7 @@ ro.observe(host);`,
     render();
   };
   const close = () => {
+    syncSvgInspector(null);
     isOpen = false;
     persistOpen(false);
     applyVisibility();
@@ -1513,12 +2324,12 @@ ro.observe(host);`,
   applyVisibility();
   refresh();
 
-  return {
+  const handle: DevtoolsHandle = {
     open,
     close,
     toggle,
     isOpen: () => isOpen,
-    refresh: render,
+    refresh,
     getRoot: () => root,
     destroy() {
       unsubscribe();
@@ -1527,9 +2338,23 @@ ro.observe(host);`,
       if (refreshTimer !== null) clearTimeout(refreshTimer);
       endDrag();
       removeHitDot();
+      syncSvgInspector(null);
       if (onKey) window.removeEventListener("keydown", onKey);
       window.removeEventListener("resize", onWindowResize);
       wrapper.remove();
     },
   };
+  stateProbes.set(handle, () => ({
+    history: history.size,
+    lastJson: lastJson.size,
+    lastPropsJson: lastPropsJson.size,
+    churnSeen: churnSeen.size,
+    churn: churn.size,
+    initialProps: initialProps.size,
+    timings: timings.size,
+    aiState: aiState.size,
+    hitLog: hitLog.length,
+    svgLog: svgLog.length,
+  }));
+  return handle;
 }

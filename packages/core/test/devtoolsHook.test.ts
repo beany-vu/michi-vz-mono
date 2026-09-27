@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { enableDevtools, getDevtoolsHook, attachDevtools } from "../src/devtools/hook";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { mountLineChart } from "../src/engine/lineChart";
+import { mountScatterChart } from "../src/engine/scatterChart";
+import { mountPieChart } from "../src/engine/pieChart";
 import type { ChartInstance, LineChartProps } from "../src/types";
 
 interface G {
@@ -75,5 +80,44 @@ describe("core devtools hook", () => {
 
     chart.destroy();
     host.remove();
+  });
+});
+
+describe("DevtoolsChartEntry.hitReporting", () => {
+  beforeEach(resetDevtools);
+
+  it("is 'canvas' for an engine that reports canvas hits, 'none' otherwise", () => {
+    const hook = enableDevtools();
+    const h1 = document.createElement("div");
+    const h2 = document.createElement("div");
+    document.body.append(h1, h2);
+    const scatter = mountScatterChart(h1, {
+      dataSet: [{ label: "P", x: 1, y: 2, d: 3 }],
+      width: 300,
+      height: 200,
+      xAxisDataType: "number",
+    });
+    const pie = mountPieChart(h2, {
+      dataSet: [{ label: "A", value: 1 }],
+      width: 200,
+      height: 200,
+    });
+    const byType = new Map([...hook.charts.values()].map((e) => [e.chartType, e]));
+    expect(byType.get("scatter-plot-chart")?.hitReporting).toBe("canvas");
+    expect(byType.get("pie-chart")?.hitReporting).toBe("none");
+    scatter.destroy();
+    pie.destroy();
+  });
+
+  it("guard: every engine that calls reportDevtoolsHit declares hitReporting 'canvas', and only those", () => {
+    const dir = join(dirname(fileURLToPath(import.meta.url)), "../src/engine");
+    const mismatches: string[] = [];
+    for (const file of readdirSync(dir).filter((f) => f.endsWith(".ts"))) {
+      const src = readFileSync(join(dir, file), "utf8");
+      const reports = src.includes("reportDevtoolsHit(");
+      const declares = /attachDevtools\([^;]*hitReporting:\s*"canvas"/s.test(src);
+      if (reports !== declares) mismatches.push(`${file} reports=${reports} declares=${declares}`);
+    }
+    expect(mismatches).toEqual([]);
   });
 });

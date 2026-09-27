@@ -563,5 +563,7 @@ export function mountSymbolMapChart(
     instance.timeline = () => engineTl.controller();
   }
 
-  return attachDevtools(instance, host, "symbol-map-chart", () => baseProps);
+  return attachDevtools(instance, host, "symbol-map-chart", () => baseProps, {
+    hitReporting: "canvas",
+  });
 }

@@ -3,7 +3,8 @@
 //
 // Back-compat barrel. Prefer the per-chart subpaths (@michi-vz/react/line-chart)
 // so a bundler can drop the 21 charts you do not use; this barrel pulls in all 22.
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
+import { enableDevtools } from "@michi-vz/core";
 
 // Shared-state provider + hook. They live in ONE internal module because React
 // context identity is per module instance: a second createContext would give a
@@ -78,6 +79,11 @@ export * from "./radial-tree-chart";
 // devtools chunk from production builds.
 declare const process: { env: { NODE_ENV?: string } } | undefined;
 
+// A layout effect on the client (it must run before the charts' passive mount
+// effects); a plain effect on the server, where neither runs and React 18 would
+// warn about useLayoutEffect.
+const useClientLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 export interface MichiVzDevtoolsProps {
   /** Mount even when process.env.NODE_ENV === "production" (default: dev-only). */
   forceMount?: boolean;
@@ -104,7 +110,8 @@ export interface MichiVzDevtoolsProps {
  * or Ctrl/Cmd+Shift+M, to open the panel; drag it anywhere) while it is in the
  * tree. Dev-only by default: the dynamic import is behind a NODE_ENV check, so
  * bundlers drop the devtools chunk from production builds entirely (pass
- * `forceMount` to opt into shipping it, e.g. on a staging build).
+ * `forceMount` to opt into shipping it, e.g. on a staging build). Charts rendered
+ * in the same commit (siblings before or after it) register with the panel.
  *
  *   {process.env.NODE_ENV !== "production" && <MichiVzDevtools />}
  */
@@ -116,9 +123,15 @@ export function MichiVzDevtools({
   theme,
   buttonPosition,
 }: MichiVzDevtoolsProps = {}): null {
-  useEffect(() => {
+  useClientLayoutEffect(() => {
     const isProd = typeof process !== "undefined" && process.env.NODE_ENV === "production";
     if (isProd && !forceMount) return;
+    // Install the core hook NOW, synchronously. Layout effects run before the
+    // passive mount effects of every chart in the same commit, so those charts
+    // register themselves; the panel module below only arrives after a dynamic
+    // import, too late for them (and React hosts are plain divs the panel's DOM
+    // sweep cannot find).
+    enableDevtools();
     let handle: import("@michi-vz/devtools").DevtoolsHandle | null = null;
     let cancelled = false;
     void import("@michi-vz/devtools").then((m) => {

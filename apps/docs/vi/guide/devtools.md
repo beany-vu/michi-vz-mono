@@ -13,13 +13,13 @@ cùng app của bạn.
 
 <DevtoolsDemo />
 
-> Nhấp **Mount devtools**: lá chắn Michi nổi hiện ra ở góc dưới bên phải, đó là bộ mặt thu
-> gọn của devtools. Nhấp vào nó (hoặc nhấn `Ctrl/Cmd+Shift+M`) để mở bảng điều khiển, chọn
-> biểu đồ trong danh sách, rồi lướt qua các tab: **Overview** (context, chuỗi dữ liệu, sửa
-> trực tiếp), **Sizing**, **Scales**, **Diff**, **Hit-test**, **Profiler**, **A11y**, và
-> **Insights**, nơi ✦ **Narrate** và ✦ **Detect anomalies** chạy đúng plugin
-> `@michi-vz/insights` trên biểu đồ đang sống (đợt tăng vọt Cost năm 2022 sẽ bị gắn cờ, cứ
-> highlight nó từ kết quả). Đây là gói thật, chạy ngay trong trình duyệt của bạn.
+> Nhấp **Mount devtools**: lá chắn Michi nổi hiện ra ở góc dưới bên phải, đó là bộ mặt thu gọn của
+> devtools. Nhấp vào nó (hoặc nhấn `Ctrl/Cmd+Shift+M`) để mở bảng điều khiển, chọn biểu đồ trong
+> danh sách, rồi lướt qua các tab: **Overview** (context, bảng item, sửa trực tiếp), **Props**,
+> **Sizing**, **Scales**, **Diff**, **Hit-test**, **Profiler**, **A11y**, và **Insights**, nơi ✦
+> **Narrate** và ✦ **Detect anomalies** chạy đúng plugin `@michi-vz/insights` trên biểu đồ đang
+> sống (đợt tăng vọt Cost năm 2022 sẽ bị gắn cờ, cứ highlight nó từ kết quả). Đây là gói thật,
+> chạy ngay trong trình duyệt của bạn.
 
 ## Bắt đầu nhanh
 
@@ -49,6 +49,10 @@ import { MichiVzDevtools } from "@michi-vz/react";
 
 <MichiVzDevtools />
 ```
+
+Các biểu đồ render trong cùng cây vẫn đăng ký với bảng điều khiển, kể cả khi chúng mount trong
+cùng lần render với `<MichiVzDevtools />`: component bật hook trong một layout effect, trước khi
+các effect mount của biểu đồ chạy.
 
 Với Vue, Svelte, Angular, hay web component thuần, công thức vẫn y hệt, ba dòng: gọi
 `mountDevtools()` trong hook mount của component gốc, gọi `destroy()` lúc unmount. Còn nếu
@@ -83,12 +87,11 @@ light DOM; bảng điều khiển không bao giờ đụng vào hợp đồng m�
 để đổi kích thước (kích thước cũng tự nhớ theo trình duyệt), hoặc bấm nút **⛶** ở tiêu đề
 để phóng to toàn màn hình rồi thu lại.
 
-Dashboard có nhiều biểu đồ vẫn dễ quản lý: danh sách biểu đồ có một **ô lọc**, mỗi mục có
-nút **◎ định vị** để cuộn biểu đồ vào tầm nhìn và nhấp nháy viền quanh nó; quá 8 biểu đồ
-thì bảng điều khiển gộp các đợt cập nhật dồn dập lại thành một lần re-render, nên trang
-bận rộn không bị chậm chỉ vì đang mở devtools. Bảng điều khiển không hề polling, nó chỉ
-phản ứng theo sự kiện của hook, và snapshot lịch sử bỏ qua những biểu đồ mà context chưa
-đổi.
+Dashboard có nhiều biểu đồ vẫn dễ quản lý: danh sách biểu đồ có một **ô lọc**, mỗi mục có nút **◎
+định vị** để cuộn biểu đồ vào tầm nhìn và nhấp nháy viền quanh nó; quá 8 biểu đồ thì bảng điều
+khiển gộp các đợt cập nhật dồn dập lại thành một lần re-render, nên trang bận rộn không bị chậm
+chỉ vì đang mở devtools. Bảng điều khiển không hề polling, nó chỉ phản ứng theo sự kiện của hook,
+và snapshot lịch sử bỏ qua những biểu đồ mà cả context lẫn prop đều chưa đổi.
 
 ## Các tab
 
@@ -104,19 +107,26 @@ của host.
 
 ### Scales - "vì sao giá trị trục của tôi bị sai?"
 
-Render thẳng domain `xAxis` / `yAxis` từ `ChartContext`, kèm kiểm tra hợp lý cho ba kiểu
-lỗi kinh điển: domain ra `NaN` (một ngày hay giá trị parse hỏng), domain rộng bằng không
-(mọi giá trị giống hệt nhau, mark bị sụp lại), và domain bị đảo ngược (truyền nhầm chiều
-một prop domain thủ công). Biểu đồ không có trục (pie, sankey, treemap) sẽ nói rõ điều đó
-thay vì hiện trống trơn.
+Render thẳng domain `xAxis` / `yAxis` từ `ChartContext`, kèm kiểm tra hợp lý cho ba kiểu lỗi kinh
+điển: domain ra `NaN` (một ngày hay giá trị parse hỏng), domain rộng bằng không (mọi giá trị giống
+hệt nhau, mark bị sụp lại), và domain bị đảo ngược (truyền nhầm chiều một prop domain thủ công).
+Biểu đồ không có trục x/y nhưng vẫn đưa giá trị qua một thang đo sẽ hiện thang đo đó: domain bán
+kính `[0, maxValue]` của radar, cung `[min, max]` của gauge, giá trị khớp nhỏ nhất và lớn nhất của
+choropleth, và các ngưỡng `colorScale` của symbol map (hoặc khoảng giá trị khi không có
+`colorScale`). Pie, sankey và treemap đặt mark mà không cần thang giá trị, và sẽ nói rõ điều đó.
 
 ### Diff - "điều gì đã thay đổi giữa hai lần render này?"
 
-Bảng điều khiển chụp snapshot `ChartContext` của mỗi biểu đồ ở **mỗi lần cập nhật** và giữ
-lại một lịch sử ngắn. Tab Diff so sánh sâu (deep-diff) hai snapshot gần nhất, ra một danh
-sách thêm/xóa/đổi với đường dẫn chính xác (`series[0].max: 140 → 555`), nên câu "biểu đồ
-của tôi trông khác mà tôi chẳng biết vì sao" chỉ còn là câu trả lời hai dòng. Lùi lại qua
-thanh History thì diff cũng bám theo snapshot bạn đang xem.
+Bảng điều khiển chụp snapshot `ChartContext` của mỗi biểu đồ ở **mỗi lần cập nhật** và giữ lại một
+lịch sử ngắn. Tab Diff so sánh sâu (deep-diff) hai snapshot gần nhất, ra một danh sách
+thêm/xóa/đổi với đường dẫn chính xác, nên câu "biểu đồ của tôi trông khác mà tôi chẳng biết vì
+sao" chỉ còn là câu trả lời hai dòng. Các phần tử trong mảng được ghép theo `label`, `key`, `id`
+hoặc `code` của chúng: đường dẫn gọi tên phần tử (`series["Revenue"].max: 140 → 555`), và khi
+Top-N xếp hạng lại thì chỉ hiện một dòng **reordered** thay vì cả một bức tường thay đổi theo chỉ
+số (danh sách như `renderedRankedIds` cũng vậy). Mỗi snapshot còn giữ một bản sao prop không kèm
+dữ liệu, nên một lần cập nhật chỉ đổi prop (một highlight, một chỉnh `barRadius`) cũng là một
+snapshot và hiện dưới `props.` (`props.highlightItems`). Lùi lại qua thanh History thì diff cũng
+bám theo snapshot bạn đang xem.
 
 ### Insights - biểu đồ tự giải thích chính mình
 
@@ -138,12 +148,22 @@ tool thô (nhập tham số JSON, xuất kết quả JSON).
 
 ### Hit-test - "vì sao tooltip của tôi không kích hoạt?"
 
-Mark canvas không có DOM, nên khi hover ngừng ăn thì chẳng có gì để soi trong tab Elements;
-bạn không phân biệt được lỗi hit-test với một listener đã chết hay một vấn đề CSS
-`pointer-events`. Tab Hit-test stream trực tiếp kết quả hit-test canvas của chính biểu đồ
-theo thời gian thực: mỗi lần di chuột ghi lại tọa độ và mark tìm được (hay bỏ lỡ), cùng
-một chỉ dấu xanh/đỏ bám theo sự kiện gần nhất ngay trên biểu đồ. Dấu hiệu chẩn đoán rõ nhất
-là sự im lặng: hover mà log đứng yên nghĩa là listener canvas của biểu đồ đã chết.
+Mark canvas không có DOM, nên khi hover ngừng ăn thì chẳng có gì để soi trong tab Elements; bạn
+không phân biệt được lỗi hit-test với một listener đã chết hay một vấn đề CSS `pointer-events`. Với
+các biểu đồ có báo kết quả hit-test canvas (bubble, fountain, line, radial tree, scatter, symbol map
+và treemap), tab Hit-test stream chúng theo thời gian thực: mỗi lần di chuột ghi lại tọa độ và mark
+tìm được (hay bỏ lỡ), cùng một chỉ dấu xanh/đỏ bám theo sự kiện gần nhất ngay trên biểu đồ. Dấu hiệu
+chẩn đoán rõ nhất là sự im lặng: hover mà log đứng yên nghĩa là listener canvas của biểu đồ đã chết.
+Các biểu đồ còn lại chưa báo hit canvas, và tab sẽ nói đúng như vậy thay vì đổ lỗi cho listener.
+
+Với biểu đồ vẽ bằng SVG, tab trở thành **SVG inspector**: di chuột trên biểu đồ, nó ghi lại phần tử
+trên cùng dưới con trỏ (tag, class, vị trí giữa các phần tử anh em) và một **khóa màu**, đọc từ phần
+tử tổ tiên gần nhất có `data-label-safe` / `data-label` của phần tử đầu tiên dưới con trỏ có khóa
+như vậy. Một vùng bắt chuột trong suốt không mang khóa, nên khi trỏ vào một mark của bản đồ ký hiệu,
+dòng log ghi `circle.symbol-hit over circle.symbol` và hiện khóa của mark nằm bên dưới. Khóa màu là
+móc nối của hợp đồng màu, không phải danh tính của mark: ví dụ một link sankey mang khóa của node
+nguồn hoặc node đích. Các lớp có `pointer-events: none`, như chú thích của gauge, thì nó không thấy
+được.
 
 ### Profiler - "vì sao cái này lại chậm đi?"
 
@@ -154,19 +174,53 @@ không memoize khiến re-render toàn phần, hoặc listener bị rò rỉ.
 
 ### A11y - kiểm toán mà không devtool biểu đồ nào khác làm
 
-Các rule heuristic lấy cảm hứng từ Chartability chạy trên context đang sống: thiếu
-`summary` bằng ngôn ngữ thuần (screen reader và AI agent chẳng nhận được gì), bảng a11y có
-ít hàng hơn số chuỗi, hai chuỗi trùng màu (không phân biệt được nếu không nhìn thấy), và
-màu chuỗi dưới tỷ lệ tương phản đồ họa 3:1 trên nền sáng hoặc tối. Dưới phần audit, tab
-này còn render luôn bảng dữ liệu a11y thật, đúng những gì một screen reader nhận được.
+Các rule heuristic lấy cảm hứng từ Chartability chạy trên context đang sống: thiếu `summary` bằng
+ngôn ngữ thuần (screen reader và AI agent chẳng nhận được gì), bảng a11y có ít hàng hơn số chuỗi,
+hai chuỗi trùng màu (không phân biệt được nếu không nhìn thấy), và màu dưới tỷ lệ tương phản đồ
+họa 3:1 trên nền sáng hoặc tối, mỗi màu chỉ kiểm tra một lần và nêu tên mọi chuỗi dùng màu đó. Bản
+đồ choropleth, symbol map, và mọi biểu đồ có `colorScale` tô màu theo nhóm, nên các nơi cùng nhóm
+trùng màu là có chủ ý. Ở đó tab kiểm tra dải màu thay thế: các bậc liền kề khó phân biệt, và
+`noDataColor` trùng hoặc gần trùng một bậc. Dưới phần audit, tab này còn render luôn bảng dữ liệu
+a11y thật, đúng những gì một screen reader nhận được.
+
+### Props - "biểu đồ này đang chạy với những thiết lập nào?"
+
+Nhiều tùy chọn không bao giờ xuất hiện trong `ChartContext`: `barRadius`, `stacked` /
+`stackOffset` của biểu đồ vùng, `hoverHighlight` của sankey, cung của gauge, zoom, cấu hình
+timeline và reveal. Tab Props hiện đúng những gì `getProps()` trả về, dưới dạng cây: các prop dữ
+liệu (`dataSet`, `series`, `nodes`, `links`, ...) thu gọn thành `Array(n)` và hàm hiện dưới dạng
+`ƒ` kèm tên.
+
+Prop cũng nằm trong lịch sử: một lần cập nhật chỉ đổi prop (một highlight, một công tắc style) là
+một snapshot mà tab Diff hiển thị được. Khi `highlightItems` hoặc `disabledItems` đổi hơn 10 lần
+trong một giây, và mỗi lần đổi đều nằm trong một lần cập nhật không đổi prop nào khác, tab sẽ cảnh
+báo và nêu tên prop đó: thường là app đang đẩy `onHighlightItem` ngược vào `highlightItems` ở mỗi
+lần hover. Hãy để biểu đồ tự xử lý hover (ví dụ `hoverHighlight` của sankey) và giữ `highlightItems`
+cho việc chọn. Các prop khác được so sánh đầy đủ, kể cả dữ liệu, nên co giãn một biểu đồ responsive,
+kéo một thanh trượt gắn với `barRadius`, hay chạy một timeline truyền một `dataSet` mới ở mỗi khung
+hình trong khi highlight bên đang dẫn đầu đều không bao giờ gây cảnh báo. Dữ liệu bị sửa tại chỗ rồi
+truyền lại dưới dạng cùng một mảng chỉ được tính là thay đổi khi độ dài của mảng đổi. Hàm được so
+sánh theo tên, nên các callback mới tạo ở mỗi lần render của React không khiến kiểu echo này bị bỏ
+sót. Cảnh báo tự biến mất sau 30 giây không có thay đổi như vậy.
+
+Chỉnh sửa từ bảng điều khiển đi thẳng vào instance của biểu đồ. Với biểu đồ do React hoặc web
+component quản lý, lần render kế tiếp của wrapper truyền lại prop của chính nó và ghi đè những
+chỉnh sửa đó.
 
 ### Overview - kiểm tra, điều khiển, chỉnh sửa
 
-Bộ kiểm tra kinh điển: summary, thống kê theo từng chuỗi (kèm phần tách thực tế-so-với-dự-
-đoán bên dưới), các nút chuyển highlight/tắt vá thẳng vào prop đang sống, và một trình sửa
-JSON cho `dataSet`: sửa xong, nhấn **Apply**, xem biểu đồ re-render. Lỡ nghịch quá tay?
-**Reset chart** đưa dataSet, trạng thái highlight, và trạng thái tắt về đúng lúc devtools
-lần đầu thấy biểu đồ, mọi chỉnh sửa từ bảng điều khiển đều hoàn tác được trong một cú nhấp.
+Bộ kiểm tra kinh điển: summary, thống kê, và một bảng **Items** dựng từ mảng theo từng phần tử của
+context: `series`, `jets` của biểu đồ đài phun, `rings` của gauge, `nodes` của sankey, `leaves` của
+treemap, `regions` hoặc `symbols` của bản đồ, v.v., kèm một danh sách thả xuống khi có nhiều hơn một
+mảng. Nhấp vào một cột để sắp xếp (ví dụ các jet của đài phun theo khoảng) và hover một hàng để
+highlight phần tử đó trên biểu đồ. Lần hover này không được ghi vào lịch sử, và khi con trỏ rời
+bảng, highlight mà app đã đặt sẽ được trả lại. Chuỗi có dự báo sẽ hiện phần tách thực
+tế-so-với-dự-đoán bên dưới. Các nút chuyển highlight/tắt liệt kê mọi nhãn mà biểu đồ biết (chú giải,
+màu, prop highlight và tắt hiện tại), nên chuỗi bạn vừa tắt vẫn còn trong danh sách. Trình sửa JSON
+sửa prop dữ liệu mà biểu đồ có (`dataSet`, `series`, `data`, hoặc `nodes` và `links` cùng lúc với
+sankey): sửa xong, nhấn **Apply**, xem biểu đồ re-render. Lỡ nghịch quá tay? **Reset chart** đưa dữ
+liệu, trạng thái highlight, và trạng thái tắt về đúng lúc devtools lần đầu thấy biểu đồ, mọi chỉnh
+sửa từ bảng điều khiển đều hoàn tác được trong một cú nhấp.
 
 Tiện thể nói luôn: các hành động ✦ trên tab Insights **mặc định không dùng model ngôn ngữ
 nào cả**, chúng chạy plugin insights của biểu đồ ngay tại chỗ (rule và thống kê có tính
@@ -175,12 +229,15 @@ rời khỏi trang.
 
 ## Xuyên thời gian qua trạng thái
 
-Khi một biểu đồ đã đổi nhiều hơn một lần, thanh **History** hiện ra: bấm `◀` / `▶` để lướt
-qua các snapshot `ChartContext` trong quá khứ, xem chính xác trạng thái đã tiến triển ra
-sao, hoặc bấm **● live** để về trạng thái mới nhất. Khi đang xem snapshot quá khứ, các điều
-khiển chỉ đọc (bạn đang soi lịch sử, không điều khiển biểu đồ). Kết hợp với tab Diff, câu
-hỏi "biểu đồ này trông thế nào ở lần cập nhật trước, và cái gì đã đổi?" chỉ mất vài giây để
-trả lời.
+Khi một biểu đồ đã đổi nhiều hơn một lần, thanh **History** hiện ra: bấm `◀` / `▶` để lướt qua các
+snapshot trong quá khứ, xem chính xác trạng thái đã tiến triển ra sao, hoặc bấm **● live** để về
+trạng thái mới nhất. Snapshot cũng bắt được những lần render do biểu đồ tự khởi động: một bước
+timeline, lúc kết thúc chuyển cảnh timeline, một lần zoom biểu đồ đường, bố cục bất đồng bộ của biểu
+đồ bong bóng, lúc chuyển sang WebGPU, và một plugin thêm bằng `use()`. Khi đang xem snapshot quá
+khứ, các điều khiển chỉ đọc (bạn đang soi lịch sử, không điều khiển biểu đồ). Kết hợp với tab Diff,
+câu hỏi "biểu đồ này trông thế nào ở lần cập nhật trước, và cái gì đã đổi?" chỉ mất vài giây để trả
+lời. Khi một biểu đồ bị hủy hoặc rời khỏi trang, bảng điều khiển bỏ lịch sử của nó cùng mọi trạng
+thái khác đang giữ cho biểu đồ đó.
 
 ## Thực tế so với dự đoán
 
@@ -246,11 +303,16 @@ phí phạm ở đây cả.
 ## Cách nó hoạt động
 
 `@michi-vz/core` có sẵn một hook nhỏ, opt-in. `mountDevtools()` gọi `enableDevtools()`, tạo
-`globalThis.__MICHI_VZ_DEVTOOLS_HOOK__`, một registry mà mỗi `mountXChart()` ghi vào lúc
-mount và xóa đi lúc `destroy()`. Bảng điều khiển subscribe vào đó để nhận cập nhật, đồng
-thời quét DOM tìm các phần tử `<michi-vz-*>` đã mount từ trước. Nếu bạn không bao giờ bật
-devtools, hook cũng không bao giờ được tạo, và biểu đồ chỉ tốn đúng một lần kiểm tra cờ mỗi
-khi mount.
+`globalThis.__MICHI_VZ_DEVTOOLS_HOOK__`, một registry mà mỗi `mountXChart()` ghi vào lúc mount và
+xóa đi lúc `destroy()`. Bảng điều khiển subscribe vào đó để nhận cập nhật. Để tìm các web component
+đã mount trước devtools, nó còn quét DOM tìm host của biểu đồ (class `.michi-vz`) rồi leo lên phần
+tử `<michi-vz-*>` bao quanh, bỏ qua những biểu đồ mà hook đã có. Mỗi phần tử giữ nguyên id nó nhận
+được lần đầu: chính thuộc tính `id` của nó nếu đây là lần đầu bảng điều khiển gặp id đó, nếu không
+thì một id đánh số mà chưa biểu đồ nào khác từng có. Không có hai biểu đồ nào dùng chung một id, và
+gỡ một biểu đồ không bao giờ chuyển lịch sử hay các điều khiển của nó sang biểu đồ khác. Một
+listener của hook ném lỗi sẽ được báo qua `console.error` và không bao giờ làm hỏng `chart.update()`
+của bạn. Nếu bạn không bao giờ bật devtools, hook cũng không bao giờ được tạo, và biểu đồ chỉ tốn
+đúng một lần kiểm tra cờ mỗi khi mount.
 
 Bạn có thể tự dựng UI riêng (hay một extension trong tương lai) trên cùng bề mặt này:
 
@@ -263,3 +325,6 @@ hook?.subscribe((charts) => {
   for (const c of charts) console.log(c.chartType, c.getContext());
 });
 ```
+
+Mỗi mục biểu đồ còn cho biết engine của nó có báo hit canvas hay không (`hitReporting: "canvas"`
+hoặc `"none"`); nhờ vậy tab Hit-test biết khi nào sự im lặng nghĩa là listener đã chết.

@@ -230,6 +230,14 @@ export const DEVTOOLS_CSS = `
   text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--mvdt-border-soft); white-space: nowrap;
 }
 .mv-devtools th { color: var(--mvdt-muted); font-weight: 600; }
+.mv-devtools th.sortable { cursor: pointer; user-select: none; }
+.mv-devtools th.sortable:hover { color: var(--mvdt-ink); }
+.mv-devtools-tablewrap { overflow-x: auto; }
+.mv-devtools-items tbody tr:hover { background: var(--mvdt-bg-hover); }
+.mv-devtools select {
+  font: inherit; color: var(--mvdt-ink); background: var(--mvdt-bg-inset);
+  border: 1px solid var(--mvdt-border-soft); border-radius: 6px; padding: 2px 6px;
+}
 .mv-devtools .badge { display: inline-block; padding: 0 6px; border-radius: 999px; font-size: 11px; }
 .mv-devtools .badge.actual { background: var(--mvdt-ok-bg); color: var(--mvdt-ok-ink); }
 .mv-devtools .badge.predicted { background: var(--mvdt-warn-bg); color: var(--mvdt-warn-ink); }
@@ -247,6 +255,7 @@ export const DEVTOOLS_CSS = `
 .mv-devtools label.chk { display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
   background: var(--mvdt-bg-raised); border: 1px solid var(--mvdt-border); border-radius: 6px; padding: 2px 6px; }
 .mv-devtools .err { color: var(--mvdt-err-ink); }
+.mv-devtools-note { color: var(--mvdt-muted); margin: 4px 0 6px; white-space: normal; }
 .mv-devtools .empty { color: var(--mvdt-muted); padding: 16px; text-align: center; }
 .mv-devtools-history { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
 .mv-devtools-btn.is-active { background: var(--mvdt-bg-active); color: var(--mvdt-ink-strong); }
@@ -307,6 +316,7 @@ export const DEVTOOLS_CSS = `
 .mv-devtools-diff .kind.added { color: var(--mvdt-ok-ink); }
 .mv-devtools-diff .kind.removed { color: var(--mvdt-err-ink); }
 .mv-devtools-diff .kind.changed { color: var(--mvdt-warn-ink); }
+.mv-devtools-diff .kind.reordered { color: var(--mvdt-chart); }
 .mv-devtools-diff .path { color: var(--mvdt-chart); word-break: break-all; white-space: normal; }
 .mv-devtools-diff .vals { grid-column: 2; color: var(--mvdt-muted); word-break: break-all; white-space: normal; }
 

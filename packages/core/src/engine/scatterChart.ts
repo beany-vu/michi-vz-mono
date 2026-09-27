@@ -676,5 +676,7 @@ export function mountScatterChart(
     instance.timeline = () => engineTl.controller();
   }
 
-  return attachDevtools(instance, host, "scatter-plot-chart", () => baseProps);
+  return attachDevtools(instance, host, "scatter-plot-chart", () => baseProps, {
+    hitReporting: "canvas",
+  });
 }

@@ -566,5 +566,7 @@ export function mountTreemapChart(
     instance.timeline = () => engineTl.controller();
   }
 
-  return attachDevtools(instance, host, "treemap-chart", () => baseProps);
+  return attachDevtools(instance, host, "treemap-chart", () => baseProps, {
+    hitReporting: "canvas",
+  });
 }

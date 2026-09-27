@@ -5,7 +5,7 @@
 // plugin wiring + colour-mapping dispatch; the force layout lives in the pure layer.
 import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
-import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
+import { attachDevtools, getDevtoolsHook, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
@@ -384,6 +384,7 @@ export function mountBubbleChart(
         lastLayoutKey = layoutKey;
         lastPacked = packed;
         finishRender(packed);
+        getDevtoolsHook()?.notify(); // the settled layout lands outside update()
       });
       return;
     }
@@ -539,5 +540,7 @@ export function mountBubbleChart(
     instance.timeline = () => engineTl.controller();
   }
 
-  return attachDevtools(instance, host, "bubble-chart", () => baseProps);
+  return attachDevtools(instance, host, "bubble-chart", () => baseProps, {
+    hitReporting: "canvas",
+  });
 }

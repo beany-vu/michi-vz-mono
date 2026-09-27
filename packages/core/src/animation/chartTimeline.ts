@@ -13,6 +13,7 @@ import {
   syncTimelineControl,
 } from "../render/timelineControl";
 import type { Filter, TimelinePeriodConfig } from "../types";
+import { getDevtoolsHook } from "../devtools/hook";
 
 export interface ResolvedTimeline {
   speedMs: number;
@@ -211,6 +212,8 @@ export function createEngineTimeline(deps: {
       onDone: () => {
         tween = null;
         deps.requestRender();
+        // Once per tween, never per frame: the devtools panel records the landed state.
+        getDevtoolsHook()?.notify();
       },
     });
     tween = { from: from.slice(), t: 0, driver };
@@ -256,6 +259,8 @@ export function createEngineTimeline(deps: {
               index = i;
               startTween();
               deps.requestRender();
+              // A step re-renders outside update(): tell the devtools panel.
+              getDevtoolsHook()?.notify();
               activeCfg?.onStep?.(period, i);
             },
             onPlayStateChange: () => {

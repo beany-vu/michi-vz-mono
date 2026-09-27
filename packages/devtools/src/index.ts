@@ -20,13 +20,14 @@ export type {
   DevtoolsButtonPosition,
 } from "./panel";
 export { DEVTOOLS_CSS } from "./styles";
-export { diffObjects, type DiffEntry } from "./diff";
+export { diffObjects, defaultDiffKey, type DiffEntry, type DiffOptions } from "./diff";
 export {
   auditContext,
   contrastRatio,
   findDuplicateColors,
   type A11yFinding,
   type AuditableContext,
+  type AuditOptions,
 } from "./a11y";
 
 // Re-export the core hook surface so consumers can wire a custom UI / extension.

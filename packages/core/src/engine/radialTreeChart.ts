@@ -471,5 +471,7 @@ export function mountRadialTreeChart(
     instance.timeline = () => engineTl.controller();
   }
 
-  return attachDevtools(instance, host, "radial-tree-chart", () => baseProps);
+  return attachDevtools(instance, host, "radial-tree-chart", () => baseProps, {
+    hitReporting: "canvas",
+  });
 }

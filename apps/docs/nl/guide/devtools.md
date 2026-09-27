@@ -12,12 +12,14 @@ het is één import, geversioneerd met je app.
 
 <DevtoolsDemo />
 
-> Klik op **Mount devtools**: het zwevende Michi-schild verschijnt rechtsonder - het
-> ingeklapte gezicht van de devtools. Klik erop (of druk op `Ctrl/Cmd+Shift+M`) om het paneel te openen, kies de grafiek in de lijst, en
-> loop de tabbladen af: **Overview** (context, series, live bewerking), **Sizing**, **Scales**, **Diff**,
-> **Hit-test**, **Profiler**, **A11y**, en **Insights** - waar ✦ **Narrate** en ✦ **Detect
-> anomalies** echte `@michi-vz/insights`-plugins tegen de live grafiek uitvoeren (de piek in de
-> 2022 Cost wordt gemarkeerd; highlight hem vanuit het resultaat). Dit is het echte pakket, dat in je browser draait.
+> Klik op **Mount devtools**: het zwevende Michi-schild verschijnt rechtsonder - het ingeklapte
+> gezicht van de devtools. Klik erop (of druk op `Ctrl/Cmd+Shift+M`) om het paneel te openen, kies
+> de grafiek in de lijst, en loop de tabbladen af: **Overview** (context, itemtabel, live
+> bewerking), **Props**, **Sizing**, **Scales**, **Diff**, **Hit-test**, **Profiler**, **A11y**,
+> en **Insights** - waar ✦ **Narrate** en ✦ **Detect anomalies** echte
+> `@michi-vz/insights`-plugins tegen de live grafiek uitvoeren (de piek in de 2022 Cost wordt
+> gemarkeerd; highlight hem vanuit het resultaat). Dit is het echte pakket, dat in je browser
+> draait.
 
 ## Snelstart
 
@@ -47,6 +49,10 @@ import { MichiVzDevtools } from "@michi-vz/react";
 
 <MichiVzDevtools />
 ```
+
+Grafieken in dezelfde boom registreren zich bij het paneel, ook als ze in dezelfde render als
+`<MichiVzDevtools />` mounten: de component zet de hook aan in een layout-effect, voordat de
+mount-effects van de grafieken draaien.
 
 Voor Vue, Svelte, Angular, of plain web components is het recept dezelfde drie regels: roep
 `mountDevtools()` aan in de mount-hook van je rootcomponent, `destroy()` bij unmount. En voor
@@ -81,11 +87,12 @@ Werk je met een grote context of een lange serietabel? **Sleep de linkerbovenhoe
 het te herschalen (de grootte wordt per browser onthouden), of druk op de **⛶**-knop in de header om
 het te maximaliseren tot de volledige viewport en terug.
 
-Dashboards met veel grafieken blijven overzichtelijk: de chartlijst heeft een **filtervak**, elke
-lijstitem heeft een **◎ locate**-knop die de grafiek in beeld scrolt en er een omlijning omheen laat
-flitsen, en na 8 grafieken voegt het paneel updatebursts samen tot één re-render, zodat een drukke
-pagina nooit hapert omdat devtools open staat. Het paneel doet totaal geen polling - het reageert
-alleen op de events van de hook, en historie-snapshots slaan grafieken over waarvan de context niet veranderd is.
+Dashboards met veel grafieken blijven overzichtelijk: de chartlijst heeft een **filtervak**, elk
+lijstitem heeft een **◎ locate**-knop die de grafiek in beeld scrolt en er een omlijning omheen
+laat flitsen, en na 8 grafieken voegt het paneel updatebursts samen tot één re-render, zodat een
+drukke pagina nooit hapert omdat devtools open staat. Het paneel doet totaal geen polling - het
+reageert alleen op de events van de hook, en historie-snapshots slaan grafieken over waarvan de
+context en de props niet veranderd zijn.
 
 ## De tabbladen
 
@@ -103,16 +110,26 @@ omdat michi-vz-grafieken by design vaste grootte hebben en responsiviteit bij de
 Rendert de live `xAxis` / `yAxis`-domeinen rechtstreeks vanuit de `ChartContext`, met
 gezondheidscontroles voor de drie klassieke faalmodi: een `NaN`-domein (een datum of waarde kon
 niet geparst worden), een nul-breed domein (elke waarde identiek, marks vallen samen), en een
-omgekeerd domein (een handmatige domain-prop achterstevoren doorgegeven). Grafieken zonder assen
-(pie, sankey, treemap) zeggen dat, in plaats van niets te tonen.
+omgekeerd domein (een handmatige domain-prop achterstevoren doorgegeven). Grafieken zonder
+x/y-assen die hun waarden toch via een schaal tekenen, tonen die schaal: het radiale domein
+`[0, maxValue]` van de radar, de boog `[min, max]` van de gauge, de laagste en hoogste gekoppelde
+waarde van de choropleth, en de `colorScale`-drempels van de symboolkaart (of het waardebereik als
+die geen `colorScale` heeft). Pie, sankey en treemap plaatsen marks zonder waardeschaal, en zeggen
+dat.
 
 ### Diff - "wat is er veranderd tussen deze twee renders?"
 
 Het paneel maakt een snapshot van de `ChartContext` van elke grafiek bij **elke update** en houdt
 een korte historie bij. Het Diff-tabblad vergelijkt de laatste twee snapshots diepgaand tot een
-toegevoegd/verwijderd/veranderd-lijst met exacte paden (`series[0].max: 140 → 555`), zodat "mijn
-grafiek ziet er anders uit en ik weet niet waarom" een antwoord van twee regels wordt. Stap terug
-door de History-balk en de diff volgt de snapshot die je bekijkt.
+toegevoegd/verwijderd/veranderd-lijst met exacte paden, zodat "mijn grafiek ziet er anders uit en
+ik weet niet waarom" een antwoord van twee regels wordt. Items in arrays worden gekoppeld op hun
+`label`, `key`, `id` of `code`: een pad noemt het item (`series["Revenue"].max: 140 → 555`) en een
+nieuwe Top-N-volgorde verschijnt als één **reordered**-regel in plaats van een muur aan
+indexwijzigingen (hetzelfde geldt voor een lijst als `renderedRankedIds`). Elke snapshot bewaart
+ook een kopie van de props zonder data, dus een update die alleen props wijzigt (een highlight,
+een aangepaste `barRadius`) is ook een snapshot en verschijnt onder `props.`
+(`props.highlightItems`). Stap terug door de History-balk en de diff volgt de snapshot die je
+bekijkt.
 
 ### Insights - de grafiek legt zichzelf uit
 
@@ -132,13 +149,25 @@ Al het andere dat een plugin blootstelt, verschijnt onder **Advanced** als een r
 
 ### Hit-test - "waarom vuurt mijn tooltip niet?"
 
-Canvas-marks hebben geen DOM, dus wanneer een hover stopt met werken, is er niets te inspecteren
-in het Elements-paneel - je kunt een hit-test-bug niet onderscheiden van een dode listener of een
-CSS-`pointer-events`-probleem. Het Hit-test-tabblad streamt live de eigen canvas-hit-test-resultaten
-van de grafiek: elke pointer-beweging logt zijn coördinaten en de mark die eruit kwam (of een
-misser), en een groene/rode marker volgt het laatste event op de grafiek zelf. De doorslaggevende
-diagnose is stilte: als je aan het hoveren bent en de log beweegt niet, is de canvas-listener van de
-grafiek dood.
+Canvas-marks hebben geen DOM, dus wanneer een hover stopt met werken, is er niets te inspecteren in
+het Elements-paneel - je kunt een hit-test-bug niet onderscheiden van een dode listener of een
+CSS-`pointer-events`-probleem. Voor de grafieken die hun canvas-hit-tests melden (bubble, fountain,
+line, radial tree, scatter, symbol map en treemap) streamt het Hit-test-tabblad ze live: elke
+pointer-beweging logt zijn coördinaten en de mark die eruit kwam (of een misser), en een groene/rode
+marker volgt het laatste event op de grafiek zelf. De doorslaggevende diagnose is stilte: als je aan
+het hoveren bent en de log beweegt niet, is de canvas-listener van de grafiek dood. De andere
+grafieken melden nog geen canvas-hits, en het tabblad zegt precies dat in plaats van de listener de
+schuld te geven.
+
+Voor een grafiek die als SVG getekend is, wordt het tabblad een **SVG-inspector**: beweeg de pointer
+over de grafiek en hij logt het bovenste element onder de pointer (tag, class, positie tussen zijn
+broers en zussen) en een **kleursleutel**, gelezen van de dichtstbijzijnde voorouder met
+`data-label-safe` / `data-label` van het eerste element onder de pointer dat er een heeft. Een
+transparant hitdoel draagt geen sleutel, dus boven een mark van een symboolkaart toont de rij
+`circle.symbol-hit over circle.symbol` en de sleutel van de mark eronder. De kleursleutel is het
+haakje voor het kleurcontract, niet de identiteit van de mark: een sankey-link draagt bijvoorbeeld
+de sleutel van zijn bron- of doelknoop. Lagen met `pointer-events: none`, zoals de annotaties van de
+gauge, zijn er onzichtbaar voor.
 
 ### Profiler - "waarom werd dit traag?"
 
@@ -149,20 +178,58 @@ volledige re-renders forceren, of gelekte listeners.
 
 ### A11y - de audit die geen enkele chart-devtool doet
 
-Op Chartability geïnspireerde heuristieken lopen tegen de live context: een ontbrekende
-`summary` in gewone taal (schermlezers en AI-agents krijgen niets), een a11y-tabel met minder rijen
-dan series, twee series die één kleur delen (niet te onderscheiden zonder zicht), en seriekleuren
-onder de 3:1-graphics-contrastratio op een lichte of donkere achtergrond. Onder de audit rendert het
-tabblad de daadwerkelijke a11y-datatabel - precies wat een schermlezer krijgt.
+Op Chartability geïnspireerde heuristieken lopen tegen de live context: een ontbrekende `summary`
+in gewone taal (schermlezers en AI-agents krijgen niets), een a11y-tabel met minder rijen dan
+series, twee series die één kleur delen (niet te onderscheiden zonder zicht), en kleuren onder de
+3:1-graphics-contrastratio op een lichte of donkere achtergrond, één keer per kleur gecontroleerd,
+met elke serie die die kleur gebruikt erbij genoemd. Choropleth- en symboolkaarten, en elke
+grafiek met een `colorScale`, kleuren per klasse, dus plekken in dezelfde klasse delen met opzet
+een kleur. Daar controleert het tabblad in plaats daarvan de kleurschaal: naburige stappen die
+moeilijk uit elkaar te houden zijn, en een `noDataColor` die (bijna) gelijk is aan een stap. Onder
+de audit rendert het tabblad de daadwerkelijke a11y-datatabel - precies wat een schermlezer
+krijgt.
+
+### Props - "met welke instellingen draait deze grafiek?"
+
+Veel opties komen nooit in de `ChartContext` terecht: `barRadius`, `stacked` / `stackOffset` van
+een vlakdiagram, `hoverHighlight` van de sankey, de boog van een gauge, zoom, en de timeline- en
+reveal-configuraties. Het Props-tabblad toont wat `getProps()` teruggeeft, als boom: de dataprops
+(`dataSet`, `series`, `nodes`, `links`, ...) klappen in tot `Array(n)` en functies verschijnen als
+`ƒ` met hun naam.
+
+Props horen ook bij de historie: een update die alleen props wijzigt (een highlight, een
+stijlschakelaar) is een snapshot die het Diff-tabblad kan tonen. Als `highlightItems` of
+`disabledItems` meer dan 10 keer per seconde verandert, telkens in een update die geen andere prop
+wijzigt, waarschuwt het tabblad en noemt het de prop: meestal stuurt een app dan `onHighlightItem`
+bij elke hover terug naar `highlightItems`. Laat de grafiek de hover zelf afhandelen (bijvoorbeeld
+met `hoverHighlight` van de sankey) en houd `highlightItems` voor selecties. De andere props worden
+volledig vergeleken, data inbegrepen: een responsieve grafiek schalen, een slider op `barRadius`
+verslepen of een tijdlijn afspelen die bij elk frame een nieuwe `dataSet` doorgeeft en intussen de
+huidige koploper uitlicht, geeft nooit een waarschuwing. Data die ter plekke is aangepast en opnieuw
+als dezelfde array wordt doorgegeven, telt alleen als wijziging wanneer de lengte verandert.
+Functies worden op naam vergeleken, dus de verse callbacks die een React-render doorgeeft verbergen
+geen echo. De waarschuwing verdwijnt na 30 seconden zonder zulke wijzigingen.
+
+Bewerkingen vanuit het paneel gaan rechtstreeks naar de grafiekinstantie. Bij een grafiek die door
+React of een web component beheerd wordt, geeft de volgende render van de wrapper zijn eigen props
+opnieuw door en overschrijft die bewerkingen.
 
 ### Overview - inspecteren, besturen, bewerken
 
-De klassieke inspector: de samenvatting, statistieken per serie (inclusief de daadwerkelijk-versus-
-voorspeld-splitsing hieronder), highlight/disable-toggles die de live props patchen, en een
-`dataSet`-JSON-editor - bewerk, druk op **Apply**, en kijk hoe de grafiek opnieuw rendert. Te veel
-mee gerommeld? **Reset chart** herstelt de dataSet, highlight, en disable-status naar precies wat ze
-waren toen devtools de grafiek voor het eerst zag - elke door het paneel gedreven bewerking in één
-klik teruggedraaid.
+De klassieke inspector: de samenvatting, de statistieken, en een **Items**-tabel opgebouwd uit de
+array per item van de context - `series`, de `jets` van een fontein, de `rings` van een gauge, de
+`nodes` van een sankey, de `leaves` van een treemap, de `regions` of `symbols` van een kaart,
+enzovoort, met een keuzelijst als er meer dan één is. Klik op een kolom om te sorteren (de jets van
+een fontein op bereik, bijvoorbeeld) en hover over een rij om dat item op de grafiek te highlighten.
+Die hover komt niet in de historie, en zodra de pointer de tabel verlaat, komt de highlight terug
+die de app had ingesteld. Series met een voorspelling tonen de
+daadwerkelijk-versus-voorspeld-splitsing hieronder. De highlight/disable-toggles tonen elk label dat
+de grafiek kent (legenda, kleuren, de huidige highlight- en disable-props), zodat een serie die je
+uitschakelt in de lijst blijft. De JSON-editor bewerkt de dataprop die de grafiek heeft (`dataSet`,
+`series`, `data`, of `nodes` en `links` samen bij een sankey) - bewerk, druk op **Apply**, en kijk
+hoe de grafiek opnieuw rendert. Te veel mee gerommeld? **Reset chart** herstelt de data, highlight,
+en disable-status naar precies wat ze waren toen devtools de grafiek voor het eerst zag - elke door
+het paneel gedreven bewerking in één klik teruggedraaid.
 
 Trouwens: de ✦-acties op het Insights-tabblad zijn standaard **geen taalmodel** - ze voeren de
 insights-plugins van de grafiek lokaal uit (deterministische regels en statistiek; de tooltip van
@@ -171,11 +238,15 @@ elke actie zegt precies wat hij berekent). Er wordt niets gedownload, niets verl
 ## Tijdreizen door status
 
 Wanneer een grafiek meer dan één keer veranderd is, verschijnt een **History**-balk: stap `◀` / `▶`
-door vorige `ChartContext`-snapshots om precies te zien hoe de status evolueerde, of klik op
-**● live** om terug te keren naar de laatste. Terwijl je een eerdere snapshot bekijkt, zijn de
-besturingselementen alleen-lezen (je inspecteert historie, je bestuurt de grafiek niet). In combinatie
-met het Diff-tabblad beantwoordt dit binnen enkele seconden "hoe zag deze grafiek eruit één update
-geleden, en wat is er veranderd?".
+door vorige snapshots om precies te zien hoe de status evolueerde, of klik op **● live** om terug te
+keren naar de laatste. Snapshots vangen ook de renders die een grafiek zelf start: een
+timeline-stap, het einde van een timeline-overgang, een zoom op een lijngrafiek, de asynchrone
+layout van een bubbelgrafiek, de overstap naar WebGPU, en een plugin die met `use()` is toegevoegd.
+Terwijl je een eerdere snapshot bekijkt, zijn de besturingselementen alleen-lezen (je inspecteert
+historie, je bestuurt de grafiek niet). In combinatie met het Diff-tabblad beantwoordt dit binnen
+enkele seconden "hoe zag deze grafiek eruit één update geleden, en wat is er veranderd?". Wanneer
+een grafiek vernietigd wordt of van de pagina verdwijnt, gooit het paneel de historie en de rest van
+de status die het voor die grafiek bijhield weg.
 
 ## Daadwerkelijk versus voorspeld
 
@@ -239,8 +310,14 @@ devtools-module **niet** bundelen. Het zou dezelfde hook hergebruiken, dus niets
 
 `@michi-vz/core` levert een kleine opt-in hook. `mountDevtools()` roept `enableDevtools()` aan, die
 `globalThis.__MICHI_VZ_DEVTOOLS_HOOK__` installeert - een registry waar elke `mountXChart()` naar
-schrijft bij het mounten en wist bij `destroy()`. Het paneel abonneert zich erop voor updates en
-veegt ook door de DOM voor `<michi-vz-*>`-elementen die eerder gemount zijn. Wanneer devtools nooit
+schrijft bij het mounten en wist bij `destroy()`. Het paneel abonneert zich erop voor updates. Om
+web components te vinden die vóór de devtools gemount zijn, zoekt het ook in de DOM naar
+grafiekhosts (de class `.michi-vz`) en klimt het naar het omringende `<michi-vz-*>`-element, waarbij
+het overslaat wat de hook al kent. Elk element houdt het id dat het de eerste keer kreeg: zijn eigen
+`id`-attribuut de eerste keer dat het paneel dat id tegenkomt, anders een genummerd id dat nog geen
+andere grafiek had. Twee grafieken delen nooit een id, en het verwijderen van één grafiek geeft
+nooit zijn historie of besturingselementen door aan een andere. Een hook-listener die een fout
+gooit, wordt gemeld met `console.error` en breekt nooit je `chart.update()`. Wanneer devtools nooit
 ingeschakeld wordt, wordt de hook nooit aangemaakt en betalen grafieken slechts één vlagcontrole per
 mount.
 
@@ -255,3 +332,6 @@ hook?.subscribe((charts) => {
   for (const c of charts) console.log(c.chartType, c.getContext());
 });
 ```
+
+Elke grafiekentry zegt ook of zijn engine canvas-hits meldt (`hitReporting: "canvas"` of
+`"none"`); zo weet het Hit-test-tabblad wanneer stilte een dode listener betekent.

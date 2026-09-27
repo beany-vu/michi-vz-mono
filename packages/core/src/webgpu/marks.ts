@@ -19,6 +19,7 @@
 import { setupWebgpu } from "./setupWebgpu";
 import { getGPUDeviceCached, ensureGPUDevice } from "./device";
 import { isWebGPUAvailable } from "./capability";
+import { getDevtoolsHook } from "../devtools/hook";
 import { cssColorToPremultiplied } from "./color";
 import type { RGBA } from "./color";
 
@@ -276,7 +277,11 @@ export function drawMarksWebgpu(
   if (!device) {
     if (isWebGPUAvailable()) {
       ensureGPUDevice().then((d) => {
-        if (d && o.onReady) o.onReady();
+        if (d && o.onReady) {
+          o.onReady();
+          // The GPU upgrade re-rendered outside update(): tell the devtools panel.
+          getDevtoolsHook()?.notify();
+        }
       });
     }
     return false;
