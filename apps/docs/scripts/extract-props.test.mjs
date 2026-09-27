@@ -83,3 +83,11 @@ test("varying-signature callbacks are NOT marked common", () => {
   assert.equal(prop("gap-chart", "tooltipFormatter").common, false);
   assert.equal(prop("line-chart", "tooltipFormatter").common, false);
 });
+
+test("a @deprecated prop carries its note; a live prop has none", () => {
+  // FountainChartProps.frothLayers: "@deprecated ignored since core 1.29; ..."
+  assert.match(prop("fountain-chart", "frothLayers").deprecated, /ignored since core 1\.29/);
+  assert.match(prop("fountain-chart", "style").deprecated, /ignored/);
+  assert.equal(prop("fountain-chart", "showRange").deprecated, undefined);
+  assert.equal(prop("line-chart", "curve").deprecated, undefined);
+});

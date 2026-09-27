@@ -1944,31 +1944,91 @@ export interface RibbonChartContext extends BaseChartContext {
 }
 
 // ---- FountainChart ("Jet d'Eau") ----
+// Every mark means one thing, read off the y-axis: the STEM is a bar from the
+// baseline (0, the lake) up to the BIG DOT (the number to quote); the FOUNTAIN
+// (a bell of falling water, narrow at the top, wide at the base) spans the real
+// range [low, high]; each SMALL DOT is one real measurement at its exact height,
+// always inside the fountain. Width never encodes data.
 
 /** x-axis modes for the fountain: a temporal/numeric axis = trend, "band" = snapshot. */
 export type FountainXAxisType = XaxisDataType | "band";
 
 export interface FountainDataItem {
-  /** Series/category name; drives the colour mapping, the data-label hook, and (in snapshot mode) the x-band */
+  /** Category (snapshot) or series name (trend); drives the colour mapping, the
+   * data-label hook and, in snapshot mode, the x column */
   label: string;
   /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
-  /** Primary magnitude: the apex height of the jet, mapped to the y-axis */
-  value: number;
-  /** Plume bloom half-width at the apex, in the SAME units as value; encodes uncertainty/volatility (0 => a tight spike) */
-  spread: number;
-  /** Optional sample size / volume; normalised across the dataset to drive froth-layer + droplet density */
-  density?: number;
-  /** Optional directional bias in [-1, 1]; leans the column like wind (0 = upright, experimental) */
-  lean?: number;
-  /** Optional explicit colour for this jet, overriding the generated palette colour */
+  /** THE number: the big dot, and the top of the stem. Optional when `samples` are
+   * given, then it is the median of the samples. A missing or non-finite value with no
+   * samples skips the jet (a `non-finite-value` warning). Negative values are allowed:
+   * the stem then runs down from the baseline. */
+  value?: number;
+  /** Bottom of the fountain: the lowest end of the range (e.g. the best day). With
+   * `high`, the explicit range wins over `spread` and `samples`. When only one end is
+   * given, the other comes from `spread`, then the samples, then the value. */
+  low?: number;
+  /** Top of the fountain: the highest end of the range (e.g. the worst day) */
+  high?: number;
+  /** Shorthand for an even range: low = value - spread, high = value + spread. Used
+   * when `low`/`high` are absent. A negative spread is read as its size (an
+   * `inverted-range` warning). */
+  spread?: number;
+  /** Real measurements, one small dot each, drawn at their exact height inside the
+   * fountain. Without `low`/`high`/`spread` the range is [min, max] of the samples; a
+   * sample outside an explicit range extends it (a `sample-outside-range` warning).
+   * Non-finite entries are dropped. Fewer than 10 samples add an "only N" value label
+   * line, because a few measurements are just a guess. */
+  samples?: number[];
+  /** A predicted period: dashed stem and outline, lighter fill, hollow big dot, and no
+   * small dots or reference counts (default false) */
+  forecast?: boolean;
+  /** Per-item colour. Resolution per jet: `colorsMapping[label]` ?? `color` ?? the
+   * palette slot of the label */
   color?: string;
-  /** When false, the jet renders in the dashed/uncertain "forecast" style (default true) */
-  certainty?: boolean;
-  /** Explicit forecast provenance; preferred over certainty (which detectGaps overloads) */
-  predicted?: boolean;
-  /** x position for trend mode (year number, epoch ms, or date string); absent => categorical by label */
+  /** x position in trend mode (year number, epoch ms, or date string). In trend mode an
+   * item without a date is skipped (a `missing-date` warning). Ignored in snapshot mode. */
   date?: number | string;
+  /** @deprecated use `forecast`. Still honoured when `forecast` is absent. */
+  predicted?: boolean;
+  /** @deprecated use `forecast` (`certainty: false` === `forecast: true`). Still
+   * honoured when `forecast` and `predicted` are absent. */
+  certainty?: boolean;
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning. The number of
+   * `samples` now shows how much the jet is based on. */
+  density?: number;
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning. Use the
+   * chart-wide `drift` for the leaning look; skew shows in where the small dots sit. */
+  lean?: number;
+}
+
+/** A horizontal line across the plot at a value that matters to the reader (a
+ * promise, a budget, a pass mark). Drawn dashed in the theme's attention colour (a
+ * red, never a series colour), with its label at the right end. */
+export interface FountainReferenceLine {
+  /** Where the line sits, in y-axis units. Always inside the auto y domain. */
+  value: number;
+  /** Printed at the right end of the line (wrapped; the chart reserves right margin) */
+  label?: string;
+  /** Which side is good. When set, every jet with samples gets a count under its x
+   * label and in its tooltip: bold "17 of 20" and the `countLabel`. "below" counts the
+   * samples at or below the line, "above" those at or above it. */
+  goodSide?: "below" | "above";
+  /** Words after the count, e.g. "on time", "passed", "within budget". Default "below
+   * the line" or "above the line" (follows `goodSide`). */
+  countLabel?: string;
+}
+
+/** UI words the chart prints, for localisation. English defaults. */
+export interface FountainLabels {
+  /** Before the big dot's value in the value labels and tooltip (default "usual") */
+  usual?: string;
+  /** Between the count and the total in a reference count, "17 of 20" (default "of") */
+  of?: string;
+  /** Before the sample count when there are fewer than 10, "only 5 days" (default "only") */
+  only?: string;
+  /** Marks a predicted jet in its x label and tooltip (default "forecast") */
+  forecast?: string;
 }
 
 export interface FountainChartProps {
@@ -1976,77 +2036,193 @@ export interface FountainChartProps {
    * period and extend as the timeline steps; `interpolate` sweeps smoothly
    * between years, `false` jump-cuts. Headless controller via `chart.timeline()`
    * plus the built-in play button + scrubber. Off by default; wins over
-   * `progressiveDraw` when both are set. */
+   * `progressiveDraw` when both are set. The reveal always shows the whole active
+   * jet, fountain and small dots included, and a jet's value labels appear with it;
+   * undrawn jets cannot be hovered. Trend mode only. Not drawn by the "webgpu"
+   * renderer (an ignored-option warning). */
   timeline?: boolean | TimelinePeriodConfig;
   /** Opt-in reveal animation: wipes the marks in left to right on mount (a clip
    * reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic);
    * a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is
    * LineChart-only and ignored here). Off by default; respects prefers-reduced-motion
-   * (renders fully drawn instantly) and `replay()` re-runs it. */
+   * (renders fully drawn instantly) and `replay()` re-runs it. Jets the wipe has not
+   * reached cannot be hovered. Not drawn by the "webgpu" renderer (an ignored-option
+   * warning). */
   progressiveDraw?: boolean | ProgressiveDrawConfig;
   /** Array of jets; each item renders one fountain */
   dataSet: FountainDataItem[];
   /** Optional chart title rendered above the plot */
   title?: string;
-  /** Chart width in pixels */
+  /** Chart width in pixels (default 900) */
   width?: number;
-  /** Chart height in pixels */
+  /** Chart height in pixels (default 480) */
   height?: number;
   /** Inner margins (top/right/bottom/left, in px) reserved for axes, titles, and labels */
   margin?: Margin;
-  /** Categorical palette for jets without an explicit colour or colorsMapping entry */
+  /** Categorical palette for jets without an explicit colour or colorsMapping entry.
+   * Slots follow the first-seen label order of the whole dataSet, so disabling a label
+   * never recolours the others. */
   colors?: string[];
-  /** Explicit label -> colour map; takes precedence over the palette and per-item colours */
+  /** Explicit label -> colour map; takes precedence over per-item colours and the palette */
   colorsMapping?: Record<string, string>;
-  /** Silhouette style: "jet" (default) is the faithful asymmetric Jet d'Eau (vertical column + wind-blown
-   *  diagonal + a triangular droplet spray curtain); "plume" is the symmetric blooming column. */
-  style?: "jet" | "plume";
-  /** How the x-axis is parsed: a temporal/numeric type renders TREND mode; "band" (or omitted) renders SNAPSHOT mode */
+  /** How the x-axis is parsed: a temporal/numeric type renders TREND mode (jets at their
+   * dates, the x range inset by half a column on each side, one tick per period);
+   * "band" (or omitted) renders SNAPSHOT mode (one column per label) */
   xAxisDataType?: FountainXAxisType;
-  /** Explicit [min, max] for the value (y) axis; overrides the auto domain from value + spread */
+  /** Explicit [min, max] for the value (y) axis, used as given (not rounded). The auto
+   * domain includes 0, every value, low, high and reference line, plus 10% headroom,
+   * rounded to nice ticks. Data outside a user domain is clamped to the plot edge and
+   * small dots outside it are not drawn (an `out-of-domain` warning). */
   yAxisDomain?: [number, number];
   /** Formats an x tick value into its display label */
   xAxisFormat?: (d: number | string) => string;
-  /** Formats a y tick value into its display label */
+  /** Formats a y value: the tick labels and the numbers in the value labels and the
+   * tooltip (default: the locale's number format) */
   yAxisFormat?: (d: number | string) => string;
-  /** Approximate number of axis ticks to generate */
+  /** Approximate number of axis ticks to generate (default 5) */
   ticks?: number;
-  /** Explicit tick values, overriding the generated ones (trend mode) */
+  /** Explicit x tick values, overriding the per-period ticks (trend mode) */
   tickValues?: Array<number | Date>;
-  /** Number of graduated-opacity froth layers per jet (default 14, max 20); a per-item density overrides it */
-  frothLayers?: number;
-  /** Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 5) */
-  bloomExponent?: number;
-  /** Stem half-width at the base as a fraction of the jet's slot width (default 0.045) */
-  stemFraction?: number;
-  /** Draw ballistic droplet arcs above each apex (default true) */
-  showDroplets?: boolean;
-  /** Draw the misty falling skirt around each nozzle (default true) */
-  showMist?: boolean;
-  /** Draw a connecting line through the apexes in trend mode (default true) */
+  /** Draw the fountain: the range [low, high] as a bell (default true). `false` draws
+   * the stem and the big dot only; the small dots need the fountain to sit in, so they
+   * hide too. */
+  showRange?: boolean;
+  /** Draw the small dots, one per sample, when items carry `samples` (default true) */
+  showSamples?: boolean;
+  /** Print value labels under each x label (default true): bold "usual 30", then
+   * "<low word> 22" and "<high word> 55" (see `endLabels`), "only N <sampleWord>" under
+   * 10 samples, and per reference line with a `goodSide` a bold "17 of 20" plus its
+   * `countLabel`. The chart reserves bottom margin for them. On narrow columns the
+   * text shrinks, then the end lines go, before a label would overlap a neighbour; when
+   * even the usual line cannot fit, when the x labels have to tilt, or where two jets
+   * share a column, the value labels are left out (a `layout-overflow` warning). */
+  showValueLabels?: boolean;
+  /** The Geneva look: the top of every fountain leans downwind, the same way for every
+   * jet, so it means nothing (default false: readers found it confusing) */
+  drift?: boolean;
+  /** Title drawn rotated beside the y-axis, e.g. "minutes (higher = slower)" */
+  yAxisTitle?: string;
+  /** Words for the low and high ends in the value labels and tooltip (default
+   * ["lowest", "highest"]; e.g. ["best", "worst"], ["cheapest", "dearest"]) */
+  endLabels?: [string, string];
+  /** Horizontal reference lines (a promise, a limit, a budget). With `goodSide`, each jet
+   * with samples counts its small dots on the good side. */
+  referenceLines?: FountainReferenceLine[];
+  /** UI words for localisation (English defaults "usual", "of", "only", "forecast") */
+  labels?: FountainLabels;
+  /** A reading guide under the plot (default false), on one line when it fits, else
+   * wrapped between its rules (at each " · "), never inside one. `true` prints the
+   * default ("Small dot = one measurement · Big dot = the usual one · Dots close together
+   * = steady · Tall fountain = changes a lot · Few dots = just a guess") with only the
+   * rules for marks the chart draws: no small-dot rules without small dots (no samples,
+   * showSamples or showRange off, forecasts only), no "Tall fountain" rule without a
+   * fountain. A string replaces it and is printed as given. */
+  readingGuide?: boolean | string;
+  /** PLURAL noun for the samples in the value labels and tooltip, e.g. "days", "orders"
+   * (default "measurements"). Plural on purpose: there is no pluralising logic, and one
+   * string is easy to localise. */
+  sampleWord?: string;
+  /** Draw a dashed grey line through the big dots, left to right (default true in trend
+   * mode with one series; false with several series, where one line would zig-zag
+   * between them, and in snapshot mode; set it true to join an ordered sequence of
+   * categories, e.g. hours) */
   showTrendLine?: boolean;
   /** Labels to emphasise; all other jets dim */
   highlightItems?: string[];
-  /** Labels to hide and exclude from scales */
+  /** Labels to hide and exclude from scales. They keep their colour slot and stay in
+   * `legendData` flagged `disabled: true`. */
   disabledItems?: string[];
-  /** Render as inline SVG (default) or to a canvas; getContext() is identical either way */
+  /** Render as inline SVG (default), to a canvas, or (experimental) with WebGPU; the
+   * marks, the hover and getContext() are identical, and text always stays SVG.
+   * getContext().renderer reports what painted: "canvas" when WebGPU is unavailable or
+   * its device is not ready yet. */
   renderer?: "svg" | "canvas" | "webgpu";
   /** BCP-47 locale used for number and date formatting */
   locale?: string;
   /** External-CSS mode: unmapped labels resolve to transparent and onColorMappingGenerated is not emitted */
   skipColorMappingDispatch?: boolean;
-  /** Animate updates with CSS transitions (default true) */
+  /** Animate updates with CSS transitions (default true). The chart redraws its marks
+   * on every update, so there is nothing to animate yet. */
   enableTransitions?: boolean;
-  /** Returns custom tooltip HTML for a hovered jet (sanitized before it is inserted) */
-  tooltipFormatter?: (d: FountainDataItem) => string;
-  /** Called when the hovered/highlighted label(s) change */
+  /** Returns custom tooltip HTML for a hovered or pinned jet (sanitized before it is
+   * inserted). Default: the label (with its period in trend mode), "usual 30", "<low
+   * word> 22 · <high word> 55", "20 <sampleWord>" and a count per reference line with a
+   * goodSide, numbers formatted like the y-axis. Click or tap pins the tooltip; clicking
+   * the pinned jet or empty space, or Escape, unpins. The first argument is the item
+   * with its resolved `value` (the median of its samples when it gives none), so
+   * `d.value` is always a number; a formatter typed `(d: FountainDataItem) => string`
+   * still fits. The second is the jet as drawn (its range, samples, reference counts,
+   * period and the default lines), so a custom tooltip needs no re-derivation. */
+  tooltipFormatter?: (d: FountainDataItem & { value: number }, jet?: FountainTooltipJet) => string;
+  /** Show the loading overlay; with nothing drawn yet the axes and marks wait for data,
+   * while a refetch keeps the stale jets on screen. */
+  isLoading?: boolean;
+  /** No-data override: boolean, or a predicate on the data; default = an empty dataSet.
+   * With no data the chart draws the no-data overlay instead of axes and marks. */
+  isNodata?: boolean | ((dataSet: FountainDataItem[] | null | undefined) => boolean);
+  /** Text for the vanilla default no-data overlay (ignored when suppressed). */
+  noDataLabel?: string;
+  /** A framework wrapper sets this to render its OWN loading/no-data node instead. */
+  suppressDefaultOverlay?: boolean;
+  /** Called when the hovered, pinned or cleared label changes (only on a change: moving
+   * within one jet does not re-fire; leaving every jet fires []) */
   onHighlightItem?: (labels: string[]) => void;
   /** Called with the resolved label -> colour map after the chart assigns colours */
   onColorMappingGenerated?: (mapping: Record<string, string>) => void;
   /** Called with the renderer-agnostic ChartContext whenever the data is (re)processed */
   onChartDataProcessed?: (context: ChartContext) => void;
-  /** Called with any non-fatal data warnings (non-finite values, crowding, clipped spread, ...) */
+  /** Called with any non-fatal data warnings (non-finite values, ranges that exclude the
+   * value, samples outside the range, ignored options, ...) */
   onDataWarning?: (warnings: DataWarning[]) => void;
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning. There is one
+   * look now: stem, fountain, small dots, big dot. */
+  style?: "jet" | "plume";
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning */
+  frothLayers?: number;
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning */
+  bloomExponent?: number;
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning */
+  stemFraction?: number;
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning */
+  showDroplets?: boolean;
+  /** @deprecated ignored since core 1.29; emits an ignored-option warning */
+  showMist?: boolean;
+}
+
+/** The hovered or pinned jet as drawn: the second argument of `tooltipFormatter`. */
+export interface FountainTooltipJet {
+  label: string;
+  code?: string;
+  /** The jet's colour (colorsMapping ?? item colour ?? the label's) */
+  color: string;
+  /** The big dot: the given value, or the median of the samples */
+  value: number;
+  /** Bottom of the fountain, or null without a range */
+  low: number | null;
+  /** Top of the fountain, or null without a range */
+  high: number | null;
+  /** The finite measurements, ascending */
+  samples: number[];
+  forecast: boolean;
+  /** Trend mode: the period as text (formatted like the axis); null in snapshot mode */
+  period: string | null;
+  /** One per reference line with a goodSide; [] without samples or for a forecast */
+  referenceCounts: FountainReferenceCount[];
+  /** The default tooltip as plain-text lines, the label line first */
+  lines: string[];
+}
+
+/** One reference line's count for one jet: how many of its samples sit on the good side. */
+export interface FountainReferenceCount {
+  /** The reference line's value */
+  value: number;
+  goodSide: "below" | "above";
+  /** Samples on the good side ("below": at or below the line; "above": at or above it) */
+  count: number;
+  /** All the jet's samples */
+  total: number;
+  /** The words printed after the count (the line's countLabel, or its default) */
+  countLabel: string;
 }
 
 export interface FountainJetContext {
@@ -2054,26 +2230,34 @@ export interface FountainJetContext {
   /** Optional stable identifier carried into the context (e.g. an ISO code); not displayed */
   code?: string;
   color: string;
+  /** The big dot: the given value, or the median of the samples */
   value: number;
-  spread: number;
-  /** value + spread (the upper extent of the plume) */
-  upperBound: number;
-  /** spread / value, the relative uncertainty (0 when value is 0 and spread is 0) */
-  spreadRatio: number;
-  /**
-   * The sign-only skew flag: which side the spread hangs on (negative = left/downside,
-   * positive = right/upside, 0 = balanced). Null when the item did not encode a lean
-   * (the jet's gentle drift is then purely decorative wind, not data).
-   * - "honeycomb": every symbol becomes an equal-size tile (radius from
-   *   `honeycomb.radius`, value carries no size) snapped to a hexagonal lattice so
-   *   tiles tessellate and never overlap. A later item whose cell is taken walks
-   *   outward to the first free cell (deterministic, dataSet order); items without
-   *   a `value` are placed but never claim a cell. Pair with `shape: "hexagon"`.
-   */
-  lean: number | null;
+  /** Bottom of the fountain, or null when the item has no range */
+  low: number | null;
+  /** Top of the fountain, or null when the item has no range */
+  high: number | null;
+  /** high - low, or null when the item has no range */
+  range: number | null;
+  /** range / |value|: how big the range is next to the number. Null when the value is 0
+   * or there is no range. */
+  rangeRatio: number | null;
+  /** Number of real measurements (small dots) */
+  sampleCount: number;
+  /** One entry per reference line with a goodSide; [] when the jet has no samples or is
+   * a forecast */
+  referenceCounts: FountainReferenceCount[];
+  /** A forecast (predicted) jet */
   predicted: boolean;
   /** x position in trend mode (the raw date/number), or null in snapshot mode */
   xPosition: number | string | null;
+  /** @deprecated half the range, (high - low) / 2; 0 without a range. Use `range`. */
+  spread: number;
+  /** @deprecated spread / |value|; 0 when not computable. Use `rangeRatio`. */
+  spreadRatio: number;
+  /** @deprecated the top of the fountain (`high`, or the value without a range). Use `high`. */
+  upperBound: number;
+  /** @deprecated always null since core 1.29 (per-item lean is ignored) */
+  lean: number | null;
 }
 
 export interface FountainChartContext extends BaseChartContext {
@@ -2087,9 +2271,12 @@ export interface FountainChartContext extends BaseChartContext {
     jetCount: number;
     /** The jet with the largest value */
     tallest: { label: string; value: number } | null;
-    /** The jet with the largest spread-to-value ratio (most uncertain) */
+    /** The jet with the widest range (high - low), or null when no jet has a range */
+    widestRange: { label: string; range: number } | null;
+    /** @deprecated the jet with the widest range next to its value (largest
+     * rangeRatio), reported as its spreadRatio. Use `widestRange` or `jets[].rangeRatio`. */
     frothiest: { label: string; spreadRatio: number } | null;
-    /** Slope of a linear regression through the jet values by index (trend mode), else null */
+    /** Slope of a least-squares line through the values over x (trend mode), else null */
     trendSlope: number | null;
     /** [min, max] of the jet values */
     valueRange: [number, number] | null;
@@ -3758,6 +3945,22 @@ export type ChartContext =
   | RadialTreeChartContext;
 
 export interface DataWarning {
+  /**
+   * What went wrong. Fountain-specific members (each names the jet's `label`):
+   * - `range-excludes-value`: low/high (or spread) leave the value out; the range is
+   *   extended to include it.
+   * - `sample-outside-range`: a sample lies outside the explicit range; the range is
+   *   extended to include it.
+   * - `inverted-range`: low is above high, or spread is negative; the ends are swapped
+   *   (the spread's size is used).
+   * - `out-of-domain`: a value, range end or sample lies outside the user `yAxisDomain`;
+   *   the drawing is clamped to the plot and dots outside it are not drawn.
+   * - `missing-date`: trend mode, but the item has no usable `date`; it is skipped.
+   * The fountain also reports `non-finite-value` (a jet with no finite value and no
+   * samples is skipped; non-finite samples are dropped), `duplicate-date` (two labels
+   * on one date in trend mode), `duplicate-label` (snapshot mode) and `ignored-option`
+   * (a removed prop, or per-item `density` / `lean`).
+   */
   type:
     | "non-finite-value"
     | "duplicate-label"
@@ -3772,7 +3975,12 @@ export interface DataWarning {
     | "invalid-geometry"
     | "empty-group"
     | "excess-depth"
-    | "ignored-option";
+    | "ignored-option"
+    | "range-excludes-value"
+    | "sample-outside-range"
+    | "inverted-range"
+    | "out-of-domain"
+    | "missing-date";
   message: string;
   label?: string;
 }

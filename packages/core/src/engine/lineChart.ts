@@ -23,7 +23,12 @@ import { createLineScales, type LineXScale } from "../lineChart/scales";
 import { buildLineRenderModel } from "../lineChart/renderModel";
 import { lttb } from "../lineChart/lttb";
 import { projectX } from "../lineChart/geometry";
-import { parseXValue, enumeratePeriods, periodValue } from "../lineChart/lineUtils";
+import {
+  parseXValue,
+  enumeratePeriods,
+  periodValue,
+  periodTickValues,
+} from "../lineChart/lineUtils";
 import { renderLineSvg } from "../lineChart/renderSvg";
 import {
   resolveProgressiveDraw,
@@ -682,14 +687,10 @@ export function mountLineChart(
       // unclamped date scale happily projects beyond the plotted lines.
       const periodTicks =
         xAxisDataType === "date_annual" || xAxisDataType === "date_monthly"
-          ? Array.from(
-              new Set(processedDataSet.flatMap((row) => row.series.map((p) => String(p.date)))),
+          ? periodTickValues(
+              processedDataSet.flatMap((row) => row.series.map((p) => p.date)),
+              xAxisDataType,
             )
-              .map((d) => parseXValue(d, xAxisDataType))
-              .sort(
-                (a, b) =>
-                  (a instanceof Date ? a.valueOf() : a) - (b instanceof Date ? b.valueOf() : b),
-              )
           : undefined;
       const plotW = r.width - r.margin.left - r.margin.right;
       const xMaxTicks = plotW < 480 ? 3 : 5;

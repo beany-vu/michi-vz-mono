@@ -1824,250 +1824,1063 @@ const sankey: Example<SankeyChartProps>[] = [
   },
 ];
 
+// ---- Fountain (Jet d'Eau) ----
+// The 16 approved examples, then the reading key (one fountain with its parts, and
+// six patterns to look for), then two switches. Every number is illustrative (made up
+// to look real) and each description says so. One colour per chart: a colour per
+// column would be decoration that looks like data. Trend examples over named periods
+// (hours, terms, seasons) sit at x = 1..n on a number axis, and xAxisFormat prints
+// the period's name.
+
+const FOUNTAIN_BLUE = "#3F7FB8";
+
+/** The one-line reading guide for a chart whose small dots are `one` each. */
+const fountainGuide = (one: string): string =>
+  `Small dot = ${one} · Big dot = the usual one · Dots close together = steady · Tall fountain = changes a lot · Few dots = just a guess`;
+
+/** Trend mode over named periods: period i sits at x = i + 1 and the axis prints its name. */
+function fountainPeriods(
+  names: string[],
+): Pick<FountainChartProps, "xAxisDataType" | "xAxisFormat"> {
+  return {
+    xAxisDataType: "number",
+    xAxisFormat: (d) => names[Number(d) - 1] ?? String(d),
+  };
+}
+
+const fountainCommute: FountainChartProps = {
+  title: "How long is my commute, really?",
+  xAxisDataType: "band",
+  colors: [FOUNTAIN_BLUE],
+  yAxisTitle: "minutes (higher = slower)",
+  endLabels: ["best", "worst"],
+  sampleWord: "days",
+  referenceLines: [
+    { value: 45, label: "Time I allow: 45 min", goodSide: "below", countLabel: "within 45 min" },
+  ],
+  readingGuide: fountainGuide("one day"),
+  dataSet: [
+    {
+      label: "Car",
+      value: 30,
+      low: 22,
+      high: 55,
+      samples: [29, 31, 27, 30, 55, 28, 33, 30, 26, 35, 22, 30, 34, 46, 27, 29, 32, 35, 25, 48],
+    },
+    {
+      label: "Train",
+      value: 35,
+      low: 32,
+      high: 42,
+      samples: [34, 35, 33, 36, 42, 35, 34, 37, 35, 32, 36, 34, 38, 35, 33, 40, 36, 34, 37, 35],
+    },
+    {
+      label: "Bus",
+      value: 40,
+      low: 32,
+      high: 65,
+      samples: [38, 44, 36, 40, 65, 52, 39, 58, 35, 40, 32, 61, 37, 47, 40, 54, 34, 51, 38, 57],
+    },
+    {
+      label: "E-bike",
+      value: 38,
+      low: 35,
+      high: 42,
+      samples: [37, 38, 36, 39, 42, 38, 39, 38, 35, 40, 37, 38, 39, 41, 36, 38, 40, 37, 39, 38],
+    },
+  ],
+};
+
+/** Props for one of the reading key's six patterns: one trip, on one shared minutes axis. */
+function fountainPatternProps(
+  title: string,
+  jet: { label: string; value: number; low: number; high: number; samples: number[] },
+): FountainChartProps {
+  return {
+    title,
+    xAxisDataType: "band",
+    colors: [FOUNTAIN_BLUE],
+    yAxisDomain: [0, 70],
+    yAxisTitle: "minutes (higher = slower)",
+    endLabels: ["best", "worst"],
+    sampleWord: "days",
+    dataSet: [jet],
+  };
+}
+
 const fountain: Example<FountainChartProps>[] = [
   {
-    id: "fountain-saas",
-    title: "SaaS: revenue booked vs revenue leaking",
+    id: "fountain-commute-by-mode",
+    title: "How long is my commute, really?",
     description:
-      "Read the spike to know how big the book of business is; read the spray as a flag for how much is quietly bleeding out to churn, downgrades and refunds (the gross-to-net retention gap). The exact leak is on the tooltip - the plume is the attention-getter, not the ruler. SMB books less and leaks more.",
+      "Big dot = a normal day, fountain = best day to worst day, small dot = one working day (minutes door to door). Illustrative numbers for a typical 15 km city commute, as if each way of travelling had been timed on 20 working days; they are not from a published source.",
     element: "michi-vz-fountain-chart",
-    props: {
-      title: "Recurring revenue booked ($M), spray = at-risk / leaking (gross-to-net gap)",
-      xAxisDataType: "band",
-      dataSet: [
-        { label: "Enterprise", value: 118, spread: 4, density: 0.2 },
-        { label: "Mid-market", value: 106, spread: 11, density: 0.5 },
-        { label: "SMB", value: 97, spread: 21, density: 0.9, color: "#D4AF37" },
-      ],
-    },
+    props: fountainCommute,
   },
   {
-    id: "fountain-retail",
-    title: "Retail: sales secured vs shrink eroding margin",
+    id: "fountain-home-internet-promised-vs-real",
+    title: "I pay for 100 Mbps. What do I really get?",
     description:
-      "Three stores post near-identical sales (near-identical spikes), but the fat, dense plume on Store C flags where to send loss-prevention first. Shrink (theft + spoilage) norm is ~1.6% of sales; over 2% is an alert. The plume flags it; the % lives on the label.",
+      "Big dot = the usual speed at that hour, fountain = slowest to fastest, small dot = one day's speed test (20 days). Illustrative numbers that do not come from any provider: one speed test at each hour on each of 20 days, rounded to whole Mbps. The shape is how home broadband is widely known to behave: fast at night, slow at the evening peak when the whole street is streaming.",
     element: "michi-vz-fountain-chart",
     props: {
-      title: "Net sales ($M), spray = shrink as a share of sales (theft + spoilage)",
-      xAxisDataType: "band",
-      dataSet: [
-        { label: "Store A", value: 4.2, spread: 0.06, density: 0.2 },
-        { label: "Store B", value: 4.0, spread: 0.07, density: 0.3 },
-        { label: "Store C", value: 4.1, spread: 0.13, density: 0.9, color: "#D4AF37" },
+      title: "I pay for 100 Mbps. What do I really get?",
+      ...fountainPeriods(["7 am", "Noon", "5 pm", "9 pm", "1 am"]),
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "Mbps (higher = faster)",
+      endLabels: ["slowest", "fastest"],
+      sampleWord: "tests",
+      referenceLines: [
+        { value: 100, label: "Paid for: 100 Mbps", goodSide: "above", countLabel: "got 100" },
       ],
-    },
-  },
-  {
-    id: "fountain-water",
-    title: "Water utility: delivered vs non-revenue water",
-    description:
-      "Volume delivered keeps climbing (rising spikes), but the widening plume warns that more of it never gets billed - leaks and unmetered use outpacing growth. Under 10% is good, 10-20% normal, over 20% act (US average ~19.5%). Trend mode, a few periods so each plume can breathe.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Treated water delivered (million m3), spray = non-revenue water (losses)",
-      xAxisDataType: "date_annual",
-      dataSet: [
-        { label: "NRW", date: "2021", value: 52, spread: 5, density: 0.4 },
-        { label: "NRW", date: "2022", value: 55, spread: 7, density: 0.5 },
-        { label: "NRW", date: "2023", value: 58, spread: 10, density: 0.7 },
-        { label: "NRW", date: "2024", value: 61, spread: 13, density: 0.9, color: "#D4AF37" },
-      ],
-    },
-  },
-  {
-    id: "fountain-forecast",
-    title: "Forecast: a number that is high but shaky",
-    description:
-      "The trend rises, but the forecast spikes fray into froth: the same apex with a far wider, dashed plume says growth is projected, but the confidence behind it is thinning fast. A deliberate don't-trust-this-to-the-decimal signal - for precise bands, the Fan chart is the right tool.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Projected MRR ($K), spray = forecast spread (P10-P90); dashed = forecast",
-      xAxisDataType: "date_annual",
-      dataSet: [
-        { label: "MRR", date: "2023", value: 63, spread: 6, density: 0.3 },
-        { label: "MRR", date: "2024", value: 70, spread: 8, density: 0.4 },
-        { label: "MRR", date: "2025", value: 78, spread: 16, density: 0.8, predicted: true },
-        { label: "MRR", date: "2026", value: 85, spread: 26, density: 1, predicted: true },
-      ],
-    },
-  },
-  {
-    id: "fountain-story",
-    title: "Open source: the stars you see, the maintainers you don't",
-    description:
-      "The hook the chart was built for. The spike is what everyone sees and stars; the spray is the invisible contributors and unpaid maintainers the project actually rests on. Similar fame (spikes), very different foundations (sprays). Storytelling, not measurement.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "GitHub stars (k) - spray = the contributors & maintainers holding it up",
-      xAxisDataType: "band",
-      dataSet: [
-        { label: "React", value: 230, spread: 85, density: 0.9 },
-        { label: "Vue", value: 208, spread: 55, density: 0.6 },
-        { label: "Svelte", value: 82, spread: 40, density: 0.7, color: "#D4AF37" },
-      ],
-    },
-  },
-  {
-    id: "fountain-plume",
-    title: "Alternative symmetric 'plume' silhouette",
-    description:
-      'The same idea in the optional symmetric style (style: "plume"): a column blooming into a feathery crown instead of the asymmetric Jet d\'Eau blade. Cleaner for a single KPI hero where the spread reads as a confidence halo.',
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Quarterly revenue ($M) with confidence halo - plume style",
-      xAxisDataType: "band",
-      style: "plume",
-      dataSet: [
-        { label: "Q1", value: 42, spread: 6, density: 6 },
-        { label: "Q2", value: 55, spread: 9, density: 7 },
-        { label: "Q3", value: 61, spread: 12, density: 8 },
-        { label: "Q4", value: 78, spread: 20, density: 9, color: "#D4AF37" },
-      ],
-    },
-  },
-  {
-    id: "fountain-certainty",
-    title: "Same number, three certainties",
-    description:
-      "Three teams estimate the same launch date: 72 days. Identical apexes, so a bar chart would show three identical bars. The plume is what separates them: Team A has measured every task (tight crown), Team C is guessing (wide froth). The plume is a flag that the 72 is soft; the exact range (say 72 plus or minus 20) belongs on the tooltip. For real confidence intervals, use the Fan chart.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Estimated days to launch, spray = how sure each team is",
-      xAxisDataType: "band",
-      style: "plume",
-      showDroplets: false,
-      showMist: false,
-      bloomExponent: 1.8,
-      dataSet: [
-        { label: "Team A", value: 72, spread: 3, density: 0.2 },
-        { label: "Team B", value: 72, spread: 9, density: 0.5 },
-        { label: "Team C", value: 72, spread: 20, density: 0.9, color: "#D4AF37" },
-      ],
-    },
-  },
-  {
-    id: "fountain-latency",
-    title: "Stable or shaky: the 2x2 a bar chart cannot show",
-    description:
-      "Four services, two latency levels, and the plume splits each pair: Checkout and Search both average 120 ms, but Search swings wildly under load; Auth and Cart both average 60 ms, but Cart spikes. Lower apex is better here, and the tight crown is the one you can put an SLO on. The p95 figure lives on the tooltip; the froth just tells you where to look first. The same read works for profit vs volatility, or any level-times-stability pair.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Median latency (ms), spray = variability under load (p95 gap)",
-      xAxisDataType: "band",
-      style: "plume",
-      showDroplets: false,
-      showMist: false,
-      bloomExponent: 1.8,
-      dataSet: [
-        { label: "Checkout", value: 120, spread: 6, density: 0.2 },
-        { label: "Search", value: 120, spread: 45, density: 0.9, color: "#D4AF37" },
-        { label: "Auth", value: 60, spread: 4, density: 0.2 },
-        { label: "Cart", value: 60, spread: 30, density: 0.8 },
-      ],
-    },
-  },
-  {
-    id: "fountain-risk",
-    title: "Expected loss vs the worst case",
-    description:
-      "Each apex is the expected loss on a position; the crown reaches toward the stress-test worst case (value plus spread, the upperBound in getContext()). Positions B and D expect the same loss, but D's plume flags a far heavier tail. Read the exact worst-case number off the tooltip, never off the plume width; the froth only tells you which position deserves the second look.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Expected loss ($M), spray reaches toward the stress-case loss",
-      xAxisDataType: "band",
-      style: "plume",
-      showDroplets: false,
-      showMist: false,
-      bloomExponent: 1.8,
-      dataSet: [
-        { label: "Position A", value: 4, spread: 1.5, density: 0.3 },
-        { label: "Position B", value: 10, spread: 2, density: 0.3 },
-        { label: "Position C", value: 5, spread: 6, density: 0.7 },
-        { label: "Position D", value: 10, spread: 9, density: 0.9, color: "#D4AF37" },
-      ],
-    },
-  },
-  {
-    id: "fountain-ai",
-    title: "AI answers: confident or guessing",
-    description:
-      "Three model answers with their scores. The apex is the score; the plume is the model's own uncertainty, normalised into score units so both share the y-axis. The 0.92 with a tight crown is safe to automate; the 0.28 fraying into froth is a hand-off to a human. Pairs naturally with the insights layer, which reads the same spreadRatio out of getContext() to narrate which answers to trust.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Answer score (0 to 1), spray = model uncertainty in score units",
-      xAxisDataType: "band",
-      style: "plume",
-      showDroplets: false,
-      showMist: false,
-      bloomExponent: 1.8,
-      yAxisDomain: [0, 1.2],
-      dataSet: [
-        { label: "Answer 1", value: 0.92, spread: 0.04, density: 0.2 },
-        { label: "Answer 2", value: 0.62, spread: 0.15, density: 0.5 },
-        { label: "Answer 3", value: 0.28, spread: 0.3, density: 0.9, color: "#D4AF37" },
-      ],
-    },
-  },
-  {
-    id: "fountain-attention",
-    title: "Same average, divided audience",
-    description:
-      "Two articles average the same 5.5 minutes of engagement. Article A holds everyone for about that long (tight crown); Article B splits its readers between skimmers who bounce and devourers who finish (wide froth). The average hides that division; the plume flags it. The per-decile numbers belong on the tooltip, and the flag is the cue to segment before drawing conclusions.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Average engagement (minutes), spray = variation across readers",
-      xAxisDataType: "band",
-      style: "plume",
-      showDroplets: false,
-      showMist: false,
-      bloomExponent: 1.8,
-      dataSet: [
-        { label: "Article A", value: 5.5, spread: 0.5, density: 0.2 },
-        { label: "Article B", value: 5.5, spread: 3, density: 0.9, color: "#D4AF37" },
-        { label: "Video A", value: 2.2, spread: 0.4, density: 0.3 },
-        { label: "Video B", value: 2.2, spread: 1.6, density: 0.8 },
-      ],
-    },
-  },
-  {
-    id: "fountain-skew",
-    title: "Which side does the risk hang on",
-    description:
-      "Symmetry is the signal here. Three delivery routes share the same median time and the same spread, but Harbour's crown leans right: its surprises are one-sided, a late tail (lean: 0.8). An upright crown (lean: 0) says the number can swing either way; a leaning crown says the hidden mass hangs on one side. Read only the direction, never the angle; the skew figure itself lives on the tooltip and in getContext().",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Median delivery time (min); a leaning crown = one-sided (late) risk",
-      xAxisDataType: "band",
-      dataSet: [
-        { label: "City", value: 32, spread: 6, density: 0.3, lean: 0 },
-        { label: "Suburb", value: 41, spread: 7, density: 0.3, lean: 0 },
-        { label: "Harbour", value: 38, spread: 7, density: 0.8, lean: 0.8, color: "#D4AF37" },
-      ],
-    },
-  },
-  {
-    id: "fountain-storm",
-    title: "Typhoons over the Philippines",
-    description:
-      "Each jet is a typhoon (approximate figures). The apex is peak sustained wind; the spray reaches toward the gusts above it, in the same km/h. The crowns lean the way each storm travelled: Pacific typhoons cross the Philippines east to west, so they lean left; Hagibis recurved northeast toward Japan and leans the other way. Thicker froth = a wider wind field. Direction and thickness are flags; the exact gust and size figures live on the tooltip.",
-    element: "michi-vz-fountain-chart",
-    props: {
-      title: "Peak sustained winds (km/h); spray = gusts, lean = track direction",
-      xAxisDataType: "band",
+      readingGuide: fountainGuide("one test"),
       dataSet: [
         {
-          label: "Haiyan 2013",
-          value: 230,
-          spread: 85,
-          density: 0.8,
-          lean: -0.7,
-          color: "#D4AF37",
+          label: "Download speed",
+          date: 1,
+          value: 94,
+          low: 88,
+          high: 98,
+          samples: [95, 93, 97, 94, 91, 96, 94, 98, 93, 95, 88, 94, 96, 92, 97, 94, 93, 95, 96, 94],
         },
-        { label: "Hagibis 2019", value: 195, spread: 75, density: 1, lean: 0.6 },
-        { label: "Goni 2020", value: 225, spread: 85, density: 0.5, lean: -0.7 },
-        { label: "Rai 2021", value: 195, spread: 75, density: 0.6, lean: -0.6 },
-        { label: "Noru 2022", value: 195, spread: 45, density: 0.4, lean: -0.7 },
+        {
+          label: "Download speed",
+          date: 2,
+          value: 88,
+          low: 75,
+          high: 96,
+          samples: [90, 87, 93, 88, 85, 91, 75, 89, 94, 86, 88, 92, 84, 96, 87, 90, 88, 82, 95, 86],
+        },
+        {
+          label: "Download speed",
+          date: 3,
+          value: 78,
+          low: 55,
+          high: 92,
+          samples: [81, 74, 86, 78, 90, 71, 77, 55, 84, 75, 92, 68, 76, 83, 78, 87, 61, 80, 73, 89],
+        },
+        {
+          label: "Download speed",
+          date: 4,
+          value: 62,
+          low: 22,
+          high: 80,
+          samples: [66, 38, 71, 58, 22, 75, 62, 45, 80, 34, 68, 63, 27, 73, 52, 62, 77, 31, 64, 60],
+        },
+        {
+          label: "Download speed",
+          date: 5,
+          value: 95,
+          low: 90,
+          high: 99,
+          samples: [96, 94, 98, 95, 93, 97, 90, 95, 99, 94, 96, 92, 97, 95, 98, 93, 96, 95, 97, 94],
+        },
       ],
+    },
+  },
+  {
+    id: "fountain-food-delivery-real-time",
+    title: "How long does food delivery really take?",
+    description:
+      "Big dot = the usual wait, fountain = fastest to slowest delivery, small dot = one real order. Illustrative numbers for a city delivery app that do not come from any provider: each small dot is one made-up order from recent weeks at that time of day.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "How long does food delivery really take?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "minutes (higher = slower)",
+      endLabels: ["fastest", "slowest"],
+      sampleWord: "orders",
+      referenceLines: [
+        { value: 30, label: "App promise: 30 min", goodSide: "below", countLabel: "on time" },
+      ],
+      readingGuide: fountainGuide("one order"),
+      dataSet: [
+        {
+          label: "Weekday lunch",
+          value: 30,
+          low: 20,
+          high: 40,
+          samples: [
+            28, 33, 37, 32, 29, 31, 40, 35, 28, 34, 31, 32, 29, 20, 30, 30, 26, 26, 25, 30, 27, 30,
+          ],
+        },
+        {
+          label: "Weekday dinner",
+          value: 35,
+          low: 25,
+          high: 50,
+          samples: [38, 33, 38, 50, 35, 41, 35, 40, 36, 33, 32, 30, 35, 25, 31, 44, 37, 28, 47, 34],
+        },
+        {
+          label: "Friday night",
+          value: 45,
+          low: 30,
+          high: 80,
+          samples: [62, 80, 30, 55, 66, 52, 40, 49, 41, 42, 44, 45, 43, 75, 45, 34, 37, 71, 38, 47],
+        },
+        {
+          label: "Rainy Sunday",
+          value: 50,
+          low: 35,
+          high: 90,
+          samples: [54, 48, 35, 86, 51, 45, 59, 58, 41, 46, 56, 53, 47, 90, 50, 50, 43, 49],
+        },
+        {
+          label: "Late night",
+          value: 25,
+          low: 20,
+          high: 35,
+          samples: [31, 27, 24, 23, 35, 26, 22, 25, 26, 22, 29, 20, 25],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-black-friday-tv",
+    title: "Is the Black Friday deal really cheaper?",
+    description:
+      "Big dot = the usual price across 15 shops, fountain = cheapest shop to dearest shop, small dot = one shop. Illustrative prices for an unnamed TV model at the same 15 shops, rounded to the nearest 5 €, not from a public source. Consumer groups often report this pattern: shops raise prices in the weeks before Black Friday and then 'cut' them back.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Is the Black Friday deal really cheaper?",
+      ...fountainPeriods(["Early Oct", "Late Oct", "Early Nov", "Black Friday week", "Early Dec"]),
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "€ (higher = dearer)",
+      endLabels: ["cheapest", "dearest"],
+      sampleWord: "shops",
+      referenceLines: [
+        {
+          value: 800,
+          label: "Usual price in early October",
+          goodSide: "below",
+          countLabel: "at or under 800",
+        },
+      ],
+      readingGuide: fountainGuide("one shop"),
+      dataSet: [
+        {
+          label: "TV price",
+          date: 1,
+          value: 800,
+          low: 740,
+          high: 860,
+          samples: [800, 740, 790, 800, 860, 770, 815, 800, 830, 780, 850, 795, 800, 840, 790],
+        },
+        {
+          label: "TV price",
+          date: 2,
+          value: 820,
+          low: 760,
+          high: 880,
+          samples: [820, 760, 820, 845, 880, 790, 840, 830, 850, 800, 875, 805, 820, 870, 815],
+        },
+        {
+          label: "TV price",
+          date: 3,
+          value: 830,
+          low: 770,
+          high: 890,
+          samples: [830, 770, 840, 850, 890, 795, 850, 825, 860, 810, 880, 815, 820, 870, 830],
+        },
+        {
+          label: "TV price",
+          date: 4,
+          value: 780,
+          low: 600,
+          high: 860,
+          samples: [600, 780, 745, 780, 860, 770, 795, 790, 800, 760, 840, 775, 780, 820, 800],
+        },
+        {
+          label: "TV price",
+          date: 5,
+          value: 790,
+          low: 700,
+          high: 870,
+          samples: [700, 790, 760, 800, 870, 720, 785, 790, 810, 770, 850, 780, 800, 835, 790],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-parcel-delivery-by-origin",
+    title: "Will my online order arrive in time?",
+    description:
+      "Big dot = the usual days to arrive, fountain = fastest to slowest delivery, small dot = one parcel. Illustrative numbers for the last 20 parcels from each country delivered to France; they are not from a postal or courier source.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Will my online order arrive in time?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "days (higher = slower)",
+      endLabels: ["fastest", "slowest"],
+      sampleWord: "parcels",
+      readingGuide: fountainGuide("one parcel"),
+      dataSet: [
+        {
+          label: "From Germany",
+          value: 3,
+          low: 2,
+          high: 5,
+          samples: [3, 2, 3, 4, 3, 3, 2, 5, 3, 4, 3, 2, 3, 3, 4, 3, 2, 4, 3, 4],
+        },
+        {
+          label: "From the UK",
+          value: 6,
+          low: 4,
+          high: 14,
+          samples: [6, 5, 7, 4, 6, 14, 6, 5, 8, 6, 7, 11, 5, 6, 9, 4, 7, 6, 12, 5],
+        },
+        {
+          label: "From the USA",
+          value: 8,
+          low: 5,
+          high: 15,
+          samples: [8, 7, 10, 6, 8, 9, 13, 7, 8, 5, 12, 8, 7, 9, 15, 6, 8, 11, 7, 10],
+        },
+        {
+          label: "From China",
+          value: 12,
+          low: 7,
+          high: 30,
+          samples: [12, 11, 25, 10, 14, 9, 12, 16, 30, 12, 8, 13, 22, 11, 14, 10, 27, 12, 7, 19],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-weather-forecast-week",
+    title: "Can I trust the forecast for Saturday's barbecue?",
+    description:
+      "Big dot = the forecast afternoon temperature, fountain = how much cooler or warmer it could turn out; dashed = a forecast. Illustrative numbers for a late-spring week in a mild European city, not from a weather service. Today is drawn solid because it is nearly known, and the days after it are dashed forecasts. The 20° line is a rough comfort mark for eating outdoors, not an official figure.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Can I trust the forecast for Saturday's barbecue?",
+      ...fountainPeriods(["Today", "Fri", "Sat", "Sun", "Mon", "Tue"]),
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "°C in the afternoon",
+      endLabels: ["coolest", "warmest"],
+      referenceLines: [{ value: 20, label: "warm enough to eat outside" }],
+      readingGuide:
+        "Big dot = the forecast · Fountain = how much cooler or warmer it could turn out · Dashed = not known yet · Tall fountain = closer to a guess",
+      dataSet: [
+        { label: "Afternoon temperature", date: 1, value: 22, low: 21, high: 23 },
+        { label: "Afternoon temperature", date: 2, value: 24, low: 22, high: 26, forecast: true },
+        { label: "Afternoon temperature", date: 3, value: 25, low: 22, high: 28, forecast: true },
+        { label: "Afternoon temperature", date: 4, value: 23, low: 20, high: 26, forecast: true },
+        { label: "Afternoon temperature", date: 5, value: 21, low: 18, high: 25, forecast: true },
+        { label: "Afternoon temperature", date: 6, value: 22, low: 17, high: 27, forecast: true },
+      ],
+    },
+  },
+  {
+    id: "fountain-rent-by-city",
+    title: "Where can I afford a two-bedroom flat?",
+    description:
+      "Big dot = the usual monthly rent, fountain = cheapest flat to the dearest, small dot = one flat for rent. Illustrative but believable rents: between 17 and 23 two-bedroom flats advertised in each of five European cities, not taken from a rental-market source.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Where can I afford a two-bedroom flat?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "€ a month (higher = dearer)",
+      endLabels: ["cheapest", "dearest"],
+      sampleWord: "flats",
+      referenceLines: [
+        {
+          value: 1000,
+          label: "My budget: 1,000 €",
+          goodSide: "below",
+          countLabel: "within budget",
+        },
+      ],
+      readingGuide: fountainGuide("one flat"),
+      dataSet: [
+        {
+          label: "Paris",
+          value: 2000,
+          low: 1500,
+          high: 3200,
+          samples: [
+            1950, 2890, 2300, 2180, 2050, 2100, 3200, 1900, 2450, 2600, 2250, 1980, 1500, 1990,
+            1890, 1780, 1750, 1690, 2100, 1850, 2000,
+          ],
+        },
+        {
+          label: "Amsterdam",
+          value: 2200,
+          low: 1700,
+          high: 3200,
+          samples: [
+            2080, 2000, 2375, 2400, 2650, 2240, 2750, 1900, 2195, 2300, 2980, 1700, 2100, 2490,
+            2200, 3200, 2150, 1975, 1825,
+          ],
+        },
+        {
+          label: "Lisbon",
+          value: 1400,
+          low: 1000,
+          high: 2300,
+          samples: [
+            1390, 2300, 1400, 1200, 1480, 1250, 1800, 1325, 1500, 1450, 1000, 1375, 1180, 1550,
+            1350, 1700, 1400, 1300, 1650, 1250, 1290, 1950, 1600,
+          ],
+        },
+        {
+          label: "Berlin",
+          value: 1300,
+          low: 950,
+          high: 2100,
+          samples: [
+            980, 1500, 1150, 1000, 1450, 950, 2100, 1390, 1300, 1650, 1580, 1240, 1000, 1900, 965,
+            1790, 1080, 1190, 1300, 1350,
+          ],
+        },
+        {
+          label: "Madrid",
+          value: 1300,
+          low: 1000,
+          high: 1900,
+          samples: [
+            1500, 1400, 1600, 1150, 1900, 1100, 1290, 1450, 1200, 1325, 1300, 1000, 1350, 1000,
+            1250, 1750, 1180,
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-border-basket",
+    title: "Is it cheaper to shop across the border from Switzerland?",
+    description:
+      "Big dot = the usual cost of the same basket, fountain = cheapest shop to dearest shop. Illustrative prices for the same bag of everyday groceries, converted to CHF. The order (Switzerland by far the dearest, Germany the cheapest) matches what is widely reported, but the figures are not from a specific source.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Is it cheaper to shop across the border from Switzerland?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "CHF (higher = dearer)",
+      endLabels: ["cheapest", "dearest"],
+      readingGuide:
+        "Big dot = the usual cost · Top of the fountain = the dearest shop · Base = the cheapest shop",
+      dataSet: [
+        { label: "Switzerland", value: 100, low: 86, high: 116 },
+        { label: "France", value: 64, low: 54, high: 76 },
+        { label: "Germany", value: 56, low: 48, high: 66 },
+        { label: "Italy", value: 62, low: 52, high: 74 },
+        { label: "Austria", value: 66, low: 56, high: 78 },
+      ],
+    },
+  },
+  {
+    id: "fountain-sleep-by-night",
+    title: "Why am I so tired on Mondays?",
+    description:
+      "Big dot = a usual night's sleep, fountain = worst night to best night, small dot = one night. Illustrative numbers for one adult over 16 weeks, not from a public source: each small dot is one night as a sleep tracker logged it, to the nearest 6 minutes. Weeknights show only the last 16, so every column has the same number of dots to count. The 7-hour line is the least sleep that health bodies such as the US CDC advise for adults.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Why am I so tired on Mondays?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "hours (higher = more sleep)",
+      endLabels: ["least", "most"],
+      sampleWord: "nights",
+      referenceLines: [
+        {
+          value: 7,
+          label: "Advised minimum: 7 hours",
+          goodSide: "above",
+          countLabel: "7 h or more",
+        },
+      ],
+      readingGuide: fountainGuide("one night"),
+      dataSet: [
+        {
+          label: "Sunday night",
+          value: 6,
+          low: 3.5,
+          high: 7.5,
+          samples: [6.3, 4.4, 7.1, 6, 5.8, 3.5, 6.8, 7.5, 4.9, 6, 7, 4.2, 6.6, 5.6, 7.3, 4.7],
+        },
+        {
+          label: "Weeknights (Mon-Thu)",
+          value: 6.5,
+          low: 5,
+          high: 7.5,
+          samples: [6.4, 6.8, 6.1, 7, 6.5, 5, 6.3, 6.7, 6.4, 7.5, 6.2, 6.5, 6.8, 6, 7.2, 6.6],
+        },
+        {
+          label: "Friday night",
+          value: 7,
+          low: 5.5,
+          high: 8.5,
+          samples: [7.2, 6.4, 7.9, 5.5, 7, 6.9, 8.5, 6.7, 7.4, 6.2, 7, 8.2, 6.6, 7.7, 6.9, 7.5],
+        },
+        {
+          label: "Saturday night",
+          value: 8.5,
+          low: 7,
+          high: 10,
+          samples: [8.7, 9.3, 7.8, 8.5, 10, 8.1, 9, 7, 8.4, 9.6, 8.5, 8, 9.2, 7.6, 8.8, 8.3],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-phone-battery-year-by-year",
+    title: "Will my phone still last the day?",
+    description:
+      "Big dot = a normal day, fountain = busy day to quiet day, small dot = one day (hours on one charge). The hours are made up to look realistic; they are not real measurements. Each small dot is one day: 21 days (three weeks) noted in each year, the way the phone's battery screen shows them. Year 4 is a guess, so it is drawn dashed and has no small dots.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Will my phone still last the day?",
+      ...fountainPeriods(["Year 1 (new)", "Year 2", "Year 3", "Year 4"]),
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "hours (higher = longer)",
+      endLabels: ["shortest", "longest"],
+      sampleWord: "days",
+      referenceLines: [
+        {
+          value: 15,
+          label: "a full day (7 am to 10 pm)",
+          goodSide: "above",
+          countLabel: "lasted the day",
+        },
+      ],
+      readingGuide: fountainGuide("one day"),
+      dataSet: [
+        {
+          label: "Battery",
+          date: 1,
+          value: 18,
+          low: 15,
+          high: 20,
+          samples: [
+            18.5, 19, 17.5, 18, 20, 19.5, 17, 18, 18.5, 15, 17.5, 19, 18, 19.5, 16.5, 18, 17.5, 19,
+            18.5, 17, 19.5,
+          ],
+        },
+        {
+          label: "Battery",
+          date: 2,
+          value: 17,
+          low: 13,
+          high: 19,
+          samples: [
+            17, 18, 16.5, 19, 14, 17.5, 18.5, 16, 17, 13, 18, 17, 15.5, 19, 16.5, 17.5, 18, 14.5,
+            16, 17, 18.5,
+          ],
+        },
+        {
+          label: "Battery",
+          date: 3,
+          value: 15,
+          low: 10,
+          high: 17,
+          samples: [
+            15.5, 13, 16, 11, 14.5, 16.5, 12, 15, 17, 10, 16, 13, 14.5, 16.5, 11, 15.5, 12.5, 16,
+            14, 15, 16.5,
+          ],
+        },
+        { label: "Battery", date: 4, value: 12, low: 7, high: 14, forecast: true },
+      ],
+    },
+  },
+  {
+    id: "fountain-train-really-late",
+    title: "How often is my train really late?",
+    description:
+      "Big dot = a usual trip, fountain = best trip to worst trip, small dot = one of the last 20 weekday trips of each train. These numbers are made up to show how the chart works; they are not real railway data. 0 means the train arrived on time.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "How often is my train really late?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "minutes late (higher = later)",
+      endLabels: ["best", "worst"],
+      sampleWord: "trips",
+      referenceLines: [
+        {
+          value: 5,
+          label: "Late: over 5 min (the railway's own rule)",
+          goodSide: "below",
+          countLabel: "on time",
+        },
+      ],
+      readingGuide: fountainGuide("one trip"),
+      dataSet: [
+        {
+          label: "7:12 train",
+          value: 1,
+          low: 0,
+          high: 9,
+          samples: [0, 1, 0, 2, 1, 0, 1, 3, 0, 1, 1, 0, 2, 1, 0, 4, 1, 0, 2, 9],
+        },
+        {
+          label: "7:42 train",
+          value: 3,
+          low: 0,
+          high: 25,
+          samples: [2, 4, 3, 1, 6, 3, 0, 12, 3, 5, 2, 3, 25, 4, 2, 8, 3, 1, 18, 5],
+        },
+        {
+          label: "8:12 train",
+          value: 2,
+          low: 0,
+          high: 14,
+          samples: [1, 2, 0, 3, 2, 5, 1, 2, 14, 0, 2, 4, 1, 3, 2, 7, 1, 2, 0, 3],
+        },
+        {
+          label: "17:48 home",
+          value: 5,
+          low: 2,
+          high: 32,
+          samples: [4, 7, 5, 11, 3, 4, 22, 3, 2, 5, 9, 4, 32, 6, 8, 6, 3, 15, 5, 4],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-tips-per-shift",
+    title: "Which shifts are worth it for the tips?",
+    description:
+      "Big dot = the usual tips for that shift, fountain = worst shift to best, small dot = one shift worked this summer. Illustrative numbers for one made-up waiter's summer, not real pay data: each small dot is one shift's tips, cash and card together, in whole euros.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Which shifts are worth it for the tips?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "€ in tips (higher = better)",
+      endLabels: ["worst", "best"],
+      sampleWord: "shifts",
+      referenceLines: [
+        { value: 60, label: "My target: €60 a shift", goodSide: "above", countLabel: "hit €60" },
+      ],
+      readingGuide: fountainGuide("one shift"),
+      dataSet: [
+        {
+          label: "Weekday lunch",
+          value: 22,
+          low: 9,
+          high: 41,
+          samples: [18, 31, 41, 22, 28, 19, 35, 25, 24, 13, 9, 27, 22, 16, 21],
+        },
+        {
+          label: "Weekday dinner",
+          value: 46,
+          low: 24,
+          high: 83,
+          samples: [45, 54, 33, 48, 38, 51, 41, 71, 57, 24, 43, 46, 66, 35, 29, 83, 62],
+        },
+        {
+          label: "Friday night",
+          value: 84,
+          low: 37,
+          high: 139,
+          samples: [84, 81, 102, 110, 88, 52, 124, 78, 66, 95, 139, 71, 37],
+        },
+        {
+          label: "Saturday night",
+          value: 97,
+          low: 64,
+          high: 168,
+          samples: [117, 168, 141, 103, 97, 90, 64, 94, 85, 72, 79, 126, 108],
+        },
+        {
+          label: "Sunday brunch",
+          value: 55,
+          low: 31,
+          high: 74,
+          samples: [74, 31, 38, 44, 66, 52, 47, 55, 55, 63, 69, 58],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-board-game-before-bedtime",
+    title: "Which board game can we finish before bedtime?",
+    description:
+      "Big dot = how long a game usually takes, fountain = quickest game to longest, small dot = one game played on family game night. Illustrative numbers: made-up start-to-finish times for 12 to 20 games of each, not real play records.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Which board game can we finish before bedtime?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "minutes (higher = longer)",
+      endLabels: ["quickest", "longest"],
+      sampleWord: "games",
+      referenceLines: [
+        { value: 60, label: "One hour to bedtime", goodSide: "below", countLabel: "done in time" },
+      ],
+      readingGuide: fountainGuide("one game"),
+      dataSet: [
+        {
+          label: "Uno",
+          value: 20,
+          low: 8,
+          high: 41,
+          samples: [21, 25, 14, 41, 20, 22, 11, 30, 18, 12, 8, 34, 15, 25, 20, 17, 28, 19, 15, 24],
+        },
+        {
+          label: "Scrabble",
+          value: 48,
+          low: 35,
+          high: 66,
+          samples: [50, 52, 57, 48, 61, 66, 35, 54, 45, 47, 48, 43, 38, 41],
+        },
+        {
+          label: "Ticket to Ride",
+          value: 55,
+          low: 42,
+          high: 78,
+          samples: [62, 42, 54, 78, 48, 70, 53, 60, 55, 51, 57, 58, 65, 50, 45],
+        },
+        {
+          label: "Catan",
+          value: 75,
+          low: 55,
+          high: 120,
+          samples: [70, 55, 60, 72, 68, 63, 66, 78, 85, 95, 90, 120, 104, 82, 75, 75],
+        },
+        {
+          label: "Monopoly",
+          value: 105,
+          low: 65,
+          high: 190,
+          samples: [88, 190, 65, 95, 130, 80, 105, 160, 105, 115, 145, 100],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-weekly-shop-trend",
+    title: "Is the weekly food shop going over €100 more often?",
+    description:
+      "Big dot = a usual week's shop, fountain = cheapest week to dearest, small dot = one weekly shop in those three months; the last one is a guess for this autumn. Illustrative receipts for one made-up household of four, not real price data (the €186 one is the Christmas shop). Sep–Nov 2026 is a forecast with no receipts yet, so it has no small dots.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "Is the weekly food shop going over €100 more often?",
+      ...fountainPeriods(["Sep–Nov 2025", "Dec–Feb", "Mar–May", "Jun–Aug", "Sep–Nov 2026"]),
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "€ a week (higher = dearer)",
+      endLabels: ["cheapest", "dearest"],
+      sampleWord: "weeks",
+      referenceLines: [
+        {
+          value: 100,
+          label: "My budget: €100 a week",
+          goodSide: "below",
+          countLabel: "within budget",
+        },
+      ],
+      readingGuide: fountainGuide("one week"),
+      dataSet: [
+        {
+          label: "Weekly shop",
+          date: 1,
+          value: 88.4,
+          low: 71.35,
+          high: 112.84,
+          samples: [
+            92.88, 94.51, 71.35, 85.06, 112.84, 103.62, 90.15, 76.9, 79.12, 83.47, 88.4, 97.3,
+            86.73,
+          ],
+        },
+        {
+          label: "Weekly shop",
+          date: 2,
+          value: 92.65,
+          low: 74.18,
+          high: 186.47,
+          samples: [
+            79.55, 92.65, 98.1, 91.2, 95.43, 186.47, 86.9, 118.9, 74.18, 106.25, 89.37, 84.02,
+            99.76,
+          ],
+        },
+        {
+          label: "Weekly shop",
+          date: 3,
+          value: 94.2,
+          low: 78.64,
+          high: 121.35,
+          samples: [
+            83.15, 86.92, 93.05, 91.77, 121.35, 78.64, 89.4, 109.66, 102.47, 94.2, 99.12, 104.9,
+            96.38,
+          ],
+        },
+        {
+          label: "Weekly shop",
+          date: 4,
+          value: 97.85,
+          low: 80.27,
+          high: 131.08,
+          samples: [
+            101.37, 112.6, 103.92, 97.85, 107.15, 80.27, 94.68, 96.25, 131.08, 89.93, 100.4, 92.1,
+            86.44,
+          ],
+        },
+        { label: "Weekly shop", date: 5, value: 99.5, low: 86, high: 118, forecast: true },
+      ],
+    },
+  },
+  {
+    id: "fountain-swim-gala-time",
+    title: "How often does my daughter swim 50 m fast enough for the swim meet?",
+    description:
+      "Big dot = her usual time that term, fountain = fastest swim to slowest, small dot = one timed swim at training. Made-up numbers: one invented swimmer's stopwatch times, 13 or 14 per school term. 'Next autumn term' is the coach's guess, so it is dashed and has no small dots.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "How often does my daughter swim 50 m fast enough for the swim meet?",
+      ...fountainPeriods(["Autumn term", "Spring term", "Summer term", "Next autumn term"]),
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "seconds (higher = slower)",
+      endLabels: ["fastest", "slowest"],
+      sampleWord: "swims",
+      referenceLines: [
+        {
+          value: 40,
+          label: "Qualifying time: 40 s (below = fast enough)",
+          goodSide: "below",
+          countLabel: "fast enough",
+        },
+      ],
+      readingGuide: fountainGuide("one swim"),
+      dataSet: [
+        {
+          label: "50 m time",
+          date: 1,
+          value: 43.8,
+          low: 41.9,
+          high: 47.2,
+          samples: [43.6, 44, 43.1, 42.8, 43.5, 42.4, 44.9, 46.1, 44.3, 47.2, 45.2, 41.9, 43.8],
+        },
+        {
+          label: "50 m time",
+          date: 2,
+          value: 41.3,
+          low: 39.6,
+          high: 45.3,
+          samples: [40.5, 45.3, 41, 43, 40.2, 40.8, 41.3, 42.1, 41.3, 43.9, 39.6, 42.4, 41.7, 39.9],
+        },
+        {
+          label: "50 m time",
+          date: 3,
+          value: 40.4,
+          low: 38.7,
+          high: 44.1,
+          samples: [39.8, 38.7, 41.3, 40.6, 39.2, 40.4, 41.8, 42.5, 44.1, 40.9, 39.9, 39.5, 40.1],
+        },
+        { label: "50 m time", date: 4, value: 39.8, low: 38.5, high: 41.5, forecast: true },
+      ],
+    },
+  },
+  {
+    id: "fountain-class-test-pass-mark",
+    title: "How many in the class fail each test?",
+    description:
+      "Big dot = a typical pupil's score, fountain = lowest to highest score in the class, small dot = one pupil. Illustrative numbers: one made-up class of 23 to 25 pupils (some were absent), not real results.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "How many in the class fail each test?",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisTitle: "points (higher = better)",
+      endLabels: ["lowest", "highest"],
+      sampleWord: "pupils",
+      referenceLines: [{ value: 50, label: "Pass mark", goodSide: "above", countLabel: "passed" }],
+      readingGuide: fountainGuide("one pupil"),
+      dataSet: [
+        {
+          label: "Maths",
+          value: 64,
+          low: 28,
+          high: 93,
+          samples: [
+            53, 39, 61, 47, 72, 63, 70, 93, 74, 58, 81, 44, 67, 78, 75, 59, 64, 66, 88, 62, 69, 51,
+            55, 85, 28,
+          ],
+        },
+        {
+          label: "Reading",
+          value: 71,
+          low: 52,
+          high: 90,
+          samples: [
+            70, 68, 83, 90, 58, 52, 80, 69, 71, 70, 81, 76, 63, 61, 65, 72, 66, 67, 77, 78, 71, 74,
+            75, 86,
+          ],
+        },
+        {
+          label: "Science",
+          value: 58,
+          low: 22,
+          high: 86,
+          samples: [
+            22, 61, 77, 80, 68, 56, 57, 71, 64, 63, 58, 43, 70, 48, 86, 49, 41, 55, 66, 60, 52, 54,
+            35, 74, 46,
+          ],
+        },
+        {
+          label: "Geography",
+          value: 67,
+          low: 41,
+          high: 84,
+          samples: [
+            75, 79, 65, 60, 65, 76, 73, 68, 61, 41, 66, 57, 69, 67, 84, 72, 64, 67, 63, 70, 66, 78,
+            71,
+          ],
+        },
+        {
+          label: "French",
+          value: 55,
+          low: 18,
+          high: 91,
+          samples: [
+            91, 55, 53, 50, 47, 51, 72, 45, 62, 54, 36, 49, 60, 30, 83, 18, 44, 57, 79, 65, 67, 69,
+            76, 40, 59,
+          ],
+        },
+      ],
+    },
+  },
+  // ---- The reading key ----
+  {
+    id: "fountain-key-anatomy",
+    title: "Reading key: the parts of a fountain",
+    description:
+      "One fountain with every part in view: the stem, the big dot, the fountain, the small dots, and the red line with its count. Illustrative numbers: one car commute timed on 20 working days, made up for the reading key.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      title: "One car commute, timed on 20 working days",
+      xAxisDataType: "band",
+      colors: [FOUNTAIN_BLUE],
+      yAxisDomain: [0, 70],
+      yAxisTitle: "minutes (higher = slower)",
+      endLabels: ["best", "worst"],
+      sampleWord: "days",
+      referenceLines: [
+        {
+          value: 45,
+          label: "Time I allow: 45 min",
+          goodSide: "below",
+          countLabel: "within 45 min",
+        },
+      ],
+      dataSet: [
+        {
+          label: "Car",
+          value: 30,
+          low: 22,
+          high: 55,
+          samples: [22, 24, 25, 26, 27, 27, 28, 28, 29, 30, 30, 30, 31, 31, 32, 33, 34, 36, 48, 55],
+        },
+      ],
+    },
+  },
+  {
+    id: "fountain-key-steady",
+    title: "Pattern: steady",
+    description:
+      "Short fountain, small dots close together: the same time almost every day. Illustrative numbers: one trip timed on different days, made up for the reading key.",
+    element: "michi-vz-fountain-chart",
+    props: fountainPatternProps("Steady: the same time almost every day", {
+      label: "Steady",
+      value: 38,
+      low: 35,
+      high: 42,
+      samples: [35, 36, 36, 37, 37, 37, 38, 38, 38, 38, 38, 38, 39, 39, 39, 40, 40, 41, 41, 42],
+    }),
+  },
+  {
+    id: "fountain-key-changes-a-lot",
+    title: "Pattern: changes a lot",
+    description:
+      "Tall fountain, small dots all the way up: slow days are common, so plan extra time. Illustrative numbers: one trip timed on different days, made up for the reading key.",
+    element: "michi-vz-fountain-chart",
+    props: fountainPatternProps("Changes a lot: slow days are common, so plan extra time", {
+      label: "Changes a lot",
+      value: 40,
+      low: 32,
+      high: 65,
+      samples: [32, 34, 35, 36, 37, 38, 38, 39, 40, 40, 40, 41, 42, 43, 45, 47, 50, 55, 60, 65],
+    }),
+  },
+  {
+    id: "fountain-key-rare-bad-days",
+    title: "Pattern: rare bad days",
+    description:
+      "Small dots low, an empty gap, then one or two high: usually fine, and bad days are rare. Illustrative numbers: one trip timed on different days, made up for the reading key.",
+    element: "michi-vz-fountain-chart",
+    props: fountainPatternProps("Rare bad days: usually fine, and bad days are rare", {
+      label: "Rare bad days",
+      value: 30,
+      low: 22,
+      high: 58,
+      samples: [22, 24, 25, 26, 27, 27, 28, 28, 29, 30, 30, 30, 31, 31, 32, 33, 34, 36, 55, 58],
+    }),
+  },
+  {
+    id: "fountain-key-often-bad",
+    title: "Pattern: often bad",
+    description:
+      "Most small dots high, the big dot near the top: slow is the normal day here. Illustrative numbers: one trip timed on different days, made up for the reading key.",
+    element: "michi-vz-fountain-chart",
+    props: fountainPatternProps("Often bad: slow is the normal day here", {
+      label: "Often bad",
+      value: 55,
+      low: 30,
+      high: 62,
+      samples: [30, 36, 42, 48, 50, 52, 53, 54, 55, 55, 55, 56, 57, 58, 58, 59, 60, 60, 61, 62],
+    }),
+  },
+  {
+    id: "fountain-key-just-a-guess",
+    title: "Pattern: just a guess",
+    description:
+      "Only 5 small dots: too few days counted, so do not trust it yet. Illustrative numbers: one trip timed on different days, made up for the reading key.",
+    element: "michi-vz-fountain-chart",
+    props: fountainPatternProps("Just a guess: too few days counted, so do not trust it yet", {
+      label: "Just a guess",
+      value: 40,
+      low: 33,
+      high: 52,
+      samples: [33, 37, 40, 45, 52],
+    }),
+  },
+  {
+    id: "fountain-key-enough-days",
+    title: "Pattern: enough days",
+    description:
+      "The same shape with 20 small dots: more days counted, so it is safer to trust. Illustrative numbers: one trip timed on different days, made up for the reading key.",
+    element: "michi-vz-fountain-chart",
+    props: fountainPatternProps("Enough days: more days counted, so it is safer to trust", {
+      label: "Enough days",
+      value: 40,
+      low: 33,
+      high: 52,
+      samples: [33, 34, 35, 36, 37, 38, 39, 39, 40, 40, 40, 41, 42, 43, 44, 45, 47, 48, 50, 52],
+    }),
+  },
+  // ---- Switches (the commute example with one switch flipped) ----
+  {
+    id: "fountain-switch-drift",
+    title: "The Geneva look: drift",
+    description:
+      "The commute example with `drift: true`: the top of every fountain bends to the right by the same amount, like the real Jet d'Eau on a breezy day. The bend carries no data, so it is off by default. Illustrative numbers.",
+    element: "michi-vz-fountain-chart",
+    props: { ...fountainCommute, title: "Commute times, with drift: true", drift: true },
+  },
+  {
+    id: "fountain-switch-no-range",
+    title: "Stem and big dot only: showRange off",
+    description:
+      "The commute example with `showRange: false`: no fountain and no small dots, just a bar up to each big dot, so it reads like a lollipop chart. The reading guide is off too, since it explains fountains and small dots. Illustrative numbers.",
+    element: "michi-vz-fountain-chart",
+    props: {
+      ...fountainCommute,
+      title: "Commute times, with showRange: false",
+      showRange: false,
+      readingGuide: false,
     },
   },
 ];

@@ -37,9 +37,30 @@ const data = extract();
 //                         subscribe to those events rather than passing functions.
 //  - suppressDefaultOverlay → internal flag the React wrapper sets when it renders a
 //                         custom overlay node; the other wrappers want the default overlay.
+// A prop whose `@deprecated` note says it is ignored (the fountain's style, frothLayers,
+// showMist, ... since core 1.29) is NOT excluded: it stays accepted for one release so
+// the engine can raise its ignored-option warning, and it only reaches the engine if
+// the WC and Angular wrappers keep forwarding it.
 const isExcluded = (name) => /^on[A-Z]/.test(name) || name === "suppressDefaultOverlay";
+const isIgnoredDeprecated = (p) => /\bignored\b/i.test(p.deprecated ?? "");
 
-const coreProps = (key) => data.charts[key].props.map((p) => p.name).filter((n) => !isExcluded(n));
+const coreProps = (key) =>
+  data.charts[key].props.filter((p) => !isExcluded(p.name)).map((p) => p.name);
+
+test("props deprecated as ignored are still checked: they must reach the engine to warn", () => {
+  const ignored = data.charts["fountain-chart"].props
+    .filter(isIgnoredDeprecated)
+    .map((p) => p.name);
+  assert.deepEqual(ignored.sort(), [
+    "bloomExponent",
+    "frothLayers",
+    "showDroplets",
+    "showMist",
+    "stemFraction",
+    "style",
+  ]);
+  for (const name of ignored) assert.ok(coreProps("fountain-chart").includes(name), name);
+});
 
 // WC: the keys of the `get chartProps()` return object are the engine prop names it forwards.
 function wcForwarded(wcFile) {

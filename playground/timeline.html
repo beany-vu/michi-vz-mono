@@ -292,12 +292,20 @@
       }
 
       // ---- FountainChart (trend mode only - snapshot/categorical has no periods) ----
-      const fountainDataSet = YEARS.map((date, i) => ({
-        label: "Flow",
-        value: 50 + i * 15,
-        spread: 8 + i * 2,
-        date,
-      }));
+      // Ten measured values per year (small dots inside the fountain), the last year a
+      // forecast (a dashed fountain from `spread`, no small dots). Each reveal step
+      // should show the whole jet of its year: stem, fountain, dots and value labels.
+      const FOUNTAIN_OFFSETS = [-9, -6, -4, -2, -1, 0, 1, 3, 6, 10];
+      const fountainDataSet = YEARS.map((date, i) =>
+        i < YEARS.length - 1
+          ? {
+              label: "Flow",
+              date,
+              value: 50 + i * 15,
+              samples: FOUNTAIN_OFFSETS.map((d) => 50 + i * 15 + d * (1 + i * 0.25)),
+            }
+          : { label: "Flow", date, value: 50 + i * 15, spread: 14, forecast: true },
+      );
       for (const [renderer, label] of RENDERERS) {
         mountCard(
           "fountainRow",
@@ -305,7 +313,9 @@
           label,
           {
             dataSet: fountainDataSet,
-            title: "Demo",
+            // chartTitle, not title: assigning `title` would set the element's native
+            // HTML tooltip instead of the chart title (audit fountain #1).
+            chartTitle: "Demo",
             width: WIDTH,
             height: HEIGHT,
             xAxisDataType: "number",

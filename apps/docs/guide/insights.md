@@ -5,7 +5,7 @@ title: Insights - predict, explain, and drive charts with AI
 # Charts that predict, explain themselves, and talk to AI
 
 ::: warning Experimental - not yet stable
-The `@michi-vz/insights` AI layer is **experimental**: its API, sub-paths, and outputs may change in future releases. The 16 core charts are stable; insights (and the new [Fountain chart](/charts/fountain)) are not yet. Pin a version if you depend on them.
+The `@michi-vz/insights` AI layer is **experimental**: its API, sub-paths, and outputs may change in future releases. 21 of the 22 core charts are stable; insights (and the [Fountain (Jet d'Eau)](/charts/fountain) chart) are not yet. Pin a version if you depend on them.
 :::
 
 A chart usually just *draws* the past. `@michi-vz/insights` makes it **forecast the future**,

@@ -124,6 +124,11 @@ function makeGenericProps(chartKey: string): Record<string, unknown> | null {
     const { width: _w1, height: _h1, ...rest } = ex.props as any;
     const timeline: Record<string, unknown> = { speedMs: 1200, loop: true };
     if (chartKey === "line-chart") timeline.tipLabel = true;
+    // Fountain trend examples with named periods (hours, terms) sit at x = 1..n and
+    // print the names through xAxisFormat; the control's period label uses it too.
+    if (chartKey === "fountain-chart" && typeof rest.xAxisFormat === "function") {
+      timeline.formatPeriod = rest.xAxisFormat;
+    }
     return { ...rest, timeline };
   }
 

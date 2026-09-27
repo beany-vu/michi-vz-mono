@@ -68,10 +68,16 @@ export interface EngineReveal {
       endPx: number;
       /** Painted-renderer redraw at a reveal cutoff (canvas/webgpu fallback). */
       canvasRedraw?: (revealX: number) => void;
+      /** Extra per-frame hook, every renderer (marks outside the clipped group,
+       *  e.g. text under the plot, gate themselves on the reveal position). */
+      onReveal?: (revealX: number) => void;
     },
   ): void;
   replay(): void;
   stop(): void;
+  /** The wipe position while a reveal runs, else null (fully drawn or off): the
+   *  engine's hover cap, so marks not drawn yet are not inspectable. */
+  getRevealX(): number | null;
 }
 
 export function createEngineReveal(deps: {
@@ -93,15 +99,22 @@ export function createEngineReveal(deps: {
       driver?.stop();
       driver = null;
       if (!cfg) return;
-      let apply: ((x: number) => void) | null = null;
+      let draw: ((x: number) => void) | null = null;
       if (args.renderer === "svg") {
         if (!args.marksRoot) return;
         const rect = installRevealClip(args.svg, args.marksRoot, args.height);
-        apply = (x) => setRevealWidth(rect, x);
+        draw = (x) => setRevealWidth(rect, x);
       } else if (args.canvasRedraw) {
-        apply = args.canvasRedraw;
+        draw = args.canvasRedraw;
       }
-      if (!apply) return;
+      if (!draw) return;
+      const extra = args.onReveal;
+      const apply = extra
+        ? (x: number): void => {
+            draw!(x);
+            extra(x);
+          }
+        : draw;
       const resuming = resumeX !== null;
       const span = Math.max(1, args.endPx - args.startPx);
       const remaining = resuming
@@ -131,6 +144,9 @@ export function createEngineReveal(deps: {
     stop() {
       driver?.stop();
       driver = null;
+    },
+    getRevealX() {
+      return driver?.isRunning() ? driver.getValue() : null;
     },
   };
 }

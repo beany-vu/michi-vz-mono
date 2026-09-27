@@ -218,18 +218,131 @@ export { sankeyEmphasis, sankeyLitState } from "./sankeyChart/emphasis";
 export type { SankeyEmphasis, SankeyEmphasisTarget, SankeyLitState } from "./sankeyChart/emphasis";
 export { buildSankeyContext } from "./context/buildSankeyContext";
 export { checkSankeyData } from "./validate/sankeyWarnings";
-// Fountain ("Jet d'Eau") pure layer (rising column + blooming plume; snapshot/trend)
-export { processFountainData } from "./fountainChart/data";
+// Fountain ("Jet d'Eau") pure layer (stem + big dot + a bell over [low, high] with
+// one small dot per sample; snapshot/trend). One render model for every renderer.
+export {
+  resolveFountainData,
+  fountainMedian,
+  isFountainForecast,
+  processFountainData,
+} from "./fountainChart/data";
+export type {
+  FountainResolvedJet,
+  FountainPeriod,
+  ResolvedFountainData,
+  ResolveFountainOptions,
+  ProcessedFountain,
+} from "./fountainChart/data";
 export { buildFountainColors } from "./fountainChart/colors";
-export { createFountainScales } from "./fountainChart/scales";
+export type { FountainColorResolver } from "./fountainChart/colors";
+export {
+  buildFountainScales,
+  fountainYDomain,
+  fountainTrendSlot,
+  fountainPeriodTicks,
+  createFountainScales,
+} from "./fountainChart/scales";
+export type {
+  FountainScales,
+  FountainPlot,
+  FountainYDomainOptions,
+  BuildFountainScalesInput,
+  LegacyFountainScales,
+} from "./fountainChart/scales";
+export {
+  bellHalfWidth,
+  bellDrift,
+  bellAt,
+  bellOutline,
+  fountainHalfWidth,
+  fountainStemWidth,
+  fountainBigDotRadius,
+  packFountainDots,
+  FOUNTAIN_DOT_RADIUS,
+  FOUNTAIN_DOT_SPACING,
+  FOUNTAIN_LANE_OFFSET,
+  FOUNTAIN_LANE_REACH,
+  FOUNTAIN_BIG_DOT_RADIUS,
+  FOUNTAIN_STEM_WIDTH,
+  FOUNTAIN_BELL_STEPS,
+} from "./fountainChart/geometry";
+export type { FountainBell, PackBell, PackedDot } from "./fountainChart/geometry";
+// Deprecated since core 1.29 (the removed froth/mist/droplet look), kept for one release.
 export {
   buildJetPath,
   buildFrothSlices,
   buildDropletPaths,
   buildMistPath,
-} from "./fountainChart/geometry";
+} from "./fountainChart/legacyGeometry";
+export {
+  resolveFountainWords,
+  fountainValueFormatter,
+  fountainReadingGuide,
+  fountainGuideMarks,
+  fountainPeriodLabel,
+  fountainAxisLabel,
+  defaultCountLabel as fountainDefaultCountLabel,
+  fountainReferenceCounts,
+  fountainValueLabels,
+  fountainTooltipLines,
+  fountainTooltipHtml,
+  FOUNTAIN_FEW_SAMPLES,
+  FOUNTAIN_DEFAULT_READING_GUIDE,
+} from "./fountainChart/labels";
+export type {
+  FountainWords,
+  FountainValueLabel,
+  FountainValueLabelKind,
+  FountainLabelOptions,
+  FountainTooltipLine,
+  FountainGuideMarks,
+} from "./fountainChart/labels";
 export { buildFountainRenderModel } from "./fountainChart/renderModel";
+export type {
+  FountainRenderModel,
+  FountainJetModel,
+  FountainStemModel,
+  FountainBellModel,
+  FountainDotModel,
+  FountainBigDotModel,
+  FountainReferenceLineModel,
+  FountainPeriodModel,
+  FountainPoint,
+  BuildFountainModelOptions,
+  FountainDotCache,
+} from "./fountainChart/renderModel";
+export { hitTestFountain } from "./fountainChart/hitTest";
+export {
+  buildFountainTextModel,
+  fitFountainValueLabels,
+  fountainBottomLayout,
+  fountainTextMeasure,
+  fountainYTitleLayout,
+  placeFountainReferenceLabels,
+  wrapFountainAxisLabel,
+  wrapFountainReferenceLabel,
+  wrapFountainText,
+  wrapFountainGuide,
+} from "./fountainChart/layout";
+export type {
+  FountainTextModel,
+  FountainTextMeasure,
+  FountainValueLabelFit,
+  FountainBottomLayout,
+  FountainReferenceLabelText,
+  BuildFountainTextModelInput,
+} from "./fountainChart/layout";
+export { planFountainFrame, FOUNTAIN_MIN_SLOT } from "./fountainChart/frame";
+export type { FountainFrame, FountainFrameInput, FountainXAxisPlan } from "./fountainChart/frame";
 export { buildFountainContext } from "./context/buildFountainContext";
+export type { BuildFountainContextInput } from "./context/buildFountainContext";
+export {
+  checkFountainData,
+  checkFountainOptions,
+  checkFountainDomain,
+  FOUNTAIN_REMOVED_PROPS,
+} from "./validate/fountainWarnings";
+export type { FountainDomainCheckOptions } from "./validate/fountainWarnings";
 // ChoroplethMap pure layer (geo - the house's first geo chart; d3-geo/d3-geo-projection)
 export { normalizeGeography, processChoroplethMapData } from "./choroplethMap/data";
 export { buildChoroplethColors } from "./choroplethMap/colors";
@@ -421,6 +534,10 @@ export type {
   SankeyChartContext,
   FountainXAxisType,
   FountainDataItem,
+  FountainReferenceLine,
+  FountainLabels,
+  FountainReferenceCount,
+  FountainTooltipJet,
   FountainChartProps,
   FountainJetContext,
   FountainChartContext,

@@ -23,16 +23,45 @@ export function defaultPercentFormatter(locale?: string): (d: number | string) =
   };
 }
 
+/** True for an instant at exactly 00:00:00.000 UTC. */
+function isUtcMidnight(date: Date): boolean {
+  return (
+    date.getUTCHours() === 0 &&
+    date.getUTCMinutes() === 0 &&
+    date.getUTCSeconds() === 0 &&
+    date.getUTCMilliseconds() === 0
+  );
+}
+
+/**
+ * Formats a period date (a year, or a month and year) so it reads as the period the
+ * data meant in every time zone. An instant at exactly UTC midnight is the form
+ * parseXValue makes from "2021" or "2021-01" (date-only strings parse as UTC), so it
+ * is formatted in UTC: in local time it would read as the year or month before
+ * anywhere west of UTC. Any other instant (a local-midnight Date such as
+ * new Date(2021, 0, 1), a d3 time tick) is formatted in local time, so it too keeps
+ * its own year east and west of UTC. "date_annual" prints the year; every other type
+ * the short month and year.
+ */
+export function periodDateFormatter(
+  xAxisDataType: Exclude<XaxisDataType, "number">,
+  locale?: string,
+): (d: number | string | Date) => string {
+  const opts: Intl.DateTimeFormatOptions =
+    xAxisDataType === "date_annual" ? { year: "numeric" } : { year: "numeric", month: "short" };
+  const local = new Intl.DateTimeFormat(locale, opts);
+  const utc = new Intl.DateTimeFormat(locale, { ...opts, timeZone: "UTC" });
+  return (d) => {
+    const date = d instanceof Date ? d : new Date(d);
+    if (Number.isNaN(date.getTime())) return String(d);
+    return (isUtcMidnight(date) ? utc : local).format(date);
+  };
+}
+
 export function defaultXAxisFormatter(
   xAxisDataType: XaxisDataType,
   locale?: string,
 ): (d: number | string) => string {
   if (xAxisDataType === "number") return defaultNumberFormatter(locale);
-  const annual = new Intl.DateTimeFormat(locale, { year: "numeric" });
-  const monthly = new Intl.DateTimeFormat(locale, { year: "numeric", month: "short" });
-  return (d) => {
-    const date = new Date(d);
-    if (Number.isNaN(date.getTime())) return String(d);
-    return xAxisDataType === "date_annual" ? annual.format(date) : monthly.format(date);
-  };
+  return periodDateFormatter(xAxisDataType, locale);
 }

@@ -5545,7 +5545,7 @@
           "name": "timeline",
           "type": "boolean | TimelinePeriodConfig",
           "optional": true,
-          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set.",
+          "description": "Opt-in \"play through years\" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts. Headless controller via `chart.timeline()` plus the built-in play button + scrubber. Off by default; wins over `progressiveDraw` when both are set. The reveal always shows the whole active jet, fountain and small dots included, and a jet's value labels appear with it; undrawn jets cannot be hovered. Trend mode only. Not drawn by the \"webgpu\" renderer (an ignored-option warning).",
           "default": "",
           "common": false
         },
@@ -5553,7 +5553,7 @@
           "name": "progressiveDraw",
           "type": "boolean | ProgressiveDrawConfig",
           "optional": true,
-          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it.",
+          "description": "Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put). `true` uses defaults (1200 ms, easeInOutCubic); a config tunes durationMs, easing, autoplay, and replayOnUpdate (`tipLabel` is LineChart-only and ignored here). Off by default; respects prefers-reduced-motion (renders fully drawn instantly) and `replay()` re-runs it. Jets the wipe has not reached cannot be hovered. Not drawn by the \"webgpu\" renderer (an ignored-option warning).",
           "default": "",
           "common": false
         },
@@ -5614,18 +5614,10 @@
           "common": true
         },
         {
-          "name": "style",
-          "type": "\"jet\" | \"plume\"",
-          "optional": true,
-          "description": "Silhouette style: \"jet\" (default) is the faithful asymmetric Jet d'Eau (vertical column + wind-blown diagonal + a triangular droplet spray curtain); \"plume\" is the symmetric blooming column.",
-          "default": "\"jet\"",
-          "common": false
-        },
-        {
           "name": "xAxisDataType",
           "type": "FountainXAxisType",
           "optional": true,
-          "description": "How the x-axis is parsed: a temporal/numeric type renders TREND mode; \"band\" (or omitted) renders SNAPSHOT mode",
+          "description": "How the x-axis is parsed: a temporal/numeric type renders TREND mode (jets at their dates, the x range inset by half a column on each side, one tick per period); \"band\" (or omitted) renders SNAPSHOT mode (one column per label)",
           "default": "",
           "common": false
         },
@@ -5633,7 +5625,7 @@
           "name": "yAxisDomain",
           "type": "[number, number]",
           "optional": true,
-          "description": "Explicit [min, max] for the value (y) axis; overrides the auto domain from value + spread",
+          "description": "Explicit [min, max] for the value (y) axis, used as given (not rounded). The auto domain includes 0, every value, low, high and reference line, plus 10% headroom, rounded to nice ticks. Data outside a user domain is clamped to the plot edge and small dots outside it are not drawn (an `out-of-domain` warning).",
           "default": "",
           "common": false
         },
@@ -5649,7 +5641,7 @@
           "name": "yAxisFormat",
           "type": "(d: number | string) => string",
           "optional": true,
-          "description": "Formats a y tick value into its display label",
+          "description": "Formats a y value: the tick labels and the numbers in the value labels and the tooltip (default: the locale's number format)",
           "default": "",
           "common": false
         },
@@ -5657,7 +5649,7 @@
           "name": "ticks",
           "type": "number",
           "optional": true,
-          "description": "Approximate number of axis ticks to generate",
+          "description": "Approximate number of axis ticks to generate (default 5)",
           "default": "5",
           "common": false
         },
@@ -5665,56 +5657,96 @@
           "name": "tickValues",
           "type": "Array<number | Date>",
           "optional": true,
-          "description": "Explicit tick values, overriding the generated ones (trend mode)",
+          "description": "Explicit x tick values, overriding the per-period ticks (trend mode)",
           "default": "",
           "common": false
         },
         {
-          "name": "frothLayers",
-          "type": "number",
-          "optional": true,
-          "description": "Number of graduated-opacity froth layers per jet (default 14, max 20); a per-item density overrides it",
-          "default": "14",
-          "common": false
-        },
-        {
-          "name": "bloomExponent",
-          "type": "number",
-          "optional": true,
-          "description": "Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 5)",
-          "default": "5",
-          "common": false
-        },
-        {
-          "name": "stemFraction",
-          "type": "number",
-          "optional": true,
-          "description": "Stem half-width at the base as a fraction of the jet's slot width (default 0.045)",
-          "default": "0.045",
-          "common": false
-        },
-        {
-          "name": "showDroplets",
+          "name": "showRange",
           "type": "boolean",
           "optional": true,
-          "description": "Draw ballistic droplet arcs above each apex (default true)",
+          "description": "Draw the fountain: the range [low, high] as a bell (default true). `false` draws the stem and the big dot only; the small dots need the fountain to sit in, so they hide too.",
           "default": "true",
           "common": false
         },
         {
-          "name": "showMist",
+          "name": "showSamples",
           "type": "boolean",
           "optional": true,
-          "description": "Draw the misty falling skirt around each nozzle (default true)",
+          "description": "Draw the small dots, one per sample, when items carry `samples` (default true)",
           "default": "true",
+          "common": false
+        },
+        {
+          "name": "showValueLabels",
+          "type": "boolean",
+          "optional": true,
+          "description": "Print value labels under each x label (default true): bold \"usual 30\", then \"<low word> 22\" and \"<high word> 55\" (see `endLabels`), \"only N <sampleWord>\" under 10 samples, and per reference line with a `goodSide` a bold \"17 of 20\" plus its `countLabel`. The chart reserves bottom margin for them. On narrow columns the text shrinks, then the end lines go, before a label would overlap a neighbour; when even the usual line cannot fit, when the x labels have to tilt, or where two jets share a column, the value labels are left out (a `layout-overflow` warning).",
+          "default": "true",
+          "common": false
+        },
+        {
+          "name": "drift",
+          "type": "boolean",
+          "optional": true,
+          "description": "The Geneva look: the top of every fountain leans downwind, the same way for every jet, so it means nothing (default false: readers found it confusing)",
+          "default": "false",
+          "common": false
+        },
+        {
+          "name": "yAxisTitle",
+          "type": "string",
+          "optional": true,
+          "description": "Title drawn rotated beside the y-axis, e.g. \"minutes (higher = slower)\"",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "endLabels",
+          "type": "[string, string]",
+          "optional": true,
+          "description": "Words for the low and high ends in the value labels and tooltip (default [\"lowest\", \"highest\"]; e.g. [\"best\", \"worst\"], [\"cheapest\", \"dearest\"])",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "referenceLines",
+          "type": "FountainReferenceLine[]",
+          "optional": true,
+          "description": "Horizontal reference lines (a promise, a limit, a budget). With `goodSide`, each jet with samples counts its small dots on the good side.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "labels",
+          "type": "FountainLabels",
+          "optional": true,
+          "description": "UI words for localisation (English defaults \"usual\", \"of\", \"only\", \"forecast\")",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "readingGuide",
+          "type": "boolean | string",
+          "optional": true,
+          "description": "A reading guide under the plot (default false), on one line when it fits, else wrapped between its rules (at each \" · \"), never inside one. `true` prints the default (\"Small dot = one measurement · Big dot = the usual one · Dots close together = steady · Tall fountain = changes a lot · Few dots = just a guess\") with only the rules for marks the chart draws: no small-dot rules without small dots (no samples, showSamples or showRange off, forecasts only), no \"Tall fountain\" rule without a fountain. A string replaces it and is printed as given.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "sampleWord",
+          "type": "string",
+          "optional": true,
+          "description": "PLURAL noun for the samples in the value labels and tooltip, e.g. \"days\", \"orders\" (default \"measurements\"). Plural on purpose: there is no pluralising logic, and one string is easy to localise.",
+          "default": "",
           "common": false
         },
         {
           "name": "showTrendLine",
           "type": "boolean",
           "optional": true,
-          "description": "Draw a connecting line through the apexes in trend mode (default true)",
-          "default": "true",
+          "description": "Draw a dashed grey line through the big dots, left to right (default true in trend mode with one series; false with several series, where one line would zig-zag between them, and in snapshot mode; set it true to join an ordered sequence of categories, e.g. hours)",
+          "default": "",
           "common": false
         },
         {
@@ -5767,9 +5799,41 @@
         },
         {
           "name": "tooltipFormatter",
-          "type": "(d: FountainDataItem) => string",
+          "type": "(d: FountainDataItem & { value: number }, jet?: FountainTooltipJet) => string",
           "optional": true,
-          "description": "Returns custom tooltip HTML for a hovered jet (sanitized before it is inserted)",
+          "description": "Returns custom tooltip HTML for a hovered or pinned jet (sanitized before it is inserted). Default: the label (with its period in trend mode), \"usual 30\", \"<low word> 22 · <high word> 55\", \"20 <sampleWord>\" and a count per reference line with a goodSide, numbers formatted like the y-axis. Click or tap pins the tooltip; clicking the pinned jet or empty space, or Escape, unpins. The first argument is the item with its resolved `value` (the median of its samples when it gives none), so `d.value` is always a number; a formatter typed `(d: FountainDataItem) => string` still fits. The second is the jet as drawn (its range, samples, reference counts, period and the default lines), so a custom tooltip needs no re-derivation.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the loading overlay; with nothing drawn yet the axes and marks wait for data, while a refetch keeps the stale jets on screen.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "isNodata",
+          "type": "boolean | ((dataSet: FountainDataItem[] | null | undefined) => boolean)",
+          "optional": true,
+          "description": "No-data override: boolean, or a predicate on the data; default = an empty dataSet. With no data the chart draws the no-data overlay instead of axes and marks.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "noDataLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Text for the vanilla default no-data overlay (ignored when suppressed).",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "suppressDefaultOverlay",
+          "type": "boolean",
+          "optional": true,
+          "description": "A framework wrapper sets this to render its OWN loading/no-data node instead.",
           "default": "",
           "common": false
         },
@@ -5777,7 +5841,7 @@
           "name": "onHighlightItem",
           "type": "(labels: string[]) => void",
           "optional": true,
-          "description": "Called when the hovered/highlighted label(s) change",
+          "description": "Called when the hovered, pinned or cleared label changes (only on a change: moving within one jet does not re-fire; leaving every jet fires [])",
           "default": "",
           "common": false
         },
@@ -5804,6 +5868,60 @@
           "description": "Called with any non-fatal data warnings (out-of-range values, duplicate labels, ...)",
           "default": "",
           "common": true
+        },
+        {
+          "name": "style",
+          "type": "\"jet\" | \"plume\"",
+          "optional": true,
+          "description": "",
+          "deprecated": "ignored since core 1.29; emits an ignored-option warning. There is one look now: stem, fountain, small dots, big dot.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "frothLayers",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "deprecated": "ignored since core 1.29; emits an ignored-option warning",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "bloomExponent",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "deprecated": "ignored since core 1.29; emits an ignored-option warning",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "stemFraction",
+          "type": "number",
+          "optional": true,
+          "description": "",
+          "deprecated": "ignored since core 1.29; emits an ignored-option warning",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showDroplets",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "deprecated": "ignored since core 1.29; emits an ignored-option warning",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "showMist",
+          "type": "boolean",
+          "optional": true,
+          "description": "",
+          "deprecated": "ignored since core 1.29; emits an ignored-option warning",
+          "default": "",
+          "common": false
         }
       ]
     },

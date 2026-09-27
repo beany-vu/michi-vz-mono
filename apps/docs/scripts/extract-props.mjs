@@ -259,6 +259,15 @@ function descOf(prop) {
   return oneLine(docs.map((d) => d.getDescription()).join(" "));
 }
 
+// The `@deprecated` note ("ignored since core 1.29; ..."), or undefined for a live prop.
+// getDescription() leaves tags out, so a deprecated prop would otherwise read as live.
+function deprecatedOf(prop) {
+  for (const doc of prop.getJsDocs())
+    for (const tag of doc.getTags())
+      if (tag.getTagName() === "deprecated") return oneLine(tag.getCommentText() ?? "");
+  return undefined;
+}
+
 // Defaults from engine resolve(): `name: p.name ?? <default>` (+ DEFAULT_MARGIN).
 function engineDefaults(engineFile) {
   const text = readFileSync(resolve(CORE_SRC, "engine", engineFile), "utf8");
@@ -317,12 +326,17 @@ export function extract() {
     typesFile
       .getInterfaceOrThrow(interfaceName)
       .getProperties()
-      .map((p) => ({
-        name: p.getName(),
-        type: ALIASES[typeText(p)] ?? typeText(p),
-        optional: p.hasQuestionToken(),
-        description: descOf(p),
-      }));
+      .map((p) => {
+        const deprecated = deprecatedOf(p);
+        return {
+          name: p.getName(),
+          type: ALIASES[typeText(p)] ?? typeText(p),
+          optional: p.hasQuestionToken(),
+          description: descOf(p),
+          // Only on deprecated props, so the live ones keep their shape in props.json.
+          ...(deprecated !== undefined ? { deprecated } : {}),
+        };
+      });
 
   // Shared prop metadata (type/description), taken from the first chart that declares each.
   const sharedMap = {};

@@ -168,3 +168,34 @@ describe("createCumulativeTimeline", () => {
     expect(dom.host.querySelector(".mv-timeline")).toBeNull();
   });
 });
+
+describe("createCumulativeTimeline: per-period revealPx", () => {
+  it("a period's revealPx replaces px + 8 as its reveal target (the last still reveals to endPx)", () => {
+    const ticker: ManualTicker = createManualTicker();
+    const cum = createCumulativeTimeline({ ticker });
+    const dom = makeDom();
+    const cfg = resolveTimeline({ interpolate: false });
+    cum.afterRender(cfg, {
+      host: dom.host,
+      renderer: "svg",
+      svg: dom.svg as SVGElement,
+      marksRoot: dom.marks as Element,
+      height: 300,
+      periods: [
+        { period: "2018", px: 100, revealPx: 131 },
+        { period: "2019", px: 200 },
+        { period: "2020", px: 300, revealPx: 340 },
+      ],
+      startPx: START,
+      endPx: END,
+    });
+    expect(clipWidth(dom.svg)).toBe(131);
+    expect(cum.getRevealX()).toBe(131);
+    cum.controller()!.stepForward();
+    expect(clipWidth(dom.svg)).toBe(208);
+    cum.controller()!.stepForward();
+    expect(clipWidth(dom.svg)).toBe(END);
+    cum.destroy();
+    dom.host.remove();
+  });
+});

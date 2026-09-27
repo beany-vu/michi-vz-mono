@@ -93,10 +93,15 @@ function firstSentence(s) {
   return cut.length > 300 ? `${cut.slice(0, 297).trimEnd()}...` : cut;
 }
 
+// A deprecated prop leads with its @deprecated note, so it never reads as a live prop.
 function propLine(p) {
   let line = `- \`${p.name}\`: \`${p.type}\``;
   if (p.default) line += ` (default: \`${p.default}\`)`;
-  if (p.description) line += ` - ${firstSentence(p.description)}`;
+  const text = [
+    p.deprecated != null ? `Deprecated: ${firstSentence(p.deprecated)}` : "",
+    p.description ? firstSentence(p.description) : "",
+  ].filter(Boolean);
+  if (text.length) line += ` - ${text.join(" ")}`;
   return line;
 }
 
@@ -192,8 +197,10 @@ function renderTemplate(name, tokens, blocks) {
   return text;
 }
 
-export function generate() {
-  const data = JSON.parse(readFileSync(resolve(DOCS, ".vitepress/data/props.json"), "utf8"));
+// `data` defaults to the generated props.json; a test can pass a fresh extract().
+export function generate(
+  data = JSON.parse(readFileSync(resolve(DOCS, ".vitepress/data/props.json"), "utf8")),
+) {
   const versions = Object.fromEntries(PACKAGES.map((p) => [p.dir, pkgVersion(p.dir)]));
 
   const tokens = {

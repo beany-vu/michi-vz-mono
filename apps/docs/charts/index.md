@@ -24,7 +24,7 @@ Twenty-two framework-agnostic charts. Each page has an example, usage across eve
 - [**Gauge (Rings)**](/charts/gauge) - _Comparison_ · Concentric rings, one per item, each sweeping value/max of a full circle over a background track, with a hover-activated centre readout.
 - [**Bubble**](/charts/bubble) - _Composition_ · Circles sized by value, pulled into a cluster by gravity, each optionally split into a realized core and an untapped ring.
 - [**Sankey**](/charts/sankey) - _Flow_ · Flows between nodes laid out in columns, with band thickness proportional to the flow value (built on d3-sankey).
-- [**Fountain (Jet d'Eau)**](/charts/fountain) - _Comparison_ · Apex height = value, the blooming plume = uncertainty. Categorical x = snapshot/comparison of KPIs; temporal or numeric x = trend with optional forecast jets (best for ~5-12 periods).
+- [**Fountain (Jet d'Eau)**](/charts/fountain) - _Comparison_ · A big dot for the usual value, a fountain from the lowest to the highest, and one small dot per real measurement, so readers can count how often it goes past a limit. Categorical x = snapshot; temporal or numeric x = trend with optional forecast jets (best for about 3-12 periods).
 - [**Choropleth Map**](/charts/choropleth-map) - _Geography_ · Your own GeoJSON, shaded by a threshold colour scale or an explicit category map, with 13 d3-geo projections.
 - [**Symbol Map**](/charts/symbol-map) - _Geography_ · Symbols placed by lng/lat, with a one-shot force simulation pulling overlapping circles apart.
 - [**Radial Tree**](/charts/radial-tree) - _Composition_ · A radial dendrogram: leaves equidistant from the centre, circles sized at group and leaf level, and adaptive label density as the leaf count grows.

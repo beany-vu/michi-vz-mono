@@ -1,23 +1,55 @@
-// FountainChart ("Jet d'Eau") engine: mount/update/getContext/destroy. One jet
-// per data item; categorical x = snapshot, temporal/numeric x = trend. LIGHT DOM
-// (SVG) or canvas. Mirrors the Ribbon engine's plugin/devtools/tooltip wiring.
+// FountainChart ("Jet d'Eau") engine: mount/update/getContext/destroy. One jet per
+// data item; categorical x = snapshot, temporal/numeric x = trend. LIGHT DOM.
+//
+// One render model (fountainChart/renderModel.ts) is drawn by svg, canvas or webgpu;
+// the words around it (value labels, reference labels, the y title, the reading
+// guide) are planned first (frame.ts, layout.ts), so the margins they need are
+// reserved before the scales are built, and are always SVG.
+//
+// Interaction is ONE host-level handler for every renderer (audit fountain #6):
+// hitTestFountain by column, capped by the timeline / progressive-draw reveal; the
+// tooltip (default words from labels.ts, or tooltipFormatter) follows the pointer via
+// placeTooltip; click or tap pins it or moves the pin; clicking the pinned jet or empty
+// space, Escape, or a click outside the chart unpins; leaving the host hides it.
+// onHighlightItem fires only when the target changes; every resolved hover is
+// reported to the devtools hit channel.
 import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
-import { attachDevtools } from "../devtools/hook";
+import { placeTooltip } from "../render/placeTooltip";
+import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
 import { svgEl, htmlEl, clear } from "../dom";
-import { defaultNumberFormatter, defaultXAxisFormatter } from "../i18n/formatters";
+import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisBand, renderXAxisLinear, renderYAxisLinear } from "../render/svg";
-import { chooseAxisMode } from "../render/svg/chooseAxisMode";
-import { measureLabelWidth } from "../render/svg/measureLabelWidth";
-import { parseXValue } from "../lineChart/lineUtils";
-import { processFountainData } from "../fountainChart/data";
+import { applyChartChrome, createChromeRefs } from "../render/chrome";
+import { shouldSkipScaffold } from "../state/dataState";
+import { resolveFountainData, type FountainResolvedJet } from "../fountainChart/data";
 import { buildFountainColors } from "../fountainChart/colors";
-import { createFountainScales } from "../fountainChart/scales";
+import { fountainPeriodTicks, fountainYDomain, type FountainScales } from "../fountainChart/scales";
 import { buildFountainRenderModel } from "../fountainChart/renderModel";
-import type { FountainJetModel } from "../fountainChart/renderModel";
-import { renderFountainSvg } from "../fountainChart/renderSvg";
-import { drawFountainCanvas } from "../fountainChart/renderCanvas";
+import type {
+  FountainDotCache,
+  FountainJetModel,
+  FountainRenderModel,
+} from "../fountainChart/renderModel";
+import { hitTestFountain } from "../fountainChart/hitTest";
+import {
+  fountainPeriodLabel,
+  fountainTooltipHtml,
+  fountainTooltipLines,
+  fountainValueFormatter,
+  resolveFountainWords,
+} from "../fountainChart/labels";
+import { buildFountainTextModel, fountainTextMeasure } from "../fountainChart/layout";
+import { planFountainFrame } from "../fountainChart/frame";
+import { fountainHostMeasure } from "../fountainChart/measure";
+import { checkFountainData } from "../validate/fountainWarnings";
+import {
+  gateFountainText,
+  renderFountainSvg,
+  renderFountainSvgText,
+} from "../fountainChart/renderSvg";
+import { drawFountainCanvas, type FountainPaintTheme } from "../fountainChart/renderCanvas";
 import { drawFountainWebgpu } from "../fountainChart/renderWebgpu";
 import { resolveRenderer } from "../webgpu/capability";
 import { resolveReveal, createEngineReveal, type ResolvedReveal } from "../animation/reveal";
@@ -25,6 +57,7 @@ import { resolveTimeline, type ResolvedTimeline } from "../animation/chartTimeli
 import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cumulativeTimeline";
 import { buildFountainContext } from "../context/buildFountainContext";
 import { renderA11yMirror } from "../context/a11yMirror";
+import { contextSignature } from "../context/signature";
 import {
   applyTransformData,
   applyEnrichContext,
@@ -38,29 +71,24 @@ import type {
   ChartInstance,
   DataWarning,
   FountainChartProps,
-  FountainDataItem,
+  FountainTooltipJet,
   Margin,
   MountOptions,
 } from "../types";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 40, bottom: 50, left: 60 };
 
-// canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
-// the host-level hit-test / click-to-pin interaction path. svg does not.
-const isPainted = (rr: "svg" | "canvas" | "webgpu"): boolean => rr === "canvas" || rr === "webgpu";
-
 interface Resolved {
   width: number;
   height: number;
   margin: Margin;
   ticks: number;
-  style: "jet" | "plume";
-  frothLayers: number;
-  bloomExponent: number;
-  stemFraction: number;
-  showDroplets: boolean;
-  showMist: boolean;
-  showTrendLine: boolean;
+  showRange: boolean;
+  showSamples: boolean;
+  showValueLabels: boolean;
+  drift: boolean;
+  /** undefined = the model default (on in trend mode, off in snapshot mode) */
+  showTrendLine: boolean | undefined;
   renderer: "svg" | "canvas" | "webgpu";
   enableTransitions: boolean;
   progressiveDraw: ResolvedReveal | null;
@@ -73,16 +101,12 @@ function resolve(p: FountainChartProps): Resolved {
     height: p.height ?? 480,
     margin: p.margin ?? DEFAULT_MARGIN,
     ticks: p.ticks ?? 5,
-    style: p.style ?? "jet",
-    frothLayers: p.frothLayers ?? 14,
-    bloomExponent: p.bloomExponent ?? 5,
-    stemFraction: p.stemFraction ?? 0.045,
-    showDroplets: p.showDroplets ?? true,
-    showMist: p.showMist ?? true,
-    showTrendLine: p.showTrendLine ?? true,
-    // EFFECTIVE renderer: an opt-in "webgpu" request downgrades to "canvas" when
-    // WebGPU is unavailable, so everything downstream (incl. getContext().renderer)
-    // reflects what actually painted.
+    showRange: p.showRange ?? true,
+    showSamples: p.showSamples ?? true,
+    showValueLabels: p.showValueLabels ?? true,
+    drift: p.drift ?? false,
+    showTrendLine: p.showTrendLine,
+    // An opt-in "webgpu" request downgrades to "canvas" when WebGPU is unavailable.
     renderer: resolveRenderer(p.renderer),
     enableTransitions: p.enableTransitions ?? true,
     progressiveDraw: resolveReveal(p.progressiveDraw),
@@ -90,22 +114,9 @@ function resolve(p: FountainChartProps): Resolved {
   };
 }
 
-function checkData(dataSet: FountainDataItem[]): DataWarning[] {
-  const warnings: DataWarning[] = [];
-  if (!dataSet || dataSet.length === 0) {
-    warnings.push({ type: "empty-dataset", message: "FountainChart received an empty dataSet." });
-    return warnings;
-  }
-  for (const d of dataSet) {
-    if (!Number.isFinite(Number(d.value)) || !Number.isFinite(Number(d.spread))) {
-      warnings.push({
-        type: "non-finite-value",
-        message: `FountainChart: non-finite value/spread for "${d.label}".`,
-        label: d.label,
-      });
-    }
-  }
-  return warnings;
+/** A theme colour from the host's CSS custom property, else the default. */
+function themeColor(cs: CSSStyleDeclaration, name: string, fallback: string): string {
+  return (cs.getPropertyValue(name) || "").trim() || fallback;
 }
 
 export function mountFountainChart(
@@ -123,6 +134,7 @@ export function mountFountainChart(
   a11y.setAttribute("role", "img");
   let canvas: HTMLCanvasElement | null = null;
   let webgpuCanvas: HTMLCanvasElement | null = null;
+  const chrome = createChromeRefs();
 
   host.appendChild(svg);
   host.appendChild(tooltip);
@@ -130,6 +142,7 @@ export function mountFountainChart(
 
   let baseProps: FountainChartProps = initial;
   let context: ChartContext | null = null;
+  let lastContextSig = "";
   const pluginList: MichiVzPlugin<FountainChartProps>[] = [...(opts?.plugins ?? [])];
   const pc: PluginContext<FountainChartProps> = {
     chartType: "fountain-chart",
@@ -140,18 +153,21 @@ export function mountFountainChart(
       render();
     },
   };
-  let sticky = false;
   let lastColorMappingSent: Record<string, string> = {};
-  let model: ReturnType<typeof buildFountainRenderModel> | null = null;
+  let model: FountainRenderModel | null = null;
+  // Packed small dots per jet, reused while nothing that places them changes (an
+  // update that only highlights, e.g. onHighlightItem echoed into highlightItems).
+  const dotCache: FountainDotCache = new Map();
+  // Per render: the resolved jet behind each model jet (the tooltip's period).
+  let sourceOf = new Map<number, FountainResolvedJet>();
+  let temporalType: ReturnType<typeof resolveFountainData>["temporalType"] = null;
   const engineRv = createEngineReveal({ ticker: opts?.ticker, motion: opts?.motion });
-  // Cumulative timeline (opt-in play-through-years): only applies in TREND mode
-  // (a temporal x-axis); snapshot mode is categorical, so its afterRender call
-  // always passes empty periods and the control naturally tears down. Wins over
-  // progressiveDraw when both are configured.
+  // Cumulative timeline (opt-in play-through-years): TREND mode only; snapshot mode
+  // passes no periods so the control tears down. Wins over progressiveDraw.
   const cumTl = createCumulativeTimeline({ ticker: opts?.ticker, motion: opts?.motion });
 
-  // Lazily create an absolutely-positioned <canvas> layered behind the SVG,
-  // matching the host padding (shared by canvas mode + the webgpu fallback).
+  // Lazily create an absolutely-positioned <canvas> over the SVG (pointer events off),
+  // matching the host padding (shared by canvas mode and the webgpu fallback).
   const makeLayerCanvas = (className: string): HTMLCanvasElement => {
     const c = htmlEl("canvas", { class: className });
     c.style.position = "absolute";
@@ -162,72 +178,134 @@ export function mountFountainChart(
     return c;
   };
   const removeCanvas = (): void => {
-    if (canvas) {
-      canvas.remove();
-      canvas = null;
-    }
+    canvas?.remove();
+    canvas = null;
   };
   const removeWebgpuCanvas = (): void => {
-    if (webgpuCanvas) {
-      webgpuCanvas.remove();
-      webgpuCanvas = null;
-    }
+    webgpuCanvas?.remove();
+    webgpuCanvas = null;
   };
 
+  // ----- interaction (one host-level path for every renderer) -----
+  let pinnedIndex: number | null = null;
+  let highlightKey = ""; // the last label list sent to onHighlightItem ("" = [])
+
+  const emitHighlight = (labels: string[]): void => {
+    const key = labels.join("\u0000");
+    if (key === highlightKey) return;
+    highlightKey = key;
+    baseProps.onHighlightItem?.(labels);
+  };
+
+  const tooltipHtml = (jet: FountainJetModel): string => {
+    const p = baseProps;
+    const src = sourceOf.get(jet.index);
+    const period = src ? fountainPeriodLabel(src, temporalType, p.xAxisFormat, p.locale) : null;
+    const lines = fountainTooltipLines(jet, {
+      format: fountainValueFormatter(p.yAxisFormat, p.locale),
+      words: resolveFountainWords(p),
+      referenceLines: p.referenceLines,
+      showRange: p.showRange,
+      period,
+    });
+    if (!p.tooltipFormatter) return fountainTooltipHtml(lines);
+    const drawn: FountainTooltipJet = {
+      label: jet.label,
+      code: jet.code,
+      color: jet.color,
+      value: jet.value,
+      low: jet.low,
+      high: jet.high,
+      samples: [...jet.samples],
+      forecast: jet.forecast,
+      period,
+      referenceCounts: jet.referenceCounts,
+      lines: lines.map((l) => l.text),
+    };
+    // The item with its resolved value: the median of the samples when it gives none.
+    return p.tooltipFormatter({ ...jet.item, value: jet.value }, drawn);
+  };
   const showTooltip = (jet: FountainJetModel, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
-    const htmlStr = baseProps.tooltipFormatter
-      ? baseProps.tooltipFormatter(jet.item)
-      : `<strong>${jet.label}</strong><br/>value ${jet.value} &plusmn; ${jet.spread}` +
-        (jet.predicted ? " (forecast)" : "");
-    tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
+    tooltip.innerHTML = DOMPurify.sanitize(tooltipHtml(jet));
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
-    if (sticky) return;
     tooltip.style.visibility = "hidden";
   };
 
-  const onHostMove = (ev: MouseEvent): void => {
-    if (!isPainted(resolve(baseProps).renderer) || !model || sticky) return;
-    const svgRect = svg.getBoundingClientRect();
-    const x = ev.clientX - svgRect.left;
-    const y = ev.clientY - svgRect.top;
-    let hit: FountainJetModel | null = null;
-    for (const jet of model.jets) {
-      if (x >= jet.hit.left && x <= jet.hit.right && y >= jet.hit.top && y <= jet.hit.bottom) {
-        hit = jet;
-        break;
-      }
+  const onKeyDown = (ev: KeyboardEvent): void => {
+    if (ev.key === "Escape") unpin();
+  };
+  // Clear the pin state; the Escape listener only lives while something is pinned.
+  const releasePin = (): void => {
+    pinnedIndex = null;
+    if (typeof document !== "undefined") document.removeEventListener("keydown", onKeyDown);
+  };
+  function unpin(): void {
+    if (pinnedIndex === null) return;
+    releasePin();
+    tooltip.classList.remove("sticky");
+    hideTooltip();
+    emitHighlight([]);
+  }
+  const pin = (jet: FountainJetModel, ev: MouseEvent): void => {
+    if (pinnedIndex === null && typeof document !== "undefined") {
+      document.addEventListener("keydown", onKeyDown);
     }
+    pinnedIndex = jet.index;
+    tooltip.classList.add("sticky");
+    showTooltip(jet, ev);
+    emitHighlight([jet.label]);
+  };
+
+  /** The jet under the pointer (reported to devtools), capped by any running reveal. */
+  const hitAt = (ev: MouseEvent): FountainJetModel | null => {
+    if (!model) return null;
+    const rect = svg.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+    const cap = cumTl.getRevealX() ?? engineRv.getRevealX();
+    const hit = hitTestFountain(model, x, y, cap);
+    reportDevtoolsHit(host, x, y, hit ? hit.label : null);
+    return hit;
+  };
+  const inTooltip = (ev: Event): boolean => tooltip.contains(ev.target as Node);
+
+  const onHostMove = (ev: MouseEvent): void => {
+    if (!model || inTooltip(ev)) return;
+    const hit = hitAt(ev);
+    svg.style.cursor = hit ? "pointer" : "";
+    if (pinnedIndex !== null) return;
     if (hit) {
       showTooltip(hit, ev);
-      baseProps.onHighlightItem?.([hit.label]);
+      emitHighlight([hit.label]);
     } else {
       hideTooltip();
-      baseProps.onHighlightItem?.([]);
+      emitHighlight([]);
     }
   };
-  // Canvas-mode click-to-pin (canvas marks have no DOM to click on).
-  const onHostClick = (): void => {
-    if (!isPainted(resolve(baseProps).renderer)) return;
-    if (sticky) {
-      sticky = false;
-      tooltip.classList.remove("sticky");
-      tooltip.style.visibility = "hidden";
-    } else if (tooltip.style.visibility === "visible") {
-      sticky = true;
-      tooltip.classList.add("sticky");
-    }
+  const onHostClick = (ev: MouseEvent): void => {
+    // Clicks on the pinned tooltip itself belong to wireStickyDismiss.
+    if (!model || inTooltip(ev)) return;
+    const hit = hitAt(ev);
+    if (hit && hit.index !== pinnedIndex) pin(hit, ev);
+    else unpin();
+  };
+  const onHostLeave = (): void => {
+    svg.style.cursor = "";
+    if (pinnedIndex !== null) return;
+    hideTooltip();
+    emitHighlight([]);
   };
   host.addEventListener("mousemove", onHostMove);
   host.addEventListener("click", onHostClick);
+  host.addEventListener("mouseleave", onHostLeave);
   const disposeStickyDismiss = wireStickyDismiss(host, tooltip, {
-    isSticky: () => sticky,
+    isSticky: () => pinnedIndex !== null,
     unpin: () => {
-      sticky = false;
+      releasePin();
+      emitHighlight([]);
     },
   });
 
@@ -238,21 +316,26 @@ export function mountFountainChart(
     svg.setAttribute("width", String(r.width));
     svg.setAttribute("height", String(r.height));
     svg.style.position = "relative";
+    clear(svg);
 
-    const processed = processFountainData(
-      props.dataSet,
-      props.xAxisDataType,
-      props.disabledItems,
-      props.yAxisDomain,
-    );
+    // data-mv-state + font + the default loading / no-data overlays.
+    const dataState = applyChartChrome(host, props, props.dataSet, chrome);
+    const skipScaffold = shouldSkipScaffold(dataState, props.dataSet);
 
+    const resolved = resolveFountainData(props.dataSet, {
+      xAxisDataType: props.xAxisDataType,
+      disabledItems: props.disabledItems,
+    });
+    temporalType = resolved.temporalType;
+    sourceOf = new Map(resolved.jets.map((j) => [j.index, j]));
+
+    // Colours from the UNFILTERED dataSet, so disabling never recolours the others.
     const colors = buildFountainColors(
-      processed.items,
+      props.dataSet,
       props.colors,
       props.colorsMapping,
       props.skipColorMappingDispatch ?? false,
     );
-
     if (!props.skipColorMappingDispatch && props.onColorMappingGenerated) {
       const next = colors.generatedColorsMapping;
       if (JSON.stringify(next) !== JSON.stringify(lastColorMappingSent)) {
@@ -261,231 +344,33 @@ export function mountFountainChart(
       }
     }
 
-    let margin = r.margin;
-    let scales = createFountainScales(
-      processed.mode,
-      processed.labels,
-      processed.items.length,
-      processed.xDomain,
-      processed.yAxisDomain,
-      r.width,
-      r.height,
-      margin,
-      processed.temporalType,
-    );
-
-    // Snapshot (band) x-axis layout, same policy as the stack/bar charts: fit
-    // labels horizontally, else rotate -45° (reserving bottom margin, which means
-    // re-creating the scales), else thin to a readable subset.
-    let bandAxis: ReturnType<typeof chooseAxisMode> | null = null;
-    if (scales.xBand) {
-      const xFormat = props.xAxisFormat ?? ((d: number | string) => String(d));
-      bandAxis = chooseAxisMode({
-        domain: scales.xBand.domain(),
-        formatter: (d) => xFormat(d),
-        bandWidth: scales.xBand.step(),
-        measure: measureLabelWidth,
-      });
-      if (bandAxis.mode === "rotated") {
-        const maxLabelWidth = bandAxis.tickValues.reduce(
-          (m, v) => Math.max(m, measureLabelWidth(String(xFormat(v)))),
-          0,
-        );
-        // 25 (axis offset) + 14 (label translate) + label·sin45 + 12 (descender pad)
-        const required = Math.ceil(25 + 14 + maxLabelWidth * Math.SQRT1_2 + 12);
-        if (required > margin.bottom) {
-          margin = { ...margin, bottom: required };
-          scales = createFountainScales(
-            processed.mode,
-            processed.labels,
-            processed.items.length,
-            processed.xDomain,
-            processed.yAxisDomain,
-            r.width,
-            r.height,
-            margin,
-            processed.temporalType,
-          );
-        }
-      }
-    }
-
-    model = buildFountainRenderModel(
-      processed.items,
-      processed.mode,
-      processed.temporalType,
-      scales,
-      colors,
-      {
-        style: r.style,
-        frothLayers: r.frothLayers,
-        bloomExponent: r.bloomExponent,
-        stemFraction: r.stemFraction,
-        showDroplets: r.showDroplets,
-        showMist: r.showMist,
-        showTrendLine: r.showTrendLine,
-        highlightItems: props.highlightItems ?? [],
-        maxDensity: processed.maxDensity,
-      },
-    );
-
+    const words = resolveFountainWords(props);
+    const format = fountainValueFormatter(props.yAxisFormat, props.locale);
     const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
+    const yDomain = fountainYDomain(resolved.jets, {
+      referenceLines: props.referenceLines,
+      showRange: r.showRange,
+      yAxisDomain: props.yAxisDomain,
+    });
+    const layoutWarnings: DataWarning[] = [];
+    let scales: FountainScales | null = null;
+    let painted: "svg" | "canvas" | "webgpu" = r.renderer;
 
-    clear(svg);
     renderTitle(svg, { text: props.title, x: r.width / 2, y: r.margin.top / 2 });
 
-    if (processed.mode === "trend" && scales.xLinear && processed.temporalType) {
-      const xFormat =
-        props.xAxisFormat ?? defaultXAxisFormatter(processed.temporalType, props.locale);
-      renderXAxisLinear(svg, scales.xLinear, {
-        width: r.width,
-        height: r.height,
-        margin,
-        xAxisDataType: processed.temporalType,
-        format: (v) => xFormat(v),
-        ticks: r.ticks,
-        tickValues: props.tickValues,
-      });
-    } else if (scales.xBand) {
-      const xFormat = props.xAxisFormat ?? ((d: number | string) => String(d));
-      renderXAxisBand(svg, scales.xBand, {
-        width: r.width,
-        height: r.height,
-        margin,
-        format: (label) => xFormat(label),
-        mode: bandAxis?.mode,
-        tickValues: bandAxis?.tickValues,
-      });
-    }
-
-    renderYAxisLinear(svg, scales.yScale, {
-      width: r.width,
-      height: r.height,
-      margin,
-      format: (v) => yFormat(v),
-      ticks: r.ticks,
-    });
-
-    if (r.renderer === "svg") {
-      renderFountainSvg(
-        svg,
-        model,
-        { enableTransitions: r.enableTransitions },
-        {
-          onEnter: (jet, ev) => {
-            if (sticky) return;
-            showTooltip(jet, ev);
-            props.onHighlightItem?.([jet.label]);
-          },
-          onLeave: () => {
-            hideTooltip();
-            if (!sticky) props.onHighlightItem?.([]);
-          },
-          onClick: (jet, ev) => {
-            sticky = true;
-            tooltip.classList.add("sticky");
-            showTooltip(jet, ev);
-          },
-        },
-      );
-    }
-
-    // Resolve the consumer ink colour so the canvas trend line matches the SVG
-    // var(--michi-vz-ink, currentColor) instead of a hardcoded grey (also read by
-    // the progressive-draw canvas redraw below, painted or not).
-    const cs = getComputedStyle(host);
-    const inkColor =
-      (cs.getPropertyValue("--michi-vz-ink") || "").trim() || cs.color || "rgba(130,130,130,1)";
-
-    if (isPainted(r.renderer)) {
-      if (r.renderer === "webgpu") {
-        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("fountainChart-webgpu-canvas");
-        const ready = drawFountainWebgpu(webgpuCanvas, svg, model, {
-          width: r.width,
-          height: r.height,
-          inkColor,
-          // Re-render once the async GPU device resolves, upgrading canvas → GPU.
-          onReady: render,
-        });
-        if (ready) {
-          // GPU painted - drop any first-frame 2D fallback canvas.
-          removeCanvas();
-        } else {
-          // Device not ready / unavailable (incl. jsdom): paint the canvas-2D
-          // stopgap so the chart is never blank.
-          if (!canvas) canvas = makeLayerCanvas("fountain-chart-canvas");
-          drawFountainCanvas(canvas, svg, model, { width: r.width, height: r.height, inkColor });
-        }
-      } else {
-        // canvas mode
-        removeWebgpuCanvas();
-        if (!canvas) canvas = makeLayerCanvas("fountain-chart-canvas");
-        drawFountainCanvas(canvas, svg, model, { width: r.width, height: r.height, inkColor });
-      }
-    } else {
+    if (skipScaffold) {
+      // Loading with nothing to show yet, or no data: the overlay only.
+      model = null;
       removeCanvas();
       removeWebgpuCanvas();
-    }
-
-    // Opt-in reveal animation: wipes the jets left to right (no data-state gate -
-    // FountainChart always draws, even for an empty dataSet). Timeline wins over
-    // progressiveDraw when both are configured.
-    engineRv.afterRender(r.timeline ? null : r.progressiveDraw, {
-      renderer: r.renderer,
-      svg,
-      marksRoot: svg.querySelector("g.fountain-chart-content"),
-      height: r.height,
-      startPx: 0,
-      endPx: r.width,
-      canvasRedraw:
-        r.renderer === "canvas"
-          ? (x) =>
-              drawFountainCanvas(canvas, svg, model!, {
-                width: r.width,
-                height: r.height,
-                inkColor,
-                revealX: x,
-              })
-          : undefined,
-    });
-
-    // ----- Cumulative timeline (opt-in play-through-years) -----
-    // Only TREND mode (temporal x) has periods to play through; snapshot mode
-    // (categorical band x) always passes empty periods so the control tears down.
-    if (r.timeline && r.renderer !== "webgpu" && processed.mode === "trend" && scales.xLinear) {
-      const xLinear = scales.xLinear;
-      const temporalType = processed.temporalType!;
-      const periodMap = new Map<string, CumulativePeriod>();
-      for (const it of processed.items) {
-        if (it.date === undefined || it.date === null || it.date === "") continue;
-        const parsed = parseXValue(it.date, temporalType);
-        const px = (xLinear as (x: number | Date) => number)(parsed);
-        const key = String(it.date);
-        const existing = periodMap.get(key);
-        if (!existing || px > existing.px) periodMap.set(key, { period: it.date, px });
-      }
-      const periods = Array.from(periodMap.values()).sort((a, b) => a.px - b.px);
-      cumTl.afterRender(r.timeline, {
-        host,
+      engineRv.afterRender(null, {
         renderer: r.renderer,
         svg,
-        marksRoot: svg.querySelector("g.fountain-chart-content"),
+        marksRoot: null,
         height: r.height,
-        periods,
-        startPx: margin.left,
+        startPx: 0,
         endPx: r.width,
-        canvasRedraw:
-          r.renderer === "canvas"
-            ? (x) =>
-                drawFountainCanvas(canvas, svg, model!, {
-                  width: r.width,
-                  height: r.height,
-                  inkColor,
-                  revealX: x,
-                })
-            : undefined,
       });
-    } else {
       cumTl.afterRender(null, {
         host,
         renderer: r.renderer,
@@ -496,69 +381,274 @@ export function mountFountainChart(
         startPx: 0,
         endPx: 0,
       });
+    } else {
+      // ----- the frame: margins for the words, then the final scales -----
+      // Every word is measured in the page's font, so the margins reserved for it hold.
+      const measure = fountainHostMeasure(host);
+      const frame = planFountainFrame({
+        resolved,
+        yDomain,
+        yAxisDomainGiven: !!props.yAxisDomain,
+        width: r.width,
+        height: r.height,
+        margin: r.margin,
+        ticks: r.ticks,
+        words,
+        format,
+        yFormat: (v: number) => yFormat(v),
+        xAxisFormat: props.xAxisFormat,
+        locale: props.locale,
+        referenceLines: props.referenceLines,
+        showRange: r.showRange,
+        showSamples: r.showSamples,
+        showValueLabels: r.showValueLabels,
+        yAxisTitle: props.yAxisTitle,
+        readingGuide: props.readingGuide,
+        measure: measure.regular,
+        measureBold: measure.bold,
+      });
+      layoutWarnings.push(...frame.warnings);
+      const { margin } = frame;
+      const sc = frame.scales;
+      scales = sc;
+
+      const built = buildFountainRenderModel(resolved, sc, colors, {
+        showRange: r.showRange,
+        showSamples: r.showSamples,
+        showValueLabels: r.showValueLabels,
+        drift: r.drift,
+        showTrendLine: r.showTrendLine,
+        highlightItems: props.highlightItems ?? [],
+        referenceLines: props.referenceLines,
+        readingGuide: props.readingGuide,
+        format,
+        words,
+        dotCache,
+      });
+      model = built;
+
+      const text = buildFountainTextModel(built, {
+        valueFit: frame.valueFit,
+        bottom: frame.bottom,
+        measure: fountainTextMeasure(measure.regular, measure.bold),
+        referenceWidth: frame.referenceWidth,
+        yTitle:
+          props.yAxisTitle && frame.yTitleX !== null
+            ? { text: props.yAxisTitle, x: frame.yTitleX }
+            : null,
+        guideLines: frame.guideLines,
+        width: r.width,
+        axisNotes: frame.axisNotes,
+      });
+
+      // ----- axes -----
+      const xAxis = frame.xAxis;
+      if (xAxis?.kind === "linear" && sc.xLinear && resolved.temporalType) {
+        renderXAxisLinear(svg, sc.xLinear, {
+          width: r.width,
+          height: r.height,
+          margin,
+          xAxisDataType: resolved.temporalType,
+          format: xAxis.label,
+          ticks: r.ticks,
+          // One tick per data period (first and last always kept), as Line does.
+          tickValues:
+            props.tickValues ?? fountainPeriodTicks(resolved.periods, resolved.temporalType),
+          enableExplicitTickValues: true,
+          // No vertical grid and no tick dots: the stems already mark the periods, and
+          // a grey dot under each would read as one more measurement.
+          showGrid: false,
+          tickDots: false,
+          autoRotate: true,
+          // Tilts exactly when the frame planned it (the same measure).
+          measure: measure.regular,
+          maxTicks: sc.plot.right - sc.plot.left < 480 ? 3 : 5,
+        });
+      } else if (xAxis?.kind === "band" && sc.xBand) {
+        renderXAxisBand(svg, sc.xBand, {
+          width: r.width,
+          height: r.height,
+          margin,
+          format: xAxis.label,
+          mode: xAxis.mode,
+          tickValues: xAxis.tickValues,
+        });
+      }
+      renderYAxisLinear(svg, sc.yScale, {
+        width: r.width,
+        height: r.height,
+        margin,
+        format: (v) => yFormat(v),
+        ticks: r.ticks,
+      });
+
+      // ----- marks (svg) and words (always svg) -----
+      if (r.renderer === "svg") {
+        renderFountainSvg(svg, built, { enableTransitions: r.enableTransitions });
+      }
+      renderFountainSvgText(svg, text);
+
+      // ----- marks (canvas / webgpu) -----
+      const cs = getComputedStyle(host);
+      const theme: FountainPaintTheme = {
+        ink: themeColor(cs, "--michi-vz-ink", cs.color || "rgba(130,130,130,1)"),
+        surface: themeColor(cs, "--michi-vz-surface", "#ffffff"),
+        attention: themeColor(cs, "--michi-vz-attention", "#c0392b"),
+        lake: themeColor(cs, "--michi-vz-lake", "#9cc3dd"),
+      };
+      const paintCanvas = (revealX?: number): void =>
+        drawFountainCanvas(canvas, svg, built, {
+          width: r.width,
+          height: r.height,
+          ...theme,
+          revealX,
+        });
+
+      if (r.renderer === "webgpu") {
+        if (!webgpuCanvas) webgpuCanvas = makeLayerCanvas("fountainChart-webgpu-canvas");
+        const ready = drawFountainWebgpu(webgpuCanvas, svg, built, {
+          width: r.width,
+          height: r.height,
+          ...theme,
+          // Re-render once the async GPU device resolves, upgrading canvas -> GPU.
+          onReady: render,
+        });
+        if (ready) {
+          removeCanvas();
+        } else {
+          // Device not ready / unavailable (incl. jsdom): the canvas-2D stopgap keeps
+          // the chart from being blank, and the context says what painted (audit #11).
+          if (!canvas) canvas = makeLayerCanvas("fountain-chart-canvas");
+          paintCanvas();
+          painted = "canvas";
+        }
+        for (const name of ["timeline", "progressiveDraw"] as const) {
+          if (!props[name]) continue;
+          layoutWarnings.push({
+            type: "ignored-option",
+            message: `FountainChart: \`${name}\` is ignored with renderer "webgpu" (the GPU layer has no reveal clip); use "canvas" or "svg" to animate.`,
+          });
+        }
+      } else if (r.renderer === "canvas") {
+        removeWebgpuCanvas();
+        if (!canvas) canvas = makeLayerCanvas("fountain-chart-canvas");
+        paintCanvas();
+      } else {
+        removeCanvas();
+        removeWebgpuCanvas();
+      }
+
+      // ----- reveal: progressive draw and the timeline (not on the GPU) -----
+      // The value labels (SVG text outside the clipped marks) follow the reveal too.
+      const onReveal = (x: number): void => gateFountainText(svg, x >= r.width - 0.5 ? null : x);
+      const marksRoot = svg.querySelector("g.fountain-chart-content");
+      const canvasRedraw = r.renderer === "canvas" ? paintCanvas : undefined;
+      const animate = r.renderer !== "webgpu";
+      engineRv.afterRender(animate && !r.timeline ? r.progressiveDraw : null, {
+        renderer: r.renderer,
+        svg,
+        marksRoot,
+        height: r.height,
+        startPx: 0,
+        endPx: r.width,
+        canvasRedraw,
+        onReveal,
+      });
+      if (animate && r.timeline && resolved.mode === "trend" && sc.xLinear) {
+        // Each period reveals to the painted right edge of its jets: never half a bell.
+        const periods: CumulativePeriod[] = built.periods.map((p) => ({
+          period: p.date,
+          px: p.x,
+          revealPx: p.revealPx + 1,
+        }));
+        cumTl.afterRender(r.timeline, {
+          host,
+          renderer: r.renderer,
+          svg,
+          marksRoot,
+          height: r.height,
+          periods,
+          startPx: margin.left,
+          endPx: r.width,
+          canvasRedraw,
+          onReveal,
+        });
+      } else {
+        cumTl.afterRender(null, {
+          host,
+          renderer: r.renderer,
+          svg,
+          marksRoot: null,
+          height: r.height,
+          periods: [],
+          startPx: 0,
+          endPx: 0,
+        });
+      }
     }
+
+    // A pinned jet that is gone (disabled, filtered, no data) lets go of its pin.
+    if (pinnedIndex !== null && !model?.jets.some((j) => j.index === pinnedIndex)) unpin();
 
     context = buildFountainContext({
       title: props.title,
-      renderer: r.renderer,
-      mode: processed.mode,
-      // Keep xAxis.type aligned with the resolved mode + domain shape: "band" when
-      // snapshot (string[] domain), the temporal type when trend ([number,number]).
-      xAxisType: processed.mode === "trend" ? (processed.temporalType ?? "number") : "band",
-      items: processed.items,
-      labels: processed.labels,
-      xDomain: processed.xDomain,
-      yAxisDomain: processed.yAxisDomain,
+      renderer: painted,
+      mode: resolved.mode,
+      // xAxis.type follows the resolved mode: "band" in snapshot, the temporal type in trend.
+      xAxisType: resolved.mode === "trend" ? (resolved.temporalType ?? "number") : "band",
+      jets: resolved.jets,
+      allLabels: resolved.allLabels,
+      labels: resolved.labels,
+      disabledItems: props.disabledItems,
+      xDomain: resolved.xDomain,
+      yAxisDomain: scales ? (scales.yScale.domain() as [number, number]) : yDomain,
       colorsMapping: colors.generatedColorsMapping,
+      colorOf: colors.colorOf,
+      referenceLines: props.referenceLines,
+      words,
+      formatPeriod: (j) =>
+        fountainPeriodLabel(j, resolved.temporalType, props.xAxisFormat, props.locale) ??
+        String(j.date ?? ""),
     });
     // Plugin hook #3 - enrichContext (before the a11y mirror + dataprocessed event).
     context = applyEnrichContext(pluginList, context, pc);
     renderA11yMirror(a11y, context);
-    props.onChartDataProcessed?.(context);
+    // Only a changed context is announced: a re-fire can loop a consumer's dispatch.
+    const sig = contextSignature(context);
+    if (sig !== lastContextSig) {
+      lastContextSig = sig;
+      props.onChartDataProcessed?.(context);
+    }
 
-    // Plugin hook #2 - validate. Validate the USER's data (baseProps); add layout
-    // warnings from the processed model (crowding / clipped spread).
+    // Plugin hook #2 - validate the USER's data (baseProps), plus the layout warnings.
     if (baseProps.onDataWarning) {
       const warnings: DataWarning[] = [
-        ...checkData(baseProps.dataSet),
+        ...checkFountainData(baseProps),
+        ...layoutWarnings,
         ...collectValidate(pluginList, baseProps, pc),
       ];
-      // Snapshot bands dedupe labels, so duplicate-labelled jets would stack on
-      // the same slot; warn (trend legitimately reuses a label across periods).
-      if (processed.mode === "snapshot") {
-        const seen = new Set<string>();
-        const dupes = new Set<string>();
-        for (const it of processed.items) {
-          if (seen.has(it.label)) dupes.add(it.label);
-          seen.add(it.label);
-        }
-        for (const label of dupes) {
-          warnings.push({
-            type: "duplicate-label",
-            message: `FountainChart: duplicate label "${label}" in snapshot mode; jets stack on the same band. Use unique labels or trend mode.`,
-            label,
-          });
-        }
-      }
-      const crowdLimit = processed.mode === "trend" ? 15 : 10;
-      if (processed.items.length > crowdLimit) {
-        warnings.push({
-          type: "layout-overflow",
-          message: `FountainChart: ${processed.items.length} jets exceed the readable ${crowdLimit} for ${processed.mode} mode; widen the chart, disable items, or aggregate.`,
-        });
-      }
-      if (model.clippedLabels.length > 0) {
-        warnings.push({
-          type: "layout-overflow",
-          message: `FountainChart: spread clipped to the column width for ${model.clippedLabels.join(", ")}; widen the chart or reduce spread.`,
-        });
-      }
       if (warnings.length > 0) baseProps.onDataWarning(warnings);
     }
   }
 
   render();
   const teardowns = setupPlugins(pluginList, pc);
+
+  // A web font that is still loading is measured as its fallback, so the margins
+  // reserved for the words would be off: lay them out again once the fonts are in.
+  let destroyed = false;
+  const fonts =
+    typeof document !== "undefined"
+      ? (document as Document & { fonts?: { status: string; ready: Promise<unknown> } }).fonts
+      : undefined;
+  if (fonts?.status === "loading") {
+    fonts.ready.then(
+      () => {
+        if (!destroyed) render();
+      },
+      () => undefined,
+    );
+  }
 
   const instance: ChartInstance<FountainChartProps> = {
     update(next: FountainChartProps) {
@@ -578,12 +668,17 @@ export function mountFountainChart(
       return collectTools(pluginList, pc);
     },
     destroy() {
+      destroyed = true;
       engineRv.stop();
       cumTl.destroy();
       disposeStickyDismiss();
+      releasePin();
       for (const t of teardowns) t();
       host.removeEventListener("mousemove", onHostMove);
       host.removeEventListener("click", onHostClick);
+      host.removeEventListener("mouseleave", onHostLeave);
+      model = null;
+      dotCache.clear();
       canvas = null;
       webgpuCanvas = null;
       clear(host);
@@ -599,5 +694,7 @@ export function mountFountainChart(
     instance.timeline = () => cumTl.controller();
   }
 
-  return attachDevtools(instance, host, "fountain-chart", () => baseProps);
+  return attachDevtools(instance, host, "fountain-chart", () => baseProps, {
+    hitReporting: "canvas",
+  });
 }

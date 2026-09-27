@@ -5,7 +5,7 @@ title: Insights - dự đoán, giải thích, và điều khiển biểu đồ b
 # Biểu đồ dự đoán, tự giải thích chính mình, và trò chuyện với AI
 
 ::: warning Thử nghiệm - chưa ổn định
-Lớp AI `@michi-vz/insights` là **thử nghiệm**: API, sub-path, và đầu ra của nó có thể thay đổi trong các bản phát hành tương lai. 16 biểu đồ lõi đã ổn định; insights (và [biểu đồ Fountain](/vi/charts/fountain) mới) thì chưa. Hãy ghim một phiên bản nếu bạn phụ thuộc vào chúng.
+Lớp AI `@michi-vz/insights` là **thử nghiệm**: API, sub-path, và đầu ra của nó có thể thay đổi trong các bản phát hành tương lai. 21 trong 22 biểu đồ lõi đã ổn định; insights (và biểu đồ [Đài phun (Jet d'Eau)](/vi/charts/fountain)) thì chưa. Hãy ghim một phiên bản nếu bạn phụ thuộc vào chúng.
 :::
 
 Một biểu đồ bình thường chỉ *vẽ lại* quá khứ. `@michi-vz/insights` cho nó **dự báo tương

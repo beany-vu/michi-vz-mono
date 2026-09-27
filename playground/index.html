@@ -606,6 +606,30 @@
       </div>
     </div>
 
+    <h1 style="margin-top: 36px">
+      @michi-vz/wc - FountainChart (range, small dots, reference line, forecast)
+    </h1>
+    <div class="row" id="fountainSnapshot">
+      <div class="card">
+        <h2>SVG, snapshot: 20 days per mode, a 45-minute line</h2>
+        <michi-vz-fountain-chart id="fountainSvg"></michi-vz-fountain-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas, same props</h2>
+        <michi-vz-fountain-chart id="fountainCanvas"></michi-vz-fountain-chart>
+      </div>
+    </div>
+    <div class="row" id="fountainTrend">
+      <div class="card">
+        <h2>SVG, trend with a forecast (dashed, hollow, no small dots)</h2>
+        <michi-vz-fountain-chart id="fountainTrendSvg"></michi-vz-fountain-chart>
+      </div>
+      <div class="card">
+        <h2>Canvas, same props</h2>
+        <michi-vz-fountain-chart id="fountainTrendCanvas"></michi-vz-fountain-chart>
+      </div>
+    </div>
+
     <div id="results">running…</div>
 
     <script type="module">
@@ -1587,6 +1611,135 @@
         const sankeyHoverCanvasEl = document.getElementById("sankeyHoverCanvas");
         Object.assign(sankeyHoverSvgEl, { ...sankeyHoverCommon, renderer: "svg" });
         Object.assign(sankeyHoverCanvasEl, { ...sankeyHoverCommon, renderer: "canvas" });
+
+        // ---- FountainChart setup ---- the commute (snapshot: 20 timed days per mode, a
+        // 45-minute line) and a swim time over school years (trend, the last one a
+        // forecast). Illustrative numbers. Each chart is mounted twice, svg and canvas,
+        // with the same props, so the svg twin tells the checks where every mark is.
+        const fountainCommute = {
+          dataSet: [
+            {
+              label: "Car",
+              value: 30,
+              low: 22,
+              high: 55,
+              samples: [
+                29, 31, 27, 30, 55, 28, 33, 30, 26, 35, 22, 30, 34, 46, 27, 29, 32, 35, 25, 48,
+              ],
+            },
+            {
+              label: "Train",
+              value: 35,
+              low: 32,
+              high: 42,
+              samples: [
+                34, 35, 33, 36, 42, 35, 34, 37, 35, 32, 36, 34, 38, 35, 33, 40, 36, 34, 37, 35,
+              ],
+            },
+            {
+              label: "Bus",
+              value: 40,
+              low: 32,
+              high: 65,
+              samples: [
+                38, 44, 36, 40, 65, 52, 39, 58, 35, 40, 32, 61, 37, 47, 40, 54, 34, 51, 38, 57,
+              ],
+            },
+            {
+              label: "E-bike",
+              value: 38,
+              low: 35,
+              high: 42,
+              samples: [
+                37, 38, 36, 39, 42, 38, 39, 38, 35, 40, 37, 38, 39, 41, 36, 38, 40, 37, 39, 38,
+              ],
+            },
+          ],
+          chartTitle: "How long is my commute, really?",
+          yAxisTitle: "minutes (higher = slower)",
+          endLabels: ["best", "worst"],
+          sampleWord: "days",
+          referenceLines: [
+            {
+              value: 45,
+              label: "Time I allow: 45 min",
+              goodSide: "below",
+              countLabel: "within 45 min",
+            },
+          ],
+          width: 520,
+          height: 400,
+        };
+        const fountainSwim = {
+          dataSet: [
+            {
+              label: "50 m time",
+              date: 2022,
+              value: 43.8,
+              low: 41.9,
+              high: 47.2,
+              samples: [43.6, 44, 43.1, 42.8, 43.5, 42.4, 44.9, 46.1, 44.3, 47.2, 45.2, 41.9, 43.8],
+            },
+            {
+              label: "50 m time",
+              date: 2023,
+              value: 41.3,
+              low: 39.6,
+              high: 45.3,
+              samples: [
+                40.5, 45.3, 41, 43, 40.2, 40.8, 41.3, 42.1, 41.3, 43.9, 39.6, 42.4, 41.7, 39.9,
+              ],
+            },
+            {
+              label: "50 m time",
+              date: 2024,
+              value: 40.4,
+              low: 38.7,
+              high: 44.1,
+              samples: [
+                39.8, 38.7, 41.3, 40.6, 39.2, 40.4, 41.8, 42.5, 44.1, 40.9, 39.9, 39.5, 40.1,
+              ],
+            },
+            { label: "50 m time", date: 2025, value: 39.8, low: 38.5, high: 41.5, forecast: true },
+          ],
+          chartTitle: "How often is the 50 m fast enough?",
+          xAxisDataType: "number",
+          yAxisTitle: "seconds (higher = slower)",
+          endLabels: ["fastest", "slowest"],
+          sampleWord: "swims",
+          referenceLines: [
+            {
+              value: 40,
+              label: "Qualifying time: 40 s",
+              goodSide: "below",
+              countLabel: "fast enough",
+            },
+          ],
+          width: 520,
+          height: 400,
+        };
+        const fountainEls = {
+          svg: document.getElementById("fountainSvg"),
+          canvas: document.getElementById("fountainCanvas"),
+          trendSvg: document.getElementById("fountainTrendSvg"),
+          trendCanvas: document.getElementById("fountainTrendCanvas"),
+        };
+        // The label each chart last reported through michi-vz:highlight, and every
+        // data warning it raised (the layout must fit without dropping anything).
+        const fountainHover = {};
+        const fountainWarnings = {};
+        for (const [key, el] of Object.entries(fountainEls)) {
+          fountainHover[key] = [];
+          fountainWarnings[key] = [];
+          el.addEventListener("michi-vz:highlight", (e) => (fountainHover[key] = e.detail));
+          el.addEventListener("michi-vz:datawarning", (e) =>
+            fountainWarnings[key].push(...e.detail),
+          );
+        }
+        Object.assign(fountainEls.svg, { ...fountainCommute, renderer: "svg" });
+        Object.assign(fountainEls.canvas, { ...fountainCommute, renderer: "canvas" });
+        Object.assign(fountainEls.trendSvg, { ...fountainSwim, renderer: "svg" });
+        Object.assign(fountainEls.trendCanvas, { ...fountainSwim, renderer: "canvas" });
 
         await nextFrame();
 
@@ -3255,6 +3408,491 @@
           log(
             skAfter === skBefore,
             `SANKEY hoverHighlight (canvas): moving off every mark repaints it at full strength (alpha ${skAfter})`,
+          );
+
+          // ---- FountainChart checks ----
+          // y(v) is read back off the y-axis tick labels (their y attribute), the way a
+          // reader reads the chart; every geometric check below goes through it.
+          const fnYOf = (el) => {
+            const ticks = Array.from(el.querySelectorAll("g.mv-y-axis text.mv-axis-label")).map(
+              (t) => ({
+                v: Number(t.textContent.replace(/−/g, "-").replace(/[^\d.-]/g, "")),
+                y: Number(t.getAttribute("y")),
+              }),
+            );
+            const a = ticks[0];
+            const b = ticks[ticks.length - 1];
+            return (v) => a.y + ((v - a.v) * (b.y - a.y)) / (b.v - a.v);
+          };
+          const near = (a, b, tol = 0.6) => Math.abs(a - b) <= tol;
+          const num = (el, attr) => Number(el.getAttribute(attr));
+          const fnName = (d) => (d.date !== undefined ? `${d.label} ${d.date}` : d.label);
+          const fnGroups = (el) => Array.from(el.querySelectorAll("g.mv-fountain-jet-group"));
+          const fnValueLabels = (el) =>
+            Array.from(el.querySelectorAll("g.mv-fountain-value-label"));
+          const fnLine = (g, kind) =>
+            g.querySelector(`text.mv-fountain-value-line[data-kind="${kind}"]`)?.textContent ??
+            null;
+          // The bell's closed polygon ("M x,y L x,y ... Z"), and its x span at a height.
+          const fnBellPoints = (g) => {
+            const bell = g.querySelector("path.mv-fountain-jet");
+            const d = bell ? bell.getAttribute("d") : "";
+            return (d.match(/-?[\d.]+,-?[\d.]+/g) || []).map((p) => p.split(",").map(Number));
+          };
+          const fnSpanAt = (pts, y) => {
+            const xs = [];
+            for (let i = 0; i < pts.length; i++) {
+              const [x1, y1] = pts[i];
+              const [x2, y2] = pts[(i + 1) % pts.length];
+              if (y1 === y2) {
+                if (y1 === y) xs.push(x1, x2);
+              } else if ((y - y1) * (y - y2) <= 0) {
+                xs.push(x1 + ((y - y1) * (x2 - x1)) / (y2 - y1));
+              }
+            }
+            return xs.length ? [Math.min(...xs), Math.max(...xs)] : null;
+          };
+          // How far a small dot's disc goes past its fountain's outline (px): points round
+          // its circle (and where it crosses the tip's and the base's lines), each outside
+          // the outline counted by its distance to the outline's sides. The parts above the
+          // tip's line and below the base's line do not count: the highest sample pokes
+          // above the tip, and the lowest hangs half below the flat base, by construction.
+          const fnDiscOver = (pts, cx, cy, r) => {
+            const segDist = (px, py, a, b) => {
+              const dx = b[0] - a[0];
+              const dy = b[1] - a[1];
+              const L = dx * dx + dy * dy;
+              const t = L ? Math.max(0, Math.min(1, ((px - a[0]) * dx + (py - a[1]) * dy) / L)) : 0;
+              return Math.hypot(px - (a[0] + t * dx), py - (a[1] + t * dy));
+            };
+            const sideDist = (px, py) => {
+              let m = Infinity;
+              for (let i = 0; i + 1 < pts.length; i++)
+                m = Math.min(m, segDist(px, py, pts[i], pts[i + 1]));
+              return m;
+            };
+            const ys = pts.map((p) => p[1]);
+            const top = Math.min(...ys);
+            const base = Math.max(...ys);
+            const inside = (px, py) => {
+              if (py < top || py > base) return false;
+              const s = fnSpanAt(pts, py);
+              return !!s && px >= s[0] && px <= s[1];
+            };
+            if (inside(cx, cy) && sideDist(cx, cy) >= r) return 0;
+            let over = 0;
+            const at = (px, py) => {
+              if (py < top - 1e-9 || py > base || inside(px, py)) return;
+              over = Math.max(over, sideDist(px, py));
+            };
+            for (let k = 0; k < 180; k++) {
+              const py = cy + r * Math.sin((k * Math.PI) / 90);
+              if (py < base - 1e-6) at(cx + r * Math.cos((k * Math.PI) / 90), py);
+            }
+            for (const ly of [top, base - 1e-6]) {
+              const dy = ly - cy;
+              if (Math.abs(dy) < r) {
+                const a = Math.sqrt(r * r - dy * dy);
+                at(cx - a, ly);
+                at(cx + a, ly);
+              }
+            }
+            return over;
+          };
+          // The least a disc in row cy can go past the outline (px): a scan of the row.
+          const fnBestOver = (pts, cy, r) => {
+            const ys = pts.map((p) => p[1]);
+            const span = fnSpanAt(pts, Math.min(Math.max(...ys), Math.max(Math.min(...ys), cy)));
+            if (!span) return Infinity;
+            let best = Infinity;
+            let at = span[0];
+            for (let x = span[0] - r; x <= span[1] + r; x += 0.25) {
+              const o = fnDiscOver(pts, x, cy, r);
+              if (o < best) [best, at] = [o, x];
+            }
+            for (let x = at - 0.25; x <= at + 0.25; x += 0.01)
+              best = Math.min(best, fnDiscOver(pts, x, cy, r));
+            return best;
+          };
+          // A small dot is inside its fountain when its disc goes at most half the
+          // outline's 1.2 px stroke past it, or, in a row with no such spot (just under
+          // the tip), no more than 0.05 px further than the best spot in that row.
+          const fnInside = (pts, cx, cy, r) => {
+            const over = fnDiscOver(pts, cx, cy, r);
+            return over <= 0.6 || over <= fnBestOver(pts, cy, r) + 0.05;
+          };
+          // Samples on the good side of a reference line, the line itself included.
+          const fnCount = (samples, line) =>
+            samples.filter((s) => (line.goodSide === "below" ? s <= line.value : s >= line.value))
+              .length;
+
+          // The same mark checks for every svg fountain, against the props it was given.
+          const fountainMarkChecks = (tag, el, props) => {
+            const y = fnYOf(el);
+            const items = props.dataSet;
+            const groups = fnGroups(el);
+            const [lowWord, highWord] = props.endLabels;
+            const line = props.referenceLines[0];
+            log(
+              groups.length === items.length,
+              `${tag}: one jet group per item (${groups.length} of ${items.length})`,
+            );
+
+            // Every small dot's disc inside its own fountain (see fnInside), at its
+            // sample's exact height.
+            let dots = 0;
+            const outside = [];
+            const offHeight = [];
+            groups.forEach((g, i) => {
+              const pts = fnBellPoints(g);
+              const ys = pts.map((p) => p[1]);
+              const top = Math.min(...ys);
+              const base = Math.max(...ys);
+              for (const c of g.querySelectorAll("circle.mv-fountain-dot")) {
+                dots++;
+                const cx = num(c, "cx");
+                const cy = num(c, "cy");
+                const inside =
+                  cy >= top - 0.6 && cy <= base + 0.6 && fnInside(pts, cx, cy, num(c, "r"));
+                if (!inside) outside.push(`${fnName(items[i])}: ${c.dataset.value}`);
+                if (!near(cy, y(Number(c.dataset.value))))
+                  offHeight.push(`${fnName(items[i])}: ${c.dataset.value}`);
+              }
+            });
+            const wantDots = items.reduce(
+              (n, d) => n + (d.forecast ? 0 : (d.samples?.length ?? 0)),
+              0,
+            );
+            log(
+              dots === wantDots,
+              `${tag}: one small dot per sample, none on a forecast (${dots} of ${wantDots})`,
+            );
+            log(
+              dots > 0 && outside.length === 0,
+              `${tag}: every small dot's disc sits inside its own fountain (${dots - outside.length} of ${dots}${outside.length ? `; outside: ${outside.join(", ")}` : ""})`,
+            );
+            log(
+              offHeight.length === 0,
+              `${tag}: every small dot is drawn at y(its sample)${offHeight.length ? ` (off: ${offHeight.join(", ")})` : ""}`,
+            );
+
+            // The big dot is drawn on top: no small dot may sit wholly under it (its
+            // 2 px ring reaches 1 px past its radius), or the reader counts one too few.
+            const hidden = [];
+            groups.forEach((g, i) => {
+              const big = g.querySelector("circle.mv-fountain-value");
+              const bx = num(big, "cx");
+              const by = num(big, "cy");
+              const reach = num(big, "r") + 1;
+              for (const c of g.querySelectorAll("circle.mv-fountain-dot")) {
+                const d = Math.hypot(num(c, "cx") - bx, num(c, "cy") - by);
+                if (d + num(c, "r") <= reach)
+                  hidden.push(`${fnName(items[i])}: ${c.dataset.value}`);
+              }
+            });
+            log(
+              dots > 0 && hidden.length === 0,
+              `${tag}: no small dot is hidden under its big dot${hidden.length ? ` (hidden: ${hidden.join(", ")})` : ""}`,
+            );
+
+            // The stem rises from the lake at y(0) and stops at the big dot, at y(value).
+            const lake = el.querySelector("rect.mv-fountain-lake");
+            const stemBad = [];
+            groups.forEach((g, i) => {
+              const d = items[i];
+              const big = g.querySelector("circle.mv-fountain-value");
+              const bx = num(big, "cx");
+              const by = num(big, "cy");
+              const s = g.querySelector(".mv-fountain-stem");
+              const isBar = s.tagName.toLowerCase() === "rect";
+              const sx = isBar ? num(s, "x") + num(s, "width") / 2 : num(s, "x1");
+              const sTop = isBar ? num(s, "y") : Math.min(num(s, "y1"), num(s, "y2"));
+              const sFoot = isBar
+                ? num(s, "y") + num(s, "height")
+                : Math.max(num(s, "y1"), num(s, "y2"));
+              const ok =
+                near(by, y(d.value)) && near(sx, bx) && near(sTop, by) && near(sFoot, y(0));
+              if (!ok) stemBad.push(`${fnName(d)}: stem ${sTop}..${sFoot}, big dot ${by}`);
+            });
+            log(
+              !!lake && near(num(lake, "y"), y(0)) && stemBad.length === 0,
+              `${tag}: the stem rises from the lake at y(0) and stops at the big dot, drawn at y(value)${stemBad.length ? ` (${stemBad.join("; ")})` : ""}`,
+            );
+
+            // The fountain spans exactly [low, high]: top at y(high), base at y(low).
+            const bellBad = [];
+            groups.forEach((g, i) => {
+              const d = items[i];
+              const ys = fnBellPoints(g).map((p) => p[1]);
+              const top = Math.min(...ys);
+              const base = Math.max(...ys);
+              if (!(near(top, y(d.high)) && near(base, y(d.low))))
+                bellBad.push(
+                  `${fnName(d)}: ${top.toFixed(1)}..${base.toFixed(1)} vs ${y(d.high).toFixed(1)}..${y(d.low).toFixed(1)}`,
+                );
+            });
+            log(
+              bellBad.length === 0,
+              `${tag}: each fountain's top is at y(high) and its base at y(low)${bellBad.length ? ` (${bellBad.join("; ")})` : ""}`,
+            );
+
+            // Value labels under each x label: usual, then the two end words.
+            const labels = fnValueLabels(el);
+            const labelBad = [];
+            items.forEach((d, i) => {
+              const g = labels[i];
+              const want = [`usual ${d.value}`, `${lowWord} ${d.low}`, `${highWord} ${d.high}`];
+              const got = g ? ["usual", "low", "high"].map((k) => fnLine(g, k)) : [];
+              if (
+                !g ||
+                g.getAttribute("visibility") === "hidden" ||
+                got.join("|") !== want.join("|")
+              )
+                labelBad.push(`${fnName(d)}: ${got.join(" / ") || "missing"}`);
+            });
+            log(
+              labels.length === items.length && labelBad.length === 0,
+              `${tag}: value labels read "usual V", "${lowWord} L", "${highWord} H" under every jet${labelBad.length ? ` (${labelBad.join("; ")})` : ""}`,
+            );
+
+            // Reference counts: small dots on the good side of the line, "N of M"; none
+            // on a forecast (it has no samples).
+            const counts = [];
+            const countBad = [];
+            items.forEach((d, i) => {
+              const g = labels[i];
+              const want = d.forecast ? null : `${fnCount(d.samples, line)} of ${d.samples.length}`;
+              const got = g ? fnLine(g, "count") : "missing";
+              const gotLabel = g ? fnLine(g, "countLabel") : null;
+              counts.push(`${fnName(d)} ${got ?? "-"}`);
+              if (got !== want || (want && gotLabel !== line.countLabel))
+                countBad.push(`${fnName(d)}: ${got} (want ${want})`);
+            });
+            log(
+              countBad.length === 0,
+              `${tag}: reference counts match the samples, "${line.countLabel}" (${counts.join(", ")})${countBad.length ? `; wrong: ${countBad.join("; ")}` : ""}`,
+            );
+
+            const ref = el.querySelector(`line.mv-fountain-reference[data-value="${line.value}"]`);
+            log(
+              !!ref &&
+                near(num(ref, "y1"), y(line.value)) &&
+                !!el.querySelector("text.mv-fountain-reference-label"),
+              `${tag}: the reference line is drawn at y(${line.value}), with its label`,
+            );
+          };
+
+          // svg and canvas must resolve the same jet at the same pointer point. The
+          // points come from the svg twin: each big dot, fountain tip, first small dot and
+          // stem foot, 3 px either side of each column edge, and two empty spots (the top
+          // left corner, and the value labels under the plot).
+          const fnHover = (el, x, y) => {
+            const host = el.querySelector(".mv-host");
+            const r = host.querySelector(":scope > svg").getBoundingClientRect();
+            host.dispatchEvent(
+              new MouseEvent("mousemove", {
+                clientX: r.left + x,
+                clientY: r.top + y,
+                bubbles: true,
+              }),
+            );
+            const tip = host.querySelector(":scope > .tooltip");
+            return tip && tip.style.visibility === "visible" ? tip.textContent : "";
+          };
+          const fnLeave = (el) =>
+            el.querySelector(".mv-host").dispatchEvent(new MouseEvent("mouseleave"));
+          const fountainHoverParity = (tag, svgKey, canvasKey, props) => {
+            const svgEl = fountainEls[svgKey];
+            const canvasEl = fountainEls[canvasKey];
+            const groups = fnGroups(svgEl);
+            const lakeY = num(svgEl.querySelector("rect.mv-fountain-lake"), "y");
+            const centre = (g) => {
+              const big = g.querySelector("circle.mv-fountain-value");
+              return { x: num(big, "cx"), y: num(big, "cy") };
+            };
+            const points = [];
+            groups.forEach((g, i) => {
+              const c = centre(g);
+              points.push({ ...c, want: i, what: "big dot" });
+              const ys = fnBellPoints(g).map((p) => p[1]);
+              points.push({ x: c.x, y: Math.min(...ys) + 1, want: i, what: "tip" });
+              const dot = g.querySelector("circle.mv-fountain-dot");
+              if (dot) points.push({ x: num(dot, "cx"), y: num(dot, "cy"), want: i, what: "dot" });
+              points.push({ x: c.x, y: lakeY - 2, want: i, what: "stem foot" });
+            });
+            for (let i = 0; i + 1 < groups.length; i++) {
+              const a = centre(groups[i]);
+              const b = centre(groups[i + 1]);
+              const mid = (a.x + b.x) / 2;
+              points.push({ x: mid - 3, y: a.y, want: i, what: "left of an edge" });
+              points.push({ x: mid + 3, y: b.y, want: i + 1, what: "right of an edge" });
+            }
+            points.push({ x: 4, y: 4, want: -1, what: "corner" });
+            points.push({ x: centre(groups[0]).x, y: lakeY + 60, want: -1, what: "value labels" });
+
+            const differ = [];
+            const wrong = [];
+            for (const p of points) {
+              const a = fnHover(svgEl, p.x, p.y);
+              const aLabel = fountainHover[svgKey].join(",");
+              const b = fnHover(canvasEl, p.x, p.y);
+              const bLabel = fountainHover[canvasKey].join(",");
+              if (a !== b || aLabel !== bLabel)
+                differ.push(`${p.what} (${p.x.toFixed(0)},${p.y.toFixed(0)})`);
+              const d = props.dataSet[p.want];
+              const ok = d
+                ? aLabel === d.label && new RegExp(`usual ${d.value}(?![\\d.])`).test(a)
+                : a === "" && aLabel === "";
+              if (!ok) wrong.push(`${p.what} -> "${a.slice(0, 40)}"`);
+            }
+            fnLeave(svgEl);
+            fnLeave(canvasEl);
+            log(
+              differ.length === 0,
+              `${tag}: svg and canvas resolve the same jet and tooltip at all ${points.length} pointer points${differ.length ? ` (differ at ${differ.join(", ")})` : ""}`,
+            );
+            log(
+              wrong.length === 0,
+              `${tag}: each point resolves to the jet in its column, and the empty spots to none${wrong.length ? ` (${wrong.join("; ")})` : ""}`,
+            );
+          };
+
+          // Snapshot, svg.
+          fountainMarkChecks("FOUNTAIN snapshot (svg)", fountainEls.svg, fountainCommute);
+          const fnTitle = fountainEls.svg.querySelector("text.mv-fountain-y-title");
+          log(
+            !!fnTitle &&
+              fnTitle.textContent === fountainCommute.yAxisTitle &&
+              /rotate\(-90/.test(fnTitle.getAttribute("transform") || ""),
+            "FOUNTAIN snapshot (svg): the y-axis title is drawn rotated beside the axis",
+          );
+
+          // Snapshot, canvas: marks painted, text still svg, same context, same colours.
+          const fnCanvas = fountainEls.canvas.querySelector("canvas");
+          log(
+            !!fnCanvas &&
+              fnGroups(fountainEls.canvas).length === 0 &&
+              fnValueLabels(fountainEls.canvas).length === 4 &&
+              fountainEls.canvas.getContext().renderer === "canvas",
+            "FOUNTAIN snapshot (canvas): the marks are painted on the canvas; the value labels stay svg text",
+          );
+          log(
+            JSON.stringify({ ...fountainEls.svg.getContext(), renderer: 0 }) ===
+              JSON.stringify({ ...fountainEls.canvas.getContext(), renderer: 0 }),
+            "FOUNTAIN snapshot: getContext() is identical in svg and canvas (renderer aside)",
+          );
+          const pixelBad = [];
+          if (fnCanvas) {
+            const scale = fnCanvas.width / fnCanvas.getBoundingClientRect().width;
+            const ctx2d = fnCanvas.getContext("2d");
+            for (const g of fnGroups(fountainEls.svg)) {
+              const big = g.querySelector("circle.mv-fountain-value");
+              const want = getComputedStyle(big).fill.match(/\d+/g).slice(0, 3).map(Number);
+              const got = ctx2d.getImageData(
+                Math.floor(num(big, "cx") * scale),
+                Math.floor(num(big, "cy") * scale),
+                1,
+                1,
+              ).data;
+              if (want.some((v, k) => Math.abs(v - got[k]) > 3))
+                pixelBad.push(`${g.dataset.label}: rgb(${[...got].slice(0, 3)}) vs rgb(${want})`);
+            }
+          }
+          log(
+            !!fnCanvas && pixelBad.length === 0,
+            `FOUNTAIN snapshot (canvas): each big dot is painted in its svg twin's colour${pixelBad.length ? ` (${pixelBad.join("; ")})` : ""}`,
+          );
+          fountainHoverParity("FOUNTAIN snapshot", "svg", "canvas", fountainCommute);
+
+          // Trend with a forecast, svg.
+          fountainMarkChecks("FOUNTAIN trend (svg)", fountainEls.trendSvg, fountainSwim);
+          const fnTrendGroups = fnGroups(fountainEls.trendSvg);
+          const fnForecast = fnTrendGroups[fnTrendGroups.length - 1];
+          const fnForecastBig = fnForecast.querySelector("circle.mv-fountain-value");
+          const fnForecastStem = fnForecast.querySelector(".mv-fountain-stem");
+          log(
+            fnForecastStem.tagName.toLowerCase() === "line" &&
+              !!fnForecastStem.getAttribute("stroke-dasharray") &&
+              fnForecast.querySelector("path.mv-fountain-jet").getAttribute("stroke-dasharray") ===
+                "4 3" &&
+              fnForecastBig.getAttribute("fill") === "none" &&
+              fnForecastBig.getAttribute("stroke") ===
+                fnTrendGroups[0].querySelector("circle.mv-fountain-value").getAttribute("fill"),
+            "FOUNTAIN trend (svg): the forecast has a dashed stem and fountain and a hollow big dot in the series colour",
+          );
+          // Hollow on any background: nothing is painted inside the forecast's big dot.
+          // svg: its jet group is clipped by a knockout with a hole there; canvas: the
+          // canvas stays see-through at its centre, while its ring is painted.
+          const fnKnock = (fnForecast.getAttribute("clip-path") || "").match(/url\(#(.+)\)/);
+          const fnKnockPath = fnKnock
+            ? fountainEls.trendSvg.querySelector(`clipPath#${fnKnock[1]} path`)
+            : null;
+          log(
+            !!fnKnockPath && fnKnockPath.getAttribute("clip-rule") === "evenodd",
+            "FOUNTAIN trend (svg): the marks under the forecast's hollow big dot are knocked out",
+          );
+          const fnTrendCanvas = fountainEls.trendCanvas.querySelector("canvas");
+          let fnSeeThrough = null;
+          if (fnTrendCanvas) {
+            const scale = fnTrendCanvas.width / fnTrendCanvas.getBoundingClientRect().width;
+            const ctx2d = fnTrendCanvas.getContext("2d");
+            const bx = num(fnForecastBig, "cx");
+            const by = num(fnForecastBig, "cy");
+            const r = num(fnForecastBig, "r");
+            const at = (x, y) =>
+              ctx2d.getImageData(Math.floor(x * scale), Math.floor(y * scale), 1, 1).data[3];
+            // Inside: off the stem, the trend line and the reference line near the value.
+            fnSeeThrough = {
+              centre: at(bx + 3, by + 2.5),
+              ring: Math.max(at(bx + r, by), at(bx - r, by)),
+            };
+          }
+          log(
+            !!fnSeeThrough && fnSeeThrough.centre === 0 && fnSeeThrough.ring > 200,
+            `FOUNTAIN trend (canvas): the forecast's big dot is a ring, see-through inside${fnSeeThrough ? ` (alpha inside ${fnSeeThrough.centre}, ring ${fnSeeThrough.ring})` : ""}`,
+          );
+          // The x label with the lines wrapped under it (text.mv-fountain-axis-note at its
+          // x): "(forecast)" moves to a second line when the page's font leaves no room.
+          const fnXLabels = Array.from(
+            fountainEls.trendSvg.querySelectorAll("g.mv-x-axis text.mv-axis-label"),
+          ).map((t) =>
+            [
+              t.textContent,
+              ...Array.from(fountainEls.trendSvg.querySelectorAll("text.mv-fountain-axis-note"))
+                .filter(
+                  (n) => Math.abs(Number(n.getAttribute("x")) - Number(t.getAttribute("x"))) < 0.5,
+                )
+                .map((n) => n.textContent),
+            ].join(" "),
+          );
+          log(
+            fnXLabels.includes("2025 (forecast)"),
+            `FOUNTAIN trend (svg): the forecast period is labelled "2025 (forecast)" (${fnXLabels.join(", ")})`,
+          );
+          const fnTrendPts = (
+            fountainEls.trendSvg.querySelector("path.mv-fountain-trend")?.getAttribute("d") || ""
+          )
+            .match(/-?[\d.]+,-?[\d.]+/g)
+            ?.map((p) => p.split(",").map(Number));
+          log(
+            !!fnTrendPts &&
+              fnTrendPts.length === fnTrendGroups.length &&
+              fnTrendGroups.every((g, i) => {
+                const big = g.querySelector("circle.mv-fountain-value");
+                return (
+                  near(fnTrendPts[i][0], num(big, "cx")) && near(fnTrendPts[i][1], num(big, "cy"))
+                );
+              }),
+            "FOUNTAIN trend (svg): the dashed trend line runs through every big dot",
+          );
+          fountainHoverParity("FOUNTAIN trend", "trendSvg", "trendCanvas", fountainSwim);
+
+          const fnWarned = Object.entries(fountainWarnings)
+            .filter(([, list]) => list.length)
+            .map(([key, list]) => `${key}: ${list.map((w) => w.type).join(", ")}`);
+          log(
+            fnWarned.length === 0,
+            `FOUNTAIN: no data or layout warnings for either fixture, so nothing was dropped to fit${fnWarned.length ? ` (${fnWarned.join("; ")})` : ""}`,
           );
         } catch (e) {
           log(false, "exception: " + (e && e.message));

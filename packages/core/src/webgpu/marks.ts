@@ -95,6 +95,61 @@ export function pushStroke(
   }
 }
 
+/**
+ * Split a polyline into dashes, SVG stroke-dasharray style: `on` px drawn, `off` px
+ * skipped, starting with a dash; the pattern carries its phase across vertices and
+ * the last dash is cut at the end. A non-positive `off` (or `on`) returns the whole
+ * polyline as one dash. Fewer than two points: no dashes.
+ */
+export function dashPolyline(
+  pts: ReadonlyArray<readonly [number, number]>,
+  on: number,
+  off: number,
+): Array<Array<[number, number]>> {
+  if (pts.length < 2) return [];
+  if (!(on > 0) || !(off > 0)) return [pts.map(([x, y]) => [x, y] as [number, number])];
+  const dashes: Array<Array<[number, number]>> = [];
+  let drawing = true;
+  let left = on; // px left in the current dash or gap
+  let current: Array<[number, number]> = [[pts[0][0], pts[0][1]]];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x1, y1] = pts[i];
+    const [x2, y2] = pts[i + 1];
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    let at = 0;
+    while (len - at > left + 1e-9) {
+      at += left;
+      const t = at / len;
+      const p: [number, number] = [x1 + (x2 - x1) * t, y1 + (y2 - y1) * t];
+      if (drawing) {
+        current.push(p);
+        dashes.push(current);
+        current = [];
+      } else {
+        current = [p];
+      }
+      drawing = !drawing;
+      left = drawing ? on : off;
+    }
+    left -= len - at;
+    if (drawing) current.push([x2, y2]);
+  }
+  if (drawing && current.length >= 2) dashes.push(current);
+  return dashes;
+}
+
+/** A dashed stroke (see dashPolyline): one pushStroke per dash. */
+export function pushDashedStroke(
+  out: number[],
+  pts: Array<[number, number]>,
+  width: number,
+  c: RGBA,
+  on: number,
+  off: number,
+): void {
+  for (const dash of dashPolyline(pts, on, off)) pushStroke(out, dash, width, c);
+}
+
 /** One instanced circle. */
 export function pushCircle(out: number[], cx: number, cy: number, radius: number, c: RGBA): void {
   out.push(cx, cy, radius, c[0], c[1], c[2], c[3]);

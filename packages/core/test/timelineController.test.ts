@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { TimelineController } from "../src/animation/timeline";
 import { createManualTicker } from "../src/animation/ticker";
+import { applyTimelineControl, createTimelineControlRefs } from "../src/render/timelineControl";
 
 const PERIODS = ["2018", "2019", "2020", "2021"];
 
@@ -147,6 +148,35 @@ describe("seek and stepping", () => {
     controller.seek(99);
     expect(controller.getState().index).toBe(3);
     controller.seek(-5);
+    expect(controller.getState().index).toBe(0);
+  });
+
+  it("seek(number) matches a period first: string years are found by value", () => {
+    const { controller } = make({ periods: ["2021", "2022", "2023", "2024"] });
+    controller.seek(2021);
+    expect(controller.getState().index).toBe(0);
+    controller.seek(2023);
+    expect(controller.getState().index).toBe(2);
+  });
+
+  it("seek(number) falls back to an index only when no period matches", () => {
+    const { controller } = make({ periods: [2001, 2002, 2003] });
+    controller.seek(2);
+    expect(controller.getState().index).toBe(2);
+    controller.seek(2002);
+    expect(controller.getState().index).toBe(1);
+  });
+
+  it("seekIndex(i) always takes an index (periods that look like indices too), clamped", () => {
+    const { controller, onStep } = make({ periods: [1, 2, 3] });
+    controller.seek(1);
+    expect(controller.getState().index).toBe(0);
+    controller.seekIndex(1);
+    expect(controller.getState().index).toBe(1);
+    expect(onStep).toHaveBeenLastCalledWith(2, 1);
+    controller.seekIndex(99);
+    expect(controller.getState().index).toBe(2);
+    controller.seekIndex(-1);
     expect(controller.getState().index).toBe(0);
   });
 
@@ -330,5 +360,19 @@ describe("degenerate periods", () => {
     expect(controller.getState().index).toBe(0);
     expect(controller.getState().playing).toBe(false);
     expect(onEnd).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("the built-in scrubber", () => {
+  it("seeks by index, even when the periods are small numbers", () => {
+    const { controller } = make({ periods: [1, 2, 3] });
+    const host = document.createElement("div");
+    const refs = createTimelineControlRefs();
+    applyTimelineControl(host, refs, () => controller, true);
+    const range = host.querySelector<HTMLInputElement>(".mv-timeline-scrubber")!;
+    range.max = "2";
+    range.value = "1";
+    range.dispatchEvent(new Event("input"));
+    expect(controller.getState().index).toBe(1);
   });
 });

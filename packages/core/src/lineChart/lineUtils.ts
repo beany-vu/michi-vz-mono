@@ -48,6 +48,22 @@ export function periodValue(d: Date, xAxisDataType: XaxisDataType): number {
     : Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
 }
 
+// One candidate x tick per DISTINCT data period, parsed for the x scale and sorted
+// ascending. Shared by Line (date axes) and Fountain (trend mode): feeding the data's
+// own periods keeps the first and last period labelled, where raw
+// `scaleTime().ticks()` snaps to "nice" calendar boundaries and drops non-round
+// endpoints (the first year vanishes in UTC+ time zones). Dedupes by the raw key
+// (String(date)); a key that does not parse (non-finite) is dropped.
+export function periodTickValues(
+  dates: ReadonlyArray<number | string>,
+  xAxisDataType: XaxisDataType,
+): Array<number | Date> {
+  const keys = Array.from(new Set(dates.map((d) => String(d))));
+  const parsed = keys.map((k) => parseXValue(k, xAxisDataType));
+  const num = (v: number | Date): number => (v instanceof Date ? v.valueOf() : v);
+  return parsed.filter((v) => Number.isFinite(num(v))).sort((a, b) => num(a) - num(b));
+}
+
 // Every period boundary between two parsed x-Dates (inclusive), as epoch ms. Backs
 // `fillPeriodTicks`: a tick for EVERY month/year in range, including periods with no
 // data (drawn faded). Endpoints normalize to their period so first/last stay exact.

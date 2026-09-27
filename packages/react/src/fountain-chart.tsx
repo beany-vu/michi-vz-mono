@@ -53,6 +53,6 @@ export const FountainChart = forwardRef<FountainChartHandle, FountainChartProps>
       [],
     );
 
-    return <div ref={hostRef} style={{ width: props.width ?? 800, height: props.height ?? 500 }} />;
+    return <div ref={hostRef} style={{ width: props.width ?? 900, height: props.height ?? 480 }} />;
   },
 );

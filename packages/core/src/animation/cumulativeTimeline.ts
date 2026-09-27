@@ -21,6 +21,10 @@ export interface CumulativePeriod {
   period: number | string;
   /** The period's x position in px (same coordinate space as the SVG). */
   px: number;
+  /** Optional reveal target for this period: the painted right edge of its marks,
+   *  for charts whose marks reach further right than a point marker (a fountain's
+   *  bell). Default px + 8. The last period always reveals to endPx. */
+  revealPx?: number;
 }
 
 export interface CumulativeRenderArgs {
@@ -126,7 +130,9 @@ export function createCumulativeTimeline(deps: {
         return;
       }
       targets = args.periods.map((p, i) =>
-        i === args.periods.length - 1 ? args.endPx : Math.min(args.endPx, p.px + TIP_PAD),
+        i === args.periods.length - 1
+          ? args.endPx
+          : Math.min(args.endPx, p.revealPx ?? p.px + TIP_PAD),
       );
       const sig = args.periods.map((p) => String(p.period)).join("|");
       if (!tl || sig !== periodsSig) {

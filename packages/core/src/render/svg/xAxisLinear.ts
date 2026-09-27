@@ -48,6 +48,15 @@ export interface XAxisLinearOptions {
    * Backs `fillPeriodTicks`; the builder itself stays event-free.
    */
   noDataValues?: Set<number>;
+  /**
+   * Width in px of a tick label, for the autoRotate decision (default
+   * measureLabelWidth: 12 px sans-serif). A chart that lays out its own words in the
+   * page's font passes the same measure, so the axis tilts exactly when its layout
+   * expects it to.
+   */
+  measure?: (label: string) => number;
+  /** Draw the small grey dot under each tick (default true). */
+  tickDots?: boolean;
 }
 
 /** Even index sample keeping first + last; used to thin overcrowded rotated ticks. */
@@ -135,11 +144,12 @@ export function renderXAxisLinear(
     // and far smaller than a horizontal label's full width.
     const ROTATED_MIN_SPACING = 18;
     const pad = 6;
+    const measureWidth = o.measure ?? measureLabelWidth;
     const measure = (): { maxW: number; minGap: number } => {
       let maxW = 0;
       let minGap = Infinity;
       for (let i = 0; i < pts.length; i++) {
-        maxW = Math.max(maxW, measureLabelWidth(pts[i].label));
+        maxW = Math.max(maxW, measureWidth(pts[i].label));
         if (i > 0) minGap = Math.min(minGap, Math.abs(pts[i].px - pts[i - 1].px));
       }
       return { maxW, minGap };
@@ -188,15 +198,17 @@ export function renderXAxisLinear(
       g.appendChild(grid);
     }
 
-    g.appendChild(
-      svgEl("circle", {
-        class: "mv-tick-dot",
-        cx: p.px,
-        cy: dotCy,
-        r: 2,
-        fill: "lightgray",
-      }),
-    );
+    if (o.tickDots !== false) {
+      g.appendChild(
+        svgEl("circle", {
+          class: "mv-tick-dot",
+          cx: p.px,
+          cy: dotCy,
+          r: 2,
+          fill: "lightgray",
+        }),
+      );
+    }
 
     if (rotated) {
       // Tilt -45° trailing down-left from the tick (matches the band axis).

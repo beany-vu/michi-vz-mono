@@ -3,10 +3,10 @@ import { mountFountainChart } from "../src/engine/fountainChart";
 import { createManualTicker, type ManualTicker } from "../src/animation/ticker";
 import type { MotionPreference } from "../src/animation/reducedMotion";
 import { __resetGPUDeviceForTest } from "../src/webgpu/device";
-import type { FountainChartProps, FountainDataItem } from "../src/types";
+import type { DataWarning, FountainChartProps, FountainDataItem } from "../src/types";
 
 const WIDTH = 600;
-const HEIGHT = 320;
+const HEIGHT = 360;
 
 const snapshot: FountainDataItem[] = [
   { label: "Jet d'Eau", value: 140, spread: 30 },
@@ -14,18 +14,34 @@ const snapshot: FountainDataItem[] = [
   { label: "Bern", value: 60, spread: 25 },
 ];
 
+// Trend jets with ranges and samples: the fountains are wider than a point marker, so
+// a reveal that stopped 8 px right of the centre would cut them in half.
 const trend: FountainDataItem[] = [
-  { label: "Flow", value: 50, spread: 8, date: 2001 },
-  { label: "Flow", value: 70, spread: 10, date: 2002 },
-  { label: "Flow", value: 95, spread: 14, date: 2003 },
+  {
+    label: "Flow",
+    value: 50,
+    low: 38,
+    high: 70,
+    samples: [38, 44, 48, 50, 52, 55, 61, 70],
+    date: 2001,
+  },
+  {
+    label: "Flow",
+    value: 70,
+    low: 55,
+    high: 90,
+    samples: [55, 62, 66, 70, 71, 75, 83, 90],
+    date: 2002,
+  },
+  {
+    label: "Flow",
+    value: 95,
+    low: 80,
+    high: 120,
+    samples: [80, 88, 93, 95, 97, 104, 120],
+    date: 2003,
+  },
 ];
-
-// Default margin left 60/right 40, width 600, xAxisDataType "number" (linear
-// scale, .nice()): domain [2001,2003] stays nice -> 2001@60, 2002@310, 2003@560.
-// Targets: px+8 except the last period, which reveals to the full width (600).
-const T0 = 68;
-const T1 = 318;
-const T2 = WIDTH;
 
 function mount(
   data: FountainDataItem[],
@@ -49,6 +65,32 @@ const clipWidth = (host: HTMLElement): number => {
   return Number(rects[rects.length - 1]!.getAttribute("width"));
 };
 
+const num = (el: Element, a: string): number => Number(el.getAttribute(a));
+const r2 = (n: number): number => Math.round(n * 100) / 100;
+
+/** Left and right edges of every mark each jet paints, in x order. */
+function jetEdges(host: HTMLElement): Array<{ x: number; left: number; right: number }> {
+  return Array.from(host.querySelectorAll("g.mv-fountain-jet-group"))
+    .map((g) => {
+      const xs: number[] = [];
+      const bell = g.querySelector("path.mv-fountain-jet");
+      for (const m of (bell?.getAttribute("d") ?? "").matchAll(/[ML]\s*(-?[\d.]+),/g)) {
+        xs.push(Number(m[1]));
+      }
+      for (const c of Array.from(g.querySelectorAll("circle"))) {
+        xs.push(num(c, "cx") - num(c, "r"), num(c, "cx") + num(c, "r"));
+      }
+      const big = g.querySelector("circle.mv-fountain-value")!;
+      return { x: num(big, "cx"), left: Math.min(...xs), right: Math.max(...xs) };
+    })
+    .sort((a, b) => a.x - b.x);
+}
+
+const visibleValueLabels = (host: HTMLElement): number[] =>
+  Array.from(host.querySelectorAll("g.mv-fountain-value-label"))
+    .filter((g) => g.getAttribute("visibility") !== "hidden")
+    .map((g) => num(g, "data-x"));
+
 describe("FountainChart timeline off by default", () => {
   it("renders no control, no clip, no timeline()", () => {
     const { host, chart } = mount(trend, { xAxisDataType: "number" });
@@ -61,35 +103,89 @@ describe("FountainChart timeline off by default", () => {
 });
 
 describe("FountainChart timeline (cumulative, trend mode)", () => {
-  it("mounts revealed up to the FIRST period, control shows it", () => {
+  it("mounts revealed to the FIRST period's painted right edge: the whole jet, nothing of the next", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(trend, { xAxisDataType: "number", timeline: true }, ticker);
-    expect(clipWidth(host)).toBeCloseTo(T0, 3);
+    const [a, b] = jetEdges(host);
+    const w = clipWidth(host);
+    expect(w).toBeGreaterThanOrEqual(a.right);
+    expect(w).toBeLessThan(b.left);
+    expect(w).toBeGreaterThan(a.x + 8); // the old px + 8 target cut the bell in half
     expect(host.querySelector(".mv-timeline")).not.toBeNull();
     expect(host.querySelector(".mv-timeline-period")!.textContent).toBe("2001");
-    const tl = chart.timeline!()!;
-    expect(tl.getState().periods).toEqual([2001, 2002, 2003]);
+    expect(chart.timeline!()!.getState().periods).toEqual([2001, 2002, 2003]);
     chart.destroy();
     host.remove();
   });
 
-  it("stepForward() sweeps the jets to the next period", () => {
+  it("value labels appear with their jet", () => {
+    const ticker = createManualTicker();
+    const { host, chart } = mount(
+      trend,
+      { xAxisDataType: "number", timeline: { interpolate: false } },
+      ticker,
+    );
+    const [a, b, c] = jetEdges(host);
+    expect(visibleValueLabels(host)).toEqual([r2(a.x)]);
+    chart.timeline!()!.stepForward();
+    expect(visibleValueLabels(host)).toEqual([r2(a.x), r2(b.x)]);
+    chart.timeline!()!.stepForward();
+    expect(visibleValueLabels(host)).toEqual([r2(a.x), r2(b.x), r2(c.x)]);
+    expect(clipWidth(host)).toBe(WIDTH);
+    expect(c.right).toBeLessThanOrEqual(WIDTH);
+    chart.destroy();
+    host.remove();
+  });
+
+  it("stepForward() sweeps to the next period's painted edge", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       trend,
       { xAxisDataType: "number", timeline: { easing: "linear", tweenMs: 400 } },
       ticker,
     );
+    const t0 = clipWidth(host);
+    const [, b, c] = jetEdges(host);
     chart.timeline!()!.stepForward();
     ticker.tick(200);
     const mid = clipWidth(host);
-    expect(mid).toBeGreaterThan(T0);
-    expect(mid).toBeLessThan(T1);
+    expect(mid).toBeGreaterThan(t0);
     ticker.tick(200);
-    expect(clipWidth(host)).toBeCloseTo(T1, 0);
+    const t1 = clipWidth(host);
+    expect(t1).toBeGreaterThanOrEqual(b.right);
+    expect(t1).toBeLessThan(c.left);
+    expect(mid).toBeLessThan(t1);
     expect(host.querySelector(".mv-timeline-period")!.textContent).toBe("2002");
     chart.destroy();
     host.remove();
+  });
+
+  it("hover cannot reach a period the timeline has not drawn (svg and canvas)", () => {
+    const ref = mount(trend, { xAxisDataType: "number" });
+    const [a, , c] = jetEdges(ref.host);
+    ref.chart.destroy();
+    ref.host.remove();
+    for (const renderer of ["svg", "canvas"] as const) {
+      const ticker = createManualTicker();
+      const calls: string[][] = [];
+      const { host, chart } = mount(
+        trend,
+        {
+          xAxisDataType: "number",
+          timeline: true,
+          renderer,
+          onHighlightItem: (l) => calls.push(l),
+        },
+        ticker,
+      );
+      host.dispatchEvent(new MouseEvent("mousemove", { clientX: c.x, clientY: 200 }));
+      expect(calls).toEqual([]);
+      expect(host.querySelector<HTMLElement>(".tooltip")!.style.visibility).toBe("hidden");
+      host.dispatchEvent(new MouseEvent("mousemove", { clientX: a.x, clientY: 200 }));
+      expect(calls).toEqual([["Flow"]]);
+      chart.destroy();
+      host.remove();
+    }
   });
 
   it("the LAST period reveals the full width", () => {
@@ -101,7 +197,7 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
     );
     chart.timeline!()!.seekIndex(2);
     ticker.tick(400);
-    expect(clipWidth(host)).toBe(T2);
+    expect(clipWidth(host)).toBe(WIDTH);
     chart.destroy();
     host.remove();
   });
@@ -113,8 +209,10 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
       { xAxisDataType: "number", timeline: { interpolate: false } },
       ticker,
     );
+    const [, b, c] = jetEdges(host);
     chart.timeline!()!.stepForward();
-    expect(clipWidth(host)).toBeCloseTo(T1, 0);
+    expect(clipWidth(host)).toBeGreaterThanOrEqual(b.right);
+    expect(clipWidth(host)).toBeLessThan(c.left);
     chart.destroy();
     host.remove();
   });
@@ -130,9 +228,9 @@ describe("FountainChart timeline (cumulative, trend mode)", () => {
       },
       ticker,
     );
-    expect(clipWidth(host)).toBeCloseTo(T0, 3);
+    const t0 = clipWidth(host);
     ticker.tick(500);
-    expect(clipWidth(host)).toBeCloseTo(T0, 3);
+    expect(clipWidth(host)).toBe(t0);
     chart.destroy();
     host.remove();
   });
@@ -158,15 +256,14 @@ describe("FountainChart timeline (snapshot mode is categorical: no control)", ()
     const { host, chart } = mount(snapshot, { timeline: true }, ticker);
     expect(host.querySelector(".mv-timeline")).toBeNull();
     expect(host.querySelector("clipPath")).toBeNull();
-    const tl = chart.timeline!();
-    expect(tl).toBeNull();
+    expect(chart.timeline!()).toBeNull();
     chart.destroy();
     host.remove();
   });
 });
 
 describe("FountainChart timeline canvas mode (trend)", () => {
-  it("mounts and sweeps without throwing (jsdom has no 2d context; redraw no-ops)", () => {
+  it("sweeps without throwing (jsdom has no 2d context); value labels still follow", () => {
     const ticker = createManualTicker();
     const { host, chart } = mount(
       trend,
@@ -174,10 +271,12 @@ describe("FountainChart timeline canvas mode (trend)", () => {
       ticker,
     );
     expect(host.querySelector(".mv-timeline")).not.toBeNull();
+    expect(visibleValueLabels(host)).toHaveLength(1);
     expect(() => {
       chart.timeline!()!.stepForward();
       for (let i = 0; i < 10; i++) ticker.tick(100);
     }).not.toThrow();
+    expect(visibleValueLabels(host)).toHaveLength(2);
     chart.destroy();
     host.remove();
   });
@@ -197,18 +296,27 @@ describe("FountainChart timeline webgpu mode (trend)", () => {
     __resetGPUDeviceForTest();
   });
 
-  it("is inert under webgpu: no control/clip, full frame always painted (mirrors progressiveDraw)", () => {
+  it("is inert under webgpu (no reveal clip on the GPU) and says so", () => {
     setGpu(true);
     const ticker = createManualTicker();
+    let warned: DataWarning[] = [];
     const { host, chart } = mount(
       trend,
-      { xAxisDataType: "number", timeline: true, renderer: "webgpu" },
+      {
+        xAxisDataType: "number",
+        timeline: true,
+        renderer: "webgpu",
+        onDataWarning: (w) => (warned = w),
+      },
       ticker,
     );
-    expect(chart.getContext()!.renderer).toBe("webgpu");
     expect(host.querySelector(".mv-timeline")).toBeNull();
     expect(host.querySelector("clipPath")).toBeNull();
     expect(chart.timeline!()).toBeNull();
+    expect(visibleValueLabels(host)).toHaveLength(3);
+    expect(
+      warned.some((w) => w.type === "ignored-option" && w.message.includes("`timeline`")),
+    ).toBe(true);
     expect(() => ticker.tick(1000)).not.toThrow();
     chart.destroy();
     host.remove();

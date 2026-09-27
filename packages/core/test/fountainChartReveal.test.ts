@@ -109,6 +109,53 @@ describe("FountainChart progressiveDraw SVG reveal", () => {
   });
 });
 
+describe("FountainChart progressiveDraw: hover and words follow the wipe", () => {
+  const dotXs = (host: HTMLElement): number[] =>
+    Array.from(host.querySelectorAll("circle.mv-fountain-value"))
+      .map((c) => Number(c.getAttribute("cx")))
+      .sort((a, b) => a - b);
+
+  it("mid-wipe, a jet the wipe has not reached cannot be hovered and hides its value labels", () => {
+    for (const renderer of ["svg", "canvas"] as const) {
+      const ref = mount();
+      const xs = dotXs(ref.host);
+      ref.chart.destroy();
+      ref.host.remove();
+
+      const ticker = createManualTicker();
+      const calls: string[][] = [];
+      const { host, chart } = mount(
+        {
+          renderer,
+          progressiveDraw: { durationMs: 1000, easing: "linear" },
+          onHighlightItem: (l) => calls.push(l),
+        },
+        ticker,
+      );
+      // linear wipe over the 600 px width: 400 ms reveals 240 px
+      ticker.tick(400);
+      const reveal = 240;
+      const shown = Array.from(host.querySelectorAll("g.mv-fountain-value-label"))
+        .filter((g) => g.getAttribute("visibility") !== "hidden")
+        .map((g) => Number(g.getAttribute("data-x")));
+      expect(shown).toEqual(xs.filter((x) => x <= reveal).map((x) => Math.round(x * 100) / 100));
+      const late = xs.find((x) => x > reveal)!;
+      host.dispatchEvent(new MouseEvent("mousemove", { clientX: late, clientY: 200 }));
+      expect(calls).toEqual([]);
+      ticker.tick(600);
+      host.dispatchEvent(new MouseEvent("mousemove", { clientX: late, clientY: 200 }));
+      expect(calls).toHaveLength(1);
+      expect(
+        Array.from(host.querySelectorAll("g.mv-fountain-value-label")).every(
+          (g) => g.getAttribute("visibility") !== "hidden",
+        ),
+      ).toBe(true);
+      chart.destroy();
+      host.remove();
+    }
+  });
+});
+
 describe("FountainChart progressiveDraw canvas mode", () => {
   it("mounts and animates without throwing (jsdom has no 2d context; draw no-ops)", () => {
     const ticker = createManualTicker();

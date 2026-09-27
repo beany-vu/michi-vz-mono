@@ -29,8 +29,8 @@ export const FountainChart = defineComponent({
       h("div", {
         ref: host,
         style: {
-          width: `${props.options.width ?? 800}px`,
-          height: `${props.options.height ?? 500}px`,
+          width: `${props.options.width ?? 900}px`,
+          height: `${props.options.height ?? 480}px`,
         },
       });
   },

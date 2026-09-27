@@ -5,7 +5,7 @@ title: Insights - voorspel, verklaar en bestuur grafieken met AI
 # Grafieken die voorspellen, zichzelf uitleggen, en met AI praten
 
 ::: warning Experimenteel - nog niet stabiel
-De AI-laag `@michi-vz/insights` is **experimenteel**: de API, sub-paths, en uitvoer kunnen veranderen in toekomstige releases. De 16 kerngrafieken zijn stabiel; insights (en de nieuwe [Fountain-grafiek](/nl/charts/fountain)) zijn dat nog niet. Pin een versie als je ervan afhankelijk bent.
+De AI-laag `@michi-vz/insights` is **experimenteel**: de API, sub-paths, en uitvoer kunnen veranderen in toekomstige releases. 21 van de 22 kerngrafieken zijn stabiel; insights (en de grafiek [Fontein (Jet d'Eau)](/nl/charts/fountain)) zijn dat nog niet. Pin een versie als je ervan afhankelijk bent.
 :::
 
 Een grafiek *tekent* meestal alleen het verleden. `@michi-vz/insights` laat hem **de toekomst voorspellen**,

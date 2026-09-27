@@ -1,72 +1,388 @@
 ---
 title: Fontein (Jet d'Eau)
-description: "Fontein (Jet d'Eau)-grafiek, de signatuurgrafiek van michi-vz, geïnspireerd op de fontein van Genève: één grafiek met een momentopname- en trendmodus. Experimenteel."
+description: "Fontein (Jet d'Eau)-grafiek: een grote stip voor de gewone waarde, een fontein van de laagste tot de hoogste, en een kleine stip per echte meting, zodat je kunt tellen hoe vaak het over je grens gaat. Experimenteel."
 ---
 # Fontein (Jet d'Eau)
 
 <span class="vp-badge warning">Experimenteel</span> <span class="vp-badge tip">Vergelijking</span>
 
 ::: warning Experimenteel - nog niet stabiel
-In tegenstelling tot de andere 16 grafieken (die stabiel zijn), is de Fontein-grafiek **experimenteel**: de API, de visuele vormgeving en de vorm van `ChartContext` kunnen in toekomstige releases veranderen. Het is een storytelling- en communicatie-mark, geen precisie-analysetool - zie [Wanneer het zijn plek verdient](#when-the-fountain-earns-its-place). Zet een versie vast als je ervan afhankelijk bent.
+In tegenstelling tot de andere 21 grafieken (die stabiel zijn), is de Fontein-grafiek **experimenteel**: de API, de vormgeving en de vorm van `ChartContext` kunnen in toekomstige releases veranderen. Core 1.29 heeft hem helemaal opnieuw getekend; zie [Overstappen vanaf core 1.28](#migrating). Zet een versie vast als je ervan afhankelijk bent.
 :::
 
-Genève pompt 500 liter per seconde de lucht in. Je fotografeert de straal. Je fotografeert nooit de tonnen water die ongezien terugvallen - de nevel waaruit de kolom eigenlijk bestaat. **De meeste cijfers hebben die vorm: een helder zichtbare piek, die rust op een verborgen massa die niemand erkent.** De Fontein-grafiek tekent beide tegelijk - het kopcijfer dat je rapporteert, en het ding dat het stilletjes ondermijnt (of juist ondersteunt).
+**"Hoe lang duurt mijn woon-werkrit?"** "Ongeveer 30 minuten" klopt, maar het is niet het hele antwoord. Sommige dagen duurt het 22 minuten, andere dagen 55. Wat je echt wilt weten, is hoe vaak het langer duurt dan de tijd die je ervoor neemt. De fonteingrafiek laat het allemaal zien op één as: de gewone tijd, de beste en de slechtste dag, en elke dag als een stip die je kunt tellen.
 
-- **De top van de piek is het getal** - lees het precies af van de y-as. Dat is het sterkste kanaal dat een grafiek heeft.
-- **De nevel is een signaal, geen meetlat** - "dit bloedt / dit is wankel." Het *exacte* tweede getal staat in de tooltip en in `getContext()` (`spreadRatio`), nooit afgemeten aan de breedte van de pluim.
+Hij is vernoemd naar de Jet d'Eau in Genève: een dunne steel stijgt op uit het meer en valt terug als een fontein.
 
-Het is dus een eerlijke **storytelling- en attributiegrafiek**: geboekte omzet versus weglekkende omzet, geborgde verkoop versus krimp, de sterren die je ziet versus de maintainers die je niet ziet. Het is geen precisie-analysetool - gebruik daarvoor [Fan](/nl/charts/fan) (onzekerheidsbanden), [Verticale gestapelde staven](/nl/charts/vertical-stack-bar) (sorteerbaar geborgd + risicovol), of een waterfall-grafiek. Zie [Wanneer het zijn plek verdient](#when-the-fountain-earns-its-place).
+<ChartDemo chart="fountain-chart" :index="0" :legend="false" :height="480" />
 
-De standaard `style: "jet"` is de getrouwe Jet d'Eau: een hoge, smalle kolom, dicht aan de basis, die uitrafelt in een zachte kroon die met de wind meedrijft. Een symmetrischere `style: "plume"` (een rechtopstaande kolom met een vederachtige bloei en een nevelrand) is ook beschikbaar - zie [Twee silhouetten](#two-silhouettes).
+Elke kleine stip is een van de laatste 20 werkdagen. De auto doet er gewoonlijk 30 minuten over, maar op 3 van de 20 dagen ging hij over de lijn van 45 minuten: een slechte autodag komt soms voor. De bus ging er 8 van de 20 dagen overheen: een slechte busdag komt vaak voor. De trein en de e-bike halen de lijn nooit.
 
-<ChartDemo chart="fountain-chart" :legend="false" />
+## Zo lees je hem {#how-to-read-it}
 
-## Anatomie: zo lees je een fontein
+::: tip De regels
+- **De grote stip is het getal dat je noemt**: de gewone waarde. De helft van de metingen ligt eronder, de helft erboven.
+- **Een kleine stip is één echte meting**: 20 kleine stippen zijn 20 dagen.
+- **Veel kleine stippen dicht bij elkaar** laten zien wat meestal gebeurt.
+- **Een rode stippellijn** is een belofte of een grens.
+- **Hoe vaak?** Tel de kleine stippen voorbij de lijn: **1-2 van de 20 is zelden, 3-4 is soms, 5 of meer is vaak.** Onder elke kolom telt de grafiek ze voor je: in de demo betekent "17 of 20 within 45 min" 17 dagen aan de goede kant, dus 3 erover.
+- **Een hoge fontein** betekent dat het veel wisselt. Een lage betekent dat het elke keer ongeveer hetzelfde is.
+- **Meer kleine stippen in totaal** betekent meer metingen, dus meer vertrouwen. Het is geen grotere waarde.
+- **Weinig kleine stippen** betekent dat het maar een gok is. Onder de 10 zegt de grafiek dat ("only 5 days").
+- **Links en rechts betekenen niets.** De kleine stippen schuiven alleen opzij zodat ze elkaar niet verbergen.
+:::
 
-Elk zichtbaar onderdeel van het symbool heeft één vastgestelde betekenis. Niets anders draagt data.
+### De onderdelen van een fontein {#anatomy}
 
-- **Top** - HET getal. Die staat op een echte, gelabelde y-as en is het enige wat je meet.
-- **Steel** - het lichaam van het getal. Decoratief; de breedte ervan codeert nooit iets.
-- **Kroon / schuim** - het signaal: "dit is wankel / dit bloedt." Breed en schuimig betekent: kijk beter; het exacte tweede getal staat in de tooltip en in `getContext().jets[].spreadRatio`, nooit in de breedte die je ziet.
-- **Symmetrische versus overhellende kroon** - symmetrie is een signaal. Een rechtopstaande kroon zegt dat de spreiding in balans is (het kan beide kanten op). Een overhellende kroon zegt dat de verborgen massa aan één kant hangt, een late staart, risico dat vooral naar beneden weegt. Lees alleen de richting af; het scheefheidscijfer staat in de tooltip (`jets[].lean`).
-- **De wind** - een fontein die geen `lean` codeert, drijft toch zachtjes naar één kant. Die gedeelde drift is de signatuur van de Jet d'Eau (wind over het meer), puur decoratief: elke zo'n fontein drijft dezelfde kant op, en `lean` is `null` in de context.
-- **Druppels en nevel** (plume-stijl) - decoratie; het aantal druppels schaalt met het optionele veld `density`.
+<ChartDemo chart="fountain-chart" :index="16" :legend="false" :height="420" />
 
-> Eén grafiek, twee modi - bepaald door het type x-as. Stel `xAxisDataType: "band"` in voor **Momentopname-modus**: één fontein per categorie, waarbij groottes naast elkaar worden vergeleken (fonteinen, steden, producten). Gebruik een temporele of numerieke x (`"date_annual"`, `"date_monthly"`, `"number"`) voor **Trendmodus**: een fontein per periode, waarbij de stijgende toppen de trend volgen terwijl elke pluim de volatiliteit van die periode toont, en een voorspellende fontein gestippeld wordt weergegeven met een bredere, schuimigere kroon.
+1. **Steel**: een staaf van 0 tot aan de grote stip. Hij stopt bij de grote stip. Hoger betekent meer minuten, en hier betekent meer minuten langzamer.
+2. **Grote stip**: de gewone dag, 30 minuten. De helft van de dagen was sneller, de helft langzamer. Dit is het getal dat je gebruikt.
+3. **Fontein**: de top is de slechtste dag (55 minuten) en de vlakke onderkant de beste dag (22 minuten). De breedte betekent niets: die maakt alleen ruimte voor de kleine stippen.
+4. **Kleine stippen**: één per echte dag, elk op de precieze hoogte, altijd binnen de fontein. Waar ze dicht op elkaar zitten, tussen 25 en 35 minuten, is wat meestal gebeurt. De twee helemaal bovenaan zijn de enige langzame dagen.
+5. **De lijn en de telling**: de rode stippellijn is een belofte of een grens, hier de 45 minuten die je ervoor neemt. Onder de kolom telt "18 of 20 within 45 min" de kleine stippen aan de goede kant van de lijn.
 
-## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
+De getallen staan ook onder de kolom (gewoon, beste, slechtste) en in de tooltip, dus niemand hoeft iets van de as af te meten.
 
-<script setup>
-function makeFountain() {
-  const dataSet = [];
-  for (let i = 0; i < 400; i++) {
-    const base = 40 + 60 * Math.sin(i / 11) + 20 * Math.sin(i / 3.3);
-    const value = Math.max(5, Math.round(base + (i % 7) * 2));
-    const spread = Math.max(1, Math.round(4 + 18 * Math.abs(Math.sin(i / 5)) + (i % 5)));
-    const density = Math.min(1, 0.15 + (spread / 40));
-    dataSet.push({
-      label: `Jet ${i + 1}`,
-      value,
-      spread,
-      density,
-      ...(i % 47 === 0 ? { color: "#D4AF37" } : {}),
-    });
-  }
-  return { dataSet, xAxisDataType: "band" };
-}
+### Zes patronen om te herkennen {#patterns}
+
+Elke fontein hieronder is dezelfde rit, gemeten op verschillende dagen, op dezelfde as: minuten, hoger = langzamer.
+
+#### Stabiel
+
+Een lage fontein met de kleine stippen dicht bij elkaar: bijna elke dag dezelfde tijd.
+
+<ChartDemo chart="fountain-chart" :index="17" :legend="false" :height="320" />
+
+#### Wisselt veel
+
+Een hoge fontein met kleine stippen tot helemaal boven: langzame dagen komen vaak voor, dus plan extra tijd.
+
+<ChartDemo chart="fountain-chart" :index="18" :legend="false" :height="320" />
+
+#### Zelden een slechte dag
+
+De meeste kleine stippen laag, een lege ruimte, en dan een of twee hoog: meestal gaat het goed, slechte dagen zijn zeldzaam.
+
+<ChartDemo chart="fountain-chart" :index="19" :legend="false" :height="320" />
+
+#### Vaak slecht
+
+De meeste kleine stippen hoog en de grote stip bijna bovenaan: hier is langzaam de gewone dag.
+
+<ChartDemo chart="fountain-chart" :index="20" :legend="false" :height="320" />
+
+#### Maar een gok
+
+Maar 5 kleine stippen: te weinig dagen om erop te vertrouwen. De grafiek zet "only 5 days" onder de kolom.
+
+<ChartDemo chart="fountain-chart" :index="21" :legend="false" :height="320" />
+
+#### Genoeg dagen
+
+Dezelfde vorm met 20 kleine stippen: meer dagen geteld, dus betrouwbaarder. De fontein loopt van dezelfde beste tot dezelfde slechtste dag als die hierboven; alleen het aantal kleine stippen is veranderd (de fontein is iets breder, alleen om ruimte te maken voor de stippen).
+
+<ChartDemo chart="fountain-chart" :index="22" :legend="false" :height="320" />
+
+## Wanneer gebruik je hem, en wanneer niet {#when-to-use}
+
+**Gebruik hem** als elke kolom één getal heeft dat mensen noemen, het echte bereik eromheen, en liefst de metingen zelf, en de vraag is "hoe vaak gaat het over mijn grens?". Woon-werkritten, levertijden, prijzen per winkel, cijfers in een klas, de accuduur van een telefoon: alles wat steeds opnieuw gemeten wordt.
+
+- Hij leest het best met **2 tot 12 kolommen** en 10 tot 30 kleine stippen per kolom.
+- Voeg een **referentielijn met `goodSide`** toe als er een belofte, een budget of een voldoende is. De grafiek telt dan voor de lezer.
+- Zeg in `yAxisTitle` welke kant goed is, bijvoorbeeld "minuten (hoger = langzamer)".
+
+**Kies een andere grafiek** als:
+
+- je twee waarden per rij vergelijkt (voor en na, 2010 en 2023): het [Verschildiagram](/nl/charts/gap);
+- je veel perioden vooruit voorspelt en de voorspelling minder zeker wordt naarmate je verder vooruit kijkt: het [Waaierdiagram](/nl/charts/fan);
+- je een totaal in delen opsplitst: de [Verticale gestapelde staven](/nl/charts/vertical-stack-bar);
+- je maar één getal per item hebt en geen bereik: een gewone staafgrafiek zegt het sneller.
+
+## Voorbeelden {#examples}
+
+Zestien vragen uit het dagelijks leven. De getallen zijn illustratief: verzonnen om echt te lijken, niet uit een gepubliceerde bron. De grafieken tonen hun teksten in het Engels; `labels`, `endLabels` en `sampleWord` vertalen ze (zie [De schakelaars](#switches)).
+
+### Hoe lang duurt mijn woon-werkrit echt? {#commute-by-mode}
+
+<ChartDemo chart="fountain-chart" :index="0" :legend="false" :height="480" />
+
+**Zo lees je hem.** Elke kleine stip is een van de laatste 20 werkdagen. De kleine stippen van de auto zitten tussen 25 en 35 minuten, en maar 3 dagen gingen over de 45 minuten die ik ervoor neem, tot 55. Een slechte autodag komt dus soms voor. De bus ging 8 van de 20 dagen over de 45 minuten: een slechte busdag komt vaak voor. De kleine stippen van de trein en de e-bike halen de lijn nooit: die doen er elke dag ongeveer even lang over.
+
+**Waarom deze grafiek.** Een staaf van de gewone dag maakt de auto de winnaar. De fontein laat zien dat de auto je ook 25 minuten te laat kan maken. De kleine stippen laten zien hoe vaak: 3 van de 20 dagen voor de auto, 8 van de 20 voor de bus, en nooit voor de trein of de e-bike. Op een ochtend dat je niet te laat mag komen, neem je de trein.
+
+### Ik betaal voor 100 Mbps. Wat krijg ik echt? {#home-internet-promised-vs-real}
+
+<ChartDemo chart="fountain-chart" :index="1" :legend="false" :height="480" />
+
+**Zo lees je hem.** Om 21.00 uur zegt de grote stip 62, maar de fontein zakt tot 22. De kleine stippen laten zien dat het niet één pechmeting is: op 5 van de 20 avonden was de snelheid onder de 40, minder dan de helft van wat je betaalt. Om 17.00 uur liggen maar twee kleine stippen laag: een trage late middag is zeldzaam. Om 7.00 uur en 1.00 uur zitten de kleine stippen dicht bij de top: die uren zijn betrouwbaar.
+
+**Waarom deze grafiek.** De gewone snelheden liggen gemiddeld boven de 80, dicht genoeg bij 100 om je schouders op te halen. De fontein van 21.00 uur laat zien dat 's avonds de snelheid kan zakken tot ongeveer een vijfde van de belofte, en de kleine stippen laten zien dat dat ongeveer één avond op de vier gebeurt, niet één keer. Dat is het bewijs voor je provider.
+
+### Hoe lang duurt maaltijdbezorging echt? {#food-delivery-real-time}
+
+<ChartDemo chart="fountain-chart" :index="2" :legend="false" :height="480" />
+
+**Zo lees je hem.** Elke kleine stip is één bestelling. Op vrijdagavond is de gewone wachttijd 45 minuten, maar 5 van de laatste 20 bestellingen duurden langer dan een uur: trage bezorging komt vaak voor. Bestel voordat je honger krijgt, of haal het zelf op. Op een regenachtige zondag is bijna elke bestelling wat traag, maar maar 2 van de 18 duurden langer dan een uur.
+
+**Waarom deze grafiek.** De gewone wachttijden lopen van 25 tot 50 minuten, en als staven lijken ze allemaal een normale wachttijd. De fonteinen laten zien dat vrijdagavond en een regenachtige zondag allebei 80 tot 90 minuten kunnen duren. De kleine stippen laten zien waar je je zorgen over moet maken: op vrijdag duurde één bestelling op de vier langer dan een uur, op een regenachtige zondag maar twee. Bij de lunch op werkdagen zitten de meeste kleine stippen binnen vijf minuten van de 30 die de app belooft, en 's avonds laat is bijna elke bestelling sneller.
+
+### Is de Black Friday-deal echt goedkoper? {#black-friday-tv}
+
+<ChartDemo chart="fountain-chart" :index="3" :legend="false" :height="480" />
+
+**Zo lees je hem.** Elke kleine stip is de prijs van één winkel voor dezelfde tv. Eind oktober en begin november klimmen de kleine stippen: de meeste winkels verhogen de prijs. In de Black Friday-week zakken ze terug tot ongeveer het niveau van begin oktober, dus de meeste "deals" liggen maar 5 tot 55 € onder de oktoberlijn. Maar één kleine stip zit onderaan op 600 €: één winkel van de 15 verkoopt hem echt goedkoper.
+
+**Waarom deze grafiek.** Een lijn van de gewone prijs toont maar een kleine dip. De fontein laat zien dat de prijzen in de weken ervoor stijgen, en dat de onderkant in de Black Friday-week 600 € haalt, maar zelf kan hij niet zeggen hoeveel winkels zo goedkoop zijn. De kleine stippen wel: één winkel zit alleen op 600 € en de andere 14 zitten dicht rond de oktoberlijn. Een echte deal is zeldzaam, en de grafiek laat het zien.
+
+### Komt mijn online bestelling op tijd? {#parcel-delivery-by-origin}
+
+<ChartDemo chart="fountain-chart" :index="4" :legend="false" :height="440" />
+
+**Zo lees je hem.** Uit China zegt de grote stip 12 dagen, maar de fontein reikt tot 30. Tel de kleine stippen: 4 van de 20 pakketten deden er meer dan 3 weken over, dus een traag pakket uit China is niet zeldzaam. Bestel een verjaardagscadeau een maand van tevoren. Uit het VK zitten de meeste kleine stippen op 5 tot 7 dagen: 5 pakketten deden er langer over, waarvan maar 3 meer dan 10 dagen. Uit Duitsland ligt elke kleine stip tussen 2 en 5 dagen.
+
+**Waarom deze grafiek.** Een staaf van de gewone dagen zegt alleen dat ver weg langzamer is. De fontein laat zien dat ver weg ook minder voorspelbaar is: een bestelling uit Duitsland duurt nooit langer dan 5 dagen, terwijl een bestelling uit China een maand kan duren als hij bij de douane blijft hangen. De kleine stippen laten zien hoe vaak dat gebeurt. De fonteinen van het VK en China reiken allebei ver omhoog, maar uit het VK deden maar 3 pakketten er meer dan 10 dagen over, terwijl uit China 4 van de 20 er meer dan 3 weken over deden. Zo weet je of het cadeau er voor de verjaardag is.
+
+### Kan ik de weersverwachting voor de barbecue van zaterdag vertrouwen? {#weather-forecast-week}
+
+<ChartDemo chart="fountain-chart" :index="5" :legend="false" :height="440" />
+
+**Zo lees je hem.** De fontein van zaterdag blijft tussen 22° en 28°, in elk geval boven de lijn van 20°, dus de barbecue kun je gerust plannen. Die van dinsdag loopt van 17° tot 27° en zakt onder de lijn, dus dat is meer een gok.
+
+**Waarom deze grafiek.** Een verwachtingslijn lijkt over dinsdag even zeker als over vandaag. De fonteinen worden in de loop van de week hoger, dus je ziet meteen dat het getal van zaterdag betrouwbaar is en dat van dinsdag niet. Elke fontein zit ongeveer gelijk rond zijn grote stip, omdat de verwachting naar beide kanten fout kan zijn.
+
+### Waar kan ik een tweekamerwoning betalen? {#rent-by-city}
+
+<ChartDemo chart="fountain-chart" :index="6" :legend="false" :height="480" />
+
+**Zo lees je hem.** Kijk naar de budgetlijn van 1.000 €. De fonteinen van Lissabon, Berlijn en Madrid halen hem allemaal, maar tel daar de kleine stippen, want elke kleine stip is één woning. Lissabon heeft maar één woning zo goedkoop en Madrid twee. Berlijn heeft er vijf, dus dat is de enige stad waar een woning van 1.000 € makkelijk te vinden is.
+
+**Waarom deze grafiek.** Een staaf van de gewone huur laat Lissabon, Berlijn en Madrid ongeveer gelijk lijken. De fonteinen laten zien dat alle drie tot 1.000 € zakken, en de kleine stippen laten zien hoe vaak. In Lissabon is het één buitenkansje, en de volgende kost al 1.180 €. In Madrid zijn het twee woningen en in Berlijn vijf. Bovenaan is de 2.300 € van Lissabon één enkele woning, terwijl de meeste woningen daar tussen 1.250 en 1.600 € kosten.
+
+### Is boodschappen doen over de Zwitserse grens goedkoper? {#border-basket}
+
+<ChartDemo chart="fountain-chart" :index="7" :legend="false" :height="420" />
+
+**Zo lees je hem.** De fontein van elk buurland houdt op onder de onderkant van die van Zwitserland (86 CHF), dus zelfs de duurste winkel over de grens is goedkoper dan de goedkoopste Zwitserse.
+
+**Waarom deze grafiek.** Een staaf zegt alleen dat Zwitserland duurder is. De fonteinen beantwoorden de echte vraag: loont de rit, welke winkel je ook kiest? De Zwitserse fontein en de andere raken elkaar niet eens. Hier zit elke fontein ongeveer gelijk rond zijn grote stip, omdat een goedkope winkel ongeveer evenveel bespaart als een dure extra kost.
+
+### Waarom ben ik op maandag zo moe? {#sleep-by-night}
+
+<ChartDemo chart="fountain-chart" :index="8" :legend="false" :height="480" />
+
+**Zo lees je hem.** Elke kleine stip is één nacht. De grote stip van zondag ligt maar een half uur onder die van een doordeweekse nacht, maar 5 van de 16 kleine stippen liggen onder 5 uur. Ongeveer één zondag op de drie is slecht, en dat merk je op maandagochtend. De meeste kleine stippen van doordeweekse nachten liggen tussen 6 en 7 uur, met maar één korte nacht.
+
+**Waarom deze grafiek.** Staven zeggen dat zondag (6 uur) nauwelijks slechter is dan een doordeweekse nacht (6,5). De fontein laat zien dat zondag het meest wisselt, tot 3,5 uur. De kleine stippen laten zien dat het een gewoonte is, geen toeval: 5 van de laatste 16 zondagen lagen onder 5 uur, dus zondag is de nacht om aan te pakken.
+
+### Houdt mijn telefoon het nog een hele dag vol? {#phone-battery-year-by-year}
+
+<ChartDemo chart="fountain-chart" :index="9" :legend="false" :height="480" />
+
+**Zo lees je hem.** De lijn is een hele dag: om 7.00 uur van de lader en om 22.00 uur nog aan. Elke kleine stip is één dag, dus tel de kleine stippen onder de lijn. In jaar 1 kwam geen enkele dag tekort. In jaar 2 drie dagen. In jaar 3 tien van de 21 dagen, en op drie daarvan ging de telefoon voor 19.00 uur uit. Jaar 4 (gestippeld) is een schatting, en daar is zelfs een gewone dag te kort.
+
+**Waarom deze grafiek.** De grote stip van de gewone dag zakt in drie jaar maar van 18 naar 15 uur, dus een gewone lijn ziet er prima uit. De kleine stippen laten zien wat er echt veranderde. Toen de telefoon nieuw was, hield hij het elke dag vol. In jaar 3 kwam hij ongeveer om de dag tekort. Dan is een nieuwe accu het geld waard.
+
+### Hoe vaak is mijn trein echt te laat? {#train-really-late}
+
+<ChartDemo chart="fountain-chart" :index="10" :legend="false" :height="480" />
+
+**Zo lees je hem.** Tel de kleine stippen boven de stippellijn. Dat zijn de ritten die de spoorwegen zelf te laat noemen: 5 van de 20 bij de trein van 7.42 uur, 9 bij die van 17.48 uur naar huis, en maar 1 bij die van 7.12 uur. Een kleine stip precies op de lijn (precies 5 minuten) telt niet als te laat.
+
+**Waarom deze grafiek.** Een staaf van de gemiddelde vertraging zet de trein van 7.42 uur op 5,5 minuten, alsof elke rit een beetje te laat was. In werkelijkheid was de helft van de ritten 2 tot 4 minuten te laat, en drie waren 12, 18 en 25 minuten te laat. Een lijn door de tijd zou de keuze tussen treinen verbergen. Hier zie je meteen dat de trein van 7.12 uur je bijna altijd op tijd brengt, terwijl die van 7.42 uur ongeveer één ochtend op de vier verpest en die van 17.48 uur bijna één avond op de twee.
+
+### Welke diensten leveren de meeste fooi op? {#tips-per-shift}
+
+<ChartDemo chart="fountain-chart" :index="11" :legend="false" :height="480" />
+
+**Zo lees je hem.** Tel de kleine stippen boven de stippellijn van € 60: elke zaterdagavond haalde hem, vrijdag miste hem twee keer, en de lunch op werkdagen kwam nooit in de buurt.
+
+**Waarom deze grafiek.** Een staaf van de gewone fooi zet vrijdag (€ 84) vlak naast zaterdag (€ 97) en laat ze op elkaar lijken. De kleine stippen laten zien dat vrijdag twee keer onder € 60 bleef en zaterdag nooit, en dat bepaalt welke dienst je ruilt. Een lijngrafiek heeft hier geen volgorde in de tijd om te volgen.
+
+### Welk bordspel krijgen we voor bedtijd uit? {#board-game-before-bedtime}
+
+<ChartDemo chart="fountain-chart" :index="12" :legend="false" :height="480" />
+
+**Zo lees je hem.** Ticket to Ride duurt gewoonlijk 55 minuten, maar 4 van de 15 potjes gingen over de stippellijn van een uur tot bedtijd. Scrabble duurt gewoonlijk 48 minuten en ging maar 2 van de 14 keer over. Uno ging nooit over; Monopoly elke keer.
+
+**Waarom deze grafiek.** Een staaf van de gewone tijd zegt dat Scrabble (48 min) en Ticket to Ride (55 min) allebei in een uur passen. De kleine stippen laten zien dat Ticket to Ride in 4 van de 15 potjes over bedtijd ging en Scrabble maar in 2 van de 14. Dat is het verschil tussen rustig naar bed en ruzie.
+
+### Gaan de wekelijkse boodschappen vaker over de € 100? {#weekly-shop-trend}
+
+<ChartDemo chart="fountain-chart" :index="13" :legend="false" :height="480" />
+
+**Zo lees je hem.** De grote stip kroop maar van € 88 naar € 98, maar de kleine stippen boven de lijn van € 100 gingen van 2 weken naar 6 van de 13.
+
+**Waarom deze grafiek.** Een lijn van de gewone weekrekening ziet er rustig uit en blijft onder het budget. De kleine stippen laten zien dat de weken boven budget verdrievoudigden (2, 3, 4 en dan 6 van de 13), en dat is wat een gezin echt voelt. Een staaf per seizoen zou het net zo verbergen.
+
+### Hoe vaak zwemt mijn dochter de 50 m snel genoeg voor de wedstrijd? {#swim-gala-time}
+
+<ChartDemo chart="fountain-chart" :index="14" :legend="false" :height="480" />
+
+**Zo lees je hem.** Lager is sneller. Kleine stippen onder de stippellijn zijn zwembeurten die snel genoeg zijn voor de wedstrijd: geen in het herfsttrimester, 2 van de 14 in het voorjaarstrimester en 5 van de 13 in het zomertrimester.
+
+**Waarom deze grafiek.** Een lijn van haar gewone tijd zakt pas volgend najaar onder de 40 s, dus die zegt "nog niet klaar". De kleine stippen laten zien dat ze deze zomer al 5 van de 13 keer onder de limiet zwom, dus ze kan zich nu al inschrijven. Een lijn kan dat niet laten zien.
+
+### Hoeveel leerlingen zakken voor elke toets? {#class-test-pass-mark}
+
+<ChartDemo chart="fountain-chart" :index="15" :legend="false" :height="480" />
+
+**Zo lees je hem.** Tel de kleine stippen onder de stippellijn van de voldoende: de grote stip van natuurkunde zit veilig op 58, maar toch zakten 7 van de 25 leerlingen, en 8 voor Frans.
+
+**Waarom deze grafiek.** Een staaf van het gewone cijfer per vak zet alle vijf boven de voldoende en noemt het een goed trimester. De kleine stippen laten 7 onvoldoendes zien bij natuurkunde en 8 bij Frans, tegenover geen enkele bij lezen, en daar moet een ouder of leraar iets mee.
+
+## Datavorm {#data-shape}
+
+Elk item in `dataSet` is één jet: één kolom in momentopname-modus, één periode in trendmodus.
+
+| Veld | Wat het is |
+| --- | --- |
+| `label` | De naam van de kolom (momentopname) of van de reeks (trend). |
+| `value` | De grote stip: het getal dat je noemt. Optioneel als er `samples` zijn; dan is het de middelste meting, met de helft van de metingen eronder en de helft erboven. |
+| `low`, `high` | De onderkant en de top van de fontein. |
+| `spread` | Kortere vorm voor een gelijk bereik: `low = value - spread`, `high = value + spread`. |
+| `samples` | De echte metingen, elk een kleine stip. |
+| `forecast` | Een periode die nog moet komen (zie [Trend en voorspelling](#trend-and-forecast)). |
+| `date` | De x-positie in trendmodus. |
+| `color`, `code` | Een kleur voor dit item, en een vaste id die in de context terechtkomt. |
+
+Het bereik komt van de eerste die er is: `low` en `high`, dan `spread`, dan de laagste en hoogste meting. Zonder een van die drie is er geen fontein, alleen de steel en de grote stip. Een meting buiten `low`/`high`, of een waarde buiten het bereik, maakt het bereik groter en stuurt een [waarschuwing](/nl/api/fountain#warnings), dus er wordt niets verborgen. Negatieve waarden mogen: de steel loopt dan vanaf 0 naar beneden.
+
+## De schakelaars {#switches}
+
+| Prop | Standaard | Wat hij doet |
+| --- | --- | --- |
+| `showRange` | `true` | Tekent de fontein. `false` houdt alleen de steel en de grote stip over; de kleine stippen verdwijnen ook, omdat ze de fontein nodig hebben. |
+| `showSamples` | `true` | Tekent een kleine stip per meting, als items `samples` hebben. |
+| `showValueLabels` | `true` | Zet de getallen onder elk x-label: "usual 30", de twee woorden voor de uiteinden, "only 5 days" onder 10 metingen, en de tellingen. |
+| `drift` | `false` | De Genève-look: de top van elke fontein buigt evenveel naar één kant. Hij draagt geen data. |
+| `referenceLines` | geen | Rode stippellijnen bij waarden die ertoe doen. Met `goodSide` telt elke kolom de kleine stippen aan de goede kant. |
+| `endLabels` | `["lowest", "highest"]` | Woorden voor de twee uiteinden van de fontein, bijvoorbeeld `["beste", "slechtste"]` of `["goedkoopste", "duurste"]`. |
+| `readingGuide` | `false` | Een leeswijzer onder de grafiek, op één regel als hij past; anders breekt hij af tussen twee onderdelen (bij een « · »). `true` toont de standaardtekst, met alleen de onderdelen over wat de grafiek tekent; een string vervangt hem. |
+| `sampleWord` | `"measurements"` | Het woord in het meervoud voor de kleine stippen: "20 dagen", "maar 5 bestellingen". |
+| `labels` | Engelse woorden | De andere woorden die de grafiek toont: `usual`, `of`, `only` en `forecast`, voor andere talen. |
+| `yAxisTitle` | geen | De titel naast de y-as, bijvoorbeeld "minuten (hoger = langzamer)". |
+
+### Alleen steel en grote stip: `showRange: false` {#show-range}
+
+Zonder de fontein wordt het een lollipopgrafiek: een staaf tot aan elke grote stip. De kleine stippen en de woorden voor de uiteinden verdwijnen; de tellingen onder elke kolom blijven, omdat ze uit de metingen komen.
+
+<ChartDemo chart="fountain-chart" :index="24" :legend="false" :height="440" />
+
+### De Genève-look: `drift: true` {#drift}
+
+De top van elke fontein buigt evenveel naar rechts, zoals de echte Jet d'Eau op een dag met een briesje. Elke jet buigt dezelfde kant op, dus de buiging vertelt de lezer niets. Nieuwe lezers vonden hem verwarrend, daarom staat hij standaard uit: gebruik hem voor een poster, niet voor een beslissing.
+
+<ChartDemo chart="fountain-chart" :index="23" :legend="false" :height="440" />
+
+### Lijnen, tellingen en je eigen woorden {#words}
+
+```ts
+const props = {
+  yAxisTitle: "minuten (hoger = langzamer)",
+  endLabels: ["beste", "slechtste"], // "beste 22", "slechtste 55"
+  sampleWord: "dagen", // "20 dagen", "maar 5 dagen": altijd meervoud
+  referenceLines: [
+    {
+      value: 45,
+      label: "Tijd die ik neem: 45 min", // staat aan het rechtereinde van de lijn
+      goodSide: "below", // tel de kleine stippen op of onder 45
+      countLabel: "binnen 45 min", // "17 van 20 binnen 45 min"
+    },
+  ],
+  readingGuide: "Kleine stip = één dag · Grote stip = de gewone dag · Hoge fontein = wisselt veel",
+  // De andere woorden van de grafiek:
+  labels: { usual: "gewoonlijk", of: "van", only: "maar", forecast: "verwachting" },
+};
+```
+
+- Een telling telt de kleine stippen precies op de lijn mee: "below" telt die op of onder de lijn, "above" die op of boven de lijn.
+- Voorspellingskolommen en kolommen zonder metingen krijgen geen telling.
+- Zonder `countLabel` zijn de woorden "below the line" of "above the line": vertaal ze met `countLabel`.
+- `showValueLabels: false` haalt de regels onder de x-labels weg. De tooltip toont nog steeds dezelfde getallen.
+
+## Trend en voorspelling {#trend-and-forecast}
+
+**Momentopname-modus** is de standaard (`xAxisDataType: "band"`): één kolom per `label`. Voor **trendmodus** kies je een temporele of numerieke `xAxisDataType` (`"number"`, `"date_annual"` of `"date_monthly"`) en geef je elk item een `date`. De jets staan dan langs de x-as, en een grijze stippellijn verbindt de grote stippen (`showTrendLine`: standaard aan in trendmodus met één reeks; uit bij meerdere reeksen en in momentopname-modus). In trendmodus is `label` de naam van de reeks, dus één reeks houdt één kleur.
+
+Een item met **`forecast: true`** is een periode die nog moet komen. Het krijgt een gestippelde steel en rand, een lichtere vulling, een holle grote stip, geen kleine stippen en geen telling, en "(forecast)" achter het x-label (te vertalen met `labels.forecast`).
+
+Perioden met een naam (uren, trimesters, seizoenen) staan op 1, 2, 3 enzovoort langs een getallenas, en `xAxisFormat` toont de namen:
+
+```ts
+const names = ["Jaar 1 (nieuw)", "Jaar 2", "Jaar 3", "Jaar 4"];
+
+const props = {
+  xAxisDataType: "number",
+  xAxisFormat: (d) => names[Number(d) - 1],
+  yAxisTitle: "uren (hoger = langer)",
+  endLabels: ["kortste", "langste"],
+  sampleWord: "dagen",
+  referenceLines: [
+    { value: 15, label: "een hele dag", goodSide: "above", countLabel: "hield de dag vol" },
+  ],
+  dataSet: [
+    { label: "Accu", date: 1, value: 18, low: 15, high: 20, samples: [18.5, 19, 17.5 /* … */] },
+    { label: "Accu", date: 2, value: 17, low: 13, high: 19, samples: [17, 18, 16.5 /* … */] },
+    { label: "Accu", date: 3, value: 15, low: 10, high: 17, samples: [15.5, 13, 16 /* … */] },
+    { label: "Accu", date: 4, value: 12, low: 7, high: 14, forecast: true },
+  ],
+};
+```
+
+De hele grafiek staat in de galerij: [Houdt mijn telefoon het nog een hele dag vol?](#phone-battery-year-by-year). Houd trendmodus bij een handvol perioden (ongeveer 3 tot 12), zodat elke fontein ruimte heeft.
+
+## Speel door de perioden {#timeline}
+
+In trendmodus voegt `timeline` een afspeelknop en een scrubber toe die door de perioden stappen. Bij elke stap tekent de grafiek de jets tot aan de actieve periode, de hele actieve jet inbegrepen, en hoveren bereikt alleen wat getekend is. Momentopname-modus heeft geen perioden, dus de besturing wordt niet getekend. Standaard uit.
+
+<TimelinePlayDemo chart="fountain-chart" hint="Druk op de afspeelknop onder de grafiek: hij stapt door de perioden en tekent de jets tot aan elke periode. Sleep de scrubber om naar een periode te springen." />
+
+::: code-group
+
+```tsx [React]
+const ref = useRef<FountainChartHandle>(null);
+
+<FountainChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
+// ref.current?.timeline() -> play() / pause() / seek(period) / seekIndex(i) / stepForward()
+```
+
+```vue [Vue]
+<FountainChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
+```
+
+```svelte [Svelte]
+<div use:fountainChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
+```
+
+```ts [Angular]
+applyFountainChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
+```
+
+```html [Web component]
+<michi-vz-fountain-chart id="c"></michi-vz-fountain-chart>
+<script>
+  const el = document.getElementById("c");
+  el.timeline = { speedMs: 1000, loop: true };
+  // el.getTimeline() -> play() / pause() / seek(period) / seekIndex(i)
 </script>
+```
 
-FountainChart heeft een optionele `renderer="webgpu"` die de kolom en uitgerafelde pluim van elke fontein tekent als GPU-instanced marks, terwijl assen, labels en tooltips op de SVG-laag blijven. Dit is capability-gated: in een browser zonder WebGPU schakelt het automatisch terug naar canvas, en `getContext().renderer` meldt welke renderer daadwerkelijk heeft getekend. De gedeelde zijwaartse drift die je bij de fonteinen ziet, is de decoratieve wind (geen van deze items codeert een `lean`), geen data.
+:::
 
-<WebgpuHeavyDemo element="michi-vz-fountain-chart" :make="makeFountain" caption="400 jets" />
+- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij het mounten, `showControl: false` verbergt de ingebouwde balk.
+- De headless controller is er altijd: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor je eigen knoppen. Geef bij perioden met een naam `formatPeriod` dezelfde functie als `xAxisFormat`.
+- `seek(period)` zoekt eerst de periode en vergelijkt als tekst, dus `seek(2021)` en `seek("2021")` komen allebei op 2021 uit, of je datums nu getallen of strings zijn. Een getal telt alleen als positie (0 = de eerste) als geen periode past, en een string die nergens bij past doet niets. `seekIndex(i)` gaat altijd op positie, net als de ingebouwde scrubber.
+- Waarden glijden standaard tussen de perioden (`interpolate`); `interpolate: false` springt. Met reduced motion wordt altijd gesprongen.
+- `timeline` wint van `progressiveDraw` als ze allebei zijn ingesteld.
 
 ## Onthulanimatie
 
-De grafiek tekent zichzelf van links naar rechts bij het mounten, waarbij de elementen na elkaar verschijnen voordat ze op hun plek vallen. Standaard uit - een grafiek kiest ervoor met de `progressiveDraw`-prop.
+De grafiek tekent zichzelf van links naar rechts bij het mounten. Standaard uit: een grafiek kiest ervoor met de `progressiveDraw`-prop.
 
-<RevealDemo chart="fountain-chart" replay-label="Animatie opnieuw afspelen" hint="Elke lijn groeit van het eerste naar het laatste jaar; het label volgt de punt en komt tot stilstand bij het lijneinde. Met reduced motion ingeschakeld verschijnt de grafiek meteen volledig getekend." />
+<RevealDemo chart="fountain-chart" :height="440" replay-label="Animatie opnieuw afspelen" hint="De jets verschijnen van links naar rechts; assen en titels blijven staan. Met reduced motion ingeschakeld verschijnt de grafiek meteen volledig getekend." />
 
-`progressiveDraw: true` gebruikt de standaardinstellingen (1200 ms, easeInOutCubic). Een configuratieobject verfijnt het gedrag:
+`progressiveDraw: true` gebruikt de standaardinstellingen (1200 ms, easeInOutCubic). Een configuratieobject stelt het bij:
 
 ::: code-group
 
@@ -107,53 +423,28 @@ applyFountainChartProps(this.c.nativeElement, {
 
 :::
 
-- `durationMs` en `easing` ("linear", "easeOutQuad", "easeInOutCubic", of een eigen `(t) => t`-functie) bepalen het tempo.
-- `autoplay: false` rendert de grafiek volledig getekend; roep `replay()` aan (React-ref-handle, webcomponent-methode of de core-instantie) om de animatie op aanvraag te starten. `replayOnUpdate: true` herhaalt de animatie bij elke datawijziging.
+- `durationMs` en `easing` ("linear", "easeOutQuad", "easeInOutCubic", of je eigen `(t) => t`-functie) bepalen het verloop.
+- `autoplay: false` toont de grafiek volledig getekend; roep `replay()` aan (React-ref-handle, methode van de web component of de core-instantie) om de animatie op verzoek te starten. `replayOnUpdate: true` speelt hem af bij elke datawijziging.
 - Respecteert `prefers-reduced-motion`: de grafiek verschijnt dan meteen volledig getekend.
 
-## Speel door de jaren heen
+## Zware datasets op WebGPU <span class="vp-badge warning">Experimenteel</span>
 
-De data beslaat al meerdere jaren, dus er is niets te taggen. Zet `timeline` aan: de eigen afspeelknop en scrubber van de grafiek stappen door die jaren - bij elke stap tekenen de jets zich alleen tot het actieve jaar, en tijdens het afspelen loopt de trend vloeiend verder door. Scrub je terug, dan trekt de trend zich weer terug. Hoveren toont alleen wat al echt getekend is. `timeline` geldt voor Trendmodus (temporele of numerieke x); Momentopname-modus is categorisch en heeft geen jaaras, dus jets hebben geen `date` en de besturing wordt gewoon niet getekend. Standaard uit - zonder opt-in verandert er niets.
-
-<TimelinePlayDemo chart="fountain-chart" hint="Druk op de afspeelknop onder de grafiek: de grafiek tekent zich verder door tot elk jaar terwijl hij speelt. Sleep de scrubber om naar een jaar te springen." />
-
-::: code-group
-
-```tsx [React]
-const ref = useRef<FountainChartHandle>(null);
-
-<FountainChart ref={ref} {...props} timeline={{ speedMs: 1000, loop: true }} />;
-// ref.current?.timeline() -> play() / pause() / seek(year) / seekIndex(i) / stepForward()
-```
-
-```vue [Vue]
-<FountainChart :options="{ ...props, timeline: { speedMs: 1000, loop: true } }" />
-```
-
-```svelte [Svelte]
-<div use:fountainChart={{ ...props, timeline: { speedMs: 1000, loop: true } }}></div>
-```
-
-```ts [Angular]
-applyFountainChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1000, loop: true } });
-```
-
-```html [Web component]
-<michi-vz-fountain-chart id="c"></michi-vz-fountain-chart>
-<script>
-  const el = document.getElementById("c");
-  el.timeline = { speedMs: 1000, loop: true };
-  // el.getTimeline() -> play() / pause() / seek(year) / seekIndex(i)
+<script setup>
+function makeFountain() {
+  const dataSet = [];
+  for (let i = 0; i < 200; i++) {
+    const value = Math.max(8, Math.round(40 + 25 * Math.sin(i / 11) + 10 * Math.sin(i / 3.3)));
+    const low = value - (3 + (i % 5));
+    const high = value + Math.round(4 + 14 * Math.abs(Math.sin(i / 5)));
+    dataSet.push({ label: `Jet ${i + 1}`, value, low, high });
+  }
+  return { dataSet, xAxisDataType: "band", showValueLabels: false };
+}
 </script>
-```
 
-:::
+FountainChart heeft een optionele `renderer="webgpu"` die elke steel, fontein en grote stip als GPU-geïnstantieerde marks tekent, terwijl assen, labels en tooltips op de SVG-laag blijven. Hij hangt af van wat de browser kan: zonder WebGPU valt hij terug op canvas, en `getContext().renderer` meldt welke er echt getekend heeft. Boven een stuk of twaalf kolommen is de grafiek niet meer als fonteingrafiek te lezen; deze demo is een stresstest, geen aanbeveling.
 
-- `speedMs` bepaalt het tempo, `loop` begint opnieuw, `autoplay: true` start bij mounten, `showControl: false` verbergt de ingebouwde balk.
-- De headless controller is altijd beschikbaar: `chart.timeline()` biedt `play() / pause() / toggle() / seek(period) / seekIndex(i) / stepForward() / stepBack()`, plus `onStep` en `formatPeriod` in de config voor eigen UI.
-- `seek(period)` zoekt eerst de periode en vergelijkt als tekst, dus `seek(2021)` en `seek("2021")` komen allebei op 2021 uit, of je datums nu getallen of strings zijn. Een getal telt alleen als positie (0 = de eerste) als geen periode past, en een string die nergens bij past doet niets. `seekIndex(i)` gaat altijd op positie, net als de ingebouwde scrubber.
-- Waarden glijden standaard tussen jaren (`interpolate`); zet `interpolate: false` voor harde overgangen. Met reduced motion is de overgang altijd hard.
-- `timeline` wint het van `progressiveDraw` wanneer beide op dezelfde grafiek staan.
+<WebgpuHeavyDemo element="michi-vz-fountain-chart" :make="makeFountain" caption="200 jets" />
 
 ## Gebruik
 
@@ -162,7 +453,7 @@ applyFountainChartProps(this.c.nativeElement, { ...props, timeline: { speedMs: 1
 ```tsx [React]
 import { FountainChart } from "@michi-vz/react";
 
-export default () => <FountainChart {...props} />; // props = the chart options
+export default () => <FountainChart {...props} />; // props = de opties van de grafiek
 ```
 
 ```vue [Vue]
@@ -184,11 +475,11 @@ import { FountainChart } from "@michi-vz/vue";
 ```
 
 ```ts [Angular]
-// main.ts - register the elements once
+// main.ts - registreer de elementen één keer
 import "@michi-vz/angular";
 import { applyFountainChartProps } from "@michi-vz/angular";
 
-// component (uses CUSTOM_ELEMENTS_SCHEMA)
+// component (gebruikt CUSTOM_ELEMENTS_SCHEMA)
 // template: <michi-vz-fountain-chart #c></michi-vz-fountain-chart>
 applyFountainChartProps(this.c.nativeElement, props);
 ```
@@ -198,7 +489,7 @@ applyFountainChartProps(this.c.nativeElement, props);
 
 <michi-vz-fountain-chart id="c"></michi-vz-fountain-chart>
 <script>
-  Object.assign(document.getElementById("c"), props); // dataSet, …
+  Object.assign(document.getElementById("c"), props); // dataSet, referenceLines, …
 </script>
 ```
 
@@ -207,156 +498,59 @@ import { mountFountainChart } from "@michi-vz/core";
 
 const chart = mountFountainChart(el, props);
 chart.update(next);
-chart.getContext(); // renderer-agnostic, LLM-ready
+chart.getContext(); // renderer-onafhankelijk, klaar voor LLM's
 chart.destroy();
 ```
 
 :::
 
-## Momentopname-modus (categorische x)
+### Web component: attributen en eigenschappen {#web-component}
 
-Geef `xAxisDataType: "band"` mee (of laat het weg; "band" is de standaardwaarde). Elk `dataSet`-item wordt één fontein, geplaatst in zijn eigen x-band. Dit is de vergelijkingsmodus: hoogtes beantwoorden "wat is groter?" en pluimbreedtes beantwoorden "wat is het meest onzeker?"
+Gewone strings en getallen kunnen attributen zijn. Arrays, objecten, functies en de schakelaars zijn eigenschappen.
 
-```ts
-const props = {
-  xAxisDataType: "band",
-  dataSet: [
-    { label: "Jet d'Eau",    value: 140, spread: 20 },
-    { label: "King Fahd",    value: 312, spread: 35 },
-    { label: "World Cup",    value: 185, spread: 15 },
-    { label: "Bellagio",     value:  84, spread:  8 },
-  ],
-};
+```html
+<michi-vz-fountain-chart
+  id="rit"
+  chart-title="Hoe lang duurt mijn woon-werkrit echt?"
+  y-axis-title="minuten (hoger = langzamer)"
+  sample-word="dagen"
+  renderer="canvas"
+></michi-vz-fountain-chart>
+<script>
+  const el = document.getElementById("rit");
+  el.dataSet = [
+    { label: "Auto", value: 30, low: 22, high: 55, samples: [29, 31, 27 /* één per dag */] },
+    { label: "Trein", value: 35, low: 32, high: 42, samples: [34, 35, 33 /* … */] },
+  ];
+  el.endLabels = ["beste", "slechtste"];
+  el.referenceLines = [
+    { value: 45, label: "Tijd die ik neem: 45 min", goodSide: "below", countLabel: "binnen 45 min" },
+  ];
+  el.labels = { usual: "gewoonlijk", of: "van", only: "maar", forecast: "verwachting" };
+  el.readingGuide = true;
+  el.showRange = true; // ook: showSamples, showValueLabels, drift
+</script>
 ```
 
-## Trendmodus (temporele of numerieke x)
+- **Attributen:** `chart-title`, `y-axis-title`, `sample-word`, `x-axis-data-type`, `renderer`, `locale`, `width`, `height`, `ticks`.
+- **Alleen eigenschappen:** `dataSet`, `referenceLines`, `endLabels`, `labels`, `readingGuide`, `showRange`, `showSamples`, `showValueLabels`, `drift`, `showTrendLine`, `colors`, `colorsMapping`, `yAxisDomain`, `xAxisFormat`, `yAxisFormat`, `timeline`, `progressiveDraw`.
+- Zet de titel met `chartTitle` (of `chart-title`), niet met `title`: `title` op een HTML-element is de eigen tooltip van de browser.
 
-Geef een temporele of numerieke `xAxisDataType` mee en voorzie elk item van een `date`. De fonteinen worden langs de tijdas geplaatst; een trendlijn verbindt hun toppen. Een item met `predicted: true` wordt gestippeld weergegeven met een zichtbaar schuimigere pluim - de voorspellingslook.
+## Overstappen vanaf core 1.28 {#migrating}
 
-```ts
-const props = {
-  xAxisDataType: "date_annual",
-  dataSet: [
-    { label: "2020", date: 2020, value: 42, spread:  5 },
-    { label: "2021", date: 2021, value: 51, spread:  6 },
-    { label: "2022", date: 2022, value: 63, spread:  8 },
-    { label: "2023", date: 2023, value: 70, spread: 10 },
-    { label: "2024", date: 2024, value: 78, spread: 14, predicted: true },
-    { label: "2025", date: 2025, value: 85, spread: 20, predicted: true },
-  ],
-};
-```
+Core 1.29 vervangt de twee oude silhouetten (de jet en de pluim) door één vorm waarin je elke mark van de y-as afleest. Oude code blijft werken; dit verandert er.
 
-::: warning Het best voor 5-12 perioden in trendmodus
-Met veel datapunten worden de fonteinen samengedrukt en oogt de grafiek als een versierd lijndiagram - het detail van de pluim gaat verloren. Kies voor dichte tijdreeksen (20+ perioden) liever het [Waaierdiagram](/nl/charts/fan), dat onzekerheid weergeeft als vloeiende betrouwbaarheidsbanden. De Fontein schittert op menselijke schaal: een handvol perioden waarin elke pluim kan ademen.
-:::
-
-## Praktijkgids: manieren om een fontein te lezen
-
-De Fontein is nieuw, dus hier is het volledige repertoire, elke demo is een echte, live grafiek met een eerlijk bijschrift. De eerste vier zijn de vlaggenschiplezingen (het kopcijfer en wat het stilletjes ondermijnt of draagt); de rest generaliseert dezelfde grammatica naar zekerheid, stabiliteit, risico, AI en publiek.
-
-### Geborgde verkoop versus krimp
-
-Drie winkels boeken bijna identieke omzet, dus een staafdiagram zou ze gelijk noemen. De dikke, dichte pluim bij Winkel C signaleert waar diefstal en bederf de marge aantasten, en waar je preventie tegen verlies als eerste moet inzetten. Het krimppercentage staat in de tooltip; boven 2% van de omzet geldt het alarmniveau.
-
-<ChartDemo chart="fountain-chart" :index="1" :legend="false" />
-
-### Geleverd versus nooit gefactureerd (trend)
-
-Trendmodus: het geleverde volume blijft stijgen, maar de verbredende pluim waarschuwt dat een groeiend aandeel nooit wordt gefactureerd, lekkages en ongemeten verbruik die de groei overtreffen. Onder 10% non-revenue water is goed; boven 20% betekent actie ondernemen.
-
-<ChartDemo chart="fountain-chart" :index="2" :legend="false" />
-
-### Een voorspelling die hoog maar wankel is
-
-De trend stijgt, maar de voorspellende fonteinen rafelen uit tot gestippeld schuim: er wordt groei voorspeld, en het vertrouwen daarachter brokkelt snel af. Voor precieze banden is het [Waaierdiagram](/nl/charts/fan) het juiste gereedschap; dit is de gedenkwaardige versie van dezelfde waarschuwing.
-
-<ChartDemo chart="fountain-chart" :index="3" :legend="false" />
-
-### De sterren die je ziet, de maintainers die je niet ziet
-
-De aanleiding waarvoor deze grafiek is gebouwd: de piek is wat iedereen ziet en van een ster voorziet; de nevel is de onzichtbare bijdragers waar het project eigenlijk op rust. Vergelijkbare bekendheid, heel verschillende fundamenten. Storytelling, geen meting.
-
-<ChartDemo chart="fountain-chart" :index="4" :legend="false" />
-
-### Hetzelfde getal, drie zekerheden
-
-Drie teams schatten dezelfde 72 dagen tot lancering. Identieke toppen; alleen de pluim onderscheidt het team dat heeft gemeten van het team dat heeft gegokt. Het signaal zegt dat die 72 zacht is, de exacte marge hoort in de tooltip, en echte betrouwbaarheidsintervallen horen bij het [Waaierdiagram](/nl/charts/fan).
-
-<ChartDemo chart="fountain-chart" :index="6" :legend="false" />
-
-### Stabiel of wankel
-
-Twee services zitten gemiddeld op 120 ms en twee op 60 ms, een staafdiagram toont twee identieke tweelingparen. De pluim maakt onderscheid binnen elk paar: de strakke kroon is die waarop je een SLO kunt zetten. Hier is een lagere top beter; vermeld dat expliciet in het bijschrift als je deze grafiek gebruikt. Dezelfde lezing werkt voor winst versus volatiliteit.
-
-<ChartDemo chart="fountain-chart" :index="7" :legend="false" />
-
-### Verwacht verlies versus het slechtste geval
-
-De top is het verwachte verlies; de kroon reikt naar het stressscenario (`value + spread`, de `upperBound` in `getContext()`). Twee posities verwachten hetzelfde verlies; de ene verbergt een veel zwaardere staart. Lees het worstcasegetal af van de tooltip, nooit van de breedte.
-
-<ChartDemo chart="fountain-chart" :index="8" :legend="false" />
-
-### AI-antwoorden: zeker of gokken
-
-De top is de antwoordscore; de pluim is de eigen onzekerheid van het model, genormaliseerd naar scoreeenheden zodat beide dezelfde y-as delen. Strakke kroon: veilig te automatiseren. Rafelende kroon: geef het door aan een mens. De [insights-laag](/nl/guide/insights) leest dezelfde `spreadRatio` uit `getContext()` om te vertellen welke antwoorden je kunt vertrouwen.
-
-<ChartDemo chart="fountain-chart" :index="9" :legend="false" />
-
-### Zelfde gemiddelde, verdeeld publiek
-
-Twee artikelen scoren gemiddeld dezelfde 5,5 minuten betrokkenheid. Het ene houdt iedereen ongeveer even lang vast; het andere splitst zijn lezers tussen doorbladeraars en verslinders. Het gemiddelde verbergt die verdeling; de pluim signaleert het, en dat signaal is je aanwijzing om te segmenteren voordat je conclusies trekt.
-
-<ChartDemo chart="fountain-chart" :index="10" :legend="false" />
-
-### Aan welke kant hangt het risico
-
-Symmetrie als signaal: drie routes delen dezelfde mediaan en dezelfde spreiding, maar één kroon helt over, de verrassingen zijn eenzijdig, een late staart (`lean: 0.8`). Rechtop (`lean: 0`) betekent in balans; overhellen betekent dat de verborgen massa aan die kant hangt. Lees alleen de richting af, nooit de hoek.
-
-<ChartDemo chart="fountain-chart" :index="11" :legend="false" />
-
-### Tyfoons boven de Filipijnen
-
-Soms is de helling letterlijk. Elke straal is een tyfoon: de apex geeft de maximale aanhoudende wind, de nevel reikt naar de windstoten (dezelfde km/h), de dikte van het schuim toont de omvang van het windveld, en de kroon helt in de richting waarin de storm trok - Pacifische tyfoons steken de Filipijnen van oost naar west over, dus de hele rij helt naar links, en de storm die naar Japan afboog helt de andere kant op. Eén glyph, vier eerlijke kanalen, nul nieuwe grafiektypen.
-
-<ChartDemo chart="fountain-chart" :index="12" :legend="false" />
-
-## Twee silhouetten {#two-silhouettes}
-
-Stel `style` in om de vorm te kiezen; beide coderen dezelfde data (top = `value`, spreidingskanaal = `spread`).
-
-- **`style: "jet"` (standaard)** - de getrouwe Jet d'Eau: een hoge, smalle kolom, dicht en ondoorzichtig aan de basis, die bovenaan **uitrafelt in een zachte, doorschijnende kroon** (opgebouwd uit lagen met oplopende transparantie; de kroonbreedte groeit met `spread`, het aantal lagen met de optionele `density`). `lean` (in [-1, 1]) laat de kroon **met de wind meedrijven**. Iconisch; het best als kopcijfer/KPI of vergelijking.
-- **`style: "plume"`** - een symmetrische kolom die opbloeit tot een vederachtige kroon: `frothLayers`-schijven met oplopende transparantie bij de top, een zachte `showMist`-rand en `showDroplets`-baanbogen. `stemFraction` en `bloomExponent` stemmen het profiel van kolom naar kroon af. Overzichtelijker voor één enkele KPI waarbij de spreiding oogt als een betrouwbaarheidshalo.
-
-```ts
-const props = { style: "plume", dataSet: [{ label: "Q4", value: 78, spread: 20 }] };
-```
-
-<ChartDemo chart="fountain-chart" :index="5" :legend="false" />
-
-**Vuistregel: plume voor weinig fonteinen, jet voor de hoofdgrafiek en voor zware datasets.** Op menselijke schaal (1 tot 12 fonteinen) is de symmetrische, gelaagde kroon van de plume de makkelijkst leesbare vorm om het symptoom af te lezen, strakke halo versus brede schuimkraag. Bij honderden fonteinen wordt de bloei van de plume samengeperst tot een flintertje van het vak en verwordt hij tot een simpele staaf, terwijl de op-de-kolom-gerichte jet gracieus vervalt tot een hoge strook (zie de demo met zware data hierboven); die draagt bovendien het merk. Grijp voor werkelijk dichte reeksen niet naar meer versiering, maar naar het [Waaierdiagram](/nl/charts/fan).
-
-**Symmetrie draagt betekenis.** Een rechtopstaande kroon (de plume-stijl, of een fontein met `lean: 0`) zegt dat de spreiding in balans is. Een overhellende kroon (`lean` in [-1, 1], alleen het teken telt) zegt dat de spreiding aan één kant hangt. Een fontein **zonder** `lean` behoudt een zachte decoratieve drift, de wind van Genève, en meldt `lean: null` in de context, zodat gebruikers signaal van versiering kunnen onderscheiden.
-
-Beide stijlen delen `stemFraction` (de halve breedte van de kolombasis als fractie van het vak), het veld `density`, en `lean`. Kleuren volgen jouw data/`colorsMapping`; het schuim/de nevel moduleert alleen de transparantie van jouw kleurtoon, zodat de grafiek zich aanpast aan lichte en donkere thema's.
-
-## Wanneer de Fontein zijn plek verdient {#when-the-fountain-earns-its-place}
-
-De literatuur is gecheckt voordat deze grafiek werd uitgebracht. De Jet d'Eau-metafoor is nieuw in dataviz (er bestaat geen eerdere fontein-/jetgrafiek), en het onderliggende idee is een gedegen heroriëntatie van de raincloud-/viool-/density-strip-familie. Maar de eerlijke taak ervan is **communicatie, geen meting** - gebruik het dus waar een gedenkwaardig kopcijfer-plus-zijn-verborgen-helft ertoe doet, en grijp naar een precisiegrafiek wanneer je het tweede getal exact moet vergelijken.
-
-**Sterke toepassingen**
-
-- **Kopcijfer versus verborgen erosie.** Geboekte versus weglekkende omzet (het gat tussen bruto- en netto-retentie), geborgde verkoop versus krimp, capaciteit versus verlies. Eén mark zegt: "dit is het getal, en dit is wat er onderuit wegbloedt." Dit is het vlaggenschipgebruik.
-- **Hoog-maar-wankel / kunstmatig opgekrikt.** Een balk toont het niveau; de nevel voegt toe: "en zo kwetsbaar is het."
-- **"Wat je ziet versus wat het kostte"** - storytelling over de zichtbare overwinning en het onzichtbare werk erachter. Het scoort goed op herkenning en onthouden (het enige waar onderzoek naar visuele versiering steun aan geeft).
-
-**Gebruik het eerlijk**
-
-- **De top is het enige wat lezers meten.** Zet het kopcijfer daar, op een echte, gelabelde y-as. Breedte en oppervlakte zijn kanalen met een lage nauwkeurigheid (mensen onderschatten ze), dus vraag nooit iemand om nevelbreedtes te vergelijken.
-- **De nevel is een signaal; het cijfer is tekst.** Toon het exacte tweede getal in de tooltip / legenda / `getContext().jets[].spreadRatio`, en onderbouw het met een expliciet vastgestelde drempel (krimp > 2%, NRR < 100%, non-revenue water > 20%, P10-P90).
-- **Begin met momentopname-modus**; beperk trendmodus tot een handvol perioden. Geef voor dichte of precieze onzekerheidsanalyse de voorkeur aan [Fan](/nl/charts/fan) (banden), [Verticale gestapelde staven](/nl/charts/vertical-stack-bar) (sorteerbaar geborgd + risicovol), of een waterfall-grafiek.
-- Beperk het tot **5-12 symbolen** en sorteer momentopnames op `spreadRatio`, zodat het schuimigste item makkelijk te vinden is.
+- **Verwijderde props worden genegeerd.** `style`, `frothLayers`, `bloomExponent`, `stemFraction`, `showDroplets` en `showMist` worden nog één release geaccepteerd, veranderen niets, en sturen elk een [waarschuwing](/nl/api/fountain#warnings) `ignored-option`. Haal ze weg. Op de web component wordt `fountainStyle` (`fountain-style`) op dezelfde manier genegeerd.
+- **`density` en `lean` per item worden genegeerd**, met een waarschuwing `ignored-option`. Geef echte metingen (`samples`) in plaats van een dichtheid; voor de schuine look gebruik je `drift` voor de hele grafiek.
+- **`spread` tekent nu een echt bereik.** `{ value: 30, spread: 8 }` werkt nog: de fontein loopt van 22 tot 38 op de y-as. De oude grafiek tekende de spreiding als een breedte die nooit op de as stond. Mat je `spread` iets anders (een verlies, een verschil, een aandeel), dan past het niet meer bij deze grafiek: zet dat getal in de tooltip of in een andere grafiek.
+- **`predicted` en `certainty` werken nog**; de nieuwe naam is `forecast` (`certainty: false` is `forecast: true`).
+- **De y-as** bevat nu 0, elke `low` en `high` en elke referentielijn, plus 10% ruimte. Negatieve waarden worden onder het meer getekend.
+- **Items zonder `date` in trendmodus** worden overgeslagen met een waarschuwing `missing-date`. Vroeger zetten ze de hele grafiek in momentopname-modus.
+- **Laden en geen data.** De fontein kent nu `isLoading`, `isNodata`, `noDataLabel` en `suppressDefaultOverlay`, net als de andere grafieken. Een lege `dataSet` toont de geen-data-overlay ("No data available", of je `noDataLabel`) in plaats van lege assen: geef `isLoading` mee terwijl de data laadt, of `isNodata: false` om de lege assen te houden.
+- **Kleuren** komen uit de hele `dataSet`, in de volgorde waarin labels voor het eerst voorkomen: een label uitzetten kleurt de andere nooit opnieuw, en een `color` per item wordt gerespecteerd.
+- **TypeScript: `value` en `spread` zijn nu optioneel** in `FountainDataItem`, omdat een item ook alleen `samples` mag geven. Code die `.value` of `.spread` van je eigen items leest, heeft misschien een controle of `?? 0` nodig. `tooltipFormatter` krijgt het item met zijn `value` ingevuld (de mediaan van de metingen als het item er geen geeft), dus daar is `d.value` altijd een getal, en een formatter met het type `(d: FountainDataItem) => string` past nog steeds.
+- **Context.** `jets[].spread`, `jets[].spreadRatio` en `jets[].upperBound` blijven als verouderde aliassen; gebruik `range`, `rangeRatio` en `high`. `jets[].lean` is altijd `null`. `stats.frothiest` is een verouderde alias; gebruik `stats.widestRange`. Zie [getContext()](/nl/api/fountain#getcontext).
 
 ## API
 
-Props zijn getypeerd als `FountainChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Gedeeld door alle grafieken: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, of experimenteel `"webgpu"`), `highlightItems`, `disabledItems` en de `on*`-callbacks. `onChartDataProcessed` / `getContext()` geven de renderer-onafhankelijke [ChartContext](/nl/guide/llm-context) terug. Volledige referentie: [Fountain API](/nl/api/fountain).
+Props zijn getypeerd als `FountainChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Gedeeld door alle grafieken: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, of het experimentele `"webgpu"`), `highlightItems`, `disabledItems`, en de `on*`-callbacks. `onChartDataProcessed` / `getContext()` geven de renderer-onafhankelijke [ChartContext](/nl/guide/llm-context). Volledige referentie: [Fontein API](/nl/api/fountain).

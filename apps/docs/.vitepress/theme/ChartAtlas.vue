@@ -190,7 +190,7 @@ const CARDS = [
     family: "Comparison",
     roman: "XIX",
     blurb:
-      "A Jet d'Eau: apex height is the value, the blooming plume is the uncertainty. Categorical x = snapshot/comparison, temporal x = trend.",
+      "A Jet d'Eau: the big dot is the usual value, the fountain runs from the lowest to the highest, and each small dot is one real measurement you can count. Categorical x = snapshot, temporal x = trend.",
     tag: "<michi-vz-fountain-chart> · SVG · canvas · WebGPU",
   },
   {

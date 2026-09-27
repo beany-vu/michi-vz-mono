@@ -384,13 +384,36 @@ export const previews: Record<string, Preview> = {
 
   "fountain-chart": {
     mount: mountFountainChart as Mount,
+    // The new look in miniature: stem up to the big dot, the fountain over the real
+    // range [low, high], one small dot per sample. No value labels at thumbnail size.
     props: {
       xAxisDataType: "band",
-      frothLayers: 7,
+      showValueLabels: false,
       dataSet: [
-        { label: "A", value: 28, spread: 8, color: GOLD },
-        { label: "B", value: 20, spread: 4, color: BLUE },
-        { label: "C", value: 15, spread: 7, color: RED },
+        {
+          label: "A",
+          value: 30,
+          low: 22,
+          high: 52,
+          samples: [22, 25, 27, 28, 29, 30, 30, 31, 33, 36, 45, 52],
+          color: GOLD,
+        },
+        {
+          label: "B",
+          value: 36,
+          low: 32,
+          high: 42,
+          samples: [32, 34, 35, 35, 36, 36, 37, 38, 40, 42],
+          color: BLUE,
+        },
+        {
+          label: "C",
+          value: 24,
+          low: 14,
+          high: 44,
+          samples: [14, 18, 20, 22, 24, 24, 26, 29, 35, 44],
+          color: RED,
+        },
       ],
     } satisfies FountainChartProps,
   },

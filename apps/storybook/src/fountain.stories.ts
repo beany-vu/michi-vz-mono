@@ -3,29 +3,42 @@ import { examples } from "@michi-vz/examples";
 import "@michi-vz/wc/fountain-chart";
 import { renderElement } from "./render";
 
-// Docs demo data: SaaS snapshot (0), forecast trend (3), and the field-guide reads.
-const reg = examples as unknown as Record<string, Array<{ props: Record<string, unknown> }>>;
-const snapshot = reg["fountain-chart"][0].props;
-const trend = reg["fountain-chart"][3].props;
-const certainty = reg["fountain-chart"][6].props;
-const latency = reg["fountain-chart"][7].props;
-const skew = reg["fountain-chart"][11].props;
-const storm = reg["fountain-chart"][12].props;
+// Stories derive from the docs examples, looked up by id so a reorder of the
+// examples never points a story at the wrong chart.
+const reg = examples as unknown as Record<
+  string,
+  Array<{ id: string; props: Record<string, unknown> }>
+>;
+const byId = (id: string): Record<string, unknown> => {
+  const ex = reg["fountain-chart"].find((e) => e.id === id);
+  if (!ex) throw new Error(`No fountain example "${id}" in @michi-vz/examples`);
+  return ex.props;
+};
+const parcels = byId("fountain-parcel-delivery-by-origin"); // snapshot, 20 samples per column
+const battery = byId("fountain-phone-battery-year-by-year"); // trend, a forecast year, a line
+const commute = byId("fountain-commute-by-mode"); // snapshot, a 45-minute line with counts
+const anatomy = byId("fountain-key-anatomy"); // one fountain, every part in view
+const noRange = byId("fountain-switch-no-range"); // the commute, showRange and the guide off
+
+const size = { width: 820, height: 520 };
 
 const meta: Meta = {
   title: "Charts/Fountain",
   render: (args) => renderElement("michi-vz-fountain-chart", args),
   argTypes: {
-    renderer: { control: "inline-radio", options: ["svg", "canvas"] },
+    renderer: { control: "inline-radio", options: ["svg", "canvas", "webgpu"] },
     xAxisDataType: {
       control: "inline-radio",
       options: ["band", "date_annual", "date_monthly", "number"],
     },
-    frothLayers: { control: { type: "range", min: 1, max: 20, step: 1 } },
-    bloomExponent: { control: { type: "range", min: 1, max: 8, step: 0.5 } },
-    showDroplets: { control: "boolean" },
-    showMist: { control: "boolean" },
+    showRange: { control: "boolean" },
+    showSamples: { control: "boolean" },
+    showValueLabels: { control: "boolean" },
+    drift: { control: "boolean" },
     showTrendLine: { control: "boolean" },
+    yAxisTitle: { control: "text" },
+    sampleWord: { control: "text" },
+    readingGuide: { control: "text" },
     width: { control: { type: "range", min: 360, max: 1100, step: 20 } },
     height: { control: { type: "range", min: 320, max: 760, step: 20 } },
   },
@@ -34,54 +47,40 @@ export default meta;
 
 type Story = StoryObj;
 
-/** Snapshot mode: world-famous fountains compared by jet height; plume = wind sway. */
-export const Snapshot: Story = {
-  args: { ...snapshot, width: 820, height: 500, renderer: "svg" },
+/** Snapshot mode with samples: one column per origin, one small dot per parcel. */
+export const SnapshotWithSamples: Story = {
+  args: { ...parcels, ...size, renderer: "svg" },
 };
 
-/** Trend mode: rising apex heights trace a trend; dashed jets are forecast. */
-export const Trend: Story = {
-  args: { ...trend, width: 820, height: 500, renderer: "svg" },
+/** Trend mode over named periods; year 4 is a forecast (dashed, hollow big dot, no dots). */
+export const TrendAndForecast: Story = {
+  args: { ...battery, ...size, renderer: "svg" },
 };
 
-/** Canvas renderer - same jets, painted to a <canvas>. */
+/** A reference line with goodSide: each column counts its small dots within 45 minutes. */
+export const ReferenceLine: Story = {
+  args: { ...commute, ...size, renderer: "svg" },
+};
+
+/** drift on: the Geneva look, every fountain top bends the same way (it carries no data). */
+export const DriftOn: Story = {
+  args: { ...commute, ...size, drift: true, renderer: "svg" },
+};
+
+/**
+ * showRange off: stem and big dot only; the small dots and end words go, the counts stay.
+ * The reading guide is off too: it explains fountains and small dots.
+ */
+export const ShowRangeOff: Story = {
+  args: { ...noRange, ...size, renderer: "svg" },
+};
+
+/** Canvas renderer: the same model painted to a <canvas>. */
 export const Canvas: Story = {
-  args: { ...snapshot, width: 820, height: 500, renderer: "canvas" },
+  args: { ...commute, ...size, renderer: "canvas" },
 };
 
-/** Tighter column, more dramatic crown (bloomExponent cranked up). */
-export const TightColumn: Story = {
-  args: { ...snapshot, width: 820, height: 500, bloomExponent: 6, renderer: "svg" },
-};
-
-/** No droplets, no mist - minimal look. */
-export const Minimal: Story = {
-  args: {
-    ...snapshot,
-    width: 820,
-    height: 500,
-    showDroplets: false,
-    showMist: false,
-    renderer: "svg",
-  },
-};
-
-/** Same apex, three plumes: the "same number, three certainties" field-guide read. */
-export const Certainty: Story = {
-  args: { ...certainty, width: 820, height: 500, renderer: "svg" },
-};
-
-/** Level x stability 2x2: two latency pairs split by their plumes. */
-export const Latency: Story = {
-  args: { ...latency, width: 820, height: 500, renderer: "svg" },
-};
-
-/** Symmetry as meaning: lean 0 stands upright, a leaning crown flags one-sided risk. */
-export const Skew: Story = {
-  args: { ...skew, width: 820, height: 500, renderer: "svg" },
-};
-
-/** Literal lean: typhoons over the Philippines, crowns bent along each storm's track. */
-export const Storm: Story = {
-  args: { ...storm, width: 820, height: 500, renderer: "svg" },
+/** The reading key's single fountain: stem, big dot, fountain, small dots, the line and its count. */
+export const ReadingKeyAnatomy: Story = {
+  args: { ...anatomy, width: 520, height: 460, renderer: "svg" },
 };

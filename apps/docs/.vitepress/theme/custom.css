@@ -48,7 +48,9 @@
 }
 
 /* Dark mode: keep the accent pair constant, swap only the paper surfaces to
-   VitePress dark tokens so nothing glares. */
+   VitePress dark tokens so nothing glares. The charts' surface token is the
+   background they sit on (demo frames and cards are bg-soft): the rings round
+   the fountain's dots and the no-data overlay use it, and default to white. */
 .dark {
   --mv-card: var(--vp-c-bg-soft);
   --mv-paper: var(--vp-c-bg);
@@ -57,6 +59,7 @@
   --mv-ink-3: var(--vp-c-text-2);
   --mv-line: var(--vp-c-divider);
   --mv-card-shadow: none;
+  --michi-vz-surface: var(--vp-c-bg-soft);
 }
 
 /* Display face for headings + hero: restrained weight, tight tracking, used

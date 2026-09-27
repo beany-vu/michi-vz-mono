@@ -5,7 +5,7 @@ title: Insights - prédire, expliquer et piloter des graphiques avec l'IA
 # Des graphiques qui prédisent, s'expliquent et dialoguent avec l'IA
 
 ::: warning Expérimental - pas encore stable
-La couche IA `@michi-vz/insights` est **expérimentale** : son API, ses sous-chemins et ses sorties peuvent changer dans les futures versions. Les 16 graphiques du cœur sont stables ; insights (et le nouveau [graphique Fontaine](/fr/charts/fountain)) ne le sont pas encore. Fixez une version si vous en dépendez.
+La couche IA `@michi-vz/insights` est **expérimentale** : son API, ses sous-chemins et ses sorties peuvent changer dans les futures versions. 21 des 22 graphiques du cœur sont stables ; insights (et le graphique [Fontaine (Jet d'Eau)](/fr/charts/fountain)) ne le sont pas encore. Fixez une version si vous en dépendez.
 :::
 
 Un graphique se contente habituellement de *dessiner* le passé. `@michi-vz/insights` le fait

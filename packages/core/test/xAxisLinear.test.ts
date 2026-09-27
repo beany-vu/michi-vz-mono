@@ -154,3 +154,38 @@ describe("renderXAxisLinear no-data ticks (fillPeriodTicks marking)", () => {
     expect(labels.some((l) => cls(l).includes("mv-tick-nodata"))).toBe(false);
   });
 });
+
+describe("renderXAxisLinear measure and tick dots", () => {
+  const rotatedCount = (labels: Element[]) =>
+    labels.filter((l) => (l.getAttribute("transform") ?? "").includes("rotate(-45)")).length;
+
+  it("decides the tilt with an injected measure (a chart measuring its own font)", () => {
+    // Two labels 760 px apart: "Label n" fits flat at the default 7 px per character,
+    // but not when the chart measures every label 1000 px wide.
+    const scale = scaleLinear().domain([0, 1]).range([20, 780]);
+    expect(rotatedCount(render(scale, { autoRotate: true }, 2))).toBe(0);
+    expect(rotatedCount(render(scale, { autoRotate: true, measure: () => 1000 }, 2))).toBe(2);
+  });
+
+  it("draws a dot under every tick by default; tickDots: false draws none", () => {
+    const scale = scaleLinear().domain([0, 4]).range([20, 780]);
+    const dots = (extra: Record<string, unknown>) => {
+      const svg = svgRoot();
+      renderXAxisLinear(svg, scale, {
+        width: 800,
+        height: 100,
+        margin: MARGIN,
+        xAxisDataType: "number",
+        format: (v) => String(v),
+        tickValues: [0, 1, 2, 3, 4],
+        ...extra,
+      });
+      return {
+        dots: svg.querySelectorAll("circle.mv-tick-dot").length,
+        labels: svg.querySelectorAll("text.mv-axis-label").length,
+      };
+    };
+    expect(dots({})).toEqual({ dots: 5, labels: 5 });
+    expect(dots({ tickDots: false })).toEqual({ dots: 0, labels: 5 });
+  });
+});

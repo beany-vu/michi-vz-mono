@@ -109,8 +109,13 @@ function buildNode() {
   const ex = exCache;
   const node: any = document.createElement(ex.element);
   // We own width/height/renderer for responsiveness - drop any from the example.
-  const { title: t, width: _w, height: _h, margin, renderer: _r, ...rest } = ex.props;
+  // `style` never goes through Object.assign: it would land on HTMLElement.style (the
+  // element's inline CSS), not on the chart (audit fountain #1). The fountain's
+  // deprecated `style` prop is forwarded as `fountainStyle` while the element still
+  // declares it, so the chart reports it as an ignored option instead of silence.
+  const { title: t, width: _w, height: _h, margin, renderer: _r, style, ...rest } = ex.props;
   if (t) node.chartTitle = t;
+  if (style !== undefined && "fountainStyle" in node) node.fountainStyle = style;
   Object.assign(node, rest);
   node.renderer = renderer.value;
   node.height = props.height ?? 340;

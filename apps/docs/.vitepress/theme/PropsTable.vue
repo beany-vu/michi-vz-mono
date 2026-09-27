@@ -2,7 +2,8 @@
 // Renders a MUI-style API props table from the build-time generated
 // .vitepress/data/props.json (produced by scripts/extract-props.mjs from
 // packages/core/src/types.ts). Chart-specific props first, then a collapsible
-// "Common props" block shared by every chart.
+// "Common props" block shared by every chart. A prop with a `deprecated` note (its
+// @deprecated JSDoc tag) gets a "Deprecated" badge and the note, so it never reads as live.
 import { computed } from "vue";
 import data from "../data/props.json";
 
@@ -36,7 +37,13 @@ const common = computed(() => entry.value?.props.filter((p: any) => p.common) ??
             <code v-if="p.default" class="mv-c-default">{{ p.default }}</code>
             <span v-else class="mv-dash">-</span>
           </td>
-          <td>{{ p.description || "-" }}</td>
+          <td>
+            <template v-if="p.deprecated != null">
+              <span class="mv-deprecated">Deprecated</span> {{ p.deprecated }}
+              {{ p.description }}
+            </template>
+            <template v-else>{{ p.description || "-" }}</template>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -64,7 +71,13 @@ const common = computed(() => entry.value?.props.filter((p: any) => p.common) ??
               <code v-if="p.default" class="mv-c-default">{{ p.default }}</code>
               <span v-else class="mv-dash">-</span>
             </td>
-            <td>{{ p.description || "-" }}</td>
+            <td>
+              <template v-if="p.deprecated != null">
+                <span class="mv-deprecated">Deprecated</span> {{ p.deprecated }}
+                {{ p.description }}
+              </template>
+              <template v-else>{{ p.description || "-" }}</template>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -119,6 +132,17 @@ const common = computed(() => entry.value?.props.filter((p: any) => p.common) ??
   color: var(--vp-c-danger-1, #e4572e);
   margin-left: 2px;
   font-weight: 700;
+}
+.mv-deprecated {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--vp-c-warning-1);
+  background: var(--vp-c-warning-soft);
 }
 .mv-dash {
   color: var(--vp-c-text-3);

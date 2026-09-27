@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { buildScatterContext } from "../src/context/buildScatterContext";
 import { buildBarBellContext } from "../src/context/buildBarBellContext";
 import { buildAreaContext } from "../src/context/buildAreaContext";
+import { buildFountainContext } from "../src/context/buildFountainContext";
+import { resolveFountainData } from "../src/fountainChart/data";
 import type { ScatterDataPoint } from "../src/types";
 
 // The legend keep-disabled contract (VSB 1.5.6 / ComparableBar 1.12.2): a disabled
@@ -115,5 +117,36 @@ describe("buildAreaContext legend keeps disabled keys", () => {
       ["Egypt", true],
       ["Ghana", false],
     ]);
+  });
+});
+
+describe("buildFountainContext legend keeps disabled labels", () => {
+  it("every label of the dataSet keeps its slot; the disabled one is flagged", () => {
+    const resolved = resolveFountainData(
+      [
+        { label: "Kenya", value: 10 },
+        { label: "Egypt", value: 20 },
+        { label: "Ghana", value: 5 },
+      ],
+      { disabledItems: ["Egypt"] },
+    );
+    const ctx = buildFountainContext({
+      renderer: "svg",
+      mode: resolved.mode,
+      xAxisType: "band",
+      jets: resolved.jets,
+      allLabels: resolved.allLabels,
+      labels: resolved.labels,
+      disabledItems: ["Egypt"],
+      xDomain: resolved.xDomain,
+      yAxisDomain: [0, 30],
+      colorsMapping,
+    });
+    expect(ctx.legendData?.map((i) => [i.label, i.disabled ?? false])).toEqual([
+      ["Kenya", false],
+      ["Egypt", true],
+      ["Ghana", false],
+    ]);
+    expect(ctx.jets.map((j) => j.label)).toEqual(["Kenya", "Ghana"]);
   });
 });

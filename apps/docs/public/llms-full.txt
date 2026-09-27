@@ -855,7 +855,7 @@ Chart-specific props (the shared props above also apply):
 
 ### Fountain (Jet d'Eau) (`fountain-chart`)
 
-Fountain (Jet d'Eau) chart, the michi-vz signature chart inspired by Geneva's fountain: one chart with snapshot and trend modes. Experimental.
+Fountain (Jet d'Eau) chart: a big dot for the usual value, a fountain from the lowest to the highest, and one small dot per real measurement, so you can count how often it goes past your limit. Experimental.
 
 - Element: `<michi-vz-fountain-chart>` (import `@michi-vz/wc/fountain-chart`)
 - Engine: `mountFountainChart(host, props)` from `@michi-vz/core`; props `FountainChartProps`, context `FountainChartContext`
@@ -871,21 +871,35 @@ Chart-specific props (the shared props above also apply):
 - `timeline`: `boolean | TimelinePeriodConfig` - Opt-in "play through years" (cumulative): the marks draw UP TO the active period and extend as the timeline steps; `interpolate` sweeps smoothly between years, `false` jump-cuts.
 - `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Opt-in reveal animation: wipes the marks in left to right on mount (a clip reveal; axes and titles stay put).
 - `title`: `string` - Optional chart title rendered above the plot
-- `style`: `"jet" | "plume"` (default: `"jet"`) - Silhouette style: "jet" (default) is the faithful asymmetric Jet d'Eau (vertical column + wind-blown diagonal + a triangular droplet spray curtain); "plume" is the symmetric blooming column.
-- `xAxisDataType`: `FountainXAxisType` - How the x-axis is parsed: a temporal/numeric type renders TREND mode; "band" (or omitted) renders SNAPSHOT mode
-- `yAxisDomain`: `[number, number]` - Explicit [min, max] for the value (y) axis; overrides the auto domain from value + spread
+- `xAxisDataType`: `FountainXAxisType` - How the x-axis is parsed: a temporal/numeric type renders TREND mode (jets at their dates, the x range inset by half a column on each side, one tick per period); "band" (or omitted) renders SNAPSHOT mode (one column per label)
+- `yAxisDomain`: `[number, number]` - Explicit [min, max] for the value (y) axis, used as given (not rounded).
 - `xAxisFormat`: `(d: number | string) => string` - Formats an x tick value into its display label
-- `yAxisFormat`: `(d: number | string) => string` - Formats a y tick value into its display label
-- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate
-- `tickValues`: `Array<number | Date>` - Explicit tick values, overriding the generated ones (trend mode)
-- `frothLayers`: `number` (default: `14`) - Number of graduated-opacity froth layers per jet (default 14, max 20); a per-item density overrides it
-- `bloomExponent`: `number` (default: `5`) - Exponent in the bloom easing w(h)=stemHalf+spread*(h/H)^p; larger = tighter column, sharper crown (default 5)
-- `stemFraction`: `number` (default: `0.045`) - Stem half-width at the base as a fraction of the jet's slot width (default 0.045)
-- `showDroplets`: `boolean` (default: `true`) - Draw ballistic droplet arcs above each apex (default true)
-- `showMist`: `boolean` (default: `true`) - Draw the misty falling skirt around each nozzle (default true)
-- `showTrendLine`: `boolean` (default: `true`) - Draw a connecting line through the apexes in trend mode (default true)
-- `tooltipFormatter`: `(d: FountainDataItem) => string` - Returns custom tooltip HTML for a hovered jet (sanitized before it is inserted)
-- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered/highlighted label(s) change
+- `yAxisFormat`: `(d: number | string) => string` - Formats a y value: the tick labels and the numbers in the value labels and the tooltip (default: the locale's number format)
+- `ticks`: `number` (default: `5`) - Approximate number of axis ticks to generate (default 5)
+- `tickValues`: `Array<number | Date>` - Explicit x tick values, overriding the per-period ticks (trend mode)
+- `showRange`: `boolean` (default: `true`) - Draw the fountain: the range [low, high] as a bell (default true).
+- `showSamples`: `boolean` (default: `true`) - Draw the small dots, one per sample, when items carry `samples` (default true)
+- `showValueLabels`: `boolean` (default: `true`) - Print value labels under each x label (default true): bold "usual 30", then "<low word> 22" and "<high word> 55" (see `endLabels`), "only N <sampleWord>" under 10 samples, and per reference line with a `goodSide` a bold "17 of 20" plus its `countLabel`.
+- `drift`: `boolean` (default: `false`) - The Geneva look: the top of every fountain leans downwind, the same way for every jet, so it means nothing (default false: readers found it confusing)
+- `yAxisTitle`: `string` - Title drawn rotated beside the y-axis, e.g. "minutes (higher = slower)"
+- `endLabels`: `[string, string]` - Words for the low and high ends in the value labels and tooltip (default ["lowest", "highest"]; e.g. ["best", "worst"], ["cheapest", "dearest"])
+- `referenceLines`: `FountainReferenceLine[]` - Horizontal reference lines (a promise, a limit, a budget).
+- `labels`: `FountainLabels` - UI words for localisation (English defaults "usual", "of", "only", "forecast")
+- `readingGuide`: `boolean | string` - A reading guide under the plot (default false), on one line when it fits, else wrapped between its rules (at each " · "), never inside one.
+- `sampleWord`: `string` - PLURAL noun for the samples in the value labels and tooltip, e.g. "days", "orders" (default "measurements").
+- `showTrendLine`: `boolean` - Draw a dashed grey line through the big dots, left to right (default true in trend mode with one series; false with several series, where one line would zig-zag between them, and in snapshot mode; set it true to join an ordered sequence of categories, e.g. hours)
+- `tooltipFormatter`: `(d: FountainDataItem & { value: number }, jet?: FountainTooltipJet) => string` - Returns custom tooltip HTML for a hovered or pinned jet (sanitized before it is inserted).
+- `isLoading`: `boolean` - Show the loading overlay; with nothing drawn yet the axes and marks wait for data, while a refetch keeps the stale jets on screen.
+- `isNodata`: `boolean | ((dataSet: FountainDataItem[] | null | undefined) => boolean)` - No-data override: boolean, or a predicate on the data; default = an empty dataSet.
+- `noDataLabel`: `string` - Text for the vanilla default no-data overlay (ignored when suppressed).
+- `suppressDefaultOverlay`: `boolean` - A framework wrapper sets this to render its OWN loading/no-data node instead.
+- `onHighlightItem`: `(labels: string[]) => void` - Called when the hovered, pinned or cleared label changes (only on a change: moving within one jet does not re-fire; leaving every jet fires [])
+- `style`: `"jet" | "plume"` - Deprecated: ignored since core 1.29; emits an ignored-option warning.
+- `frothLayers`: `number` - Deprecated: ignored since core 1.29; emits an ignored-option warning
+- `bloomExponent`: `number` - Deprecated: ignored since core 1.29; emits an ignored-option warning
+- `stemFraction`: `number` - Deprecated: ignored since core 1.29; emits an ignored-option warning
+- `showDroplets`: `boolean` - Deprecated: ignored since core 1.29; emits an ignored-option warning
+- `showMist`: `boolean` - Deprecated: ignored since core 1.29; emits an ignored-option warning
 
 ### Choropleth Map (`choropleth-map-chart`)
 

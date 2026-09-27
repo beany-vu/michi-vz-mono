@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { generate, SITE, REPO_URL, slugOf } from "./generate-llms.mjs";
-import { CHARTS } from "./extract-props.mjs";
+import { CHARTS, extract } from "./extract-props.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../../..");
@@ -100,4 +100,26 @@ test("structure: llmstxt.org index shape and single shared-prop reference", () =
   // Shared props are documented once, not repeated under each of the 21 charts.
   const rendererBullets = llmsFull.match(/^- `renderer`/gm) ?? [];
   assert.equal(rendererBullets.length, 1, "full: `renderer` must appear only in the shared block");
+});
+
+test("a deprecated prop carries its note, so it never reads as a live prop", () => {
+  // Fresh from types.ts, not the committed props.json: the note comes from @deprecated.
+  const full = generate(extract()).llmsFull;
+  const start = full.indexOf("(`fountain-chart`)");
+  const section = full.slice(start, full.indexOf("\n### ", start));
+  assert.ok(start >= 0 && section.length > 0, "no fountain section");
+  for (const name of [
+    "style",
+    "frothLayers",
+    "bloomExponent",
+    "stemFraction",
+    "showDroplets",
+    "showMist",
+  ]) {
+    const line = section.split("\n").find((s) => s.startsWith(`- \`${name}\`:`));
+    assert.ok(line, `no ${name} line`);
+    assert.match(line, / - Deprecated: ignored since core 1\.29; emits an ignored-option warning/);
+  }
+  const live = section.split("\n").find((s) => s.startsWith("- `showRange`:"));
+  assert.doesNotMatch(live, /Deprecated/);
 });
