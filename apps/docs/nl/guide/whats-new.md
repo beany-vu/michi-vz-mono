@@ -10,6 +10,46 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.7
+
+Pakketversies: core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·
+examples **1.2.0** · devtools **0.3.0** · insights **0.2.35**.
+
+- **Een eenvoudigere [Fontein (Jet d'Eau)](/nl/charts/fountain).** Elke straal is nu een steel
+  tot een grote stip (de gewone waarde), een klokvormige fontein van de laagste tot de hoogste
+  waarde, en kleine stippen, één per echte meting, binnen de fontein op hun precieze hoogte.
+  Geef elk item `low` en `high`, of `samples` (dan mag `value` weg: de middelste meting wordt
+  gebruikt), en `forecast: true` voor een verwachting, gestippeld getekend met een holle grote
+  stip. De grafiekpagina begint met een leeswijzer en 16 alledaagse voorbeelden: woon-werkritten,
+  levertijden, prijzen, slaap.
+- **Lijnen die voor je tellen.** `referenceLines` tekent een lijn zoals "Tijd die ik reken: 45
+  min" en zet, met `goodSide`, "17 van 20 binnen 45 min" onder elke straal. `showValueLabels`
+  toont de gewone waarde en de twee uitersten onder elke straal, in jouw woorden (`endLabels`,
+  `labels`, `sampleWord`); `yAxisTitle` zegt welke kant beter is; `readingGuide` voegt een
+  leeswijzer van één regel toe die alleen de getekende tekens noemt. `showRange` en
+  `showSamples` zetten de fontein en de kleine stippen uit, en `drift` laat de top overhellen
+  zoals de fontein van Genève in de wind (standaard uit). Hover, vastzetten en Escape werken
+  hetzelfde in svg, canvas en WebGPU, en kleuren blijven staan als je een reeks uitzet.
+- **Een fontein bijwerken vanaf 1.28.** `style`, `frothLayers`, `bloomExponent`,
+  `stemFraction`, `showDroplets`, `showMist` en `density` en `lean` op items worden genegeerd,
+  elk met een `ignored-option`-waarschuwing. In TypeScript zijn `value` en `spread` nu
+  optioneel, en `tooltipFormatter` krijgt het item met zijn berekende `value`. De fontein
+  ondersteunt nu `isLoading`, `isNodata` en `noDataLabel`, dus een lege `dataSet` toont de
+  melding dat er geen gegevens zijn. De React- en Vue-hosts van de fontein zijn standaard
+  900 × 480.
+- **`seek` zoekt eerst de periode.** `timeline().seek(2021)` komt nu op de periode 2021 uit, of
+  je datums nu getallen of strings zijn; een getal telt alleen als positie als geen periode
+  past. Code die een positie meegaf die ook een periodewaarde is, zoals `seek(2)` op maanden 1
+  tot 12, komt nu op die periode uit: gebruik de nieuwe `seekIndex(i)` om op positie te gaan,
+  zoals de ingebouwde scrubber doet.
+- **Asdatums ten westen van UTC.** Jaar- en maandlabels op assen staan niet langer een jaar of
+  maand te vroeg voor kijkers in Amerika, op elke grafiek met een datumas.
+- **[DevTools](/nl/guide/devtools) die meer zien.** `<MichiVzDevtools />` vindt nu grafieken
+  die in dezelfde React-commit mounten en webcomponenten op de pagina. Nieuw tabblad Props, een
+  Items-tabel met Highlight- en Disable-knoppen op basis van de eigen gegevens van elke grafiek, een SVG-inspector in het
+  tabblad Hit-test, en een waarschuwing als `highlightItems` of `disabledItems` meer dan 10
+  keer per seconde terugkaatsen.
+
 ## v1.12.6
 
 Pakketversies: core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·

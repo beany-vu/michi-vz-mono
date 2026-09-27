@@ -10,6 +10,43 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.7
+
+Package versions: core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·
+examples **1.2.0** · devtools **0.3.0** · insights **0.2.35**.
+
+- **A simpler [Fountain (Jet d'Eau)](/charts/fountain).** Each jet is now a stem up to a big
+  dot (the usual value), a bell-shaped fountain from the lowest to the highest value, and
+  small dots, one per real measurement, packed inside the fountain at their exact height. Give
+  each item `low` and `high`, or `samples` (then `value` may be left out: the middle sample is
+  used), and `forecast: true` for a guess, drawn dashed with a hollow big dot. The chart page
+  opens with a reading key and 16 everyday examples: commutes, delivery times, prices, sleep.
+- **Lines that count for you.** `referenceLines` draw a line such as "Time I allow: 45 min" and,
+  with `goodSide`, print "17 of 20 within 45 min" under each jet. `showValueLabels` prints the
+  usual value and the two ends under each jet, in your words (`endLabels`, `labels`,
+  `sampleWord`); `yAxisTitle` says which way is better; `readingGuide` adds a one-line key
+  that names only the marks drawn. `showRange` and `showSamples` switch the fountain and the
+  small dots off, and `drift` leans the top like the Geneva fountain in the wind (off by
+  default). Hover, pinning and Escape work the same in svg, canvas and WebGPU, and colours
+  stay put when a series is disabled.
+- **Upgrading a fountain from 1.28.** `style`, `frothLayers`, `bloomExponent`, `stemFraction`,
+  `showDroplets`, `showMist` and item `density` and `lean` are ignored, each with an
+  `ignored-option` warning. In TypeScript, `value` and `spread` are now optional, and
+  `tooltipFormatter` receives the item with its resolved `value`. The fountain now supports
+  `isLoading`, `isNodata` and `noDataLabel`, so an empty `dataSet` shows the no-data overlay.
+  The React and Vue fountain hosts default to 900 × 480.
+- **`seek` looks for the period first.** A chart's `timeline().seek(2021)` now lands on the
+  period 2021 whether your dates are numbers or strings; a number counts as a position only
+  when no period matches. Code that passed a position that is also a period value, such as
+  `seek(2)` on months 1 to 12, now lands on that period: use the new `seekIndex(i)` to go by
+  position, as the built-in scrubber does.
+- **Axis dates west of UTC.** Yearly and monthly axis labels no longer read one year or month
+  early for viewers in the Americas, on every chart with a date axis.
+- **[DevTools](/guide/devtools) that see more.** `<MichiVzDevtools />` now finds charts that
+  mount in the same React commit and web components on the page. New Props tab, an Items
+  table with Highlight and Disable controls built from each chart's own data, an SVG inspector in the Hit-test
+  tab, and a warning when `highlightItems` or `disabledItems` echo more than 10 times a second.
+
 ## v1.12.6
 
 Package versions: core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·

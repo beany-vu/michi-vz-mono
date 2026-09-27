@@ -1,5 +1,17 @@
 # @michi-vz/react
 
+## 1.12.7
+
+### Patch Changes
+
+- bcde939: Devtools: `<MichiVzDevtools />` now registers charts that mount in the same React commit (the panel showed 0 charts with the documented setup). The panel finds `<michi-vz-*>` web components on the page and gives each a stable id; Refresh records a History snapshot; Diff matches rows by key, so a re-ranked list no longer shows as a wall of changes; Scales covers radar, gauge and colour-scaled maps; the A11y colour check is ramp-aware. New Items table and Highlight/Disable controls built from each chart's context (area, VSB, fountain and others had none), and Disable keeps the series in the list. New Props tab, with prop-only changes in History and Diff and a warning when highlightItems or disabledItems echo more than 10 times a second. Hovering an Items row no longer fills History. The Hit-test tab gains an SVG inspector and says plainly when a chart does not report canvas hits. Per-chart panel state is freed when a chart is destroyed. Core: a devtools listener that throws no longer throws from `chart.update()`, timeline steps and other engine-started renders notify the panel, and `attachDevtools` takes a `hitReporting` option.
+- ac23807: FountainChart is redesigned into a simpler chart that first-time readers can read. Each jet is a stem up to a big dot (the usual value), a bell-shaped fountain spanning the real range from `low` to `high`, and small dots, one per real measurement in `samples`, packed inside the fountain at their exact heights. New data fields `low`, `high`, `samples` and `forecast` (`value` is optional when samples are given: the median is used; `spread` stays as a shorthand). New props `showRange`, `showSamples`, `showValueLabels` (usual value, the two ends and reference counts under each jet), `drift` (the Geneva lean, off by default), `referenceLines` (with "17 of 20 within 45 min" counts), `yAxisTitle`, `endLabels`, `labels`, `sampleWord` and `readingGuide`. One column hit-test drives hover, pinning and Escape in svg, canvas and webgpu; colours stay put when a series is disabled; the context, summary and a11y table report the range, sample count and reference counts. The old look options (`style`, `frothLayers`, `bloomExponent`, `stemFraction`, `showDroplets`, `showMist`, item `density` and `lean`) are ignored with an `ignored-option` warning. New warnings: `range-excludes-value`, `sample-outside-range`, `inverted-range`, `out-of-domain`, `missing-date`. The fountain now supports `isLoading`, `isNodata` and `noDataLabel`. `tooltipFormatter` receives the item with its resolved `value`. Also fixed for every chart: yearly and monthly axis labels no longer read one year or month early west of UTC. The web component and `@michi-vz/angular` forward the new props; the React and Vue fountain hosts default to the engine's 900 x 480. The examples package carries 16 everyday fountain examples and the reading-key patterns.
+- Updated dependencies [bcde939]
+- Updated dependencies [ac23807]
+- Updated dependencies [3750732]
+  - @michi-vz/devtools@0.3.0
+  - @michi-vz/core@1.29.0
+
 ## 1.12.6
 
 ### Patch Changes

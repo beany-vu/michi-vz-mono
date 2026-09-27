@@ -10,6 +10,43 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.7
+
+Phiên bản gói: core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·
+examples **1.2.0** · devtools **0.3.0** · insights **0.2.35**.
+
+- **[Đài phun (Jet d'Eau)](/vi/charts/fountain) đơn giản hơn.** Mỗi tia giờ là một thân đi lên
+  tới một chấm lớn (giá trị thường gặp), một đài phun hình chuông từ giá trị thấp nhất tới cao
+  nhất, và các chấm nhỏ, mỗi chấm là một lần đo thật, xếp bên trong đài phun đúng độ cao của
+  nó. Hãy cho mỗi mục `low` và `high`, hoặc `samples` (khi đó có thể bỏ `value`: lần đo ở giữa
+  được dùng), và `forecast: true` cho một dự báo, vẽ nét đứt với chấm lớn rỗng. Trang biểu đồ
+  mở đầu bằng một bảng cách đọc và 16 ví dụ đời thường: đi làm, thời gian giao hàng, giá cả,
+  giấc ngủ.
+- **Đường tham chiếu tự đếm giúp bạn.** `referenceLines` vẽ một đường như "Thời gian tôi dành
+  ra: 45 phút" và, với `goodSide`, ghi "17 trên 20 trong vòng 45 phút" dưới mỗi tia.
+  `showValueLabels` ghi giá trị thường gặp và hai đầu dưới mỗi tia, bằng từ ngữ của bạn
+  (`endLabels`, `labels`, `sampleWord`); `yAxisTitle` cho biết chiều nào là tốt hơn;
+  `readingGuide` thêm một dòng chú giải chỉ nêu những dấu thực sự được vẽ. `showRange` và
+  `showSamples` tắt đài phun và các chấm nhỏ, còn `drift` làm đỉnh nghiêng như đài phun Genève
+  trong gió (mặc định tắt). Di chuột, ghim và phím Escape hoạt động giống nhau trên svg, canvas
+  và WebGPU, và màu sắc giữ nguyên khi tắt một chuỗi.
+- **Nâng cấp đài phun từ 1.28.** `style`, `frothLayers`, `bloomExponent`, `stemFraction`,
+  `showDroplets`, `showMist` cùng `density` và `lean` của từng mục bị bỏ qua, mỗi cái kèm một
+  cảnh báo `ignored-option`. Trong TypeScript, `value` và `spread` giờ là tùy chọn, và
+  `tooltipFormatter` nhận mục kèm `value` đã tính. Đài phun giờ hỗ trợ `isLoading`, `isNodata`
+  và `noDataLabel`, nên một `dataSet` rỗng sẽ hiện lớp phủ không có dữ liệu. Host React và Vue
+  của đài phun mặc định là 900 × 480.
+- **`seek` tìm kỳ trước.** `timeline().seek(2021)` giờ tới kỳ 2021 dù ngày trong dữ liệu là
+  số hay chuỗi; số chỉ được hiểu là vị trí khi không có kỳ nào khớp. Code nào truyền một vị
+  trí trùng với giá trị của một kỳ, như `seek(2)` trên các tháng 1 tới 12, giờ sẽ tới kỳ đó:
+  hãy dùng `seekIndex(i)` mới để đi theo vị trí, giống thanh tua có sẵn.
+- **Ngày trên trục ở phía tây UTC.** Nhãn năm và tháng trên trục không còn sớm một năm hay một
+  tháng với người xem ở châu Mỹ, trên mọi biểu đồ có trục ngày.
+- **[DevTools](/vi/guide/devtools) thấy được nhiều hơn.** `<MichiVzDevtools />` giờ tìm thấy các
+  biểu đồ mount trong cùng một commit React và các web component trên trang. Có thêm tab Props,
+  bảng Items với nút Highlight và Disable dựng từ chính dữ liệu của từng biểu đồ, trình kiểm tra SVG trong tab
+  Hit-test, và cảnh báo khi `highlightItems` hoặc `disabledItems` dội lại hơn 10 lần mỗi giây.
+
 ## v1.12.6
 
 Phiên bản gói: core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·

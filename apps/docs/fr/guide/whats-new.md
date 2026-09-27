@@ -12,6 +12,49 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.7
+
+Versions des paquets : core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·
+examples **1.2.0** · devtools **0.3.0** · insights **0.2.35**.
+
+- **Une [Fontaine (Jet d'Eau)](/fr/charts/fountain) plus simple.** Chaque jet est désormais
+  une tige qui monte jusqu'à un gros point (la valeur habituelle), une fontaine en cloche de la
+  plus basse à la plus haute valeur, et des petits points, un par mesure réelle, rangés dans
+  la fontaine à leur hauteur exacte. Donnez à chaque élément `low` et `high`, ou `samples`
+  (`value` peut alors être omis : la mesure du milieu est utilisée), et `forecast: true` pour
+  une prévision, dessinée en pointillés avec un gros point creux. La page du graphique
+  commence par une clé de lecture et 16 exemples du quotidien : trajets, délais de livraison,
+  prix, sommeil.
+- **Des lignes qui comptent pour vous.** `referenceLines` trace une ligne comme « Temps que je
+  prévois : 45 min » et, avec `goodSide`, affiche « 17 sur 20 en moins de 45 min » sous chaque
+  jet. `showValueLabels` affiche la valeur habituelle et les deux extrémités sous chaque jet,
+  avec vos mots (`endLabels`, `labels`, `sampleWord`) ; `yAxisTitle` indique dans quel sens
+  c'est mieux ; `readingGuide` ajoute une clé d'une ligne qui ne nomme que les marques
+  dessinées. `showRange` et `showSamples` masquent la fontaine et les petits points, et
+  `drift` incline le haut comme le jet de Genève dans le vent (désactivé par défaut). Le
+  survol, l'épinglage et Échap fonctionnent de la même façon en svg, canvas et WebGPU, et les
+  couleurs ne bougent pas quand une série est désactivée.
+- **Mettre à jour une fontaine depuis 1.28.** `style`, `frothLayers`, `bloomExponent`,
+  `stemFraction`, `showDroplets`, `showMist` ainsi que `density` et `lean` des éléments sont
+  ignorés, chacun avec un avertissement `ignored-option`. En TypeScript, `value` et `spread`
+  sont désormais facultatifs, et `tooltipFormatter` reçoit l'élément avec sa `value` résolue.
+  La fontaine prend maintenant en charge `isLoading`, `isNodata` et `noDataLabel` : un
+  `dataSet` vide affiche le message « pas de données ». Les hôtes React et Vue de la fontaine
+  font 900 × 480 par défaut.
+- **`seek` cherche d'abord la période.** `timeline().seek(2021)` va maintenant sur la période
+  2021, que vos dates soient des nombres ou des chaînes ; un nombre ne compte comme une
+  position que si aucune période ne correspond. Un code qui passait une position qui est aussi
+  une valeur de période, comme `seek(2)` sur les mois 1 à 12, va maintenant sur cette période :
+  utilisez le nouveau `seekIndex(i)` pour aller par position, comme le curseur intégré.
+- **Dates des axes à l'ouest d'UTC.** Les étiquettes annuelles et mensuelles des axes ne
+  s'affichent plus avec un an ou un mois d'avance pour les lecteurs des Amériques, sur tous
+  les graphiques qui ont un axe de dates.
+- **Des [DevTools](/fr/guide/devtools) qui voient plus.** `<MichiVzDevtools />` trouve
+  maintenant les graphiques montés dans le même commit React et les web components de la page.
+  Nouvel onglet Props, un tableau Items avec les commandes Highlight et Disable construites à
+  partir des données de chaque graphique, un inspecteur SVG dans l'onglet Hit-test, et un avertissement quand
+  `highlightItems` ou `disabledItems` rebondissent plus de 10 fois par seconde.
+
 ## v1.12.6
 
 Versions des paquets : core **1.28.0** · wc **1.18.0** · angular **1.15.6** · react **1.12.6** · vue, svelte **1.8.6** ·
