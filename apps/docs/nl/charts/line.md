@@ -94,6 +94,33 @@ Een ontbrekende periode wordt weergegeven als een **gestreept** segment - stel d
 
 <ChartDemo chart="line-chart" :index="1" />
 
+## Vlakvulling en label bij het laatste punt
+
+`areaFill` vult de ruimte onder elke lijn met de eigen kleur, van `topOpacity` (standaard 0,5) boven in de grafiek naar `bottomOpacity` (standaard 0) op `baseline` (standaard 0). Het verloop beslaat het hele plotvlak, niet elke reeks apart, zodat meerdere gevulde reeksen even snel vervagen. Alle vullingen liggen onder alle lijnen, vangen nooit de muisaanwijzer en lopen ook door gaten heen (de lijn zelf blijft daar gestippeld). `lastPointLabel` zet de laatste zichtbare waarde van elke reeks boven het laatste punt, gecentreerd tenzij het label dan over een rand van de grafiek zou vallen. Het is SVG-tekst in elke renderer, dus afbeeldingsexports houden het. De standaardtekst is de waarde via de getalnotatie van de locale; geef `formatter` mee voor eenheden of verkorte getallen. Beide staan standaard uit, en een grafiek met `renderer="webgpu"` tekent als canvas zolang `areaFill` aan staat.
+
+<ChartDemo chart="line-chart" :index="2" />
+
+::: code-group
+
+```tsx [React]
+<LineChart
+  {...props}
+  yAxisDomain={[0, null]}
+  areaFill={{ topOpacity: 0.5, bottomOpacity: 0 }}
+  lastPointLabel={{ formatter: (d) => `${d.value}k` }}
+/>
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }}></div>
+```
+
+:::
+
 ## Doorlopende tijdlijn en no-data-ticks
 
 Standaard is de x-as op twee manieren eerlijk over tijd: **de eerste en laatste periode worden nooit weggelaten** (zelfs niet als ze op een "onronde" maand vallen die d3 anders zou overslaan), en overvolle labels kantelen naar -45° en worden vervolgens uitgedund tot ongeveer 5 - waarbij beide uiteinden altijd behouden blijven.

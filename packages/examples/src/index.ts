@@ -357,6 +357,40 @@ const line: Example<LineChartProps>[] = [
       ],
     },
   },
+  {
+    id: "line-area-fill",
+    title: "Library book loans, thousands (area fill + last-point label)",
+    description:
+      "One series filled with a fading gradient (areaFill) and its latest value printed above the last point (lastPointLabel). Illustrative numbers for a city library network.",
+    element: "michi-vz-line-chart",
+    props: {
+      title: "Library book loans, thousands",
+      xAxisDataType: "date_annual",
+      showDataPoints: true,
+      yAxisDomain: [0, null],
+      yTicks: 4,
+      areaFill: true,
+      lastPointLabel: true,
+      dataSet: [
+        {
+          label: "Book loans",
+          color: "#175873",
+          series: [
+            { date: 2016, value: 1390, certainty: true },
+            { date: 2017, value: 1270, certainty: true },
+            { date: 2018, value: 1150, certainty: true },
+            { date: 2019, value: 690, certainty: true },
+            { date: 2020, value: 750, certainty: true },
+            { date: 2021, value: 900, certainty: true },
+            { date: 2022, value: 915, certainty: true },
+            { date: 2023, value: 862, certainty: true },
+            { date: 2024, value: 855, certainty: true },
+            { date: 2025, value: 887, certainty: true },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 const area: Example<AreaChartProps>[] = [

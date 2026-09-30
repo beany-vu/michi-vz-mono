@@ -34,6 +34,7 @@ export const CORE_CSS = `
    nearest data point x by the engine (enableMouseLine, default ON). Theme via the
    --michi-vz-crosshair* vars - host-level CSS or per-instance through the
    enableMouseLine config prop, which sets the same vars on the line element. */
+.michi-vz .mv-last-point-label { fill: var(--michi-vz-ink, #222); font-size: 12px; font-weight: 700; font-family: var(--michi-vz-font-family, inherit); paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
 .michi-vz .mv-mouse-line { stroke: var(--michi-vz-crosshair, #a9a9a9); stroke-width: var(--michi-vz-crosshair-width, 1); stroke-dasharray: var(--michi-vz-crosshair-dash, none); }
 /* Row-label leader line (interactiveRowLabels on band-row charts): connects a
    hovered/focused y-axis label to its row's marks. Same theme vars as the crosshair. */

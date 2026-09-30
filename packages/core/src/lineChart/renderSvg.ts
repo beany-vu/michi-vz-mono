@@ -7,6 +7,7 @@
 import { svgEl } from "../dom";
 import { getShapePath, getSquareDimensions } from "../gapChart/shapes";
 import type { LineRenderModel, LineSeriesModel } from "./renderModel";
+import type { ResolvedLineAreaFill } from "./areaFill";
 import type { Margin, Shape, SinglePointLineConfig } from "../types";
 
 export interface LineSvgOptions {
@@ -15,6 +16,14 @@ export interface LineSvgOptions {
   showDataPoints: boolean;
   singlePointLine: SinglePointLineConfig | null;
   enableTransitions: boolean;
+  /** areaFill: gradient ids are `${idBase}-area-${i}`; the ramp runs from the
+   *  plot top (topY) to the baseline (baselineY) in user space. */
+  areaFill?: {
+    cfg: ResolvedLineAreaFill;
+    idBase: string;
+    topY: number;
+    baselineY: number;
+  } | null;
 }
 
 export interface LineInteractions {
@@ -152,10 +161,56 @@ export function renderLineSvg(
   ia: LineInteractions,
 ): void {
   const root = svgEl("g", { class: "line-chart-content" });
+  // Every fill goes BEFORE every line group, so no series' fill paints over
+  // another series' line.
+  if (o.areaFill) renderAreaFills(root, model, o.areaFill, o.enableTransitions);
   for (const s of model.series) {
     const g = svgEl("g", { class: "data-group", "data-label": s.label, "data-label-safe": s.safe });
     renderSeries(g, s, o, ia);
     root.appendChild(g);
   }
   parent.appendChild(root);
+}
+
+function renderAreaFills(
+  root: SVGGElement,
+  model: LineRenderModel,
+  a: NonNullable<LineSvgOptions["areaFill"]>,
+  enableTransitions: boolean,
+): void {
+  const defs = svgEl("defs");
+  const g = svgEl("g", { class: "mv-line-areas" });
+  model.series.forEach((s, i) => {
+    if (!s.areaPath) return;
+    const id = `${a.idBase}-area-${i}`;
+    const grad = svgEl("linearGradient", {
+      id,
+      gradientUnits: "userSpaceOnUse",
+      x1: 0,
+      x2: 0,
+      y1: a.topY,
+      y2: a.baselineY,
+    });
+    grad.appendChild(
+      svgEl("stop", { offset: 0, "stop-color": s.color, "stop-opacity": a.cfg.topOpacity }),
+    );
+    grad.appendChild(
+      svgEl("stop", { offset: 1, "stop-color": s.color, "stop-opacity": a.cfg.bottomOpacity }),
+    );
+    defs.appendChild(grad);
+    const path = svgEl("path", {
+      class: "line-area",
+      "data-label": s.label,
+      "data-label-safe": s.safe,
+      d: s.areaPath,
+      fill: `url(#${id})`,
+      stroke: "none",
+      "pointer-events": "none",
+    });
+    path.style.opacity = s.dimmed ? "0.05" : "1";
+    path.style.transition = enableTransitions ? "opacity 0.2s ease-in-out" : "none";
+    g.appendChild(path);
+  });
+  root.appendChild(defs);
+  root.appendChild(g);
 }

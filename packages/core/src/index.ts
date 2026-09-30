@@ -448,6 +448,8 @@ export type {
   SinglePointLineConfig,
   MouseLineConfig,
   LineZoomConfig,
+  LineAreaFillConfig,
+  LineLastPointLabelConfig,
   ProgressiveDrawConfig,
   ProgressiveDrawTipLabelConfig,
   TimelinePeriodConfig,

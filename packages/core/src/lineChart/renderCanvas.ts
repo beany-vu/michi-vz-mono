@@ -8,6 +8,7 @@ import { setupCanvas } from "../canvas/setupCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import { drawTipLabelsCanvas, type TipLabelTarget } from "./progressiveDraw";
 import type { LineRenderModel } from "./renderModel";
+import { withAlpha, type ResolvedLineAreaFill } from "./areaFill";
 import type { Shape, SinglePointLineConfig } from "../types";
 
 export interface LineCanvasOptions {
@@ -28,6 +29,8 @@ export interface LineCanvasOptions {
   tipLabels?: TipLabelTarget[];
   /** Font family for canvas tip-label text (default sans-serif). */
   fontFamily?: string;
+  /** areaFill: vertical gradient from the plot top (topY) to the baseline. */
+  areaFill?: { cfg: ResolvedLineAreaFill; topY: number; baselineY: number } | null;
 }
 
 function drawPoint(
@@ -89,6 +92,23 @@ export function drawLineCanvas(
     makeSimpleProbe("path", "line", "stroke"),
     "stroke",
   );
+
+  // Fills first, all of them, so no fill covers another series' line.
+  if (o.areaFill) {
+    const a = o.areaFill;
+    for (const s of model.series) {
+      if (!s.areaPath) continue;
+      const color = strokeColors.get(s.label) || s.color;
+      const grad = ctx.createLinearGradient(0, a.topY, 0, a.baselineY);
+      grad.addColorStop(0, withAlpha(color, a.cfg.topOpacity));
+      grad.addColorStop(1, withAlpha(color, a.cfg.bottomOpacity));
+      ctx.save();
+      ctx.globalAlpha = s.dimmed ? 0.05 : 1;
+      ctx.fillStyle = grad;
+      ctx.fill(new Path2D(s.areaPath));
+      ctx.restore();
+    }
+  }
 
   for (const s of model.series) {
     const color = strokeColors.get(s.label) || s.color;

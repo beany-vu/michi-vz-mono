@@ -216,6 +216,11 @@
         <michi-vz-line-chart id="lineCanvas"></michi-vz-line-chart>
       </div>
     </div>
+    <h2>Line areaFill + lastPointLabel (svg | canvas)</h2>
+    <div class="row">
+      <div class="card"><michi-vz-line-chart id="lineAreaSvg"></michi-vz-line-chart></div>
+      <div class="card"><michi-vz-line-chart id="lineAreaCanvas"></michi-vz-line-chart></div>
+    </div>
     <h2>Line consumer-CSS stroke contract (canvas)</h2>
     <div class="card" id="lineContract">
       <michi-vz-line-chart id="lineContractChart"></michi-vz-line-chart>
@@ -719,6 +724,19 @@
           detectGaps: true,
           showDataPoints: true,
         };
+        const lineAreaCommon = {
+          dataSet: [lineData[0]],
+          width: 460,
+          height: 280,
+          xAxisDataType: "date_annual",
+          yAxisDomain: [0, null],
+          areaFill: true,
+          lastPointLabel: { formatter: (d) => `${d.value} units` },
+        };
+        const lineAreaSvgEl = document.getElementById("lineAreaSvg");
+        const lineAreaCanvasEl = document.getElementById("lineAreaCanvas");
+        Object.assign(lineAreaSvgEl, { ...lineAreaCommon, renderer: "svg" });
+        Object.assign(lineAreaCanvasEl, { ...lineAreaCommon, renderer: "canvas" });
         const lineSvgEl = document.getElementById("lineSvg");
         const lineCanvasEl = document.getElementById("lineCanvas");
         const lineContractEl = document.getElementById("lineContractChart");
@@ -1799,6 +1817,27 @@
 
           // 7. light DOM (no shadow root) - required by the contract
           log(svgEl.shadowRoot === null, "element renders in LIGHT DOM (no shadow root)");
+
+          // ---- LineChart areaFill + lastPointLabel checks ----
+          const areaPath = lineAreaSvgEl.querySelector("path.line-area");
+          log(!!areaPath, "LINE areaFill: svg draws a path.line-area");
+          const areaGradId = /url\(#(.+)\)/.exec(areaPath?.getAttribute("fill") || "")?.[1];
+          const areaStops = areaGradId
+            ? Array.from(lineAreaSvgEl.querySelectorAll(`linearGradient[id="${areaGradId}"] stop`))
+            : [];
+          log(
+            areaStops.map((st) => st.getAttribute("stop-opacity")).join() === "0.5,0",
+            "LINE areaFill: gradient fades 0.5 -> 0",
+          );
+          log(
+            lineAreaSvgEl.querySelector("text.mv-last-point-label")?.textContent === "30 units",
+            "LINE lastPointLabel: svg labels the latest point through the formatter",
+          );
+          log(
+            lineAreaCanvasEl.querySelector("svg.mv-overlay-svg text.mv-last-point-label")
+              ?.textContent === "30 units",
+            "LINE lastPointLabel: canvas draws the label in the overlay svg",
+          );
 
           // ---- LineChart checks ----
           const lines = lineSvgEl.querySelectorAll("path.line");

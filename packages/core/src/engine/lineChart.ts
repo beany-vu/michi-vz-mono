@@ -48,6 +48,17 @@ import { createCumulativeTimeline, type CumulativePeriod } from "../animation/cu
 import { placeTooltip } from "../render/placeTooltip";
 import { drawLineCanvas } from "../lineChart/renderCanvas";
 import { drawLineWebgpu } from "../lineChart/renderWebgpu";
+import {
+  areaBaselineY,
+  resolveLineAreaFill,
+  type ResolvedLineAreaFill,
+} from "../lineChart/areaFill";
+import {
+  computeLastPointLabels,
+  renderLastPointLabels,
+  resolveLastPointLabel,
+} from "../lineChart/lastPointLabels";
+import { measureLabelWidth } from "../render/svg/measureLabelWidth";
 import { resolveRenderer } from "../webgpu/capability";
 import { buildLineContext } from "../context/buildLineContext";
 import { buildLegendData } from "../context/legend";
@@ -70,6 +81,7 @@ import type {
   LineChartProps,
   LineDataItem,
   LineZoomConfig,
+  LineLastPointLabelConfig,
   Margin,
   MountOptions,
   MouseLineConfig,
@@ -97,6 +109,8 @@ interface Resolved {
   progressiveDraw: ResolvedProgressiveDraw | null;
   timeline: ResolvedTimeline | null;
   zoom: LineZoomConfig | null;
+  areaFill: ResolvedLineAreaFill | null;
+  lastPointLabel: LineLastPointLabelConfig | null;
 }
 
 function resolveSinglePointLine(
@@ -134,10 +148,13 @@ function resolve(p: LineChartProps): Resolved {
     progressiveDraw: resolveProgressiveDraw(p.progressiveDraw),
     timeline: resolveTimeline(p.timeline),
     zoom: resolveZoom(p.zoom),
+    areaFill: resolveLineAreaFill(p.areaFill),
+    lastPointLabel: resolveLastPointLabel(p.lastPointLabel),
   };
 }
 
 let zoomClipSeq = 0;
+let lineMountSeq = 0;
 
 export function mountLineChart(
   host: HTMLElement,
@@ -158,6 +175,10 @@ export function mountLineChart(
   // svg (paints above it under z-index:auto), so the mouse line re-homes into
   // this overlay svg to stack above the marks while gridlines/axes stay below.
   let mouseOverlaySvg: SVGSVGElement | null = null;
+  // Painted modes: lastPointLabel text lives here, above the canvas layer.
+  let labelOverlaySvg: SVGSVGElement | null = null;
+  // Unique per mounted chart, so two charts on a page never share gradient ids.
+  const areaIdBase = `mv-line-${++lineMountSeq}-${Math.random().toString(36).slice(2, 8)}`;
   let mouseLine: SVGLineElement | null = null;
   const chrome = createChromeRefs();
 
@@ -575,6 +596,8 @@ export function mountLineChart(
     // The webgpu path has no clip support, so a zoomed chart would paint marks
     // over the axes; canvas is visually identical and clips correctly.
     if (zoomed && r.renderer === "webgpu") r = { ...r, renderer: "canvas" };
+    // Same for areaFill: the webgpu path has no gradient fills.
+    if (r.areaFill && r.renderer === "webgpu") r = { ...r, renderer: "canvas" };
     zoomResetBtn.textContent = r.zoom?.resetLabel ?? "Reset zoom";
     zoomResetBtn.style.display = zoomed && r.zoom?.resetButton !== false ? "" : "none";
     // A value in axis units (epoch ms on date axes) inside the zoomed domain?
@@ -659,11 +682,18 @@ export function mountLineChart(
         })
       : processedDataSet;
 
+    const areaBaseY = r.areaFill ? areaBaselineY(scales.yScale, r.areaFill.baseline) : null;
+    const areaTopY = r.margin.top;
     const model = buildLineRenderModel(drawDataSet, scales, colors, {
       xAxisDataType,
       curve: props.curve,
       highlightItems,
+      areaBaselineY: areaBaseY,
     });
+    const canvasAreaFill =
+      r.areaFill && areaBaseY !== null
+        ? { cfg: r.areaFill, topY: areaTopY, baselineY: areaBaseY }
+        : null;
 
     const xFormat = props.xAxisFormat ?? defaultXAxisFormatter(xAxisDataType, props.locale);
     const yFormat = props.yAxisFormat ?? defaultNumberFormatter(props.locale);
@@ -786,6 +816,7 @@ export function mountLineChart(
           showDataPoints: r.showDataPoints,
           singlePointLine: r.singlePointLine,
           enableTransitions: r.enableTransitions,
+          areaFill: canvasAreaFill ? { ...canvasAreaFill, idBase: areaIdBase } : null,
         },
         {
           // With sharedTooltip the host-level column tooltip owns hover + pin;
@@ -906,6 +937,7 @@ export function mountLineChart(
           showDataPoints: r.showDataPoints,
           singlePointLine: r.singlePointLine,
           clipX: zoomClipX,
+          areaFill: canvasAreaFill,
         });
       }
     } else if (r.renderer === "canvas" && !skipScaffold) {
@@ -918,10 +950,56 @@ export function mountLineChart(
         showDataPoints: r.showDataPoints,
         singlePointLine: r.singlePointLine,
         clipX: zoomClipX,
+        areaFill: canvasAreaFill,
       });
     } else {
       removeCanvas();
       removeWebgpuCanvas();
+    }
+
+    // ----- Last-point labels (SVG text in every renderer mode) -----
+    // Placed from hitData: undecimated, disabled series already dropped, and
+    // (while zoomed) only points inside the zoomed domain.
+    if (r.lastPointLabel && !skipScaffold) {
+      const cfg = r.lastPointLabel;
+      const numFmt = defaultNumberFormatter(props.locale);
+      const itemByLabel = new Map(processedDataSet.map((item) => [item.label, item]));
+      const fontScale = (cfg.fontSize ?? 12) / 12;
+      const labels = computeLastPointLabels(hitData, {
+        text: (label, d) => {
+          const item = itemByLabel.get(label);
+          return cfg.formatter && item ? cfg.formatter(d, item) : numFmt(d.value);
+        },
+        measure: (t) => measureLabelWidth(t) * fontScale,
+        bounds: { left: 0, right: r.width },
+        gap: 8,
+      });
+      const isDimmed = (label: string) =>
+        highlightItems.length > 0 && !highlightItems.includes(label);
+      if (isPainted(r.renderer)) {
+        if (!labelOverlaySvg) {
+          labelOverlaySvg = svgEl("svg", {
+            class: "mv-overlay-svg mv-line-labels",
+          }) as SVGSVGElement;
+          labelOverlaySvg.style.position = "absolute";
+          labelOverlaySvg.style.top = getComputedStyle(host).paddingTop;
+          labelOverlaySvg.style.left = getComputedStyle(host).paddingLeft;
+          labelOverlaySvg.style.pointerEvents = "none";
+        }
+        labelOverlaySvg.setAttribute("width", String(r.width));
+        labelOverlaySvg.setAttribute("height", String(r.height));
+        // insertBefore MOVES the node: above a canvas recreated this render.
+        host.insertBefore(labelOverlaySvg, tooltip);
+        clear(labelOverlaySvg);
+        renderLastPointLabels(labelOverlaySvg, labels, cfg, isDimmed);
+      } else {
+        labelOverlaySvg?.remove();
+        labelOverlaySvg = null;
+        renderLastPointLabels(svg, labels, cfg, isDimmed);
+      }
+    } else if (labelOverlaySvg) {
+      labelOverlaySvg.remove();
+      labelOverlaySvg = null;
     }
 
     // Painted modes: mouse line lives in its own overlay svg, re-inserted before
@@ -982,6 +1060,7 @@ export function mountLineChart(
             singlePointLine: r.singlePointLine,
             revealX: x,
             clipX: zoomClipX,
+            areaFill: canvasAreaFill,
             tipLabels: tipCfg ? computeTipLabels(hitData, colorOf, x, tipCfg) : undefined,
             fontFamily,
           });
@@ -1053,6 +1132,7 @@ export function mountLineChart(
             singlePointLine: r.singlePointLine,
             revealX: x,
             clipX: zoomClipX,
+            areaFill: canvasAreaFill,
             tipLabels: tlTip ? computeTipLabels(hitData, colorOfTl, x, tlTip) : undefined,
             fontFamily,
           });
@@ -1188,6 +1268,7 @@ export function mountLineChart(
       canvas = null;
       webgpuCanvas = null;
       mouseOverlaySvg = null;
+      labelOverlaySvg = null;
       clear(host);
       host.classList.remove("michi-vz", "michi-vz-line-chart");
     },

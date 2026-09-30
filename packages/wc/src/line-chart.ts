@@ -17,6 +17,8 @@ import type {
   SinglePointLineConfig,
   MouseLineConfig,
   LineZoomConfig,
+  LineAreaFillConfig,
+  LineLastPointLabelConfig,
   ProgressiveDrawConfig,
   TimelinePeriodConfig,
   TimelineController,
@@ -71,6 +73,8 @@ export class LineChartElement extends LitElement {
     progressiveDraw: { attribute: false },
     timeline: { attribute: false },
     zoom: { attribute: false },
+    areaFill: { attribute: false },
+    lastPointLabel: { attribute: false },
     svgChildren: { type: String, attribute: "svg-children" },
   };
 
@@ -125,6 +129,8 @@ export class LineChartElement extends LitElement {
   progressiveDraw?: boolean | ProgressiveDrawConfig;
   timeline?: boolean | TimelinePeriodConfig;
   zoom?: boolean | LineZoomConfig;
+  areaFill?: boolean | LineAreaFillConfig;
+  lastPointLabel?: boolean | LineLastPointLabelConfig;
   svgChildren?: string;
 
   private chart?: ChartInstance<LineChartProps>;
@@ -187,6 +193,8 @@ export class LineChartElement extends LitElement {
       progressiveDraw: this.progressiveDraw,
       timeline: this.timeline,
       zoom: this.zoom,
+      areaFill: this.areaFill,
+      lastPointLabel: this.lastPointLabel,
       svgChildren: this.svgChildren,
       onHighlightItem: (labels) => this.emit("michi-vz:highlight", labels),
       onColorMappingGenerated: (m) => this.emit("michi-vz:colormapping", m),

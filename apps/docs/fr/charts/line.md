@@ -94,6 +94,33 @@ Une période manquante s'affiche sous forme de segment **en pointillés** - déf
 
 <ChartDemo chart="line-chart" :index="1" />
 
+## Remplissage de zone et étiquette du dernier point
+
+`areaFill` remplit l'espace sous chaque ligne avec sa propre couleur, en passant de `topOpacity` (0,5 par défaut) en haut du graphique à `bottomOpacity` (0 par défaut) au niveau de `baseline` (0 par défaut). Le dégradé couvre toute la zone de tracé, pas chaque série, donc plusieurs séries remplies s'estompent au même rythme. Tous les remplissages passent sous toutes les lignes, ne captent jamais le pointeur et couvrent aussi les lacunes (la ligne, elle, reste en pointillés). `lastPointLabel` affiche la dernière valeur visible de chaque série au-dessus de son dernier point, centrée sauf si elle dépasserait un bord du graphique. C'est du texte SVG dans tous les moteurs de rendu, donc les exports d'image le conservent. Le texte par défaut est la valeur passée par le formateur de nombres de la locale ; fournissez `formatter` pour des unités ou des nombres abrégés. Les deux sont désactivés par défaut, et un graphique `renderer="webgpu"` se dessine en canvas tant que `areaFill` est actif.
+
+<ChartDemo chart="line-chart" :index="2" />
+
+::: code-group
+
+```tsx [React]
+<LineChart
+  {...props}
+  yAxisDomain={[0, null]}
+  areaFill={{ topOpacity: 0.5, bottomOpacity: 0 }}
+  lastPointLabel={{ formatter: (d) => `${d.value}k` }}
+/>
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }}></div>
+```
+
+:::
+
 ## Chronologie continue et graduations sans données
 
 Par défaut, l'axe des x reste fidèle au temps de deux manières : **la première et la dernière période ne sont jamais supprimées** (même lorsqu'elles tombent sur un mois « non rond » que d3 aurait sinon ignoré), et les libellés trop nombreux s'inclinent à -45° puis s'éclaircissent jusqu'à environ 5 - en conservant toujours les deux extrémités.

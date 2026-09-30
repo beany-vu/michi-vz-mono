@@ -94,6 +94,33 @@ A missing period renders as a **dashed** segment - set it per point with `certai
 
 <ChartDemo chart="line-chart" :index="1" />
 
+## Area fill and last-point label
+
+`areaFill` fills the space under each line with its own colour, fading from `topOpacity` (default 0.5) at the top of the plot to `bottomOpacity` (default 0) at `baseline` (default 0). The gradient spans the plot, not each series, so several filled series fade at the same rate. All fills sit under all lines, never take the pointer, and cover gaps too (the line itself still dashes them). `lastPointLabel` prints each series' latest visible value above its last point, centred unless that would cross a chart edge. It is SVG text in every renderer, so image exports keep it. The default text is the value through the locale number formatter; pass `formatter` for units or short numbers. Both are off by default, and a `renderer="webgpu"` chart draws as canvas while `areaFill` is on.
+
+<ChartDemo chart="line-chart" :index="2" />
+
+::: code-group
+
+```tsx [React]
+<LineChart
+  {...props}
+  yAxisDomain={[0, null]}
+  areaFill={{ topOpacity: 0.5, bottomOpacity: 0 }}
+  lastPointLabel={{ formatter: (d) => `${d.value}k` }}
+/>
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }}></div>
+```
+
+:::
+
 ## Continuous timeline & no-data ticks
 
 By default the x-axis is honest about time in two ways: **the first and last period are never dropped** (even when they land on an "unround" month d3 would otherwise skip), and crowded labels tilt to -45° then thin to ~5 - always keeping both ends.

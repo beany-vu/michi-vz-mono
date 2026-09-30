@@ -330,6 +330,32 @@ export interface SinglePointLineConfig {
   strokeDasharray?: string;
 }
 
+/** Gradient fill under each line (LineChart `areaFill`). */
+export interface LineAreaFillConfig {
+  /** Fill opacity at the TOP of the plot (default 0.5). The gradient spans the
+   * plot box, not each series' own extent, so series of different heights fade
+   * at the same rate and read as one family. */
+  topOpacity?: number;
+  /** Fill opacity at the baseline (default 0 = fades out completely). */
+  bottomOpacity?: number;
+  /** Value the area is filled down to (default 0). A baseline outside the
+   * y-domain (or 0 on a log axis) fills to the nearest plot edge. */
+  baseline?: number;
+}
+
+/** Value label on each series' latest point (LineChart `lastPointLabel`). */
+export interface LineLastPointLabelConfig {
+  /** Label text for the latest point; return "" to skip a series. Default: the
+   * value through the locale number formatter (NOT yAxisFormat, which usually
+   * abbreviates). */
+  formatter?: (d: DataPoint, item: LineDataItem) => string;
+  /** Text colour (default the --michi-vz-ink CSS var). Series colours are not
+   * used by default: a label in the line colour over its own fill is hard to read. */
+  color?: string;
+  /** Font size in px (default 12). */
+  fontSize?: number;
+}
+
 /** Drag-to-zoom on the x-axis (LineChart `zoom`). */
 export interface LineZoomConfig {
   /** Zoomable axis; only "x" is supported for now (default "x"). */
@@ -459,6 +485,16 @@ export interface LineChartProps {
   onZoomChange?: (domain: [number, number] | null) => void;
   /** true / config draws a horizontal guide line for single-point series. */
   singlePointLine?: boolean | SinglePointLineConfig;
+  /** Fill the area under each line with a vertical gradient in the series'
+   * colour (true, or a config for the opacities/baseline). The fill spans the
+   * whole series, gaps included, and never takes the pointer. Drawn in svg and
+   * canvas; a "webgpu" request renders as canvas while it is on. Off by default. */
+  areaFill?: boolean | LineAreaFillConfig;
+  /** Label each series' latest visible point with its value (true, or a config
+   * with a formatter/colour/font size). Centred above the point and kept
+   * inside the chart width. Disabled series get none; dimmed series dim it.
+   * Rendered as SVG text in every renderer mode, so PNG/SVG export includes it. Off by default. */
+  lastPointLabel?: boolean | LineLastPointLabelConfig;
   /** Font family for axis/title/tooltip text (SVG + canvas). Sets the --michi-vz-font-family CSS var so both renderers resolve it. */
   fontFamily?: string;
   /** Labels to emphasise; all other marks dim */

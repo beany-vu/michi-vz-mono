@@ -42,6 +42,8 @@ export type {
   XaxisDataType,
   MouseLineConfig,
   SinglePointLineConfig,
+  LineAreaFillConfig,
+  LineLastPointLabelConfig,
   SymbolMapDataItem,
   SymbolMapMarker,
   ChartContext,

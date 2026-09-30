@@ -94,6 +94,33 @@ Một giai đoạn thiếu dữ liệu được vẽ thành đoạn **nét đứ
 
 <ChartDemo chart="line-chart" :index="1" />
 
+## Tô vùng và nhãn điểm cuối
+
+`areaFill` tô vùng bên dưới mỗi đường bằng chính màu của nó, nhạt dần từ `topOpacity` (mặc định 0,5) ở đỉnh vùng vẽ xuống `bottomOpacity` (mặc định 0) tại `baseline` (mặc định 0). Dải chuyển màu trải trên cả vùng vẽ chứ không theo từng chuỗi, nên nhiều chuỗi được tô sẽ nhạt đi cùng một nhịp. Mọi vùng tô đều nằm dưới mọi đường, không bao giờ nhận con trỏ và phủ cả những đoạn thiếu dữ liệu (bản thân đường vẫn nét đứt ở đó). `lastPointLabel` ghi giá trị hiển thị mới nhất của mỗi chuỗi phía trên điểm cuối, căn giữa trừ khi làm vậy sẽ vượt mép biểu đồ. Nhãn là văn bản SVG ở mọi trình kết xuất, nên ảnh xuất ra vẫn giữ nhãn. Văn bản mặc định là giá trị qua bộ định dạng số của ngôn ngữ; truyền `formatter` để thêm đơn vị hoặc rút gọn số. Cả hai đều tắt theo mặc định, và biểu đồ `renderer="webgpu"` sẽ vẽ bằng canvas khi `areaFill` đang bật.
+
+<ChartDemo chart="line-chart" :index="2" />
+
+::: code-group
+
+```tsx [React]
+<LineChart
+  {...props}
+  yAxisDomain={[0, null]}
+  areaFill={{ topOpacity: 0.5, bottomOpacity: 0 }}
+  lastPointLabel={{ formatter: (d) => `${d.value}k` }}
+/>
+```
+
+```vue [Vue]
+<LineChart :options="{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }" />
+```
+
+```svelte [Svelte]
+<div use:lineChart={{ ...props, areaFill: true, lastPointLabel: { formatter: (d) => `${d.value}k` } }}></div>
+```
+
+:::
+
 ## Trục thời gian liên tục & các mốc không có dữ liệu
 
 Mặc định, trục x trung thực với thời gian theo hai cách: **kỳ đầu và kỳ cuối không bao giờ bị bỏ** (kể cả khi chúng rơi vào một tháng "lẻ" mà d3 thường sẽ bỏ qua), và các nhãn dày đặc nghiêng -45° rồi thưa dần còn khoảng 5 nhãn - luôn giữ lại cả hai đầu.

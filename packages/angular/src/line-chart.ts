@@ -56,4 +56,6 @@ export function applyLineChartProps(el: LineChartElement, props: LineChartProps)
   if (props.svgChildren !== undefined) el.svgChildren = props.svgChildren;
   if (props.timeline !== undefined) el.timeline = props.timeline;
   if (props.zoom !== undefined) el.zoom = props.zoom;
+  if (props.areaFill !== undefined) el.areaFill = props.areaFill;
+  if (props.lastPointLabel !== undefined) el.lastPointLabel = props.lastPointLabel;
 }

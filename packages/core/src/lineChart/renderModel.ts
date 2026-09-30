@@ -1,6 +1,7 @@
 // Renderer-agnostic LineChart model: one structure consumed by BOTH the SVG and
 // canvas renderers (so they can't drift) and the source for buildLineContext.
 import { buildSeriesRunPaths, getRuns, projectX } from "./geometry";
+import { buildAreaPath } from "./areaFill";
 import { sanitizeForClassName } from "../math/sanitize";
 import type { LineColorResolver } from "./colors";
 import type { LineScales } from "./scales";
@@ -32,6 +33,8 @@ export interface LineSeriesModel {
   singlePointY: number | null;
   /** dimmed by highlightItems (something else is highlighted). */
   dimmed: boolean;
+  /** Closed fill path down to the baseline (areaFill), "" when off or < 2 points. */
+  areaPath: string;
 }
 
 export interface LineRenderModel {
@@ -42,6 +45,8 @@ export interface BuildLineModelOptions {
   xAxisDataType: XaxisDataType;
   curve?: CurveType;
   highlightItems: string[];
+  /** Pixel y of the areaFill baseline; null/undefined = no area paths. */
+  areaBaselineY?: number | null;
 }
 
 export function buildLineRenderModel(
@@ -91,6 +96,17 @@ export function buildLineRenderModel(
       points,
       singlePointY,
       dimmed: anyHighlight && !highlightSet.has(item.label),
+      areaPath:
+        o.areaBaselineY == null
+          ? ""
+          : buildAreaPath(
+              item.series,
+              scales.xScale,
+              scales.yScale,
+              o.xAxisDataType,
+              item.curve ?? o.curve,
+              o.areaBaselineY,
+            ),
     };
   });
 

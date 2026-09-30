@@ -710,6 +710,22 @@
           "common": false
         },
         {
+          "name": "areaFill",
+          "type": "boolean | LineAreaFillConfig",
+          "optional": true,
+          "description": "Fill the area under each line with a vertical gradient in the series' colour (true, or a config for the opacities/baseline). The fill spans the whole series, gaps included, and never takes the pointer. Drawn in svg and canvas; a \"webgpu\" request renders as canvas while it is on. Off by default.",
+          "default": "",
+          "common": false
+        },
+        {
+          "name": "lastPointLabel",
+          "type": "boolean | LineLastPointLabelConfig",
+          "optional": true,
+          "description": "Label each series' latest visible point with its value (true, or a config with a formatter/colour/font size). Centred above the point and kept inside the chart width. Disabled series get none; dimmed series dim it. Rendered as SVG text in every renderer mode, so PNG/SVG export includes it. Off by default.",
+          "default": "",
+          "common": false
+        },
+        {
           "name": "fontFamily",
           "type": "string",
           "optional": true,
