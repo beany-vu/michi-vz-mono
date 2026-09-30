@@ -12,6 +12,20 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.8
+
+Versions des paquets : core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·
+examples **1.3.0** · devtools **0.3.1** · insights **0.2.36**.
+
+- **Un remplissage et une dernière valeur pour le [Graphique en courbes](/fr/charts/line).**
+  `areaFill` remplit la zone sous chaque ligne avec sa propre couleur, en s'estompant du haut
+  du graphique jusqu'à la ligne de base (de 0,5 à 0 par défaut ; `topOpacity`,
+  `bottomOpacity` et `baseline` le modifient). `lastPointLabel` affiche la dernière valeur de
+  chaque série au-dessus de son dernier point et la garde dans le graphique ; passez un
+  `formatter` pour des unités ou des nombres abrégés comme « 887k USD ». Les deux sont
+  désactivés par défaut, fonctionnent en svg et en canvas, et restent dans les exports
+  d'image. Un graphique `renderer="webgpu"` se dessine en canvas tant que `areaFill` est actif.
+
 ## v1.12.7
 
 Versions des paquets : core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·

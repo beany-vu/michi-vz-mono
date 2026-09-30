@@ -10,6 +10,19 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.8
+
+Package versions: core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·
+examples **1.3.0** · devtools **0.3.1** · insights **0.2.36**.
+
+- **A fill and a last value for [Line Chart](/charts/line).** `areaFill` fills the area under
+  each line with its own colour, fading from the top of the plot down to the baseline (0.5 to 0
+  by default; `topOpacity`, `bottomOpacity` and `baseline` change it). `lastPointLabel` prints
+  each series' latest value above its last point and keeps it inside the chart; pass a
+  `formatter` for units or short numbers such as "887k USD". Both are off by default, work in
+  svg and canvas, and stay in image exports. A `renderer="webgpu"` chart draws as canvas while
+  `areaFill` is on.
+
 ## v1.12.7
 
 Package versions: core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·

@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.30.0
+
+### Minor Changes
+
+- LineChart gains `areaFill` and `lastPointLabel`. `areaFill: true | { topOpacity, bottomOpacity, baseline }` fills the area under each line with a vertical gradient in the series colour (0.5 at the top of the plot fading to 0 at a 0 baseline by default), drawn under every line in svg and canvas; a `renderer="webgpu"` chart draws as canvas while it is on. `lastPointLabel: true | { formatter, color, fontSize }` prints each series' latest visible value above its last point, kept inside the chart width, as SVG text in every renderer (an `svg.mv-overlay-svg` above the canvas in painted modes, so exports keep it). Both are off by default. The WC element and the Angular applicator forward both props; `LineAreaFillConfig` and `LineLastPointLabelConfig` are exported. Dev tooling: the `brace-expansion` overrides move to 1.1.21 / 2.1.7 / 5.0.12 for three new advisories.
+
 ## 1.29.0
 
 ### Minor Changes

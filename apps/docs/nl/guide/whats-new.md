@@ -10,6 +10,20 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.8
+
+Pakketversies: core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·
+examples **1.3.0** · devtools **0.3.1** · insights **0.2.36**.
+
+- **Een vulling en een laatste waarde voor het [Lijndiagram](/nl/charts/line).** `areaFill` vult
+  het vlak onder elke lijn met de eigen kleur, vervagend van boven in de grafiek naar de
+  basislijn (standaard van 0,5 naar 0; `topOpacity`, `bottomOpacity` en `baseline` passen dat
+  aan). `lastPointLabel` zet de laatste waarde van elke reeks boven het laatste punt en houdt
+  die binnen de grafiek; geef een `formatter` mee voor eenheden of verkorte getallen zoals
+  "887k USD". Beide staan standaard uit, werken in svg en canvas en blijven in
+  afbeeldingsexports. Een grafiek met `renderer="webgpu"` tekent als canvas zolang `areaFill`
+  aan staat.
+
 ## v1.12.7
 
 Pakketversies: core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·

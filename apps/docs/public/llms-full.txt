@@ -4,7 +4,7 @@
 
 > michi-vz is a framework-agnostic charting library: one plain TypeScript engine, native web components, and thin React, Vue, Svelte, and Angular wrappers, with a structured, renderer-agnostic ChartContext on every chart. This file is the complete reference for AI assistants: use it to answer questions about michi-vz, generate correct integration code, and explain chart output to people. A compact index lives at https://michi-vz.netlify.app/llms.txt.
 
-Package versions this file was generated against: @michi-vz/core 1.29.0, wc 1.19.0, react 1.12.7, vue 1.8.7, svelte 1.8.7, angular 1.16.0, insights 0.2.35, devtools 0.3.0.
+Package versions this file was generated against: @michi-vz/core 1.30.0, wc 1.20.0, react 1.12.8, vue 1.8.8, svelte 1.8.8, angular 1.17.0, insights 0.2.36, devtools 0.3.1.
 
 ## What michi-vz is
 
@@ -19,14 +19,14 @@ AI features live in a separate opt-in package, `@michi-vz/insights`, and are loc
 
 ## Packages
 
-- `@michi-vz/core` 1.29.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
-- `@michi-vz/wc` 1.19.0 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
-- `@michi-vz/react` 1.12.7 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
-- `@michi-vz/vue` 1.8.7 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
-- `@michi-vz/svelte` 1.8.7 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
-- `@michi-vz/angular` 1.16.0 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
-- `@michi-vz/insights` 0.2.35 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
-- `@michi-vz/devtools` 0.3.0 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
+- `@michi-vz/core` 1.30.0 - the plain TypeScript engine: mount functions, ChartContext builders, export helpers, and the `./styles.css` sub-path export. Peer dependencies: none; d3 and DOMPurify install automatically as regular dependencies.
+- `@michi-vz/wc` 1.20.0 - Lit web components in light DOM, one element per chart; the barrel auto-registers everything, per-element sub-paths (`@michi-vz/wc/line-chart`) register one. Peer dependencies: none.
+- `@michi-vz/react` 1.12.8 - React components plus `MichiVzProvider`/`useChartContext`; refs expose `getContext()` and `getElement()`. Peer dependencies: react and react-dom >= 18.
+- `@michi-vz/vue` 1.8.8 - Vue 3 components taking the engine props as a single `:options` prop. Peer dependencies: vue >= 3.
+- `@michi-vz/svelte` 1.8.8 - Svelte actions (`use:lineChart={props}`). Peer dependencies: svelte >= 4.
+- `@michi-vz/angular` 1.17.0 - typed helpers over the web components (`applyLineChartProps`, `bindChart`). Peer dependencies: @angular/core >= 16.
+- `@michi-vz/insights` 0.2.36 - the opt-in, local-first insights layer; tree-shakeable sub-paths (see the Insights section). Peer dependencies: none.
+- `@michi-vz/devtools` 0.3.1 - in-page chart inspector, with an inert `/production` entry for production builds. Peer dependencies: none.
 
 The wrappers pull in `@michi-vz/core` automatically; installing one package per stack is enough.
 
@@ -258,6 +258,8 @@ Chart-specific props (the shared props above also apply):
 - `zoom`: `boolean | LineZoomConfig` - Opt-in x-axis drag-to-zoom: drag a horizontal range inside the plot to zoom into it (a selection rectangle previews the range).
 - `onZoomChange`: `(domain: [number, number] | null) => void` - Called when the zoom domain changes: the zoomed [min, max] in axis units (epoch ms on date axes), or null when reset to the full domain.
 - `singlePointLine`: `boolean | SinglePointLineConfig` - true / config draws a horizontal guide line for single-point series.
+- `areaFill`: `boolean | LineAreaFillConfig` - Fill the area under each line with a vertical gradient in the series' colour (true, or a config for the opacities/baseline).
+- `lastPointLabel`: `boolean | LineLastPointLabelConfig` - Label each series' latest visible point with its value (true, or a config with a formatter/colour/font size).
 - `fontFamily`: `string` - Font family for axis/title/tooltip text (SVG + canvas).
 - `filter`: `Filter` - Top-N / sort filter applied to the data before rendering
 - `progressiveDraw`: `boolean | ProgressiveDrawConfig` - Animate each line drawing itself left to right on mount (progressive reveal).

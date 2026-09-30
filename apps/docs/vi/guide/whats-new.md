@@ -10,6 +10,19 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.12.8
+
+Phiên bản gói: core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·
+examples **1.3.0** · devtools **0.3.1** · insights **0.2.36**.
+
+- **Tô vùng và giá trị cuối cho [Biểu đồ đường](/vi/charts/line).** `areaFill` tô vùng dưới
+  mỗi đường bằng chính màu của nó, nhạt dần từ đỉnh vùng vẽ xuống đường nền (mặc định từ 0,5
+  về 0; đổi bằng `topOpacity`, `bottomOpacity` và `baseline`). `lastPointLabel` ghi giá trị mới
+  nhất của mỗi chuỗi phía trên điểm cuối và giữ nhãn trong biểu đồ; truyền `formatter` để thêm
+  đơn vị hoặc rút gọn số như "887k USD". Cả hai đều tắt theo mặc định, chạy được với svg và
+  canvas, và vẫn có trong ảnh xuất ra. Biểu đồ `renderer="webgpu"` sẽ vẽ bằng canvas khi
+  `areaFill` đang bật.
+
 ## v1.12.7
 
 Phiên bản gói: core **1.29.0** · wc **1.19.0** · angular **1.16.0** · react **1.12.7** · vue, svelte **1.8.7** ·
