@@ -7,6 +7,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import {
   defaultXAxisFormatter,
@@ -108,6 +109,7 @@ export function mountAreaChart(
   opts?: MountOptions<AreaChartProps>,
 ): ChartInstance<AreaChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-area-chart");
 
   const svg = svgEl("svg");

@@ -1,6 +1,6 @@
 // Per-label colour resolution for RangeChart (colorsMapping > item.color >
 // palette; transparent under skipColorMappingDispatch).
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { RangeDataItem } from "../types";
 
 export interface RangeColorResolver {
@@ -14,7 +14,7 @@ export function buildRangeColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): RangeColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
   for (const it of items) {

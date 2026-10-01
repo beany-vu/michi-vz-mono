@@ -1,5 +1,5 @@
 // Per-key colour resolution for RibbonChart.
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 
 export interface RibbonColorResolver {
   getColor: (key: string) => string;
@@ -12,7 +12,7 @@ export function buildRibbonColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): RibbonColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
   for (const key of keys) {

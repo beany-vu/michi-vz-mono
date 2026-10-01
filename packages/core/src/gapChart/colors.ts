@@ -1,5 +1,5 @@
 // Ported from michi-vz src/components/hooks/gapChart/useGapChartColors.ts.
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { ShapeMapping } from "../types";
 
 export interface GapColorResolver {
@@ -16,7 +16,7 @@ export function buildGapColors(
   shapeColorsMapping?: ShapeMapping,
   skipColorMappingDispatch = false,
 ): GapColorResolver {
-  const colorPalette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const colorPalette = colors.length > 0 ? colors : defaultPalette();
 
   // Generate colours for all labels upfront, caching by insertion order.
   const generatedColorsMapping: Record<string, string> = { ...colorsMapping };

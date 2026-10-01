@@ -1519,6 +1519,29 @@ const treemap: Example<TreemapChartProps>[] = [
       ],
     },
   },
+  // [2] Rounded tiles: tileRadius (default 1) rounds every tile the same in svg, canvas and webgpu.
+  {
+    id: "treemap-rounded-tiles",
+    title: "Weekly household spending - rounded tiles",
+    description:
+      "Illustrative weekly spending of one household, one tile per category. tileRadius: 6 rounds every tile; set it app-wide with setMichiVzDefaults({ tileRadius }).",
+    element: "michi-vz-treemap-chart",
+    props: {
+      title: "Weekly household spending (illustrative)",
+      width: 900,
+      height: 420,
+      tileRadius: 6,
+      layout: "auto",
+      dataSet: [
+        { label: "Housing", value: 310, color: TM_BLUE },
+        { label: "Groceries", value: 140, color: TM_TEAL },
+        { label: "Transport", value: 95, color: TM_GOLD },
+        { label: "Energy", value: 60, color: TM_RED },
+        { label: "Leisure", value: 55, color: TM_BLUE2 },
+        { label: "Clothing", value: 35, color: TM_CORAL },
+      ],
+    },
+  },
 ];
 
 const gauge: Example<GaugeChartProps>[] = [

@@ -4,6 +4,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { renderTitle, renderYAxisBand } from "../render/svg";
 import { processDualBarData } from "../dualBar/data";
@@ -116,6 +117,7 @@ export function mountDualHorizontalBarChart(
   opts?: MountOptions<DualBarChartProps>,
 ): ChartInstance<DualBarChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-dual-bar-chart");
 
   const svg = svgEl("svg");

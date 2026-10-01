@@ -1,3 +1,4 @@
+import { getMichiVzDefaults } from "./defaults";
 // Default categorical palette (moved from michi-vz src/components/shared/colors.ts).
 export const DEFAULT_COLORS = [
   "#1f77b4",
@@ -21,3 +22,10 @@ export const DEFAULT_COLORS = [
   "#d9eee9",
   "#007bff",
 ];
+
+/** The palette a chart falls back to when given no `colors`: the app-wide
+ *  `setMichiVzDefaults({ colors })` when set, else DEFAULT_COLORS. */
+export function defaultPalette(): string[] {
+  const configured = getMichiVzDefaults().colors;
+  return configured && configured.length > 0 ? configured : DEFAULT_COLORS;
+}

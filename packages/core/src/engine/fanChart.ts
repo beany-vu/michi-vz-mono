@@ -8,6 +8,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { sanitizeForClassName } from "../math/sanitize";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
@@ -117,6 +118,7 @@ export function mountFanChart(
   opts?: MountOptions<FanChartProps>,
 ): ChartInstance<FanChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-fan-chart");
 
   const svg = svgEl("svg");

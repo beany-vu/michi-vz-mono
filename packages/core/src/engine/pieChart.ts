@@ -7,6 +7,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle } from "../render/svg";
@@ -101,6 +102,7 @@ export function mountPieChart(
   opts?: MountOptions<PieChartProps>,
 ): ChartInstance<PieChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-pie-chart");
 
   const svg = svgEl("svg");

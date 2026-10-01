@@ -237,6 +237,10 @@ const props = {
 
 `layout` kiest het tegelalgoritme: `"squarify"` (de treemap), `"stack"` (een verticale partitie in één kolom - rijen over de volle breedte, hoogte proportioneel aan de waarde, met dezelfde splitsing per rij), of `"auto"` (schakelt over naar stack onder `stackBreakpoint`, standaard 480px). De splitsing, labels, tooltip, `getContext()` en SVG/canvas-pariteit zijn bij beide lay-outs identiek.
 
+## Hoeken van tegels
+
+`tileRadius` bepaalt de hoekstraal van elke tegel in px (standaard 1). `0` geeft vierkante tegels; de straal is nooit groter dan de helft van de breedte of hoogte van een tegel. svg, canvas en webgpu tekenen dezelfde hoeken. Stel het voor de hele app in met [`setMichiVzDefaults`](/nl/guide/defaults).
+
 ## API
 
 Props zijn getypeerd als `TreemapChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Gedeeld door alle grafieken: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, of experimenteel `"webgpu"`), `highlightItems`, `disabledItems`, en de `on*`-callbacks. `onChartDataProcessed` / `getContext()` retourneren de renderer-agnostische [ChartContext](/nl/guide/llm-context). Volledige referentie: [Treemap API](/nl/api/treemap).

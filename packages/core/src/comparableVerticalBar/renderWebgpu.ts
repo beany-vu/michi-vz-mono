@@ -4,11 +4,11 @@
 // see renderModel.ts's comparableVerticalDrawOrder) are drawn as GPU rects via
 // the shared marks.ts layer. Sub-bar fill colours are resolved through the SAME
 // dual nested probes canvas mode uses, so consumer CSS still reaches GPU
-// pixels. Text/axes/title stay on the SVG layer. PoC scope: bars are flat rects
-// (no rounded corners, so the `barRadius` prop does not apply here; no hatch
-// PATTERN fill - pattern-filled value-based bars are omitted in webgpu mode; use
-// renderer="canvas"/"svg" for exact rounded-rect + pattern rendering).
-import { emptyBatch, pushRect, markColor, drawMarksWebgpu } from "../webgpu/marks";
+// pixels. Text/axes/title stay on the SVG layer. Corners follow `barRadius`
+// like svg rx and canvas roundRect (pushRoundedRect, same clamp). PoC scope: no
+// hatch PATTERN fill - pattern-filled value-based bars are omitted in webgpu
+// mode; use renderer="canvas"/"svg" for pattern rendering.
+import { emptyBatch, pushRoundedRect, markColor, drawMarksWebgpu } from "../webgpu/marks";
 import { resolveMarkColors, makeSubBarProbe } from "../canvas/resolveMarkColors";
 import { comparableVerticalDrawOrder } from "./renderModel";
 import type { ComparableVerticalRenderModel } from "./renderModel";
@@ -16,6 +16,8 @@ import type { ComparableVerticalRenderModel } from "./renderModel";
 export interface ComparableVerticalWebgpuOptions {
   width: number;
   height: number;
+  /** Resolved `barRadius` (px); clamped per bar, the same as svg rx and canvas roundRect. */
+  barRadius: number;
   valueBasedOpacity: number;
   valueComparedOpacity: number;
   /** Called once when the GPU device becomes ready, so the engine can re-render. */
@@ -62,12 +64,13 @@ export function drawComparableVerticalBarWebgpu(
     for (const part of parts) {
       if (isTransparent(part.color)) continue;
       if (part.seg.width <= 0 || part.seg.height <= 0) continue;
-      pushRect(
+      pushRoundedRect(
         batch.triangles,
         part.seg.x,
         part.seg.y,
         part.seg.width,
         part.seg.height,
+        o.barRadius,
         markColor(part.color, groupAlpha * part.opacity),
       );
     }

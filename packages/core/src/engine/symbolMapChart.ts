@@ -10,6 +10,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { renderTitle } from "../render/svg";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
@@ -121,6 +122,7 @@ export function mountSymbolMapChart(
   opts?: MountOptions<SymbolMapChartProps>,
 ): ChartInstance<SymbolMapChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-symbol-map-chart");
 
   const svg = svgEl("svg");

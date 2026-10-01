@@ -1,6 +1,6 @@
 // Per-key colour resolution for BarBell (colorsMapping > palette; transparent
 // under skipColorMappingDispatch).
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 
 export interface BarBellColorResolver {
   getColor: (key: string) => string;
@@ -13,7 +13,7 @@ export function buildBarBellColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): BarBellColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
   for (const key of keys) {

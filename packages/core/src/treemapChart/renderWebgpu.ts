@@ -6,7 +6,7 @@
 // SVG layer. Fill colours are resolved through the SAME light-DOM colour probe as
 // canvas mode, so consumer CSS still reaches GPU pixels.
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
-import { emptyBatch, pushRect, markColor, drawMarksWebgpu } from "../webgpu/marks";
+import { emptyBatch, pushRoundedRect, markColor, drawMarksWebgpu } from "../webgpu/marks";
 import type { TreemapRenderModel } from "./renderModel";
 
 export interface TreemapWebgpuOptions {
@@ -50,14 +50,23 @@ export function drawTreemapWebgpu(
     const groupOpacity = highlighted ? 1 : 0.2;
     const fill = fillColors.get(d.colorKey) || d.fill;
 
-    pushRect(batch.triangles, d.x, d.y, d.w, d.h, markColor(fill, groupOpacity));
+    pushRoundedRect(
+      batch.triangles,
+      d.x,
+      d.y,
+      d.w,
+      d.h,
+      model.tileRadius,
+      markColor(fill, groupOpacity),
+    );
     if (model.showSplit && d.partialPct != null && d.realizedWidth < d.w) {
-      pushRect(
+      pushRoundedRect(
         batch.triangles,
         d.x + d.realizedWidth,
         d.y,
         d.w - d.realizedWidth,
         d.h,
+        model.tileRadius,
         markColor("#ffffff", groupOpacity * veil),
       );
     }

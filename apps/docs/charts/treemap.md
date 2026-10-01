@@ -237,6 +237,10 @@ const props = {
 
 `layout` picks the tiling algorithm: `"squarify"` (the treemap), `"stack"` (a single-column vertical partition - full-width rows, height proportional to value, with the same in-row split), or `"auto"` (switches to stack below `stackBreakpoint`, default 480px). The split, labels, tooltip, `getContext()` and SVG/canvas parity are identical across both layouts.
 
+## Tile corners
+
+`tileRadius` sets the corner radius of every tile in px (default 1). `0` gives square tiles; the radius never exceeds half a tile's width or height. svg, canvas and webgpu draw the same corners. To set it for the whole app, use [`setMichiVzDefaults`](/guide/defaults).
+
 ## API
 
 Props are typed as `TreemapChartProps` in [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Shared across all charts: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, or experimental `"webgpu"`), `highlightItems`, `disabledItems`, and the `on*` callbacks. `onChartDataProcessed` / `getContext()` return the renderer-agnostic [ChartContext](/guide/llm-context). Full reference: [Treemap API](/api/treemap).

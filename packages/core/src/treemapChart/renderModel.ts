@@ -53,6 +53,8 @@ export interface TreemapRenderModel {
   splitLabels: [string, string];
   showSplit: boolean;
   splitOpacity: number;
+  /** Resolved tile corner radius (px), clamped per tile by every renderer. */
+  tileRadius: number;
   paddingTop: number;
   legend: TreemapLegendItem[];
   /** Representative tile colour for the legend swatches (first group's colour). */
@@ -77,6 +79,8 @@ export interface BuildTreemapModelOptions {
   groupKeys: string[];
   showSplit: boolean;
   splitOpacity: number;
+  /** Resolved tile corner radius (px), clamped per tile by every renderer. */
+  tileRadius: number;
   splitLabels: [string, string];
   paddingTop: number;
   highlightItems: string[];
@@ -156,6 +160,7 @@ export function buildTreemapRenderModel(
     splitLabels: o.splitLabels,
     showSplit: o.showSplit,
     splitOpacity: o.splitOpacity,
+    tileRadius: o.tileRadius,
     paddingTop: o.paddingTop,
     legend,
     legendColor: o.groupKeys.length ? colors.getColor(o.groupKeys[0]) : "#888888",

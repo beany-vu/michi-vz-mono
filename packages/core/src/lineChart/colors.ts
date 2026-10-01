@@ -4,7 +4,7 @@
 //   > palette[index]       (auto-assigned, stable by insertion order)
 // Under skipColorMappingDispatch, unmapped labels resolve to "transparent" so the
 // consumer's CSS drives mark colour (the external-CSS contract) - matching gap.
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { LineDataItem } from "../types";
 
 export interface LineColorResolver {
@@ -18,7 +18,7 @@ export function buildLineColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): LineColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
 

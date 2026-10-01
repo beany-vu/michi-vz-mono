@@ -1,7 +1,7 @@
 // Per-group fill resolution for Treemap (colorsMapping > palette; transparent
 // under skipColorMappingDispatch). Colour key = top-level ancestor in nested mode,
 // the leaf label in flat mode. Mirrors the other charts' colour resolvers.
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 
 export interface TreemapColorResolver {
   getColor: (key: string) => string;
@@ -14,7 +14,7 @@ export function buildTreemapColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): TreemapColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
 

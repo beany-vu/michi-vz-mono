@@ -31,6 +31,7 @@ export interface UiStrings {
   gInstallation: string;
   gGettingStarted: string;
   gProvider: string;
+  gDefaults: string;
   gLlmContext: string;
   gInsights: string;
   gDevtools: string;
@@ -90,6 +91,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gInstallation: "Installation",
     gGettingStarted: "Getting started",
     gProvider: "Provider & shared state",
+    gDefaults: "App-wide defaults",
     gLlmContext: "LLM context",
     gInsights: "Insights (AI boost)",
     gDevtools: "DevTools",
@@ -150,6 +152,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gInstallation: "Installation",
     gGettingStarted: "Prise en main",
     gProvider: "Provider et état partagé",
+    gDefaults: "Valeurs par défaut de l'application",
     gLlmContext: "Contexte LLM",
     gInsights: "Insights (boost IA)",
     gDevtools: "DevTools",
@@ -210,6 +213,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gInstallation: "Installatie",
     gGettingStarted: "Aan de slag",
     gProvider: "Provider en gedeelde status",
+    gDefaults: "Standaardwaarden voor de hele app",
     gLlmContext: "LLM-context",
     gInsights: "Insights (AI-boost)",
     gDevtools: "DevTools",
@@ -270,6 +274,7 @@ export const ui: Record<LocaleKey, UiStrings> = {
     gInstallation: "Cài đặt",
     gGettingStarted: "Bắt đầu",
     gProvider: "Provider và trạng thái dùng chung",
+    gDefaults: "Giá trị mặc định cho toàn ứng dụng",
     gLlmContext: "Ngữ cảnh LLM",
     gInsights: "Insights (tăng cường AI)",
     gDevtools: "DevTools",

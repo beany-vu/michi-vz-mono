@@ -237,6 +237,10 @@ const props = {
 
 `layout` choisit l'algorithme de pavage : `"squarify"` (le treemap), `"stack"` (une partition verticale en une seule colonne - lignes pleine largeur, hauteur proportionnelle à la valeur, avec la même division dans chaque ligne), ou `"auto"` (passe en pile en dessous de `stackBreakpoint`, 480px par défaut). La division, les libellés, l'infobulle, `getContext()` et la parité SVG/canvas sont identiques dans les deux dispositions.
 
+## Coins des tuiles
+
+`tileRadius` définit le rayon des coins de chaque tuile en px (1 par défaut). `0` donne des tuiles carrées ; le rayon ne dépasse jamais la moitié de la largeur ou de la hauteur d'une tuile. svg, canvas et webgpu dessinent les mêmes coins. Pour le définir dans toute l'application, utilisez [`setMichiVzDefaults`](/fr/guide/defaults).
+
 ## API
 
 Les props sont typées comme `TreemapChartProps` dans [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Communes à tous les graphiques : `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, ou `"webgpu"` expérimental), `highlightItems`, `disabledItems`, et les callbacks `on*`. `onChartDataProcessed` / `getContext()` renvoient le [ChartContext](/fr/guide/llm-context) indépendant du moteur de rendu. Référence complète : [API Treemap](/fr/api/treemap).

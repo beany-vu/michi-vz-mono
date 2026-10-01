@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter } from "../i18n/formatters";
 import { processGapChartData } from "../gapChart/data";
@@ -101,6 +102,7 @@ export function mountGapChart(
   opts?: MountOptions<GapChartProps>,
 ): ChartInstance<GapChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-gap-chart");
 
   const svg = svgEl("svg");

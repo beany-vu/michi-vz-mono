@@ -8,6 +8,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { renderTitle } from "../render/svg";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
@@ -134,6 +135,7 @@ export function mountGaugeChart(
   opts?: MountOptions<GaugeChartProps>,
 ): ChartInstance<GaugeChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-gauge-chart");
 
   const gradientIdBase = `mv-gauge-${++gaugeMountSeq}-${Math.random().toString(36).slice(2, 8)}`;

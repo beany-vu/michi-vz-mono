@@ -8,7 +8,7 @@
 // `disabled` being present and on `dataLabelSafe === sanitizeForClassName(label)`
 // so its injected per-label CSS matches the SVG marks and the canvas colour probe.
 import { sanitizeForClassName } from "../math/sanitize";
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { LegendItem } from "../types";
 
 export interface LegendInput {
@@ -55,7 +55,7 @@ function hexWithAlpha(color: string, alpha: number): string {
 }
 
 export function buildLegendData(input: LegendInput): LegendItem[] {
-  const palette = input.palette && input.palette.length ? input.palette : DEFAULT_COLORS;
+  const palette = input.palette && input.palette.length ? input.palette : defaultPalette();
   const mapping = input.colorsMapping ?? {};
   const disabled = new Set(input.disabledItems ?? []);
   const seen = new Set<string>();

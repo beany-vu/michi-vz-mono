@@ -5,6 +5,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import {
@@ -107,6 +108,7 @@ export function mountVerticalStackBarChart(
   opts?: MountOptions<VerticalStackBarChartProps>,
 ): ChartInstance<VerticalStackBarChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-vertical-stack-bar-chart");
 
   const svg = svgEl("svg");

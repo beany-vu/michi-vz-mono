@@ -18,6 +18,7 @@ import { wireStickyDismiss } from "../render/stickyDismiss";
 import { placeTooltip } from "../render/placeTooltip";
 import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisBand, renderXAxisLinear, renderYAxisLinear } from "../render/svg";
@@ -125,6 +126,7 @@ export function mountFountainChart(
   opts?: MountOptions<FountainChartProps>,
 ): ChartInstance<FountainChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-fountain-chart");
 
   const svg = svgEl("svg");

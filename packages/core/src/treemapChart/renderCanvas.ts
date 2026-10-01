@@ -2,6 +2,7 @@
 // does (no DOM); fill colours resolved via the SVG colour probe (class `tile`,
 // fill) so consumer CSS reaches canvas pixels. jsdom has no 2D context → no-op.
 import { setupCanvas } from "../canvas/setupCanvas";
+import { roundRectPath } from "../comparableBar/renderCanvas";
 import { resolveMarkColors, makeSimpleProbe } from "../canvas/resolveMarkColors";
 import { readableTextColor } from "../math/contrast";
 import type { TreemapRenderModel } from "./renderModel";
@@ -87,11 +88,13 @@ export function drawTreemapCanvas(
 
     ctx.globalAlpha = groupOpacity;
     ctx.fillStyle = fill;
-    ctx.fillRect(d.x, d.y, d.w, d.h);
+    roundRectPath(ctx, d.x, d.y, d.w, d.h, model.tileRadius);
+    ctx.fill();
     if (model.showSplit && d.partialPct != null && d.realizedWidth < d.w) {
       ctx.globalAlpha = groupOpacity * veil;
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(d.x + d.realizedWidth, d.y, d.w - d.realizedWidth, d.h);
+      roundRectPath(ctx, d.x + d.realizedWidth, d.y, d.w - d.realizedWidth, d.h, model.tileRadius);
+      ctx.fill();
     }
     ctx.globalAlpha = groupOpacity;
 

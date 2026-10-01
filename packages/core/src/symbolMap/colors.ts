@@ -6,7 +6,7 @@
 // field + a bundled region palette; this chart uses the house's standard
 // label/colorsMapping/colors contract instead).
 import { scaleThreshold } from "d3-scale";
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { SymbolMapNode } from "./data";
 
 export interface SymbolMapColorResolver {
@@ -27,7 +27,7 @@ export function buildSymbolMapColors(
   skipColorMappingDispatch = false,
   colorScaleConfig?: { domain: number[]; range: string[] },
 ): SymbolMapColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
 

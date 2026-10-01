@@ -30,6 +30,7 @@ export class TreemapChartElement extends LitElement {
     stackBreakpoint: { type: Number, attribute: "stack-breakpoint" },
     splitLabels: { attribute: false },
     splitOpacity: { type: Number, attribute: "split-opacity" },
+    tileRadius: { type: Number, attribute: "tile-radius" },
     showSplit: { type: Boolean, attribute: "show-split" },
     showLegend: { type: Boolean, attribute: "show-legend" },
     minTileShare: { type: Number, attribute: "min-tile-share" },
@@ -64,6 +65,7 @@ export class TreemapChartElement extends LitElement {
   stackBreakpoint?: number;
   splitLabels?: [string, string];
   splitOpacity?: number;
+  tileRadius?: number;
   showSplit?: boolean;
   showLegend = false;
   minTileShare?: number;
@@ -113,6 +115,7 @@ export class TreemapChartElement extends LitElement {
       stackBreakpoint: this.stackBreakpoint,
       splitLabels: this.splitLabels,
       splitOpacity: this.splitOpacity,
+      tileRadius: this.tileRadius,
       showSplit: this.showSplit,
       showLegend: this.showLegend,
       minTileShare: this.minTileShare,

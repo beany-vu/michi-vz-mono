@@ -93,7 +93,9 @@ export type { TimelineState, TimelineEvents, TimelineOptions } from "./animation
 export { defaultNumberFormatter, defaultXAxisFormatter } from "./i18n/formatters";
 
 // ---- Theme ----
-export { DEFAULT_COLORS } from "./theme/colors";
+export { DEFAULT_COLORS, defaultPalette } from "./theme/colors";
+export { setMichiVzDefaults, getMichiVzDefaults, resetMichiVzDefaults } from "./theme/defaults";
+export type { MichiVzDefaults, MichiVzTooltipDefaults } from "./theme/defaults";
 export { sequentialScheme, SEQUENTIAL_SCHEME_NAMES } from "./theme/schemes";
 export type { SequentialSchemeName } from "./theme/schemes";
 

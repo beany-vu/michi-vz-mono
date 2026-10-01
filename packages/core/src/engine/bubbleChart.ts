@@ -7,6 +7,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools, getDevtoolsHook, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle } from "../render/svg";
@@ -104,6 +105,7 @@ export function mountBubbleChart(
   opts?: MountOptions<BubbleChartProps>,
 ): ChartInstance<BubbleChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-bubble-chart");
 
   const svg = svgEl("svg");

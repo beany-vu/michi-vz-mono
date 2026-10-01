@@ -8,6 +8,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults, getMichiVzDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisBand, renderYAxisLinear } from "../render/svg";
@@ -115,7 +116,7 @@ function resolve(p: ComparableVerticalBarChartProps): Resolved {
     hideTickLabels: p.hideTickLabels ?? false,
     minBarHeight: p.minBarHeight ?? 5,
     maxBarWidth: p.maxBarWidth,
-    barRadius: resolveBarRadius(p.barRadius ?? 5),
+    barRadius: resolveBarRadius(p.barRadius ?? getMichiVzDefaults().barRadius ?? 5),
     xAxisLabelPadding: p.xAxisLabelPadding,
     xAxisMode: p.xAxisMode,
     deltaIndicator: p.deltaIndicator?.show
@@ -135,6 +136,7 @@ export function mountComparableVerticalBarChart(
   opts?: MountOptions<ComparableVerticalBarChartProps>,
 ): ChartInstance<ComparableVerticalBarChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-comparable-vertical-bar-chart");
 
   const svg = svgEl("svg");
@@ -466,6 +468,7 @@ export function mountComparableVerticalBarChart(
           height: r.height,
           valueBasedOpacity: r.valueBasedOpacity,
           valueComparedOpacity: r.valueComparedOpacity,
+          barRadius: r.barRadius,
           // Re-render once the async GPU device resolves, upgrading canvas -> GPU.
           onReady: render,
         });

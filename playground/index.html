@@ -582,6 +582,15 @@
         <michi-vz-treemap-chart id="treemapValueLabels"></michi-vz-treemap-chart>
       </div>
     </div>
+    <h2>Treemap tileRadius: 6 (svg | canvas)</h2>
+    <div class="row">
+      <div class="card">
+        <michi-vz-treemap-chart id="treemapRadiusSvg"></michi-vz-treemap-chart>
+      </div>
+      <div class="card">
+        <michi-vz-treemap-chart id="treemapRadiusCanvas"></michi-vz-treemap-chart>
+      </div>
+    </div>
     <h2>Treemap consumer-CSS fill contract (canvas, rect.tile[data-label-safe] probe)</h2>
     <div class="card" id="treemapContract">
       <michi-vz-treemap-chart id="treemapContractChart"></michi-vz-treemap-chart>
@@ -1532,6 +1541,20 @@
         const treemapCanvasEl = document.getElementById("treemapCanvas");
         const treemapValueLabelsEl = document.getElementById("treemapValueLabels");
         const treemapContractEl = document.getElementById("treemapContractChart");
+        const treemapRadiusSvgEl = document.getElementById("treemapRadiusSvg");
+        const treemapRadiusCanvasEl = document.getElementById("treemapRadiusCanvas");
+        for (const [el, renderer] of [
+          [treemapRadiusSvgEl, "svg"],
+          [treemapRadiusCanvasEl, "canvas"],
+        ]) {
+          Object.assign(el, {
+            dataSet: treemapData,
+            renderer,
+            showSplit: false,
+            tileRadius: 6,
+            ...treemapCommon,
+          });
+        }
         Object.assign(treemapSvgEl, {
           dataSet: treemapData,
           chartTitle: "Treemap",
@@ -3161,6 +3184,18 @@
           log(
             radialContractOk,
             "RADIAL CANVAS colour contract: consumer CSS rgb(230,70,20) reached canvas pixels",
+          );
+
+          // ---- Treemap tileRadius checks ----
+          const radiusTiles = Array.from(treemapRadiusSvgEl.querySelectorAll("rect.tile"));
+          log(
+            radiusTiles.length === 3 && radiusTiles.every((t) => t.getAttribute("rx") === "6"),
+            "TREEMAP tileRadius: svg tiles carry rx=6",
+          );
+          log(
+            !!treemapRadiusCanvasEl.querySelector("canvas") &&
+              treemapRadiusCanvasEl.querySelectorAll("rect.tile").length === 0,
+            "TREEMAP tileRadius: canvas renderer paints the tiles (no svg rects)",
           );
 
           // ---- Treemap checks ----

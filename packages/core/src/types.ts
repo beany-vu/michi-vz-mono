@@ -3079,6 +3079,10 @@ export interface TreemapChartProps {
    * Rendered as the solid colour under a white veil, so it reads as a lighter tint of the
    * same hue on any background (light or dark) rather than depending on the backdrop. */
   splitOpacity?: number;
+  /** Corner radius of every tile in px (default 1, or the app-wide
+   * `setMichiVzDefaults({ tileRadius })`). Clamped to half a tile's width or
+   * height, the same in svg, canvas and webgpu. */
+  tileRadius?: number;
   /** Render the primary/remainder split. Defaults to auto-on when any leaf carries `partial`. */
   showSplit?: boolean;
   /** Render a 2-swatch split legend (uses splitLabels). */

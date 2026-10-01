@@ -1,6 +1,6 @@
 // Per-label colour resolution for ScatterPlot (colorsMapping > point.color >
 // palette; transparent under skipColorMappingDispatch).
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { ScatterDataPoint } from "../types";
 
 export interface ScatterColorResolver {
@@ -14,7 +14,7 @@ export function buildScatterColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): ScatterColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
 

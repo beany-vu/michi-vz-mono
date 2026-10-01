@@ -44,7 +44,7 @@ const isTransparent = (c: string): boolean =>
 // Rounded-rect path (radius clamped to half the smaller side by clampBarRadius,
 // the same clamp the svg renderer uses for rx/ry; `barRadius` defaults to the
 // legacy 5). Uses ctx.roundRect where available, else arcTo.
-function roundRectPath(
+export function roundRectPath(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,

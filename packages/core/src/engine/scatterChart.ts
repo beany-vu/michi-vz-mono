@@ -5,6 +5,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderXAxisBand, renderYAxisLinear } from "../render/svg";
@@ -127,6 +128,7 @@ export function mountScatterChart(
   opts?: MountOptions<ScatterChartProps>,
 ): ChartInstance<ScatterChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-scatter-chart");
 
   const svg = svgEl("svg");

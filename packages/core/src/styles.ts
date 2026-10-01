@@ -118,9 +118,11 @@ export const CORE_CSS = `
 .michi-vz .mv-stack-abbrev { font-size: var(--michi-vz-font-size, 12px); }
 .michi-vz .mv-annotation-label { font-size: calc(var(--michi-vz-font-size, 12px) * 0.92); }
 .michi-vz .tooltip {
-  position: absolute; background: #fff; border: 1px solid #ccc; border-radius: 4px;
-  padding: 8px; pointer-events: none; box-shadow: 0 2px 4px rgba(0,0,0,.1);
-  font-size: var(--michi-vz-font-size, 12px); z-index: 10;
+  position: absolute; background: var(--michi-vz-tooltip-bg, #fff);
+  border: 1px solid var(--michi-vz-tooltip-border, #ccc); border-radius: var(--michi-vz-tooltip-radius, 4px);
+  color: var(--michi-vz-tooltip-color, inherit);
+  padding: 8px; pointer-events: none; box-shadow: var(--michi-vz-tooltip-shadow, 0 2px 4px rgba(0,0,0,.1));
+  font-size: var(--michi-vz-tooltip-font-size, var(--michi-vz-font-size, 12px)); z-index: 10;
 }
 .michi-vz .tooltip.sticky { pointer-events: auto; cursor: default; border-color: #666; }
 .michi-vz .mv-a11y {

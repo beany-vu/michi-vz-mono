@@ -46,3 +46,8 @@ export { FountainChartElement } from "./fountain-chart";
 export { ChoroplethMapChartElement } from "./choropleth-map-chart";
 export { SymbolMapChartElement } from "./symbol-map-chart";
 export { RadialTreeChartElement } from "./radial-tree-chart";
+
+// App-wide chart defaults (palette, font, corners, tooltip), re-exported so an
+// app needs only this package. One core instance backs every chart.
+export { setMichiVzDefaults, getMichiVzDefaults, resetMichiVzDefaults } from "@michi-vz/core";
+export type { MichiVzDefaults, MichiVzTooltipDefaults } from "@michi-vz/core";

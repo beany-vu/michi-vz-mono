@@ -3,6 +3,7 @@
 // CSS var + the default (vanilla) loading/no-data overlays. Centralised so every
 // chart behaves identically; a framework wrapper opts out of the default overlay
 // (and renders its own node) via `suppressDefaultOverlay`.
+import { applyHostDefaults } from "../theme/defaults";
 import { evaluateDataState, type DataState } from "../state/dataState";
 import { toggleLoadingIndicator } from "./svg/loadingIndicator";
 import { toggleNodataIndicator } from "./svg/nodataIndicator";
@@ -41,6 +42,8 @@ export function applyChartChrome<T>(
     dataSet,
   });
   host.setAttribute("data-mv-state", state);
+  // App-wide defaults first (font + tooltip vars), then the chart's own fontFamily wins.
+  applyHostDefaults(host);
   if (props.fontFamily) host.style.setProperty("--michi-vz-font-family", props.fontFamily);
 
   const suppress = props.suppressDefaultOverlay ?? false;

@@ -3122,7 +3122,7 @@
           "type": "number",
           "optional": true,
           "description": "Corner radius of every bar, in px (default 5, the historical look). `0` draws square corners. The drawn radius never exceeds half the bar's width or height, so a bar only 10px thick (a `layout: \"grouped\"` half-band on a phone, say) turns into a pill at the default 5 - lower it (2-4) for square-ish corners there. Applies to the svg and canvas renderers alike; the experimental webgpu renderer draws square corners regardless. Negative values draw square corners; NaN falls back to 5.",
-          "default": "5",
+          "default": "getMichiVzDefaults(",
           "common": false
         },
         {
@@ -3482,7 +3482,7 @@
           "type": "number",
           "optional": true,
           "description": "Corner radius of every column, in px (default 5, the historical look). `0` draws square corners. The drawn radius never exceeds half the column's width or height, so a narrow column (many categories on a phone, say) turns into a pill at the default 5 - lower it (2-4) for square-ish corners there. Applies to the svg and canvas renderers alike; the experimental webgpu renderer draws square corners regardless. Negative values draw square corners; NaN falls back to 5.",
-          "default": "5",
+          "default": "getMichiVzDefaults(",
           "common": false
         },
         {
@@ -4603,6 +4603,14 @@
           "optional": true,
           "description": "Apparent colour strength of the remainder/untapped segment in [0,1] (default 0.35). Rendered as the solid colour under a white veil, so it reads as a lighter tint of the same hue on any background (light or dark) rather than depending on the backdrop.",
           "default": "0.35",
+          "common": false
+        },
+        {
+          "name": "tileRadius",
+          "type": "number",
+          "optional": true,
+          "description": "Corner radius of every tile in px (default 1, or the app-wide `setMichiVzDefaults({ tileRadius })`). Clamped to half a tile's width or height, the same in svg, canvas and webgpu.",
+          "default": "",
           "common": false
         },
         {

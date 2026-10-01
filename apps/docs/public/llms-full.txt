@@ -559,7 +559,7 @@ Chart-specific props (the shared props above also apply):
 - `padding`: `{ top: number; right: number; bottom: number; left: number }` (default: `ZERO_PADDING`) - Extra plot-area inset (px); padding.left opens a left column for the y-axis label chips without moving the labels themselves (which stay anchored to margin.left)
 - `horizontalTickPosition`: `{ x: number; y: number }` - Offset (px) applied to the y-axis category labels so they align with the legend column
 - `maxBarHeight`: `number` - Cap each bar's thickness (px).
-- `barRadius`: `number` (default: `5`) - Corner radius of every bar, in px (default 5, the historical look).
+- `barRadius`: `number` (default: `getMichiVzDefaults(`) - Corner radius of every bar, in px (default 5, the historical look).
 - `symmetricXDomain`: `boolean` - Force a symmetric x-domain [-M, M], M = max(|min|, |max|) of the data, so 0 sits centred and the negative/positive sides mirror (e.g. ± growth %).
 - `layout`: `"overlay" | "grouped"` (default: `"overlay"`) - How the two sub-bars (valueBased, valueCompared) share a row's band.
 - `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased.
@@ -604,7 +604,7 @@ Chart-specific props (the shared props above also apply):
 - `hideTickLabels`: `boolean` (default: `false`) - Hide the x-axis category labels
 - `minBarHeight`: `number` (default: `5`) - Floor for a sub-bar's pixel height so near-zero values stay visible (default 5)
 - `maxBarWidth`: `number` - Cap each column's thickness (px).
-- `barRadius`: `number` (default: `5`) - Corner radius of every column, in px (default 5, the historical look).
+- `barRadius`: `number` (default: `getMichiVzDefaults(`) - Corner radius of every column, in px (default 5, the historical look).
 - `deltaIndicator`: `DeltaIndicatorConfig` - Row-level change indicator (arrow + formatted diff label) comparing valueCompared to valueBased, drawn above each column pair.
 - `isLoading`: `boolean` - Loading overlay (stale bars hidden while true)
 - `isNodata`: `boolean | ((dataSet: ComparableBarDataPoint[] | null | undefined) => boolean)` - No-data predicate/flag; default = empty dataSet
@@ -745,6 +745,7 @@ Chart-specific props (the shared props above also apply):
 - `stackBreakpoint`: `number` - Width (px) below which `layout: "auto"` switches to the stack layout (default 480).
 - `splitLabels`: `[string, string]` (default: `["Filled", "Remaining"]`) - Names of the two split parts (default ["Filled","Remaining"]).
 - `splitOpacity`: `number` (default: `0.35`) - Apparent colour strength of the remainder/untapped segment in [0,1] (default 0.35).
+- `tileRadius`: `number` - Corner radius of every tile in px (default 1, or the app-wide `setMichiVzDefaults({ tileRadius })`).
 - `showSplit`: `boolean` - Render the primary/remainder split.
 - `showLegend`: `boolean` (default: `false`) - Render a 2-swatch split legend (uses splitLabels).
 - `minTileShare`: `number` - Floor each leaf's tiling area to this percent of the largest leaf, so tiny tiles stay visible.

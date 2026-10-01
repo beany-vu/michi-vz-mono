@@ -237,6 +237,10 @@ const props = {
 
 `layout` chọn thuật toán xếp ô: `"squarify"` (kiểu treemap), `"stack"` (một phân vùng dọc một cột - các hàng rộng hết chiều ngang, chiều cao tỷ lệ với giá trị, cùng cách chia trong hàng), hoặc `"auto"` (chuyển sang stack khi thấp hơn `stackBreakpoint`, mặc định 480px). Phần chia, nhãn, tooltip, `getContext()` và sự tương đồng SVG/canvas đều giống nhau ở cả hai bố cục.
 
+## Góc bo của ô
+
+`tileRadius` đặt bán kính góc của mọi ô, tính bằng px (mặc định 1). `0` cho ô vuông; bán kính không bao giờ vượt quá nửa chiều rộng hoặc chiều cao của ô. svg, canvas và webgpu vẽ cùng một kiểu góc. Để đặt cho toàn ứng dụng, dùng [`setMichiVzDefaults`](/vi/guide/defaults).
+
 ## API
 
 Các prop được định kiểu là `TreemapChartProps` trong [`@michi-vz/core`](https://github.com/beany-vu/michi-vz-mono/blob/main/packages/core/src/types.ts). Dùng chung cho mọi biểu đồ: `width`, `height`, `margin`, `colors` / `colorsMapping`, `renderer` (`"svg"`, `"canvas"`, hoặc `"webgpu"` thử nghiệm), `highlightItems`, `disabledItems`, và các callback `on*`. `onChartDataProcessed` / `getContext()` trả về [ChartContext](/vi/guide/llm-context) không phụ thuộc bộ dựng. Tham chiếu đầy đủ: [API Treemap](/vi/api/treemap).

@@ -1,6 +1,6 @@
 // Per-key fill resolution for AreaChart. colorsMapping[key] > palette[index];
 // "transparent" for unmapped under skipColorMappingDispatch (external-CSS mode).
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 
 export interface AreaColorResolver {
   getColor: (key: string) => string;
@@ -13,7 +13,7 @@ export function buildAreaColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): AreaColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
 

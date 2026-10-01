@@ -4,6 +4,7 @@
 // `realizedWidth`. Parent containers get a header label. Highlight dimming
 // (opacity) is computed here, not baked into the model.
 import { svgEl } from "../dom";
+import { clampBarRadius } from "../comparableBar/barRadius";
 import { readableTextColor } from "../math/contrast";
 import type { TreemapLeafMark, TreemapRenderModel } from "./renderModel";
 
@@ -84,8 +85,8 @@ export function renderTreemapSvg(
       width: d.w,
       height: d.h,
       fill: d.fill,
-      rx: 1,
-      ry: 1,
+      rx: clampBarRadius(model.tileRadius, d.w, d.h),
+      ry: clampBarRadius(model.tileRadius, d.w, d.h),
     });
     g.appendChild(base);
 
@@ -99,8 +100,8 @@ export function renderTreemapSvg(
         height: d.h,
         fill: "#ffffff",
         opacity: veil,
-        rx: 1,
-        ry: 1,
+        rx: clampBarRadius(model.tileRadius, d.w - d.realizedWidth, d.h),
+        ry: clampBarRadius(model.tileRadius, d.w - d.realizedWidth, d.h),
       });
       g.appendChild(veilRect);
     }

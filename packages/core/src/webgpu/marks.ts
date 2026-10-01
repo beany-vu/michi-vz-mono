@@ -37,6 +37,50 @@ export function pushRect(out: number[], x: number, y: number, w: number, h: numb
   pushTri(out, x, y, x2, y2, x, y2, c);
 }
 
+// Segments per quarter-circle corner: 8 keeps the polygon within ~1px of a true
+// arc for corner radii up to ~20px (the canvas/svg renderers draw exact arcs).
+const CORNER_SEGMENTS = 8;
+
+/** A rect with rounded corners (barRadius / tileRadius parity with svg rx and
+ *  canvas roundRect). The radius is clamped to half the shorter side, like
+ *  clampBarRadius; 0 emits exactly pushRect's two triangles. */
+export function pushRoundedRect(
+  out: number[],
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  radius: number,
+  c: RGBA,
+): void {
+  const W = Math.abs(w);
+  const H = Math.abs(h);
+  const r = Math.max(0, Math.min(radius, W / 2, H / 2));
+  if (!(r > 0)) {
+    pushRect(out, x, y, w, h, c);
+    return;
+  }
+  const x0 = Math.min(x, x + w);
+  const y0 = Math.min(y, y + h);
+  pushRect(out, x0 + r, y0, W - 2 * r, H, c); // centre band, full height
+  pushRect(out, x0, y0 + r, r, H - 2 * r, c); // left band between the corners
+  pushRect(out, x0 + W - r, y0 + r, r, H - 2 * r, c); // right band
+  const corners: Array<[number, number, number]> = [
+    [x0 + r, y0 + r, Math.PI], // top-left: 180deg..270deg
+    [x0 + W - r, y0 + r, 1.5 * Math.PI], // top-right
+    [x0 + W - r, y0 + H - r, 0], // bottom-right
+    [x0 + r, y0 + H - r, 0.5 * Math.PI], // bottom-left
+  ];
+  for (const [cx, cy, start] of corners) {
+    const ring: Array<[number, number]> = [];
+    for (let i = 0; i <= CORNER_SEGMENTS; i++) {
+      const a = start + (i / CORNER_SEGMENTS) * (Math.PI / 2);
+      ring.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    pushFan(out, cx, cy, ring, c, false);
+  }
+}
+
 /** A filled band between an ordered TOP polyline and a BOTTOM polyline (same length). */
 export function pushBandStrip(
   out: number[],

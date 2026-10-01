@@ -6,7 +6,7 @@
 // generated categorical palette. Unmatched features (no joined row at all) are
 // NOT handled here - see renderModel.ts, which falls back to `noDataColor`.
 import { scaleThreshold } from "d3-scale";
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { ChoroplethDataItem } from "../types";
 
 export interface ChoroplethColorResolver {
@@ -21,7 +21,7 @@ export function buildChoroplethColors(
   colorScaleConfig?: { domain: number[]; range: string[] },
   skipColorMappingDispatch = false,
 ): ChoroplethColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const threshold =
     colorScaleConfig && colorScaleConfig.domain.length > 0 && colorScaleConfig.range.length > 0
       ? scaleThreshold<number, string>()

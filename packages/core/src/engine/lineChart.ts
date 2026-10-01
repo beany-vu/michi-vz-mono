@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools, getDevtoolsHook, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultXAxisFormatter, defaultNumberFormatter } from "../i18n/formatters";
 import {
@@ -162,6 +163,7 @@ export function mountLineChart(
   opts?: MountOptions<LineChartProps>,
 ): ChartInstance<LineChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-line-chart");
 
   const svg = svgEl("svg");

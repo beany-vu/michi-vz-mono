@@ -4,6 +4,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
@@ -98,6 +99,7 @@ export function mountBarBellChart(
   opts?: MountOptions<BarBellChartProps>,
 ): ChartInstance<BarBellChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-bar-bell-chart");
 
   const svg = svgEl("svg");

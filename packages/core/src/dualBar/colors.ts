@@ -1,6 +1,6 @@
 // Per-label colour resolution for DualHorizontalBar (colorsMapping > point.color >
 // palette; transparent under skipColorMappingDispatch).
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { DualBarDataPoint } from "../types";
 
 export interface DualColorResolver {
@@ -14,7 +14,7 @@ export function buildDualBarColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): DualColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
   for (const d of points) {

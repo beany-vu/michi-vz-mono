@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
@@ -110,6 +111,7 @@ export function mountSankeyChart(
   opts?: MountOptions<SankeyChartProps>,
 ): ChartInstance<SankeyChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-sankey-chart");
 
   const svg = svgEl("svg");

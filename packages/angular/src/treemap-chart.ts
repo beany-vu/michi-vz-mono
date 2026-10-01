@@ -17,6 +17,7 @@ export function applyTreemapChartProps(el: TreemapChartElement, props: TreemapCh
   if (props.stackBreakpoint !== undefined) el.stackBreakpoint = props.stackBreakpoint;
   if (props.splitLabels !== undefined) el.splitLabels = props.splitLabels;
   if (props.splitOpacity !== undefined) el.splitOpacity = props.splitOpacity;
+  if (props.tileRadius !== undefined) el.tileRadius = props.tileRadius;
   if (props.showSplit !== undefined) el.showSplit = props.showSplit;
   if (props.showLegend !== undefined) el.showLegend = props.showLegend;
   if (props.minTileShare !== undefined) el.minTileShare = props.minTileShare;

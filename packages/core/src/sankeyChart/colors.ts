@@ -1,7 +1,7 @@
 // Per-node fill resolution for Sankey (colorsMapping > palette; transparent under
 // skipColorMappingDispatch). Colour key = node id; links inherit their source or
 // target node's colour. Mirrors the other charts' colour resolvers.
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 
 export interface SankeyColorResolver {
   getColor: (key: string) => string;
@@ -14,7 +14,7 @@ export function buildSankeyColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): SankeyColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
 

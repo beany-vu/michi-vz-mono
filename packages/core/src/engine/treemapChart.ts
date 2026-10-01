@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools, reportDevtoolsHit } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults, getMichiVzDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
@@ -65,6 +66,7 @@ interface Resolved {
   paddingTop: number;
   layout: "squarify" | "stack";
   splitOpacity: number;
+  tileRadius: number;
   splitLabels: [string, string];
   showLegend: boolean;
   enableTransitions: boolean;
@@ -102,6 +104,7 @@ function resolve(p: TreemapChartProps): Resolved {
     paddingTop: p.paddingTop ?? 18,
     layout,
     splitOpacity: p.splitOpacity ?? 0.35,
+    tileRadius: Math.max(0, p.tileRadius ?? getMichiVzDefaults().tileRadius ?? 1),
     splitLabels: p.splitLabels ?? ["Filled", "Remaining"],
     showLegend: p.showLegend ?? false,
     enableTransitions: p.enableTransitions ?? true,
@@ -117,6 +120,7 @@ export function mountTreemapChart(
   opts?: MountOptions<TreemapChartProps>,
 ): ChartInstance<TreemapChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-treemap-chart");
 
   const svg = svgEl("svg");
@@ -375,6 +379,7 @@ export function mountTreemapChart(
       groupKeys: processed.groupKeys,
       showSplit,
       splitOpacity: r.splitOpacity,
+      tileRadius: r.tileRadius,
       splitLabels: r.splitLabels,
       paddingTop,
       highlightItems: props.highlightItems ?? [],

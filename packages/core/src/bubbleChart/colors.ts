@@ -1,7 +1,7 @@
 // Per-bubble fill resolution (colorsMapping > palette; transparent under
 // skipColorMappingDispatch). Colour key = bubble label. Mirrors the other charts'
 // colour resolvers so the data-label-safe contract stays uniform.
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 
 export interface BubbleColorResolver {
   getColor: (key: string) => string;
@@ -14,7 +14,7 @@ export function buildBubbleColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): BubbleColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const generated: Record<string, string> = { ...colorsMapping };
   let i = Object.keys(colorsMapping || {}).length;
 

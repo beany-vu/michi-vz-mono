@@ -103,6 +103,7 @@ function themeForLocale(loc: LocaleKey) {
       { text: t.gInstallation, link: link("/guide/installation") },
       { text: t.gGettingStarted, link: link("/guide/getting-started") },
       { text: t.gProvider, link: link("/guide/provider") },
+      { text: t.gDefaults, link: link("/guide/defaults") },
       { text: t.gLlmContext, link: link("/guide/llm-context") },
       { text: t.gInsights, link: link("/guide/insights") },
       { text: t.gDevtools, link: link("/guide/devtools") },

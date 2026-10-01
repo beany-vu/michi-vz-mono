@@ -8,7 +8,7 @@
 //   year in a series keeps its own colour.
 // Under skipColorMappingDispatch an unmapped label resolves to "transparent" (the
 // consumer's CSS colours it through data-label-safe); explicit colours still apply.
-import { DEFAULT_COLORS } from "../theme/colors";
+import { defaultPalette } from "../theme/colors";
 import type { FountainDataItem } from "../types";
 
 export interface FountainColorResolver {
@@ -26,7 +26,7 @@ export function buildFountainColors(
   colorsMapping?: Record<string, string>,
   skipColorMappingDispatch = false,
 ): FountainColorResolver {
-  const palette = colors.length > 0 ? colors : DEFAULT_COLORS;
+  const palette = colors.length > 0 ? colors : defaultPalette();
   const mapping = colorsMapping ?? {};
   const generated: Record<string, string> = { ...mapping };
   let slot = Object.keys(mapping).length;

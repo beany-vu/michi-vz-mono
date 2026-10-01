@@ -4,6 +4,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { applyChartChrome, createChromeRefs } from "../render/chrome";
 import { renderTitle } from "../render/svg";
@@ -137,6 +138,7 @@ export function mountRadarChart(
   opts?: MountOptions<RadarChartProps>,
 ): ChartInstance<RadarChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-radar-chart");
 
   const svg = svgEl("svg");

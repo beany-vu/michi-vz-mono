@@ -4,6 +4,7 @@ import DOMPurify from "dompurify";
 import { wireStickyDismiss } from "../render/stickyDismiss";
 import { attachDevtools } from "../devtools/hook";
 import { ensureStyles } from "../styles";
+import { applyHostDefaults, getMichiVzDefaults } from "../theme/defaults";
 import { svgEl, htmlEl, clear } from "../dom";
 import { defaultNumberFormatter } from "../i18n/formatters";
 import { renderTitle, renderXAxisLinear, renderYAxisBand } from "../render/svg";
@@ -116,7 +117,7 @@ function resolve(p: ComparableBarChartProps): Resolved {
     hideTickLabels: p.hideTickLabels ?? false,
     horizontalTickPosition: p.horizontalTickPosition,
     maxBarHeight: p.maxBarHeight,
-    barRadius: resolveBarRadius(p.barRadius ?? 5),
+    barRadius: resolveBarRadius(p.barRadius ?? getMichiVzDefaults().barRadius ?? 5),
     layout: p.layout ?? "overlay",
     deltaIndicator: p.deltaIndicator?.show
       ? {
@@ -164,6 +165,7 @@ export function mountComparableHorizontalBarChart(
   opts?: MountOptions<ComparableBarChartProps>,
 ): ChartInstance<ComparableBarChartProps> {
   ensureStyles();
+  applyHostDefaults(host);
   host.classList.add("michi-vz", "michi-vz-comparable-bar-chart");
 
   const svg = svgEl("svg");
@@ -545,6 +547,7 @@ export function mountComparableHorizontalBarChart(
         height: r.height,
         valueBasedOpacity: r.valueBasedOpacity,
         valueComparedOpacity: r.valueComparedOpacity,
+        barRadius: r.barRadius,
         // Re-render once the async GPU device resolves, upgrading canvas → GPU.
         onReady: render,
       });
