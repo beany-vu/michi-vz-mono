@@ -10,6 +10,19 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.0
+
+Phiên bản gói: core **1.31.0** · wc **1.21.0** · angular **1.18.0** · react **1.13.0** · vue, svelte **1.9.0** ·
+examples **1.4.0** · devtools **0.3.2** · insights **0.2.37**.
+
+- **[Giá trị mặc định cho toàn ứng dụng](/vi/guide/defaults).** `setMichiVzDefaults` đặt
+  bảng màu, phông chữ, góc bo của thanh và ô, và giao diện tooltip một lần cho cả ứng dụng,
+  giống `Highcharts.setOptions`. Prop trên biểu đồ vẫn được ưu tiên. Mọi gói framework đều
+  export hàm này, và svg, canvas, webgpu vẽ ra cùng một kết quả.
+- **Góc bo ở mọi nơi.** [Treemap](/vi/charts/treemap) có thêm `tileRadius` (mặc định 1; ô
+  canvas trước đây vuông, nay khớp với svg), và biểu đồ thanh so sánh cũng bo góc khi dùng
+  webgpu.
+
 ## v1.12.8
 
 Phiên bản gói: core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·

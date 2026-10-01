@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.31.0
+
+### Minor Changes
+
+- `setMichiVzDefaults({ colors, fontFamily, barRadius, tileRadius, tooltip })` sets the look every chart starts from, once per app (the counterpart of `Highcharts.setOptions`); `getMichiVzDefaults` and `resetMichiVzDefaults` read and clear it, and every framework package re-exports all three. A chart prop always wins, then the defaults, then the built-in look. The palette and corner radii are resolved in the data model and the font and tooltip become css variables on the chart host (`--michi-vz-tooltip-radius`, `-shadow`, `-bg`, `-border`, `-color`, `-font-size`), so svg, canvas and webgpu draw the same thing. TreemapChart gains `tileRadius` (default 1; canvas tiles were square before, now they match svg). ComparableHorizontal/VerticalBar on webgpu now round their corners with `barRadius` like svg and canvas (new `pushRoundedRect`).
+
 ## 1.30.0
 
 ### Minor Changes

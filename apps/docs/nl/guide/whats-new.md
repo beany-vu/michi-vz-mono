@@ -10,6 +10,19 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.0
+
+Pakketversies: core **1.31.0** · wc **1.21.0** · angular **1.18.0** · react **1.13.0** · vue, svelte **1.9.0** ·
+examples **1.4.0** · devtools **0.3.2** · insights **0.2.37**.
+
+- **[Standaardwaarden voor de hele app](/nl/guide/defaults).** `setMichiVzDefaults` legt het
+  palet, het lettertype, de hoeken van balken en tegels en het uiterlijk van de tooltip één
+  keer voor de hele app vast, zoals `Highcharts.setOptions`. Een prop op een grafiek wint nog
+  steeds. Elk frameworkpakket exporteert het, en svg, canvas en webgpu tekenen hetzelfde.
+- **Overal afgeronde hoeken.** De [Treemap](/nl/charts/treemap) krijgt `tileRadius`
+  (standaard 1; canvastegels waren vierkant en komen nu overeen met svg), en vergelijkende
+  staafdiagrammen ronden hun hoeken ook af in webgpu.
+
 ## v1.12.8
 
 Pakketversies: core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·

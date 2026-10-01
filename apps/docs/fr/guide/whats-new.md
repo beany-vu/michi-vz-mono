@@ -12,6 +12,20 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.0
+
+Versions des paquets : core **1.31.0** · wc **1.21.0** · angular **1.18.0** · react **1.13.0** · vue, svelte **1.9.0** ·
+examples **1.4.0** · devtools **0.3.2** · insights **0.2.37**.
+
+- **[Valeurs par défaut de l'application](/fr/guide/defaults).** `setMichiVzDefaults` définit
+  une seule fois pour toute l'application la palette, la police, les coins des barres et des
+  tuiles et l'apparence de l'infobulle, comme `Highcharts.setOptions`. Une prop sur un
+  graphique l'emporte toujours. Chaque paquet de framework l'exporte, et svg, canvas et webgpu
+  dessinent le même résultat.
+- **Des coins arrondis partout.** Le [Treemap](/fr/charts/treemap) reçoit `tileRadius` (1 par
+  défaut ; les tuiles canvas étaient carrées et correspondent maintenant au svg), et les
+  graphiques à barres comparables arrondissent aussi leurs coins en webgpu.
+
 ## v1.12.8
 
 Versions des paquets : core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·

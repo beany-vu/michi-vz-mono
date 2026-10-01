@@ -10,6 +10,19 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.0
+
+Package versions: core **1.31.0** · wc **1.21.0** · angular **1.18.0** · react **1.13.0** · vue, svelte **1.9.0** ·
+examples **1.4.0** · devtools **0.3.2** · insights **0.2.37**.
+
+- **[App-wide defaults](/guide/defaults).** `setMichiVzDefaults` sets the palette, font,
+  bar and tile corners and the tooltip look once for the whole app, like
+  `Highcharts.setOptions`. A prop on a chart still wins. Every framework package exports it,
+  and svg, canvas and webgpu draw the same result.
+- **Rounded corners everywhere.** [Treemap](/charts/treemap) gains `tileRadius` (default 1;
+  canvas tiles were square before and now match svg), and comparable bar charts round their
+  corners on webgpu too.
+
 ## v1.12.8
 
 Package versions: core **1.30.0** · wc **1.20.0** · angular **1.17.0** · react **1.12.8** · vue, svelte **1.8.8** ·
