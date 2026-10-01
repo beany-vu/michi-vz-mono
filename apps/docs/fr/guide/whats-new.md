@@ -12,6 +12,16 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.1
+
+Versions des paquets : core **1.31.1** · wc **1.21.1** · angular **1.18.1** · react **1.13.1** · vue, svelte **1.9.1** ·
+examples **1.4.1** · devtools **0.3.3** · insights **0.2.38**.
+
+- **Valeurs négatives dans le [Barres empilées verticales](/fr/charts/vertical-stack-bar).** Les valeurs
+  négatives s'empilent maintenant vers le bas depuis 0 et les positives vers le haut, comme les
+  colonnes empilées de Highcharts ; avant, elles étaient dessinées sans hauteur. Les graphiques
+  entièrement positifs restent identiques.
+
 ## v1.13.0
 
 Versions des paquets : core **1.31.0** · wc **1.21.0** · angular **1.18.0** · react **1.13.0** · vue, svelte **1.9.0** ·

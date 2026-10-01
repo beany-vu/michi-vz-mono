@@ -10,6 +10,16 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.1
+
+Pakketversies: core **1.31.1** · wc **1.21.1** · angular **1.18.1** · react **1.13.1** · vue, svelte **1.9.1** ·
+examples **1.4.1** · devtools **0.3.3** · insights **0.2.38**.
+
+- **Negatieve waarden in het [Verticale gestapelde staven](/nl/charts/vertical-stack-bar).** Negatieve
+  waarden stapelen nu omlaag vanaf 0 en positieve omhoog, zoals de gestapelde kolommen van
+  Highcharts; eerder werden ze zonder hoogte getekend. Grafieken met alleen positieve waarden
+  blijven precies gelijk.
+
 ## v1.13.0
 
 Pakketversies: core **1.31.0** · wc **1.21.0** · angular **1.18.0** · react **1.13.0** · vue, svelte **1.9.0** ·

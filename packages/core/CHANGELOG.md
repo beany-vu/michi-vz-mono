@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.31.1
+
+### Patch Changes
+
+- VerticalStackBarChart stacks negative values DOWN from 0 and positive values UP from 0, each side with its own running total (a diverging stack, Highcharts' stacked-column default); the horizontal layout does the same leftward and rightward. Before, a negative segment was clamped to height 0 and the value domain used each column's net total. The domain now spans the sum of the negatives to the sum of the positives. All-positive data draws exactly as before. The geometry is shared, so svg, canvas and webgpu agree.
+
 ## 1.31.0
 
 ### Minor Changes

@@ -10,6 +10,15 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.1
+
+Phiên bản gói: core **1.31.1** · wc **1.21.1** · angular **1.18.1** · react **1.13.1** · vue, svelte **1.9.1** ·
+examples **1.4.1** · devtools **0.3.3** · insights **0.2.38**.
+
+- **Giá trị âm trong [Biểu đồ cột chồng dọc](/vi/charts/vertical-stack-bar).** Giá trị âm giờ xếp
+  chồng xuống dưới từ 0 còn giá trị dương xếp lên trên, giống cột xếp chồng của Highcharts;
+  trước đây chúng được vẽ không có chiều cao. Biểu đồ chỉ có giá trị dương vẫn giữ nguyên.
+
 ## v1.13.0
 
 Phiên bản gói: core **1.31.0** · wc **1.21.0** · angular **1.18.0** · react **1.13.0** · vue, svelte **1.9.0** ·

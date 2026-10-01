@@ -1,5 +1,12 @@
 # @michi-vz/vue
 
+## 1.9.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.31.1
+
 ## 1.9.0
 
 ### Minor Changes
