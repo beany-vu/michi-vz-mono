@@ -208,6 +208,10 @@ Props zijn getypeerd als `VerticalStackBarChartProps` in [`@michi-vz/core`](http
 
 Dit gedrag is automatisch (geen extra bedrading nodig) en komt overeen met de legacy `michi-vz`-grafiek, voor drop-in-pariteit.
 
+### Negatieve waarden
+
+Negatieve waarden stapelen **omlaag** vanaf 0 en positieve waarden **omhoog**, elke kant met een eigen lopend totaal (een divergerende stapeling, zoals de gestapelde kolommen van Highcharts). De waardeas loopt van de som van de negatieve tot de som van de positieve waarden. De horizontale indeling doet hetzelfde naar links en naar rechts. svg, canvas en webgpu tekenen dezelfde rechthoeken.
+
 ### Dichte x-as - automatisch draaien / uitdunnen
 
 De band-as meet zijn labels en past zich aan: **horizontaal** wanneer ze passen, **gedraaid −45°** (alle labels blijven getoond) wanneer ze niet passen, en **uitgedund** tot een gelijkmatig verdeelde subset alleen bij extreme dichtheid. De ondermarge wordt automatisch gereserveerd zodat gedraaide labels nooit worden afgesneden. Geen prop nodig - geef `xAxisFormat` door om de tick-tekst te formatteren (bijv. `202401` → `01-2024`).

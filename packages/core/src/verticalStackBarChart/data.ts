@@ -119,13 +119,18 @@ export function computeYDomain(
   let max = 0;
   for (const ds of dataSet) {
     for (const row of ds.series) {
-      let t = 0;
+      // Diverging stack: positives and negatives pile up on opposite sides of 0,
+      // so the domain spans the negative sum to the positive sum (not the net).
+      let pos = 0;
+      let neg = 0;
       for (const k of keys) {
         const v = Number(row[k]);
-        if (Number.isFinite(v)) t += v;
+        if (!Number.isFinite(v)) continue;
+        if (v < 0) neg += v;
+        else pos += v;
       }
-      if (t > max) max = t;
-      if (t < min) min = t;
+      if (pos > max) max = pos;
+      if (neg < min) min = neg;
     }
   }
   return [min, max];

@@ -208,6 +208,10 @@ Les props sont typées comme `VerticalStackBarChartProps` dans [`@michi-vz/core`
 
 Ces comportements sont automatiques (aucun câblage supplémentaire) et correspondent au graphique historique `michi-vz` pour une parité prête à l'emploi.
 
+### Valeurs négatives
+
+Les valeurs négatives s'empilent **vers le bas** depuis 0 et les valeurs positives **vers le haut**, chaque côté avec son propre total cumulé (un empilement divergent, comme les colonnes empilées de Highcharts). L'axe des valeurs va de la somme des négatives à la somme des positives. La disposition horizontale fait de même vers la gauche et vers la droite. svg, canvas et webgpu dessinent les mêmes rectangles.
+
 ### Axe x dense - rotation / éclaircissement automatique
 
 L'axe à bandes mesure ses libellés et s'adapte : **horizontal** quand ils tiennent, **incliné à −45°** (tous les libellés restent affichés) quand ce n'est pas le cas, et **éclairci** vers un sous-ensemble régulièrement espacé uniquement en cas de densité extrême. La marge inférieure est réservée automatiquement pour que les libellés inclinés ne soient jamais tronqués. Aucune prop nécessaire - passez `xAxisFormat` pour formater le texte des graduations (par ex. `202401` → `01-2024`).

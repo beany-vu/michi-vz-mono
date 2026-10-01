@@ -50,8 +50,13 @@ export function prepareStackedData(
 
   visibleDataSet.forEach((dataItem, groupIndex) => {
     for (const yearData of dataItem.series) {
+      // Diverging stack (Highcharts' default, d3 stackOffsetDiverging): positive
+      // values stack UP from 0 and negative values stack DOWN from 0, each side
+      // with its own running total and pixel edge.
       let y0 = 0;
       let pixelBottom = scales.yScale(0);
+      let negY0 = 0;
+      let negPixelTop = scales.yScale(0);
       const baseX = (scales.xScale(String(yearData.date)) ?? 0) + groupWidth * groupIndex + 2;
       const width = Math.max(groupWidth - 4, o.minBarWidth);
 
@@ -92,6 +97,29 @@ export function prepareStackedData(
             });
           }
           // Do NOT advance y0 / pixelBottom for a missing value.
+          continue;
+        }
+
+        if (numericValue < 0) {
+          const negY1 = negY0 + numericValue;
+          const negRaw = scales.yScale(negY1) - scales.yScale(negY0);
+          const negHeight = negRaw > 0 ? Math.max(o.minBarHeight, negRaw) : 0;
+          stackedData[key].push({
+            key,
+            height: negHeight,
+            width,
+            y: negPixelTop,
+            x: baseX,
+            data: yearData,
+            fill: colors.getColor(key),
+            seriesKey: dataItem.seriesKey,
+            seriesKeyAbbreviation: dataItem.seriesKeyAbbreviation,
+            value: numericValue,
+            date: yearData.date,
+            code: codeOf(yearData.code),
+          });
+          negY0 = negY1;
+          negPixelTop = negPixelTop + negHeight;
           continue;
         }
 
@@ -160,8 +188,12 @@ export function prepareStackedDataHorizontal(
 
   visibleDataSet.forEach((dataItem, groupIndex) => {
     for (const yearData of dataItem.series) {
+      // Diverging, as in the vertical layout: positives grow right from 0,
+      // negatives grow left from 0.
       let v0 = 0;
       let pixelLeft = scales.xScale(0);
+      let negV0 = 0;
+      let negPixelLeft = scales.xScale(0);
       const baseY = (scales.yScale(String(yearData.date)) ?? 0) + groupHeight * groupIndex + 2;
       const height = Math.max(groupHeight - 4, o.minBarWidth);
 
@@ -190,6 +222,29 @@ export function prepareStackedDataHorizontal(
               isMissing: true,
             });
           }
+          continue;
+        }
+
+        if (numericValue < 0) {
+          const negV1 = negV0 + numericValue;
+          const negRaw = scales.xScale(negV0) - scales.xScale(negV1);
+          const negWidth = negRaw > 0 ? Math.max(o.minBarHeight, negRaw) : 0;
+          negPixelLeft = negPixelLeft - negWidth;
+          stackedData[key].push({
+            key,
+            height,
+            width: negWidth,
+            y: baseY,
+            x: negPixelLeft,
+            data: yearData,
+            fill: colors.getColor(key),
+            seriesKey: dataItem.seriesKey,
+            seriesKeyAbbreviation: dataItem.seriesKeyAbbreviation,
+            value: numericValue,
+            date: yearData.date,
+            code: codeOf(yearData.code),
+          });
+          negV0 = negV1;
           continue;
         }
 

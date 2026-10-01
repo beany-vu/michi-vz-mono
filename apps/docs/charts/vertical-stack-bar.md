@@ -208,6 +208,10 @@ Props are typed as `VerticalStackBarChartProps` in [`@michi-vz/core`](https://gi
 
 These behaviours are automatic (no extra wiring) and match the legacy `michi-vz` chart for drop-in parity.
 
+### Negative values
+
+Negative values stack **down** from 0 while positive values stack **up** from it, each side with its own running total (a diverging stack, like Highcharts' stacked columns). The value axis spans the sum of the negatives to the sum of the positives. The horizontal layout does the same leftward and rightward. svg, canvas and webgpu draw the same rects.
+
 ### Dense x-axis - auto rotate / thin
 
 The band axis measures its labels and adapts: **horizontal** when they fit, **rotated −45°** (all labels still shown) when they don't, and **thinned** to an evenly-spaced subset only at extreme density. The bottom margin is reserved automatically so rotated labels never clip. No prop needed - pass `xAxisFormat` to format the tick text (e.g. `202401` → `01-2024`).

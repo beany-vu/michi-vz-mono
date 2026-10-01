@@ -208,6 +208,10 @@ Các prop được định kiểu là `VerticalStackBarChartProps` trong [`@mich
 
 Các hành vi này là tự động (không cần cấu hình thêm) và khớp với biểu đồ `michi-vz` cũ để tương đồng khi thay thế trực tiếp.
 
+### Giá trị âm
+
+Giá trị âm xếp chồng **xuống dưới** từ 0 còn giá trị dương xếp **lên trên**, mỗi phía có tổng cộng dồn riêng (xếp chồng phân kỳ, giống cột xếp chồng của Highcharts). Trục giá trị trải từ tổng các giá trị âm đến tổng các giá trị dương. Bố cục ngang làm tương tự sang trái và sang phải. svg, canvas và webgpu vẽ cùng các hình chữ nhật.
+
 ### Trục x dày đặc - tự động xoay / thu gọn
 
 Trục dạng dải đo các nhãn của nó và tự thích ứng: **nằm ngang** khi vừa đủ chỗ, **xoay −45°** (vẫn hiển thị tất cả nhãn) khi không vừa, và **thu gọn** về một tập con cách đều nhau chỉ khi mật độ quá cao. Lề dưới được dành sẵn tự động để các nhãn xoay không bao giờ bị cắt. Không cần prop nào - truyền `xAxisFormat` để định dạng văn bản mốc (ví dụ `202401` → `01-2024`).

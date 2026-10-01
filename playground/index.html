@@ -289,6 +289,10 @@
         <h2>Canvas renderer</h2>
         <michi-vz-vertical-stack-bar-chart id="stackCanvas"></michi-vz-vertical-stack-bar-chart>
       </div>
+      <div class="card">
+        <h2>Diverging stack (negative values)</h2>
+        <michi-vz-vertical-stack-bar-chart id="stackNeg"></michi-vz-vertical-stack-bar-chart>
+      </div>
     </div>
     <h2>Stack consumer-CSS fill contract (canvas)</h2>
     <div class="card" id="stackContract">
@@ -915,6 +919,14 @@
         const stackKeys = ["Africa", "Non-LDC"];
         const stackCommon = { width: 460, height: 300, missingDataMarker: { height: 2 } };
         const stackSvgEl = document.getElementById("stackSvg");
+        const stackNegEl = document.getElementById("stackNeg");
+        Object.assign(stackNegEl, {
+          dataSet: [
+            { seriesKey: "Flows", series: [{ date: "2023", inflow: 10, outflow: -4, other: 5 }] },
+          ],
+          width: 300,
+          height: 260,
+        });
         const stackCanvasEl = document.getElementById("stackCanvas");
         const stackContractEl = document.getElementById("stackContractChart");
         Object.assign(stackSvgEl, {
@@ -1840,6 +1852,29 @@
 
           // 7. light DOM (no shadow root) - required by the contract
           log(svgEl.shadowRoot === null, "element renders in LIGHT DOM (no shadow root)");
+
+          // ---- Diverging stack checks ----
+          const negRect = stackNegEl.querySelector(
+            'rect.bar[data-label="outflow"], rect[data-label="outflow"]',
+          );
+          const posRect = stackNegEl.querySelector(
+            'rect.bar[data-label="inflow"], rect[data-label="inflow"]',
+          );
+          log(
+            !!negRect && Number(negRect.getAttribute("height")) > 0,
+            "STACK diverging: a negative value draws with a real height",
+          );
+          // The positive stack's lowest bottom edge is the zero line.
+          const posBottom = Math.max(
+            ...["inflow", "other"].map((k) => {
+              const r = stackNegEl.querySelector(`rect[data-label="${k}"]`);
+              return r ? Number(r.getAttribute("y")) + Number(r.getAttribute("height")) : -Infinity;
+            }),
+          );
+          log(
+            !!negRect && !!posRect && Math.abs(Number(negRect.getAttribute("y")) - posBottom) < 1,
+            "STACK diverging: the negative starts at the zero line, below the positive stack",
+          );
 
           // ---- LineChart areaFill + lastPointLabel checks ----
           const areaPath = lineAreaSvgEl.querySelector("path.line-area");
