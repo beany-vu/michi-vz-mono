@@ -1,5 +1,11 @@
 # @michi-vz/core
 
+## 1.31.2
+
+### Patch Changes
+
+- Every chart now places its tooltip through the shared `placeTooltip`, so a tooltip near the right edge flips to the left of the cursor in all 22 charts (treemap, pie, sankey, bubble, dual bar, fan, range, ribbon and the gauge annotations never flipped before). `placeTooltip` also measures the tooltip at its natural width (an absolutely positioned box near the edge was squeezed into a narrow column, read as "fits" and never flipped) and flips at the window edge when the chart runs past it. Charts that used to drop their tooltip below the cursor when it clipped the top keep that behaviour.
+
 ## 1.31.1
 
 ### Patch Changes

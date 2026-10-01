@@ -10,6 +10,15 @@ Các bản phát hành `@michi-vz` mới nhất, xếp mới nhất lên đầu.
 (mỗi bản phát hành sẽ ghi rõ package nào lên version mới hơn). Chi tiết từng commit nằm
 đầy đủ trong [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.2
+
+Phiên bản gói: core **1.31.2** · wc **1.21.2** · angular **1.18.2** · react **1.13.2** · vue, svelte **1.9.2** ·
+examples **1.4.2** · devtools **0.3.4** · insights **0.2.39**.
+
+- **Tooltip vẫn đọc được ở mép phải.** Mọi biểu đồ giờ đặt tooltip sang bên trái con trỏ khi
+  bên phải không đủ chỗ, của biểu đồ hoặc của cửa sổ. Treemap, biểu đồ tròn, sankey và một số
+  biểu đồ khác trước đây không làm vậy, và tooltip gần mép còn có thể bị ép thành một cột hẹp.
+
 ## v1.13.1
 
 Phiên bản gói: core **1.31.1** · wc **1.21.1** · angular **1.18.1** · react **1.13.1** · vue, svelte **1.9.1** ·

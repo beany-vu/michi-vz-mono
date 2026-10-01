@@ -1,5 +1,13 @@
 # @michi-vz/storybook
 
+## 1.1.45
+
+### Patch Changes
+
+- @michi-vz/devtools@0.3.4
+- @michi-vz/examples@1.4.2
+- @michi-vz/wc@1.21.2
+
 ## 1.1.44
 
 ### Patch Changes

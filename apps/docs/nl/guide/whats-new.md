@@ -10,6 +10,16 @@ De nieuwste `@michi-vz`-releases, nieuwste eerst. Alle zes pakketten -
 geversioneerd (elke release vermeldt welk pakket vooruitliep). Volledige per-commit
 details staan in de [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.2
+
+Pakketversies: core **1.31.2** · wc **1.21.2** · angular **1.18.2** · react **1.13.2** · vue, svelte **1.9.2** ·
+examples **1.4.2** · devtools **0.3.4** · insights **0.2.39**.
+
+- **Tooltips blijven leesbaar aan de rechterrand.** Elke grafiek zet de tooltip nu links van de
+  cursor als er rechts geen ruimte is, in de grafiek of in het venster. De treemap, het
+  cirkeldiagram, de sankey en enkele andere grafieken deden dat niet, en een tooltip bij de rand
+  kon ook tot een smalle kolom worden samengedrukt.
+
 ## v1.13.1
 
 Pakketversies: core **1.31.1** · wc **1.21.1** · angular **1.18.1** · react **1.13.1** · vue, svelte **1.9.1** ·

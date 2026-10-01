@@ -1,5 +1,12 @@
 # @michi-vz/devtools
 
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @michi-vz/core@1.31.2
+
 ## 0.3.3
 
 ### Patch Changes

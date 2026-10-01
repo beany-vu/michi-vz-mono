@@ -12,6 +12,16 @@ packages -
 par commit se trouve dans les
 [releases GitHub](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.2
+
+Versions des paquets : core **1.31.2** · wc **1.21.2** · angular **1.18.2** · react **1.13.2** · vue, svelte **1.9.2** ·
+examples **1.4.2** · devtools **0.3.4** · insights **0.2.39**.
+
+- **Des infobulles lisibles au bord droit.** Chaque graphique place maintenant son infobulle à
+  gauche du curseur quand la place manque à droite, du graphique ou de la fenêtre. Le treemap, le
+  camembert, le sankey et plusieurs autres graphiques ne le faisaient pas, et une infobulle près
+  du bord pouvait aussi être écrasée en une colonne étroite.
+
 ## v1.13.1
 
 Versions des paquets : core **1.31.1** · wc **1.21.1** · angular **1.18.1** · react **1.13.1** · vue, svelte **1.9.1** ·

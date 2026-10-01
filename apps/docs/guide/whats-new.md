@@ -10,6 +10,16 @@ The latest `@michi-vz` releases, newest first. All six packages -
 (each release lists any package that moved ahead). Full per-commit detail lives in the
 [GitHub releases](https://github.com/beany-vu/michi-vz-mono/releases).
 
+## v1.13.2
+
+Package versions: core **1.31.2** · wc **1.21.2** · angular **1.18.2** · react **1.13.2** · vue, svelte **1.9.2** ·
+examples **1.4.2** · devtools **0.3.4** · insights **0.2.39**.
+
+- **Tooltips stay readable at the right edge.** Every chart now moves its tooltip to the left
+  of the cursor when there is no room on the right, of the chart or of the window. Treemap, pie,
+  sankey and several other charts never did, and a tooltip near the edge could also be squeezed
+  into a narrow column.
+
 ## v1.13.1
 
 Package versions: core **1.31.1** · wc **1.21.1** · angular **1.18.1** · react **1.13.1** · vue, svelte **1.9.1** ·
