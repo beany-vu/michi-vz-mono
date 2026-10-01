@@ -56,6 +56,7 @@ import type {
   MountOptions,
   Renderer,
 } from "../types";
+import { placeTooltip } from "../render/placeTooltip";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 100, left: 60 };
 
@@ -218,13 +219,7 @@ export function mountComparableVerticalBarChart(
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
     // Edge-aware position: flip left near the right edge, above near the bottom.
-    const r = host.getBoundingClientRect();
-    const x = ev.clientX - r.left;
-    const y = ev.clientY - r.top;
-    const tw = tooltip.offsetWidth;
-    const th = tooltip.offsetHeight;
-    tooltip.style.left = `${x + tw + 10 > r.width ? Math.max(0, x - tw - 10) : x + 10}px`;
-    tooltip.style.top = `${y - th - 10 < 0 ? y + 10 : y - th - 10}px`;
+    placeTooltip(host, tooltip, ev, 10, "above");
   };
   const subBarTypeAt = (
     bar: ComparableVerticalBarModel,

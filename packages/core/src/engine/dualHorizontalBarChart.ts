@@ -42,6 +42,7 @@ import type {
   MountOptions,
   Renderer,
 } from "../types";
+import { placeTooltip } from "../render/placeTooltip";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 120 };
 
@@ -162,14 +163,12 @@ export function mountDualHorizontalBarChart(
   let model: ReturnType<typeof buildDualRenderModel> | null = null;
 
   const showTooltip = (d: DualBarDataPoint, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(d)
       : `<strong>${d.label}</strong><br/>Value 1: ${d.value1}<br/>Value 2: ${d.value2}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

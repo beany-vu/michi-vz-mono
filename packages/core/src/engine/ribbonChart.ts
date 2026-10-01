@@ -40,6 +40,7 @@ import type {
   RibbonChartProps,
   RibbonDataRow,
 } from "../types";
+import { placeTooltip } from "../render/placeTooltip";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 60, left: 60 };
 
@@ -141,15 +142,13 @@ export function mountRibbonChart(
   };
 
   const showTooltip = (col: RibbonColumn, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     const row = baseProps.series.find((d) => String(d.date) === col.date) ?? baseProps.series[0];
     const htmlStr = baseProps.tooltipFormatter
       ? baseProps.tooltipFormatter(row, col.key, col.value)
       : `<strong>${col.key}</strong><br/>${col.date}: ${col.value}`;
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

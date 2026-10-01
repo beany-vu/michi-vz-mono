@@ -55,6 +55,7 @@ import type {
   MountOptions,
   Renderer,
 } from "../types";
+import { placeTooltip as placeTooltipAt } from "../render/placeTooltip";
 
 // canvas + webgpu both paint into a <canvas> layer (no DOM marks), so they share
 // the host-level hit-test / interaction path. svg does not.
@@ -212,11 +213,9 @@ export function mountGaugeChart(
   });
 
   const placeTooltip = (ev: MouseEvent, html: string): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     tooltip.innerHTML = DOMPurify.sanitize(html);
     tooltip.style.visibility = "visible";
+    placeTooltipAt(host, tooltip, ev);
   };
 
   const showTooltip = (m: GaugeRingMark, ev: MouseEvent): void => {

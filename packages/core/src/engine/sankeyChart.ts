@@ -57,6 +57,7 @@ import type {
   SankeyNodeContext,
   SankeyLinkContext,
 } from "../types";
+import { placeTooltip } from "../render/placeTooltip";
 
 const DEFAULT_MARGIN: Margin = { top: 36, right: 12, bottom: 12, left: 12 };
 
@@ -191,9 +192,6 @@ export function mountSankeyChart(
   };
 
   const showTooltip = (target: SankeyHoverTarget, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     const fmt = baseProps.valueFormatter ?? defaultNumberFormatter(baseProps.locale);
     let htmlStr: string;
     if (baseProps.tooltipFormatter) {
@@ -222,6 +220,7 @@ export function mountSankeyChart(
     }
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

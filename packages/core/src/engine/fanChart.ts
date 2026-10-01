@@ -54,6 +54,7 @@ import type {
   Margin,
   MountOptions,
 } from "../types";
+import { placeTooltip } from "../render/placeTooltip";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
 
@@ -157,9 +158,6 @@ export function mountFanChart(
   let hitData: Array<{ label: string; points: Array<{ x: number; y: number; d: DataPoint }> }> = [];
 
   const showTooltip = (label: string, ev: MouseEvent): void => {
-    const rect = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - rect.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - rect.top - 10}px`;
     const item = baseProps.dataSet.find((it) => it.label === label);
     const last = item && item.series.length ? item.series[item.series.length - 1] : null;
     const htmlStr =
@@ -168,6 +166,7 @@ export function mountFanChart(
         : `<strong>${label}</strong>` + (last ? `<br/>${String(last.date)}: ${last.value}` : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

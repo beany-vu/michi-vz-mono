@@ -3221,6 +3221,24 @@
             "RADIAL CANVAS colour contract: consumer CSS rgb(230,70,20) reached canvas pixels",
           );
 
+          // ---- Tooltip at the right edge (shared placeTooltip) ----
+          {
+            const tiles = treemapSvgEl.querySelectorAll("rect.tile");
+            const last = tiles[tiles.length - 1];
+            const hb = treemapSvgEl.getBoundingClientRect();
+            const lb = last.getBoundingClientRect();
+            const at = { clientX: hb.right - 4, clientY: lb.top + 10, bubbles: true };
+            last.dispatchEvent(new MouseEvent("mouseenter", at));
+            last.dispatchEvent(new MouseEvent("mousemove", at));
+            const tip = treemapSvgEl.querySelector(".tooltip");
+            const tb = tip.getBoundingClientRect();
+            log(
+              tb.width > 0 && tb.right <= hb.right + 1,
+              `TOOLTIP: flips left at the right edge (tooltip right ${Math.round(tb.right)} <= host right ${Math.round(hb.right)})`,
+            );
+            last.dispatchEvent(new MouseEvent("mouseleave", at));
+          }
+
           // ---- Treemap tileRadius checks ----
           const radiusTiles = Array.from(treemapRadiusSvgEl.querySelectorAll("rect.tile"));
           log(

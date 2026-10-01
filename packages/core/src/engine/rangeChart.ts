@@ -39,6 +39,7 @@ import type {
   RangeChartProps,
   RangeDataItem,
 } from "../types";
+import { placeTooltip } from "../render/placeTooltip";
 
 const DEFAULT_MARGIN: Margin = { top: 50, right: 50, bottom: 50, left: 60 };
 
@@ -160,9 +161,6 @@ export function mountRangeChart(
   };
 
   const showTooltip = (label: string, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     const item = baseProps.dataSet.find((it) => it.label === label);
     const mid = item?.series[Math.floor(item.series.length / 2)];
     const htmlStr =
@@ -172,6 +170,7 @@ export function mountRangeChart(
           (mid ? `<br/>${String(mid.date)}: ${mid.valueMin}-${mid.valueMax}` : "");
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;

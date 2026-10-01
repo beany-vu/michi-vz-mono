@@ -48,6 +48,7 @@ import type {
   PieSliceContext,
   Renderer,
 } from "../types";
+import { placeTooltip } from "../render/placeTooltip";
 
 const DEFAULT_MARGIN: Margin = { top: 36, right: 8, bottom: 8, left: 8 };
 const TAU = Math.PI * 2;
@@ -178,9 +179,6 @@ export function mountPieChart(
   });
 
   const showTooltip = (s: PieSliceMark, ev: MouseEvent): void => {
-    const r = host.getBoundingClientRect();
-    tooltip.style.left = `${ev.clientX - r.left + 10}px`;
-    tooltip.style.top = `${ev.clientY - r.top - 10}px`;
     let htmlStr: string;
     if (baseProps.tooltipFormatter) {
       htmlStr = baseProps.tooltipFormatter(sliceToContext(s));
@@ -190,6 +188,7 @@ export function mountPieChart(
     }
     tooltip.innerHTML = DOMPurify.sanitize(htmlStr);
     tooltip.style.visibility = "visible";
+    placeTooltip(host, tooltip, ev);
   };
   const hideTooltip = (): void => {
     if (sticky) return;
